@@ -67,6 +67,11 @@ scores in ONE stat only:
   Spell taxes, stax, graveyard hate ............ INTERACTION
   Attack taxes, pillow fort, deterrents ........ TABLE PRESENCE
   Lifegain ..................................... SURVIVAL (not a deterrent)
+BIG-SPELL PENALTY (added 2026-10-23, applies to EVERY stat):
+  each nonland card with mana value 7+ takes -0.05 points off every one of
+  the 9 stats, and -0.02 more per mana above 7 (7 = -0.05, 8 = -0.07,
+  10 = -0.11 in each stat). Printed cost; for Rooms and split cards use
+  the most expensive half.
 MODAL "choose one" cards: full value in their best stat,
   HALF value in any other stat.
 Exception (user choice): tutors that can find a survival card also give
@@ -109,10 +114,6 @@ Land-drop bonus (simulated from lands + land-fetching ramp + draw engines):
   misses at most ONE land drop through turn 6
     (5+ lands by turn 6) in 70%+ of games ................. +1 to total
   ...and also has 7+ lands by turn 8 in 70%+ of games ..... +1.25 instead
-Big-spell penalty (added 2026-10-23): every nonland card that costs 7+
-  mana value gets -0.25, and -0.10 more per mana above 7
-  (7 = -0.25, 8 = -0.35, 10 = -0.55). Printed cost; for Rooms and split
-  cards use the most expensive half. Taken off the Mana points total.
 Nudge: Curve Fit (+1 / -1 point).
   Curve Fit checklist (start 5): +1 avg MV 3.5 or less, +1 enough lands
   (36+, or 33+ with 12+ ramp), +1 lots of cheap modes;
