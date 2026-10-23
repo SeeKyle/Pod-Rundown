@@ -1,0 +1,377 @@
+POD RUNDOWN - SCORING KEY
+Version: 2026-10-22b (Clock/Survival retuned, land-drop rule reworked)
+Paste this file (plus your decklist file) at the start of a new chat.
+
+==================================================
+SECTION 1 - HOW THE SCALE WORKS
+==================================================
+- 9 stats in 3 groups. Every stat aims for 10 (10 = a strong deck).
+- Target meaning: 6 = community-average deck, 10 = strong deck.
+- Groups: ENGINE, OFFENSE, DEFENSE. Each group is out of 30. Total is out of 90.
+- A stat can go above 10. It shows as "10+" on the graph.
+  In group totals, points above 10 count HALF (a 12 counts as 11).
+- Every card gets points from each stat's formula.
+- Stat rating = total points / that stat's "points per 1",
+  rounded to the nearest whole number (.5 rounds up), minimum 1.
+- Commanders count x2 in every stat. No other commander bonuses
+  unless a stat says so (Mana, Cards).
+- Infinite combos never count. Cards only combine with cards in the same deck.
+- "Expected damage" = per opponent, per turn cycle.
+
+NUDGES (checklist scores, added as POINTS before converting)
+  checklist 8+ ........ +1 point
+  checklist 5 or less . -1 point
+  Curve Fit -> Mana | Threat Variety -> Threats | Plan B -> Survival
+
+SYNERGY (per card - payoffs scale with their fuel)
+  A PAYOFF = lord, "whenever a [type/theme] enters/attacks/dies/is cast",
+  or type-matters draw / cost reduction / tutoring.
+  An ENABLER = a card of that type or theme in the same deck.
+  Each payoff keeps its normal points, PLUS 0.05 per enabler in the deck,
+  up to +0.5. Commander payoffs get the bonus x2.
+  Enablers get NO extra points.
+  The bonus goes to the stat the payoff's effect feeds:
+    anthem / attack payoff -> CLOCK      tribal draw -> CARDS
+    ramp / cost reduction  -> MANA       tutoring    -> CONSISTENCY
+    damage / evasion       -> REACH      growth      -> THREATS
+    removal / tapping      -> INTERACTION  tokens/protection -> SURVIVAL
+
+EARLY GAME (flat deck bonus, small on purpose)
+  Board start: 12+ board-affecting permanents (creatures, token makers,
+    engines - NOT mana rocks or lands) at mana value 3 or less
+    (cheap modes count) ................ +0.5 point to CLOCK
+  Flexible early plays: 6+ instants / flash / modal / cheap-mode plays
+    at mana value 3 or less ............. +0.25 point to CONSISTENCY
+  (Both thresholds = the deck makes these plays by turn 4 in most games.)
+
+COLORS
+  Red 1-4 | Yellow 5-8 | Green 9-10 | Blue 10+
+
+SALT (not part of the total)
+  Sum of each card's EDHREC salt score. Lands that only make mana = 0.
+
+==================================================
+SECTION 2 - ANTI-OVERLAP RULES
+==================================================
+A card may score in several stats, but each FEATURE of a card
+scores in ONE stat only:
+  Haste / flash ................................ CLOCK only
+  Evasion (flying, trample, menace, unblockable) REACH only
+  Hexproof / ward / indestructible on ITSELF ... THREATS only
+  Protecting OTHER cards or your board ......... SURVIVAL only
+  Amount of damage per turn .................... CLOCK only
+    (REACH only gives a flat "unavoidable" credit)
+  Extra cards (draw, play from top/graveyard
+    that nets cards) ........................... CARDS
+  Finding / choosing / digging for a card ...... CONSISTENCY
+  Spell taxes, stax, graveyard hate ............ INTERACTION
+  Attack taxes, pillow fort, deterrents ........ TABLE PRESENCE
+  Lifegain ..................................... SURVIVAL (not a deterrent)
+MODAL "choose one" cards: full value in their best stat,
+  HALF value in any other stat.
+Exception (user choice): tutors that can find a survival card also give
+  a small Survival credit.
+
+==================================================
+SECTION 3 - THE 9 STATS
+==================================================
+ENGINE:   MANA (how fast can I cast my stuff?)
+          CARDS (how long can I keep doing stuff?)
+          CONSISTENCY (how often do I find the right stuff?)
+OFFENSE:  THREATS (how scary is my board?)
+          CLOCK (how fast do I kill?)
+          REACH (how much of my damage gets through?)
+DEFENSE:  INTERACTION (how well do I stop them?)
+          TABLE PRESENCE (how well do I make them pick someone else?)
+          SURVIVAL (how well do I survive and recover?)
+
+--------------------------------------------------
+STAT 1 - MANA (Engine)
+--------------------------------------------------
+What counts: ramp, rocks, dorks, land ramp, rituals, cost cheats.
+Per card:
+  base ............................................ 0.5
+  + puts a lot of value into play for its cost ..... 0.25
+    (makes at least as much mana as it costs, or 4+ mana/lands)
+  + any extra bonus (fixing, draw, land to hand...) 0.25
+  one-shot ramp (rituals, cascades, one-time cheats) = half value
+Commander: x2. Commander that ramps on its own: +0.25 to the total.
+Fixing lands (the only lands that score):
+  untapped land making 2+ of your colors (shock, check, pain, fast,
+    filter, battle, slow lands) ........................ 0.15
+  any-color land (Command Tower, Exotic Orchard,
+    City of Brass, Spire of Industry, triomes) ......... 0.15
+  fetch that finds 2+ of your colors ................... 0.1
+  tapped dual / tapped tri / bounce land ............... 0.05
+  basics and colorless utility lands ................... 0
+  x color need: mono x0 | 2 colors x0.5 | 3 colors x0.75 | 4-5 colors x1
+Land-drop bonus (simulated from lands + land-fetching ramp + draw engines):
+  misses at most ONE land drop through turn 6
+    (5+ lands by turn 6) in 70%+ of games ................. +1 to total
+  ...and also has 7+ lands by turn 8 in 70%+ of games ..... +1.25 instead
+Nudge: Curve Fit (+1 / -1 point).
+  Curve Fit checklist (start 5): +1 avg MV 3.5 or less, +1 enough lands
+  (36+, or 33+ with 12+ ramp), +1 lots of cheap modes;
+  -1 avg MV 4.5+ with no cheap modes.
+  (Fixing is scored by the fixing lands above, not here.)
+Points per 1: 1.75
+
+--------------------------------------------------
+STAT 2 - CARDS (Engine)
+--------------------------------------------------
+What counts: draw, value engines, wheels, and play-from-top/graveyard
+effects that net extra cards.
+Per card:
+  base ............................................ 0.25
+  + repeatable engine .............................. 0.75
+  + big burst (3+ cards or a whole new hand) ........ 0.75
+  + any extra bonus (removal, body, ramp...) ........ 0.25
+  cantrips and loot/rummage = half value
+Commander: x2. Repeatable-draw commander: +0.5 strong / +0.25 moderate.
+Points per 1: 2.05  (harshened 2026-10-22: max 3 decks over 10)
+
+--------------------------------------------------
+STAT 3 - CONSISTENCY (Engine)
+--------------------------------------------------
+What counts: how the deck FINDS what it needs (tutors, selection,
+digging, choosing from the top or graveyard).
+Per card:
+  base ............................................ 0.25
+  + real tutor (gets a specific card) ............... 1.0
+  + big deck manipulation ........................... 0.75
+    (choose from top, cast from graveyard with self-mill, dig 4+)
+  + repeatable ...................................... 0.5
+  + any extra bonus ................................. 0.25
+  On-theme / tribal cards = 0 per card, BUT see archetype depth below.
+Commander: x2.
+Archetype depth (deck-level, added 2026-10-23): count the nonland cards
+  that fit the deck's archetype (its main card type or job: tokens, auras/
+  equipment, enchantments, elves, artifacts, noncreature spells...).
+  +0.5 point for every full 5 such cards (36 cards = +3.5).
+Points per 1: 1.0
+
+--------------------------------------------------
+STAT 4 - THREATS (Offense)
+--------------------------------------------------
+What counts: big bodies (5+ power, or 4+ with trample/flying/double strike)
+or big repeatable abilities that need an answer.
+Per card:
+  base ............................................ 0.5
+  + must-answer (takes over or ends the game alone) . 0.75
+  + hard to answer (hexproof, indestructible, ward,
+    can't be countered, comes back) ................. 0.5
+  + big enter effect or snowballs ................... 0.25 ONCE
+    (haste/flash NOT counted here - they live in Clock)
+Commander: x2.
+Nudge: Threat Variety (+1 / -1 point).
+  Threat Variety = number of threat card types: 1=3, 2=5, 3=7, 4=8, 5=9, 6=10.
+Points per 1: 1.48  (harshened 2026-10-22: max 3 decks over 10)
+
+--------------------------------------------------
+STAT 5 - CLOCK (Offense)
+--------------------------------------------------
+What counts: how FAST the deck kills.
+Per card:
+  base: creature .................................. 0.25
+  base: non-creature .............................. 0.15
+  + big swing (extra combat, double damage,
+    overrun, +X/+X turn, one-turn lethal) ........... 1.0
+  + team-wide (hits your whole board) ............... 1.0
+  + speed traits (haste, flash, cheap to equip) ..... 0.25
+  + expected damage (damage engines) ......... 0.5 per damage per turn
+Fuel for sacrifice-based damage (e.g. Ellie):
+  fodder makers in deck: under 8 = 0.5 uses/turn, 8-14 = 1, 15+ = 2
+Commander: x2.
+Diminishing returns: a single card's Clock points above 1.5 (3 for a
+  commander) count half.
+Points per 1: 2.25  (retuned: pod median 7, then max 3 decks over 10)
+
+--------------------------------------------------
+STAT 6 - REACH (Offense)
+--------------------------------------------------
+What counts: how SURE the damage is to land.
+Per card:
+  base: evasion or unavoidable/non-combat damage .... 0.25
+  base: mills 5+ regularly, or applies poison ....... 0.5
+  base: gives OTHER creatures unblockable ........... 0.5
+        (also "opponents' creatures can't block")
+  + evasive creature with 6 power ................... 1.0
+    + per power over 6 .............................. 0.25
+    + if it is expected to grow ..................... 0.15
+  + repeatable unavoidable damage (flat) ............ 0.5
+    + per damage-booster card in the deck ........... 0.15
+  + one-shot burn that can hit PLAYERS ...... 0.15 per point of damage
+    (damage only to creatures/planeswalkers does not count)
+Commander: x2.
+Points per 1: 1.75
+
+--------------------------------------------------
+STAT 7 - INTERACTION (Defense)
+--------------------------------------------------
+What counts: everything that removes or stops stuff.
+Per card (best mode):
+  damage a target ................................. 0.25
+    + deals 5+ damage on average .................... 0.5
+  destroy a target ................................ 0.5
+  exile a target .................................. 0.75
+  counterspell .................................... 0.5 (hard counter 0.75)
+  steal ........................................... 0.25
+    + permanent (not until end of turn) ............. 0.5
+  edict (one creature) ............................ 0.25
+    + each additional creature sacrificed ........... 0.25
+  bounce / tap-down ............................... 0.15
+  spell taxes, stax, graveyard/artifact hate ...... 0.25
+  + repeatable ..................................... 0.25
+  + instant speed ................................... 0.25
+  + flexible (hits more than one card type) ......... 0.25
+  + extra targets: 2nd target 0.5, each one after 0.25
+    (rebound / replicate count as extra targets)
+BOARD WIPES (no target bonuses):
+  first wipe in the deck .......................... 1.0
+  each wipe after the first ....................... 0.5
+  + one-sided (you keep your stuff or choose) ....... 0.5
+Points per 1: 1.5
+
+--------------------------------------------------
+STAT 8 - TABLE PRESENCE (Defense)
+--------------------------------------------------
+What counts: keeping the hits from coming to you - steering the table
+without removing anything. All deterrents live here.
+Per card:
+  base ............................................ 0.25
+  + goad/redirection, one target .................... 0.25
+    + each target after the first ................... 0.25
+  + hit-all goad (e.g. Taunt from the Rampart) ...... 0.75
+  + can't attack you / pillow fort / attack taxes ... 0.5
+  + punishers / deterrents .......................... 0.25
+  + deal-making (votes, gifts, monarch,
+    curses aimed at one player) ..................... 0.25
+  + lopsided group hug (helps you more) ............. 0.25
+  + repeatable ...................................... 0.25
+  purely symmetric effects = half value
+  Removal stays in Interaction.
+Bargaining leverage (added 2026-10-23): ANY spell or ability that can
+  target an opponent, another player, or something they control (harmful
+  or helpful: removal, counterspells, taps, steals, curses, pumps,
+  "target player draws"...) gets the 0.25 base here, because you can
+  bargain with it. Cards that can only target your own stuff don't count.
+  (A card already scoring Presence keeps its score; the base isn't doubled.)
+Commander: x2.
+Points per 1: 1.0
+
+--------------------------------------------------
+STAT 9 - SURVIVAL (Defense)
+--------------------------------------------------
+What counts: surviving and recovering when you DO get hit.
+Per card:
+  base ............................................ 0.25
+  + protects one OTHER thing ........................ 0.25
+  + protects several things / whole board .......... 0.5
+    (a card protecting only itself scores in Threats, not here)
+  + fog / damage prevention ......................... 0.25
+  + recursion, one card ............................. 0.5
+    + each extra card ............................... 0.25
+  + mass recursion .................................. 1.5
+    (somewhat symmetrical ........................... 0.75 instead)
+  + rebuilding ............ 0.15 per token/body made each turn
+  + lifegain ........ 0.15 per 3 life expected per turn cycle
+    (one-shot lifegain = half)
+  + repeatable ...................................... 0.25
+  + instant speed ................................... 0.25
+  + gives survival keywords to OTHER creatures ...... 0.25
+    (lifelink, indestructible, hexproof, ward, protection...)
+    + if it lasts (not a one-off buff) .............. 0.25
+  Tutors that can find a survival card in the same deck ... 0.15 each
+Commander: x2.
+Nudge: Plan B (+1 / -1 point).
+  Plan B = how the deck works if its commander or key piece is removed
+  (9-10 commander is a bonus, 7-8 works without it, 5-6 weakened,
+   3-4 key plan breaks, 1-2 deck folds).
+Diminishing returns: a single card's Survival points above 1.25 (2.5 for a
+  commander) count half.
+Points per 1: 1.85  (retuned: pod median 7, then max 3 decks over 10)
+
+==================================================
+SECTION 3B - HOW TO JUDGE THE GRAY AREAS
+==================================================
+TYPICAL ATTACKING POWER
+  = printed power + buffs that reliably apply the turn it attacks
+    (its own triggers, the commander's anthem, usual counters).
+  Do NOT assume extra equipment/auras/one-off pump spells.
+  Example: The Thing 5/5 + four counters from a noncreature spell = 9.
+
+EXPECTED DAMAGE PER TURN
+  = average damage to ONE opponent over one full turn cycle.
+  Use real deck averages where possible
+    (e.g. Vial Smasher = average mana value of the deck's spells).
+  Triggers that need a condition: count how often the deck meets it
+    (about 1 noncreature spell per turn unless the deck clearly does more).
+  Fuel-based effects use the fuel tiers (under 8 / 8-14 / 15+ makers).
+
+MUST-ANSWER (Threats)
+  = if nobody deals with it, it wins the game or locks the table
+    within about 2 turns by itself. A big creature that just hits hard
+    is NOT must-answer unless it also takes over (steals, wipes, extra
+    turns, huge repeatable value, alt win).
+
+HARD TO ANSWER
+  = hexproof, shroud, indestructible, ward, protection from most removal,
+    can't be countered, or returns from the graveyard on its own.
+
+BIG BODY
+  = 5+ typical power, or 4+ with trample / flying / double strike.
+
+BOARD-AFFECTING PERMANENT (early game)
+  = creature, token maker, or engine that does something on its own.
+    Mana rocks, lands and do-nothing enchantments don't count.
+
+REPEATABLE
+  = works every turn or every time a common trigger happens
+    (static abilities, upkeep/attack/cast triggers, reusable activations).
+  Rebound, flashback, buyback = counts as a second use, not repeatable.
+
+ONE-SHOT vs PERMANENT
+  Spells are one-shot unless they leave something on the battlefield.
+  Sagas count each chapter separately.
+
+MODAL CARDS
+  Pick the mode that scores best; that stat gets full value,
+  every other stat it touches gets half.
+
+WHEN UNSURE
+  Pick the lower value and note it, so scores don't inflate.
+
+==================================================
+SECTION 4 - QUICK REFERENCE: POINTS PER 1 RATING
+==================================================
+  MANA ............ 1.75  (+/- Curve Fit)
+  CARDS ........... 2.05  (harshened 2026-10-22)
+  CONSISTENCY ..... 1.0
+  THREATS ......... 1.48  (+/- Threat Variety; harshened 2026-10-22)
+  CLOCK ........... 2.25  (retuned 2026-10-22)
+  REACH ........... 1.75
+  INTERACTION ..... 1.5
+  TABLE PRESENCE .. 1.0
+  SURVIVAL ........ 1.85  (+/- Plan B; retuned 2026-10-22)
+2026-10-22 harshen (permanent values): Cards, Threats, Clock and Survival got
+bigger divide numbers so at most 3 decks were over 10. These numbers are now
+FIXED - do not re-harshen or re-tune them when new decks are added.
+These are provisional. Once decks are in, re-tune each one so an
+EDHREC community-average deck for each pod commander scores about 6.
+
+==================================================
+SECTION 5 - GRAPH LAYOUT
+==================================================
+Columns: Icon | Deck | Mana | Cards | Consist. | Threats | Clock | Reach |
+         Interaction | Presence | Survival | Total /90 | Salt
+- Each stat shown as a colored pill (red/yellow/green/blue, 10+ for over 10).
+- Click a column to sort. Friends' decks marked with a stop sign.
+
+==================================================
+SECTION 6 - WORKFLOW
+==================================================
+1. Paste this key + the decklist document.
+2. Forget all older deck info; learn every list fresh from the document.
+3. Pull each card's official text (Scryfall) - never ask for card text.
+4. Score every deck with this key, one stat at a time.
+5. Re-tune the "points per 1" numbers so an average deck = about 6.
