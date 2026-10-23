@@ -109,6 +109,10 @@ Land-drop bonus (simulated from lands + land-fetching ramp + draw engines):
   misses at most ONE land drop through turn 6
     (5+ lands by turn 6) in 70%+ of games ................. +1 to total
   ...and also has 7+ lands by turn 8 in 70%+ of games ..... +1.25 instead
+Big-spell penalty (added 2026-10-23): every nonland card that costs 7+
+  mana value gets -0.25, and -0.10 more per mana above 7
+  (7 = -0.25, 8 = -0.35, 10 = -0.55). Printed cost; for Rooms and split
+  cards use the most expensive half. Taken off the Mana points total.
 Nudge: Curve Fit (+1 / -1 point).
   Curve Fit checklist (start 5): +1 avg MV 3.5 or less, +1 enough lands
   (36+, or 33+ with 12+ ramp), +1 lots of cheap modes;
