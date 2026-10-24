@@ -523,7 +523,9 @@ GENERAL RULES
       Doubler: Tokens | Counters | All Triggers | Attack Triggers |
       Death Triggers | ETB Triggers | Type Triggers (dwarves, legends...)
       | Activated Abilities (Gogo, Echo) | Spells (copies what you cast)
-      | Mana | Draw
+      | Mana | Draw | Food/Clue/Treasure Tokens (Academy Manufactor)
+      | Treasure Tokens (Treasure only: Jolene, Xorn - added 2026-10-24,
+        scope label only, no point change)
   Damage Doubler stays its own flat tag (1.5 CL, Section 8).
 
   DOUBLED CARDS - cards WITHOUT any doubler/adder tag that a doubler in
