@@ -1,4 +1,4 @@
-POD RUNDOWN - CARD TAG SYSTEM  (v2.2 - Oct 24, 2026)
+POD RUNDOWN - CARD TAG SYSTEM  (1.1 - Oct 24, 2026)
 Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
 divide numbers). For card points, THIS file wins.
 =====================================================================
@@ -68,7 +68,8 @@ GENERAL RULES
         deck full of crew loses this tag).
   [x] Hard Conditional ....... card's other tags x0.5
         setup is tough or rare in that deck.
-  [x] Symmetric .............. the part that helps everyone x0.5
+  [x] Symmetric .............. the card's points x0.9 (changed 1.1:
+        was x0.5 - a 10% cut for also helping opponents)
   [x] Needs Fodder ........... becomes Conditional / Hard Conditional
         if the deck can't feed it well (judge from the list).
   [x] Self-Damage/Life Cost .. SU -0.1

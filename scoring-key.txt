@@ -260,7 +260,7 @@ Per card:
     curses aimed at one player) ..................... 0.25
   + lopsided group hug (helps you more) ............. 0.25
   + repeatable ...................................... 0.25
-  purely symmetric effects = half value
+  purely symmetric effects = x0.9 (rules 1.1; tag doc wins)
   Removal stays in Interaction.
 Bargaining leverage (added 2026-10-23): ANY spell or ability that can
   target an opponent, another player, or something they control (harmful
