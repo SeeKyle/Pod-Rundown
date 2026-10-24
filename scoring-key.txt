@@ -1,6 +1,7 @@
 POD RUNDOWN - SCORING KEY
-Version: 2026-10-22b (Clock/Survival retuned, land-drop rule reworked)
-Paste this file (plus your decklist file) at the start of a new chat.
+Version: 2026-10-24b (works with Pod_Rundown_Card_Tags.txt v2.2)
+Paste this file, Pod_Rundown_Card_Tags.txt and your decklist file
+at the start of a new chat.
 
 ==================================================
 SECTION 1 - HOW THE SCALE WORKS
@@ -13,22 +14,24 @@ SECTION 1 - HOW THE SCALE WORKS
 - Every card gets points from each stat's formula.
 - Stat rating = total points / that stat's "points per 1",
   rounded to the nearest whole number (.5 rounds up), minimum 1.
-- Commanders count x2 in every stat. No other commander bonuses
-  unless a stat says so (Mana, Cards).
+- COMMANDERS (2026-10-24): the old x2, Plan B nudge and commander
+  bonuses are gone. Commanders now use the Game Plan multiplier in the
+  tag doc (Section 15: Core +50%, Supported +25%, Side 0%, traits +25%,
+  no cap, partners 70/30, plus Doubles tags for commanders that double).
 - Infinite combos never count. Cards only combine with cards in the same deck.
 - "Expected damage" = per opponent, per turn cycle.
 
 NUDGES (checklist scores, added as POINTS before converting)
   checklist 8+ ........ +1 point
   checklist 5 or less . -1 point
-  Curve Fit -> Mana | Threat Variety -> Threats | Plan B -> Survival
+  Curve Fit -> Mana | Threat Variety -> Threats  (Plan B nudge removed 2026-10-24)
 
 SYNERGY (per card - payoffs scale with their fuel)
   A PAYOFF = lord, "whenever a [type/theme] enters/attacks/dies/is cast",
   or type-matters draw / cost reduction / tutoring.
   An ENABLER = a card of that type or theme in the same deck.
   Each payoff keeps its normal points, PLUS 0.05 per enabler in the deck,
-  up to +0.5. Commander payoffs get the bonus x2.
+  up to +0.5.
   Enablers get NO extra points.
   The bonus goes to the stat the payoff's effect feeds:
     anthem / attack payoff -> CLOCK      tribal draw -> CARDS
@@ -51,31 +54,40 @@ SALT (not part of the total)
   Sum of each card's EDHREC salt score. Lands that only make mana = 0.
 
 ==================================================
-SECTION 2 - ANTI-OVERLAP RULES
+SECTION 2 - CARD POINTS COME FROM THE TAG DOCUMENT
 ==================================================
-A card may score in several stats, but each FEATURE of a card
-scores in ONE stat only:
-  Haste / flash ................................ CLOCK only
-  Evasion (flying, trample, menace, unblockable) REACH only
-  Hexproof / ward / indestructible on ITSELF ... THREATS only
-  Protecting OTHER cards or your board ......... SURVIVAL only
-  Amount of damage per turn .................... CLOCK only
-    (REACH only gives a flat "unavoidable" credit)
-  Extra cards (draw, play from top/graveyard
-    that nets cards) ........................... CARDS
-  Finding / choosing / digging for a card ...... CONSISTENCY
-  Spell taxes, stax, graveyard hate ............ INTERACTION
-  Attack taxes, pillow fort, deterrents ........ TABLE PRESENCE
-  Lifegain ..................................... SURVIVAL (not a deterrent)
-BIG-SPELL PENALTY (added 2026-10-23, applies to EVERY stat):
-  each nonland card with mana value 7+ takes -0.05 points off every one of
-  the 9 stats, and -0.02 more per mana above 7 (7 = -0.05, 8 = -0.07,
-  10 = -0.11 in each stat). Printed cost; for Rooms and split cards use
-  the most expensive half.
-MODAL "choose one" cards: full value in their best stat,
-  HALF value in any other stat.
-Exception (user choice): tutors that can find a survival card also give
-  a small Survival credit.
+This key works together with Pod_Rundown_Card_Tags.txt (v2).
+  The tag doc's SCORING ORDER (General Rules) is the step-by-step recipe.
+  - TAG DOC = what each card does (tags) and how many points each tag
+    gives to each stat. Per-card points come from there.
+  - THIS KEY = what each stat means, deck-level rules (nudges, early
+    game, land drops, archetype depth, wipes, diminishing
+    returns), divide numbers, colors, layout and workflow.
+  If the per-card formulas in Section 3 disagree with the tag doc,
+  the TAG DOC WINS. Section 3 stays as the meaning of each stat.
+DOUBLERS (v2.2, 2026-10-24): doublers (token, counter, trigger, ability,
+  spell, mana, draw) get a FLAT base only (0.5 permanent, 0.25 one-off,
+  adders half) and are written with their SCOPE. They never get Doubled
+  tags themselves. Every OTHER card in the deck that a doubler's scope
+  can boost gets "Doubled N" = its points x (1 + 0.05 x N), applied as
+  the LAST step for that card. N: each doubler in the 99 = 1, a commander
+  doubler = 2, an adder = 0.5. Damage Doubler stays flat 1.5 Clock.
+  Lands never get Doubled; mana doublers keep only their flat base.
+  Token copies of permanents (v2.3) are NOT doublers: they use Makes
+  Token C/NC Basic/Proficient (Threats, see tag doc Section 7).
+  Commanders that double things also get Game Plan: Doubles Triggers /
+  Spells / Tokens / Counters / Damage / Mana / Draw (tag doc Section 15).
+DECK-LEVEL TAG BONUSES (2026-10-24): Win Routes, Color Strain and
+  Redundancy - see tag doc Section 16.
+NO OVERLAP RULES (2026-10-23): a card scores fully in every stat it
+  fits. Stat definitions are tight enough that overlap is fine.
+BIG-SPELL PENALTY (2026-10-23, replaces the old 7+ rule): mana value
+  6 = -0.15, -0.15 more per mana over 6; each of the card's base/bonus
+  tags gives back +0.05 (never goes positive). Taken from the card's
+  best stat. Printed cost; most expensive half of rooms/splits.
+MODAL cards: every mode scores in full.
+DECK LIMITS: best 14 ramp cards and best 12 draw cards count full;
+  the rest count half (weakest take the hit first).
 
 ==================================================
 SECTION 3 - THE 9 STATS
@@ -87,7 +99,7 @@ OFFENSE:  THREATS (how scary is my board?)
           CLOCK (how fast do I kill?)
           REACH (how much of my damage gets through?)
 DEFENSE:  INTERACTION (how well do I stop them?)
-          TABLE PRESENCE (how well do I make them pick someone else?)
+          POLITICS (how well do I work the table?)
           SURVIVAL (how well do I survive and recover?)
 
 --------------------------------------------------
@@ -100,7 +112,6 @@ Per card:
     (makes at least as much mana as it costs, or 4+ mana/lands)
   + any extra bonus (fixing, draw, land to hand...) 0.25
   one-shot ramp (rituals, cascades, one-time cheats) = half value
-Commander: x2. Commander that ramps on its own: +0.25 to the total.
 Fixing lands (the only lands that score):
   untapped land making 2+ of your colors (shock, check, pain, fast,
     filter, battle, slow lands) ........................ 0.15
@@ -132,7 +143,6 @@ Per card:
   + big burst (3+ cards or a whole new hand) ........ 0.75
   + any extra bonus (removal, body, ramp...) ........ 0.25
   cantrips and loot/rummage = half value
-Commander: x2. Repeatable-draw commander: +0.5 strong / +0.25 moderate.
 Points per 1: 2.05  (harshened 2026-10-22: max 3 decks over 10)
 
 --------------------------------------------------
@@ -148,7 +158,6 @@ Per card:
   + repeatable ...................................... 0.5
   + any extra bonus ................................. 0.25
   On-theme / tribal cards = 0 per card, BUT see archetype depth below.
-Commander: x2.
 Archetype depth (deck-level, added 2026-10-23): count the nonland cards
   that fit the deck's archetype (its main card type or job: tokens, auras/
   equipment, enchantments, elves, artifacts, noncreature spells...).
@@ -167,7 +176,6 @@ Per card:
     can't be countered, comes back) ................. 0.5
   + big enter effect or snowballs ................... 0.25 ONCE
     (haste/flash NOT counted here - they live in Clock)
-Commander: x2.
 Nudge: Threat Variety (+1 / -1 point).
   Threat Variety = number of threat card types: 1=3, 2=5, 3=7, 4=8, 5=9, 6=10.
 Points per 1: 1.48  (harshened 2026-10-22: max 3 decks over 10)
@@ -186,9 +194,7 @@ Per card:
   + expected damage (damage engines) ......... 0.5 per damage per turn
 Fuel for sacrifice-based damage (e.g. Ellie):
   fodder makers in deck: under 8 = 0.5 uses/turn, 8-14 = 1, 15+ = 2
-Commander: x2.
-Diminishing returns: a single card's Clock points above 1.5 (3 for a
-  commander) count half.
+Diminishing returns: a single card's Clock points above 1.5 count half.
 Points per 1: 2.25  (retuned: pod median 7, then max 3 decks over 10)
 
 --------------------------------------------------
@@ -207,7 +213,6 @@ Per card:
     + per damage-booster card in the deck ........... 0.15
   + one-shot burn that can hit PLAYERS ...... 0.15 per point of damage
     (damage only to creatures/planeswalkers does not count)
-Commander: x2.
 Points per 1: 1.75
 
 --------------------------------------------------
@@ -238,10 +243,12 @@ BOARD WIPES (no target bonuses):
 Points per 1: 1.5
 
 --------------------------------------------------
-STAT 8 - TABLE PRESENCE (Defense)
+STAT 8 - POLITICS (Defense) - was Table Presence
 --------------------------------------------------
-What counts: keeping the hits from coming to you - steering the table
-without removing anything. All deterrents live here.
+What counts: how well the deck works the table - being a bad target,
+sending trouble elsewhere, and having things to bargain with.
+NOT board size. Tags: Aimable, Redirect, Deterrent, Punisher/Tax,
+Bargain Chip, Vote/Gift, Group Hug (see tag doc).
 Per card:
   base ............................................ 0.25
   + goad/redirection, one target .................... 0.25
@@ -260,8 +267,7 @@ Bargaining leverage (added 2026-10-23): ANY spell or ability that can
   or helpful: removal, counterspells, taps, steals, curses, pumps,
   "target player draws"...) gets the 0.25 base here, because you can
   bargain with it. Cards that can only target your own stuff don't count.
-  (A card already scoring Presence keeps its score; the base isn't doubled.)
-Commander: x2.
+  (A card already scoring Politics keeps its score; the base isn't doubled.)
 Points per 1: 1.0
 
 --------------------------------------------------
@@ -272,7 +278,7 @@ Per card:
   base ............................................ 0.25
   + protects one OTHER thing ........................ 0.25
   + protects several things / whole board .......... 0.5
-    (a card protecting only itself scores in Threats, not here)
+  + protects ITSELF (hexproof/indestructible/ward) .. see tag doc
   + fog / damage prevention ......................... 0.25
   + recursion, one card ............................. 0.5
     + each extra card ............................... 0.25
@@ -287,13 +293,7 @@ Per card:
     (lifelink, indestructible, hexproof, ward, protection...)
     + if it lasts (not a one-off buff) .............. 0.25
   Tutors that can find a survival card in the same deck ... 0.15 each
-Commander: x2.
-Nudge: Plan B (+1 / -1 point).
-  Plan B = how the deck works if its commander or key piece is removed
-  (9-10 commander is a bonus, 7-8 works without it, 5-6 weakened,
-   3-4 key plan breaks, 1-2 deck folds).
-Diminishing returns: a single card's Survival points above 1.25 (2.5 for a
-  commander) count half.
+Diminishing returns: a single card's Survival points above 1.25 count half.
 Points per 1: 1.85  (retuned: pod median 7, then max 3 decks over 10)
 
 ==================================================
@@ -340,8 +340,7 @@ ONE-SHOT vs PERMANENT
   Sagas count each chapter separately.
 
 MODAL CARDS
-  Pick the mode that scores best; that stat gets full value,
-  every other stat it touches gets half.
+  Every mode scores in full in the stat it fits (no overlap rules).
 
 WHEN UNSURE
   Pick the lower value and note it, so scores don't inflate.
@@ -356,8 +355,8 @@ SECTION 4 - QUICK REFERENCE: POINTS PER 1 RATING
   CLOCK ........... 2.25  (retuned 2026-10-22)
   REACH ........... 1.75
   INTERACTION ..... 1.5
-  TABLE PRESENCE .. 1.0
-  SURVIVAL ........ 1.85  (+/- Plan B; retuned 2026-10-22)
+  POLITICS ........ 1.0
+  SURVIVAL ........ 1.85  (retuned 2026-10-22)
 2026-10-22 harshen (permanent values): Cards, Threats, Clock and Survival got
 bigger divide numbers so at most 3 decks were over 10. These numbers are now
 FIXED - do not re-harshen or re-tune them when new decks are added.
@@ -368,7 +367,7 @@ EDHREC community-average deck for each pod commander scores about 6.
 SECTION 5 - GRAPH LAYOUT
 ==================================================
 Columns: Icon | Deck | Mana | Cards | Consist. | Threats | Clock | Reach |
-         Interaction | Presence | Survival | Total /90 | Salt
+         Interaction | Politics | Survival | Total /90 | Salt
 - Each stat shown as a colored pill (red/yellow/green/blue, 10+ for over 10).
 - Click a column to sort. Friends' decks marked with a stop sign.
 
@@ -378,5 +377,8 @@ SECTION 6 - WORKFLOW
 1. Paste this key + the decklist document.
 2. Forget all older deck info; learn every list fresh from the document.
 3. Pull each card's official text (Scryfall) - never ask for card text.
-4. Score every deck with this key, one stat at a time.
-5. Re-tune the "points per 1" numbers so an average deck = about 6.
+4. Tag every card with Pod_Rundown_Card_Tags.txt (text + realistic
+   potential in its deck + rarity guide). Save the tags per deck.
+5. Score from the tags, then add the deck-level rules in this key.
+   When a rule changes, re-score from saved tags - don't re-read cards.
+6. Divide numbers are FIXED (see Section 4) - don't re-tune them.

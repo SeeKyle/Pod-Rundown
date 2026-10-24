@@ -1,0 +1,532 @@
+POD RUNDOWN - CARD TAG SYSTEM  (v2.2 - Oct 24, 2026)
+Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
+divide numbers). For card points, THIS file wins.
+=====================================================================
+What a card DOES, in short tags. Each card gets its tags once; the
+scores get built from the tags. When a rule changes, we re-run the
+tags, not the card text.
+
+HOW TO READ THIS
+  [B]  Base tag  - says what the card does. Gives the main points.
+  [+]  Bonus tag - how WELL it does it. Adds on top of its base tag.
+  [x]  Modifier  - multiplies or adjusts the card's other tags.
+  [-]  Flag      - no points by itself, but other rules use it.
+  PICK ONE = only the highest tag in that group goes on a card.
+  Stat codes: MA Mana | CA Cards | CO Consistency | TH Threats |
+              CL Clock | RE Reach | IN Interaction | TP Politics |
+              SU Survival
+  Numbers are points before the divide numbers (divides stay FIXED).
+
+GENERAL RULES
+  - Tags stack unless a group says PICK ONE.
+  - Tags go on by strict card text AND realistic potential in its deck.
+    Synergy with the rest of the decklist can add or remove tags.
+  - "Engine" = a permanent that sticks and keeps doing it.
+    "One-Off" = happens once (spell, ETB, single trigger).
+  - Engine averages use a TWO-TURN window.
+  - Commander: scores like any card, then gets a GAME PLAN multiplier
+    (see Section 15): Core +50%, Supported +25%, Side +0%, traits +25%.
+  - SCORING ORDER (one card, then the deck):
+      1. Add up the card's tag points per stat (PICK ONE groups apply).
+      2. Card modifiers: Theft amount/Until End of Turn, Conditional, Symmetric,
+         Speed, Self-Damage, Big Spell.
+      3. Per-card diminishing returns (Clock over 1.5, Survival over
+         1.25 count half).
+      4. Commander multiplier (commanders only).
+      4b. Doubled N (cards boosted by a doubler in the deck): x(1+0.05N).
+      5. Deck limits (best 14 ramp / best 12 draw full, rest half).
+      6. Deck-level bonuses: wipes (first full, later half), archetype
+         depth, early game, curve/variety nudges, land drops (scoring
+         key), then Win Routes, Color Strain, Redundancy (Section 16).
+      7. Divide numbers, rounding, groups (scoring key).
+  - X SPELLS: score as if 10 mana goes into X (Section 18).
+  - Planeswalkers, Sagas, Rooms, Adventures: tag each ability, chapter,
+    door or half as its own effect. A planeswalker ultimate gets
+    Conditional (you rarely reach it).
+  - Voltron gear: equipment that can move every turn = Engine buffer;
+    auras (fall off when the creature dies) = One-Off buffer.
+  - Mana dorks get no extra wipe penalty; the 14-card ramp limit
+    already covers decks stuffed with ramp.
+  - Per-card diminishing returns stay: Clock above 1.5 and Survival
+    above 1.25 count half.
+  - RARITY GUIDE (picks the starting tier, never points by itself):
+      Common -> Basic | Uncommon -> Basic, can rise to Proficient |
+      Rare -> Proficient | Mythic -> Proficient, can rise to Extreme.
+      Card text can move it up or down (Sol Ring stays Extreme).
+  - A card scores fully in every stat it fits. No spread penalty:
+    multi-role cards already help more stats, which is their bonus.
+  - DECK LIMITS: best 14 ramp cards full, the rest count half.
+                 best 12 draw cards full, the rest count half.
+                 (weakest cards take the half hit first)
+
+=====================================================================
+1. MODIFIERS  (apply after all other tags on the card)
+=====================================================================
+  [x] Conditional ............ card's other tags x0.75
+        needs setup: "as long as", vehicles needing crew, threshold,
+        "if you control X". The DECK can lift it (a vehicle in a
+        deck full of crew loses this tag).
+  [x] Hard Conditional ....... card's other tags x0.5
+        setup is tough or rare in that deck.
+  [x] Symmetric .............. the part that helps everyone x0.5
+  [x] Needs Fodder ........... becomes Conditional / Hard Conditional
+        if the deck can't feed it well (judge from the list).
+  [x] Self-Damage/Life Cost .. SU -0.1
+  [x] Big Spell 6+ ........... -0.15 at 6 mana, -0.15 more per mana
+        over 6; each of the card's Base/Bonus tags gives back +0.05
+        (penalty never goes positive). Taken from the card's best
+        stat. Printed cost; most expensive half of rooms/splits.
+
+=====================================================================
+2. MANA  (MA)
+=====================================================================
+  [B] Ramp One-Off ........................ 0.5
+  [B] Ramp Continuous ..................... 0.5
+   PICK ONE size tier, add to the base above:
+  [+] Cheap, Small Ramp Basic ............. +0.15
+  [+] Cheap, Small Ramp Proficient ........ +0.25
+  [+] Cheap, Small Ramp Extremely Proficient +0.5   (Sol Ring level)
+  [+] Big Ramp Spell Basic ................ +0.5
+  [+] Big Ramp Spell Proficient ........... +0.75
+  [+] Big Ramp Spell Extremely Proficient +1.0   (Through the Forest Gate level)
+  -- Treasure makers use these INSTEAD of the ramp tags above --
+  [B] Treasure One-Off Basic (1-2) ........ 0.25
+  [B] Treasure One-Off Proficient (3+) .... 0.75
+  [B] Treasure Engine Basic ............... 0.5    (now and then)
+  [B] Treasure Engine Proficient .......... 1.0    (every turn or lots)
+  [-] Treasure ............................ flag for artifact/treasure synergy
+  [+] Fixing (nonland) .................... +0.25
+  [B] Cost Reducer Basic .................. 0.5
+  [B] Cost Reducer Proficient ............. 0.75
+  [B] Extra Land Drops .................... 0.5
+  [B] Untapper ............................ 0.5
+  [B] Cheat Into Play One-Off ............. 0.75 MA + 0.25 CA
+  [B] Cheat Into Play Engine .............. 1.25 MA + 0.5 CA
+  [-] Land Fetch .......................... feeds the land-drop simulation
+
+=====================================================================
+3. LANDS  (MA, multiplied by the deck's color factor)
+=====================================================================
+  PICK ONE:
+  [B] Untapped Dual/Tri/Any-Color ......... 0.15
+  [B] Fetch Land Basic (land enters tapped) ..... 0.15
+  [B] Fetch Land Proficient (can enter untapped)  0.5
+  [B] Tapped Land ......................... 0.05
+  [B] Basic ............................... 0
+  [+] Utility Land ........................ scored by its ability tags
+  [+] Man-Land ............................ TH 0.25 + SU 0.25
+  Salt: lands that only make mana = 0 salt.
+
+=====================================================================
+4. CARDS  (CA)
+=====================================================================
+  Check for Cantrip FIRST. A cantrip gets no other draw tags unless
+  there's a good reason.
+  [B] Cantrip Draw ........................ 0.1
+  [B] Draw One-Off ........................ 0.75
+  [B] Draw Engine ......................... 1.0
+   PICK ONE amount (one-off = total; engine = avg over two turns):
+  [+] Draw 4+ (avg) ....................... +0.5
+  [+] Draw 6+ (avg) ....................... +0.75
+  [+] Draw 8+ (avg) ....................... +1.0
+  [B] Cast From GY Enabler One-Off ........ 0.5
+  [B] Cast From GY Enabler Engine ......... 1.0
+  [B] Exile Cast Enabler One-Off .......... 0.5
+  [B] Exile Cast Enabler Engine ........... 1.0
+  [B] Top Deck Cast Enabler One-Off ....... 0.5
+  [B] Top Deck Cast Enabler Engine ........ 1.0
+  [B] Blink Engine ........................ 0.5  (re-uses ETBs)
+  OPPONENT GAS (2026-10-24) - playing OPPONENTS' cards gives Cards points.
+  Write the tag with its expected casts:  Opponent Gas (N casts)
+  N = expected opponent cards you actually cast in the two-turn window
+      (one-off cards: how many the one use gives you, on average).
+  Points (CA): free casts 0.5 each, paid casts 0.35 each;
+      casts above 4 count half.
+  How to estimate N: cards seen x share that are nonland (about 60%)
+      x share you can actually cast (MV limit, colors) x how often it
+      fires in two turns (needs to connect, needs a counter, etc).
+  This replaces Exile Cast Enabler for opponents' cards (Exile Cast
+  Enabler stays for exiling your OWN library).
+  [B] Monarch/Initiative .................. 0.5 CA + 0.25 TP
+
+=====================================================================
+5. CONSISTENCY  (CO)
+=====================================================================
+  [B] Tutor To Hand ....................... 0.75
+  [B] Tutor To Battlefield ................ 1.0
+  [B] Tutor Engine ........................ 1.25
+  [x] Narrow Tutor (lands only, one type) . tutor x0.5
+  [B] Scry/Surveil/Loot One-Off ........... 0.25
+  [B] Scry/Surveil/Loot Engine ............ 0.5
+  Archetype depth: no per-card tag. Each deck file stores its
+  archetype card count once in its header (+0.5 CO per 5 cards).
+  [+] Modal ............................... each mode scores in full
+
+=====================================================================
+6. CARD EATER (opponents' libraries) + SELF-MILL (replaces Mill, 2026-10-24)
+=====================================================================
+  CARD EATER = cards taken off OPPONENTS' libraries: milled, OR exiled
+  from the top where most of them stay exiled (harsher than mill).
+  Counts toward REACH. Exile versions move UP one tier (8+ stays 8+).
+  PICK ONE:
+  [B] Card Eater 1+ Engine ................ 0.1
+  [B] Card Eater 4+ One-Off ............... 0.25
+  [B] Card Eater 4+ Engine ................ 0.5
+  [B] Card Eater 6+ One-Off ............... 0.5
+  [B] Card Eater 6+ Engine ................ 0.75
+  [B] Card Eater 8+ One-Off ............... 0.75
+  [B] Card Eater 8+ Engine ................ 1.0
+  SELF-MILL = milling your OWN library. Counts toward CARDS only in a
+  GRAVEYARD DECK (8+ cards that cast from, reanimate from, or count the
+  graveyard - the deck file header says yes/no); otherwise it's a flag.
+  Engine tiers use the two-turn window, like draw.
+  [B] Self-Mill One-Off ................... 0.25
+  [B] Self-Mill Engine .................... 0.5
+
+=====================================================================
+7. THREATS  (TH)
+=====================================================================
+  PICK ONE power tier (use usual power in that deck for X or */*):
+  [+] Creature Power 4+ ................... 0.25
+  [+] Creature Power 6+ ................... 0.5
+  [+] Creature Power 8+ ................... 0.75
+  [+] Creature Power 10+ .................. 1.0
+  [+] Creature that Grows ................. 0.25
+  PICK ONE creature threat tier:
+  [B] Scary Threat Basic C ................ 0.25
+  [B] Scary Threat Beast C ................ 0.5
+  [B] Scary Threat Must Answer C .......... 0.75
+  PICK ONE noncreature threat tier:
+  [B] Scary Threat NC Basic ............... 0.25
+  [B] Scary Threat NC Proficient .......... 0.5
+  [B] Scary Threat NC Hyper Proficient .... 0.75
+  [B] Clone/Copy .......................... 0.25
+      (only for cards that BECOME a copy - Spark Double, Evil Twin.
+       Cards that make TOKEN copies use Makes Token below instead.)
+  PICK ONE token-copy tier (v2.3) - cards that make TOKEN copies of
+  permanents, including copying a permanent spell (Iron Man copying an
+  artifact spell = a token artifact). C = it can copy creatures (use C
+  if it can hit both), NC = noncreature permanents only.
+  Basic = one copy, once or rarely. Proficient = repeatable each turn,
+  or many copies at once.
+  [B] Makes Token C Basic ................. 0.25
+  [B] Makes Token C Proficient ............ 0.5
+  [B] Makes Token NC Basic ................ 0.15
+  [B] Makes Token NC Proficient ........... 0.35
+      These are NOT doublers and never give out Doubled tags. Token
+      doublers (Parallel Lives, Doubling Season) DO give them Doubled N.
+  [+] Proliferate ......................... 0.25
+  [+] Haste ............................... 0.25 (only if it already scores TH)
+  [+] Instant Speed ....................... see Section 13
+
+=====================================================================
+8. CLOCK  (CL) - how fast it kills
+=====================================================================
+  Buffers (give other cards something; never unblockable):
+  [B] Buffer Offense Engine ............... 1.0 CL
+  [B] Buffer Offense One-Off .............. 0.5 CL
+        power, counters, anthems, double strike, more noncombat dmg
+  [B] Buffer Evasion Engine ............... 0.75 RE + 0.25 CL
+  [B] Buffer Evasion One-Off .............. 0.35 RE + 0.1 CL
+        gives flying, menace, trample, etc.
+  [B] Buffer Defense Engine ............... 0.75 SU
+  [B] Buffer Defense One-Off .............. 0.35 SU
+        gives indestructible, hexproof, toughness, etc.
+  [B] Overrun (one-turn team pump) ........ 1.5
+  [B] Damage Doubler ...................... 1.5
+  [B] Extra Combat ........................ 1.5
+  [B] Extra Turn .......................... 1.5
+  [B] Alt Win ............................. 1.5 CL + 0.5 TH
+  [+] Double Strike ....................... 0.25
+  [+] Combo Piece (finite only) ........... 0.25 (each piece)
+  PICK ONE noncombat engine tier (avg per turn cycle, using the
+  whole deck's fuel):
+  [B] Non-Combat Damage Engine Small (1-3) ... 0.75 CL + 0.75 RE
+  [B] Non-Combat Damage Engine Medium (4-6) .. 1.25 CL + 1.25 RE
+  [B] Non-Combat Damage Engine Large (7+) .... 1.75 CL + 1.75 RE
+  PICK ONE noncombat one-off tier:
+  [B] Non-Combat Damage One-Off Small ........ 0.25 CL + 0.25 RE
+  [B] Non-Combat Damage One-Off Medium ....... 0.5 CL + 0.5 RE
+  [B] Non-Combat Damage One-Off Large ........ 1.0 CL + 1.0 RE
+  [B] Poison Engine ....................... 0.75 CL + 0.75 RE
+  [B] Poison One-Off ...................... 0.25 CL + 0.25 RE
+
+=====================================================================
+9. REACH  (RE) - damage that gets through
+=====================================================================
+  [+] Flying .............................. 0.25
+  [+] Menace .............................. 0.25
+  [+] Trample (power 4+) .................. 0.25
+  [+] Landwalk ............................ 0.25
+  [+] Evasion Other (shadow, fear, skulk,
+      "can't be blocked except by") ....... 0.25
+  [+] Unblockable ......................... 0.5
+  [B] Gives Unblockable Basic ............. 0.5
+  [B] Gives Unblockable Proficient ........ 1.0
+
+=====================================================================
+10. INTERACTION  (IN)
+=====================================================================
+  C = hits creatures, NC = hits noncreatures. If a card hits both,
+  use the higher tag +0.25.
+  [B] Basic Target Removal C One-Off ...... 0.5
+  [B] Proficient Target Removal C One-Off . 1.0
+  [B] Basic Target Removal NC One-Off ..... 0.5
+  [B] Proficient Target Removal NC One-Off  1.0
+  [B] Basic Removal Engine C .............. 0.75
+  [B] Proficient Removal Engine C ......... 1.5
+  [B] Basic Removal Engine NC ............. 0.75
+  [B] Proficient Removal Engine NC ........ 1.5
+  [+] Exiles .............................. +0.25
+  [B] Edict (opponent picks) .............. 0.5  (each opponent: 0.75)
+  [B] Bounce .............................. 0.25
+  THEFT (v2.1, 2026-10-24). PICK ONE base tag:
+  One-Off = steals once (one grab, one free cast, one spell).
+  Permanently = you keep the stolen thing for good.
+  Engine = it steals again and again (every turn / every hit / upkeep).
+  Basic = one / narrow / you pay.  Proficient = their best / several /
+  free / anything.
+  [B] Theft One-Off Basic ................. 0.5 IN + 0.25 TH
+  [B] Theft One-Off Proficient ............ 0.75 IN + 0.5 TH
+  [B] Theft Permanently Basic ............. 0.5 IN + 0.5 TH
+  [B] Theft Permanently Proficient ........ 1.0 IN + 0.5 TH
+  [B] Theft Engine Basic .................. 0.75 IN + 0.5 TH
+  [B] Theft Engine Proficient ............. 1.25 IN + 0.75 TH
+  Modifiers:
+  [x] Until End of Turn ................... theft points x0.5 (you give it
+        back; never on Permanently; casting their spell is NOT this)
+  [+] Theft Haste ......................... +0.25 CL (the stolen creature
+        can attack this turn)
+  [+] Theft Untap ......................... +0.1 CL (it untaps, so even a
+        tapped blocker becomes your attacker)
+  [x] Theft amount (avg N) ................ write e.g. "Theft Engine
+        Proficient (avg 2)". N = cards one steal usually takes. Theft
+        points x (1 + 0.4 per card past the first), N max 5
+        (avg 2 = x1.4, avg 3 = x1.8, avg 5 = x2.6).
+  Order: base -> amount -> Until End of Turn -> add Haste/Untap.
+  Politics comes from Aimable, not from theft. Casting their cards also
+  gets Opponent Gas (Section 4) for the card advantage.
+  [B] Counterspell ........................ 0.75
+  [B] Graveyard Hate ...................... 0.25
+  [B] Discard (opponents) ................. 0.25
+  [B] Stax/Tax ............................ 0.5 IN + 0.25 TP
+  [+] Annihilator ......................... 0.5 IN + 0.5 TH
+  PICK ONE wipe tag. First wipe in the deck scores full, later wipes
+  score half:
+  [B] Board Wipe Destroy Basic ............ 1.0
+  [B] Board Wipe Destroy Asymmetric ....... 1.5
+  [B] Board Wipe Exile Basic .............. 1.25
+  [B] Board Wipe Exile Asymmetric ......... 1.75
+  [B] Board Wipe Bounce ................... 0.75
+  [B] Situational Wipe .................... 0.5  (only small/cheap/some things)
+  [B] Situational Wipe Asymmetric ......... 0.75
+
+=====================================================================
+11. POLITICS  (TP, was Presence) - how well you work the table
+=====================================================================
+  [B] Aimable ............................. 0.25 (can target an opponent,
+                                                  a player or their stuff)
+  [B] Redirect One-Off Basic .............. 0.25
+  [B] Redirect One-Off Proficient ......... 0.5
+  [B] Redirect Engine Basic ............... 0.5
+  [B] Redirect Engine Proficient .......... 1.0
+        (goad and pillowfort live in Redirect)
+  [B] Deterrent ........................... 0.5  (attacking you is a bad idea:
+        punisher triggers, scary untapped blockers, ward)
+  [B] Punisher/Tax ........................ 0.5 TP + 0.25 IN (opponents
+        pay or get hurt for acting)
+  [B] Bargain Chip ........................ 0.25 (gifts, "target player
+        draws", things to offer)
+  [B] Group Hug ........................... 0.25 (also gets Symmetric)
+  [B] Vote/Gift ........................... 0.25
+
+=====================================================================
+12. SURVIVAL  (SU)
+=====================================================================
+  Self-protection keywords (only when on the card itself):
+  [+] Indestructible ...................... 0.5
+  [+] Hexproof ............................ 0.5
+  [+] Shroud .............................. 0.5
+  [+] Ward ................................ 0.5
+  [+] Protection .......................... 0.5
+  [+] Dies-and-Comes-Back (undying etc.) .. 0.5
+  Small combat keywords:
+  [+] Vigilance ........................... 0.1
+  [+] First Strike ........................ 0.1
+  [+] Deathtouch .......................... 0.1 SU + 0.25 TH
+  [+] Reach ............................... 0.1
+  [+] Defender ............................ 0.1
+  [+] Lifelink ............................ use Life Gain tags
+  Protecting your stuff:
+  [B] Gives Protection One-Off Basic ...... 0.25 (one thing)
+  [B] Gives Protection One-Off Proficient . 1.0  (whole board)
+  [B] Gives Protection Engine Basic ....... 0.5
+  [B] Gives Protection Engine Proficient .. 1.0
+  [B] Sac Outlet .......................... 0.25 (dodge removal)
+  [B] Blink One-Off ....................... 0.25
+  Recursion:
+  [B] Return to Hand One-Off .............. 0.25
+  [B] Return to Hand Engine ............... 0.75
+  [B] Reanimate One-Off ................... 0.5
+  [B] Reanimate Engine .................... 1.0
+  [B] Self-Recurring ...................... 0.5
+  Rebuilding (tokens):
+  [B] Many Threats Basic Engine ........... 0.75 SU + 0.25 TH + 0.25 CL
+  [B] Many Threats Proficient Engine ...... 1.0 SU + 0.5 TH + 0.5 CL
+  [B] Many Threats One-Off Basic .......... 0.5 SU + 0.25 TH
+  [B] Many Threats One-Off Proficient ..... 0.75 SU + 0.5 TH
+  [B] Token Doubler ....................... see Section 17 (Doublers)
+  PICK ONE life gain tag:
+  [B] Life Gain Engine Basic .............. 0.25
+  [B] Life Gain Engine Proficient ......... 0.75
+  [B] Life Gain One-Off Basic ............. 0.1
+  [B] Life Gain One-Off Proficient ........ 0.25
+  [B] Life Gain One-Off Hyper Proficient .. 0.5
+
+=====================================================================
+13. SPEED  (PICK ONE)
+=====================================================================
+  About when the card's main thing can fire, not its card type.
+  [+] Instant Speed ....................... +0.20 to the card's main
+        interaction/protection/draw value (flash creatures, anytime
+        abilities, and tap abilities on creatures with haste count)
+  [x] Sorcery Speed ....................... -0.10 from the card's
+        best stat
+  No speed tag: lands.
+
+=====================================================================
+14. DECK-FIT  (needs the whole decklist)
+=====================================================================
+  [-] Commander ........................... flag; bonus comes from Section 15
+  [+] Synergy Enabler ..................... +0.25 to its main stat
+        (feeds the deck's engines)
+  [+] Synergy Payoff ...................... +0.5 to its main stat
+        (gets much better with the rest of the deck)
+        Doublers/Adders (Section 17) do NOT also take Synergy Payoff -
+        their N count already measures the synergy.
+  [-] Death Payoff / ETB Payoff /
+      Counters Payoff ..................... flags for synergy checks
+
+=====================================================================
+15. COMMANDER GAME PLAN TAGS (commanders only, 2026-10-24)
+=====================================================================
+  The commander first scores normally with its regular tags (x1, like
+  any card). Then it gets Game Plan tags for things its OWN text does
+  every game. Each tag is marked with how much THE DECK uses it:
+
+    [Core]       the deck is built around it (about 15+ cards feed or
+                 pay it off) ............................... +50%
+    [Supported]  the deck has some help for it (about 5-14 cards)  +25%
+    [Side]       the commander can do it, the deck doesn't care
+                 (under 5 cards) ........................... +0%
+    Traits (Hard to Kill, Cheap Recast, Instant Impact) are always
+    +25% - they help no matter what the deck does.
+
+  Commander multiplier = 1 + all its boosts added up. NO CAP.
+  It multiplies the commander's own points after per-card diminishing
+  returns (step 4 of the scoring order). Game Plan tags never count
+  toward Redundancy. The deck file shows: Commander Multiplier xN
+  Levels are a judgment call; Section 16 family counts are a guide.
+  Re-check levels whenever the deck changes.
+  PARTNERS (2026-10-24): each partner gets its own tags. The MAIN partner
+  (bigger boost / the one the deck is built around) keeps 70% of its
+  boost; the SECOND partner keeps 30%. Base points stay x1 for both.
+  Example: boost +1.5 -> main x2.05 (1 + 1.5 x 0.7).
+
+  Write tags like:  Game Plan: Voltron [Core]
+
+  Engine:   Ramp, Treasure, Cost Cheating, Lands Matter, Draw, Card
+            Selection, Tutor, Cast From Graveyard, Cast Opponents' Spells
+  Offense:  Tokens, Counters, Team Pump, Voltron, Evasion, Burn/Drain,
+            Extra Combat, Card Eater, Poison, Alt Win
+  Defense:  Removal, Opponent Discard, Stax/Tax, Theft, Protection,
+            Recursion, Life Gain, Sacrifice, Goad, Pillowfort, Group Hug
+  Themes:   Tribal, Spellslinger, Artifacts, Enchantments, Blink/ETB, Copy
+  Doubles:  Doubles Triggers, Doubles Spells, Doubles Tokens, Doubles
+            Counters, Doubles Damage, Doubles Mana, Doubles Draw
+  Traits:   Hard to Kill, Cheap Recast (3 or less), Instant Impact
+
+=====================================================================
+16. DECK-LEVEL BONUSES FROM TAGS (2026-10-24)
+=====================================================================
+  These are added once per deck after all card points.
+
+  WIN ROUTES (to Clock). A route counts only with real support:
+    Combat (3+ threats / team pumps) | Drain/Burn (3+ non-combat damage
+    cards) | Card Eater (3+) | Alt Win (1+ alt-win card) | Combo (2+
+    finite combo pieces) | Poison (3+) | Commander Damage (commander has
+    Game Plan: Voltron [Core])
+    1 route = 0 | 2 = +0.25 | 3 = +0.6 | 4 = +1.0 | 5+ = +1.5
+
+  COLOR STRAIN (to Mana). Fixing sources = lands that make 2+ colors,
+    fetch lands, and cards tagged Fixing. Need 5 per color past the
+    first (2 colors = 5, 5 colors = 20). -0.25 Mana per 3 sources short.
+
+  REDUNDANCY (replaces Synergy Density). Tags are grouped into families;
+    count the cards in each family. Starts at 8 cards:
+      8 = +0.1, 9 = +0.2, 10 = +0.3 ... max +1.0 per family
+      (Ramp and Draw max +0.5 - they already have deck limits)
+    Each family's bonus goes to its stat:
+      Removal, Wipes, Counterspells, Theft -> Interaction
+      Draw (incl. Opponent Gas, cast-from enablers) -> Cards
+      Ramp (incl. Treasure, cost reducers, cheats, untappers) -> Mana
+      Tutors & Selection -> Consistency
+      Tokens, Protection, Recursion, Life Gain -> Survival
+      Evasion, Drain/Burn, Card Eater -> Reach
+      Team Pump (buffers, overruns, doublers, extra combats) -> Clock
+      Politics (redirect, deterrent, tax, bargain, votes, hug) -> Politics
+    Flags never count (land tags, speed tags, Aimable, Conditional,
+    Commander, Synergy flags). Scary Threat tags don't count (Threats
+    already scales with them).
+
+  COMMANDER LEVELS stay a judgment call (Core / Supported / Side), using
+  the family counts above only as a guide - see Section 15.
+
+=====================================================================
+17. DOUBLERS AND "DOUBLED" CARDS (v2.2, 2026-10-24)
+=====================================================================
+  DOUBLERS get a flat base value only. They NEVER get Doubled tags.
+  [B] Doubler (permanent) ................. 0.5 in the stat of what it
+        doubles (tokens -> SU, counters -> CL, triggers -> stat most of
+        its doubled triggers feed, mana -> MA, draw -> CA, spells -> CA)
+  [B] Doubler (one-off, e.g. Second Harvest) 0.25
+  [B] Adder (adds extra, doesn't double:
+        Chatterfang, Peregrin, Donatello, Doc Samson) half of the above
+  Each doubler/adder is written with its SCOPE - what it can double:
+      Doubler: Tokens | Counters | All Triggers | Attack Triggers |
+      Death Triggers | ETB Triggers | Type Triggers (dwarves, legends...)
+      | Activated Abilities (Gogo, Echo) | Spells (copies what you cast)
+      | Mana | Draw
+  Damage Doubler stays its own flat tag (1.5 CL, Section 8).
+
+  DOUBLED CARDS - cards WITHOUT any doubler/adder tag that a doubler in
+  the same deck can boost (a token maker with Parallel Lives in the
+  deck, an attack-trigger card with an Isshin-style doubler, etc.).
+  [x] Doubled N ........................... LAST step for that card:
+        its points x (1 + 0.05 per N)
+      N counts each doubler/adder in the deck whose SCOPE hits the card:
+        doubler in the 99 = 1 | commander doubler = 2 (always there)
+        adder = 0.5
+      Example: token maker in a deck with Doubling Season + Parallel
+      Lives = Doubled 2 = x1.10.
+      LANDS NEVER GET DOUBLED. Mana doublers (Mana Flare, Heartbeat of
+      Spring, etc.) keep only their own flat base and give no Doubled
+      tags to anything.
+=====================================================================
+18. X SPELLS (2026-10-24)
+=====================================================================
+  Score every X card as if 10 mana goes into X:
+    single X = 10 | XX = 5 | XXX = 3 (approx).
+  No extra Big Spell penalty for the X part (only printed cost counts).
+
+=====================================================================
+NOTES
+=====================================================================
+  - Points stay on the same scale as before, so the FIXED divide numbers
+    in the scoring key still fit.
+  - v2 (Oct 24) added: Theft (One-Off/Permanently/Engine x Basic/
+    Proficient, Until End of Turn, Haste, Untap, amount), Opponent Gas, Card
+    Eater / Self-Mill, Commander Game Plans (Core/Supported/Side, 70/30
+    partners), Win Routes, Color Strain, Redundancy, Doublers/Adders,
+    X = 10, speed values (+0.20 / -0.10). Removed: commander x2, Plan B
+    nudge, commander bonuses, Steal, Mill, Token Doubler flat value.
