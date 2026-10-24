@@ -1,2 +1,2 @@
 
-RULES 0.9: Animator family (Basic / Proficient) for cards that turn your other permanents into creatures. See tag doc Section 21.
+RULES 0.9.1: threat makers (Many Threats, Makes Token C) and Animator tags boosted about 25%.

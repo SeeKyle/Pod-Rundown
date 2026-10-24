@@ -1,4 +1,4 @@
-POD RUNDOWN - CARD TAG SYSTEM  (0.9 - Oct 24, 2026 - pre-release)
+POD RUNDOWN - CARD TAG SYSTEM  (0.9.1 - Oct 24, 2026 - pre-release)
 Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
 divide numbers). For card points, THIS file wins.
 =====================================================================
@@ -212,8 +212,8 @@ GENERAL RULES
   if it can hit both), NC = noncreature permanents only.
   Basic = one copy, once or rarely. Proficient = repeatable each turn,
   or many copies at once.
-  [B] Makes Token C Basic ................. 0.25
-  [B] Makes Token C Proficient ............ 0.5
+  [B] Makes Token C Basic ................. 0.3  (0.9.1, was 0.25)
+  [B] Makes Token C Proficient ............ 0.65 (0.9.1, was 0.5)
   [B] Makes Token NC Basic ................ 0.15
   [B] Makes Token NC Proficient ........... 0.35
       These are NOT doublers and never give out Doubled tags. Token
@@ -387,10 +387,10 @@ GENERAL RULES
   [B] Reanimate Engine .................... 1.0
   [B] Self-Recurring ...................... 0.5
   Rebuilding (tokens):
-  [B] Many Threats Basic Engine ........... 0.75 SU + 0.25 TH + 0.25 CL
-  [B] Many Threats Proficient Engine ...... 1.0 SU + 0.5 TH + 0.5 CL
-  [B] Many Threats One-Off Basic .......... 0.5 SU + 0.25 TH
-  [B] Many Threats One-Off Proficient ..... 0.75 SU + 0.5 TH
+  [B] Many Threats Basic Engine ........... 0.9 SU + 0.35 TH + 0.3 CL (0.9.1)
+  [B] Many Threats Proficient Engine ...... 1.2 SU + 0.65 TH + 0.6 CL (0.9.1)
+  [B] Many Threats One-Off Basic .......... 0.6 SU + 0.35 TH (0.9.1)
+  [B] Many Threats One-Off Proficient ..... 0.9 SU + 0.65 TH (0.9.1)
   [B] Token Doubler ....................... see Section 17 (Doublers)
   PICK ONE life gain tag:
   [B] Life Gain Engine Basic .............. 0.25
@@ -622,11 +622,11 @@ GENERAL RULES
 =====================================================================
   Cards that turn your OTHER noncreature permanents (artifacts,
   enchantments, lands, vehicles) into creatures. PICK ONE.
-  [B] Animator Basic ...................... 0.35 TH + 0.15 CL + 0.1 SU
+  [B] Animator Basic ...................... 0.45 TH + 0.2 CL + 0.15 SU (0.9.1)
         one permanent at a time, or only until end of turn
         (Llanowar Loamspeaker's land, Peacewalker Colossus crewing a
         vehicle, Cyberdrive Awakener's one-turn 4/4 army).
-  [B] Animator Proficient ................. 0.75 TH + 0.5 CL + 0.5 SU
+  [B] Animator Proficient ................. 0.95 TH + 0.6 CL + 0.6 SU (0.9.1)
         a whole group STAYS animated (Bello on your turns, Opalescence
         style), or it makes a new lasting creature every turn (Iron Man,
         Futurist Paragon; Donatello, Mutant Mechanic).
