@@ -1,4 +1,4 @@
-POD RUNDOWN - CARD TAG SYSTEM  (1.1 - Oct 24, 2026)
+POD RUNDOWN - CARD TAG SYSTEM  (1.2 - Oct 24, 2026)
 Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
 divide numbers). For card points, THIS file wins.
 =====================================================================
@@ -153,12 +153,14 @@ GENERAL RULES
 =====================================================================
 5. CONSISTENCY  (CO)
 =====================================================================
-  [B] Tutor To Hand ....................... 0.75
-  [B] Tutor To Battlefield ................ 1.0
-  [B] Tutor Engine ........................ 1.25
+  [B] Tutor To Hand ....................... 0.70
+  [B] Tutor To Battlefield ................ 0.90
+  [B] Tutor Engine ........................ 1.15
   [x] Narrow Tutor (lands only, one type) . tutor x0.5
-  [B] Scry/Surveil/Loot One-Off ........... 0.25
-  [B] Scry/Surveil/Loot Engine ............ 0.5
+  [B] Scry/Surveil/Loot One-Off ........... 0.20
+  [B] Scry/Surveil/Loot Engine ............ 0.45
+  (1.2: tutor and selection values trimmed 0.05-0.10 - redundancy now
+   lives in Consistency, see Section 16.)
   Archetype depth: no per-card tag. Each deck file stores its
   archetype card count once in its header (+0.5 CO per 5 cards).
   [+] Modal ............................... each mode scores in full
@@ -463,22 +465,39 @@ GENERAL RULES
     fetch lands, and cards tagged Fixing. Need 5 per color past the
     first (2 colors = 5, 5 colors = 20). -0.25 Mana per 3 sources short.
 
-  REDUNDANCY (replaces Synergy Density). Tags are grouped into families;
-    count the cards in each family. Starts at 8 cards:
-      8 = +0.1, 9 = +0.2, 10 = +0.3 ... max +1.0 per family
-      (Ramp and Draw max +0.5 - they already have deck limits)
-    Each family's bonus goes to its stat:
-      Removal, Wipes, Counterspells, Theft -> Interaction
-      Draw (incl. Opponent Gas, cast-from enablers) -> Cards
-      Ramp (incl. Treasure, cost reducers, cheats, untappers) -> Mana
-      Tutors & Selection -> Consistency
-      Tokens, Protection, Recursion, Life Gain -> Survival
-      Evasion, Drain/Burn, Card Eater -> Reach
-      Team Pump (buffers, overruns, doublers, extra combats) -> Clock
-      Politics (redirect, deterrent, tax, bargain, votes, hug) -> Politics
-    Flags never count (land tags, speed tags, Aimable, Conditional,
-    Commander, Synergy flags). Scary Threat tags don't count (Threats
-    already scales with them).
+  REDUNDANCY (rules 1.2 - goes to CONSISTENCY only).
+    Every deck gets a base of 1.5 CO. Count the cards in each ROLE below.
+    For each role with 5-9 cards the base gets +6%; with 10+ cards, +8%.
+    Redundancy = 1.5 x (1 + all boosts). Example: 2 roles at 10+ and
+    4 at 5-9 = 1.5 x (1 + 0.16 + 0.24) = 2.1 CO.
+    Ramp and Draw are NOT roles here - they have their own deck limits
+    (best 14 ramp / best 12 draw full, the rest half).
+    ROLES (18):
+      Spot removal (creature/noncreature one-offs, bounce)
+      Repeatable removal (removal engines)
+      Wipes & edicts
+      Denial (counterspells, opponent discard, taxes/punishers, GY hate)
+      Theft
+      Tutors & selection (tutors, scry/surveil/loot)
+      Tokens & copies (Many Threats, Makes Token, Clone/Copy)
+      Protection & sac outlets
+      Recursion (reanimate, return to hand, self-recurring)
+      Life gain
+      Evasion (unblockable, menace, landwalk, other evasion, evasion
+        givers - plain flying/trample don't count, nearly every deck
+        has 8+)
+      Drain & burn (non-combat damage, poison)
+      Card eaters
+      Team pumps (Buffer Offense)
+      Finishers & combos (overrun, damage doubler, extra combat/turn,
+        alt win, combo piece)
+      Doublers (doublers and adders)
+      Goad & deterrents (redirect, deterrent)
+      Deal-making (bargain chip, vote/gift, group hug)
+    Flags never count. Scary Threat tags don't count.
+    Considered and REJECTED (1.2): an extra +10% when roles match the
+    commander's game plan - being on-plan is already paid by archetype
+    depth and the commander Game Plan multiplier.
 
   COMMANDER LEVELS stay a judgment call (Core / Supported / Side), using
   the family counts above only as a guide - see Section 15.
