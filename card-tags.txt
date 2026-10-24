@@ -1,4 +1,4 @@
-POD RUNDOWN - CARD TAG SYSTEM  (1.2 - Oct 24, 2026)
+POD RUNDOWN - CARD TAG SYSTEM  (1.3 - Oct 24, 2026)
 Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
 divide numbers). For card points, THIS file wins.
 =====================================================================
@@ -242,6 +242,13 @@ GENERAL RULES
   [B] Alt Win ............................. 1.5 CL + 0.5 TH
   [+] Double Strike ....................... 0.25
   [+] Combo Piece (finite only) ........... 0.25 (each piece)
+      (1.3) A COMBO = 2-3 specific cards in the same deck that together
+      WIN or nearly win: lethal to at least one opponent, an alternate
+      win, or a hard lock. Finite only (infinite combos never count).
+      If the cards just pile up value turn after turn (extra draws,
+      doubled triggers, repeat unlocks), that's an ENGINE - use Engine
+      tags + Synergy Enabler/Payoff, not Combo Piece. Alt-win cards that
+      need lots of setup (8 door names) take Alt Win, not Combo Piece.
   PICK ONE noncombat engine tier (avg per turn cycle, using the
   whole deck's fuel):
   [B] Non-Combat Damage Engine Small (1-3) ... 0.75 CL + 0.75 RE

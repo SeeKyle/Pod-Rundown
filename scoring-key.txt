@@ -382,3 +382,5 @@ SECTION 6 - WORKFLOW
 5. Score from the tags, then add the deck-level rules in this key.
    When a rule changes, re-score from saved tags - don't re-read cards.
 6. Divide numbers are FIXED (see Section 4) - don't re-tune them.
+
+COMBO PIECE (rules 1.3): 2-3 specific cards that together win or nearly win (lethal to an opponent, alt win, hard lock), finite only. Repeating value = Engine + Synergy tags. See tag doc Section 8.
