@@ -1,4 +1,4 @@
-POD RUNDOWN - CARD TAG SYSTEM  (0.8 - Oct 24, 2026 - pre-release; was numbered 1.6)
+POD RUNDOWN - CARD TAG SYSTEM  (0.9 - Oct 24, 2026 - pre-release)
 Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
 divide numbers). For card points, THIS file wins.
 =====================================================================
@@ -458,7 +458,8 @@ GENERAL RULES
   Defense:  Removal, Opponent Discard, Stax/Tax, Theft, Protection,
             Combat Tricks (1.6: tappers / combat rewriting),
             Recursion, Life Gain, Sacrifice, Goad, Pillowfort, Group Hug
-  Themes:   Tribal, Spellslinger, Artifacts, Enchantments, Blink/ETB, Copy
+  Themes:   Tribal, Spellslinger, Artifacts, Enchantments, Blink/ETB, Copy,
+            Animator (0.9)
   Doubles:  Doubles Triggers, Doubles Spells, Doubles Tokens, Doubles
             Counters, Doubles Damage, Doubles Mana, Doubles Draw
   Traits:   Hard to Kill, Cheap Recast (3 or less), Instant Impact
@@ -493,7 +494,7 @@ GENERAL RULES
       Denial (counterspells, opponent discard, taxes/punishers, GY hate)
       Theft
       Tutors & selection (tutors, scry/surveil/loot)
-      Tokens & copies (Many Threats, Makes Token, Clone/Copy)
+      Tokens, copies & animators (Many Threats, Makes Token, Clone/Copy)
       Protection & sac outlets
       Recursion (reanimate, return to hand, self-recurring)
       Life gain
@@ -615,6 +616,32 @@ GENERAL RULES
       mana abilities.
       Counts in its own Redundancy role: Combat tappers (19 roles now).
       Commanders can take Game Plan: Combat Tricks.
+
+=====================================================================
+21. ANIMATOR FAMILY (rules 0.9, 2026-10-24)
+=====================================================================
+  Cards that turn your OTHER noncreature permanents (artifacts,
+  enchantments, lands, vehicles) into creatures. PICK ONE.
+  [B] Animator Basic ...................... 0.35 TH + 0.15 CL + 0.1 SU
+        one permanent at a time, or only until end of turn
+        (Llanowar Loamspeaker's land, Peacewalker Colossus crewing a
+        vehicle, Cyberdrive Awakener's one-turn 4/4 army).
+  [B] Animator Proficient ................. 0.75 TH + 0.5 CL + 0.5 SU
+        a whole group STAYS animated (Bello on your turns, Opalescence
+        style), or it makes a new lasting creature every turn (Iron Man,
+        Futurist Paragon; Donatello, Mutant Mechanic).
+        The Survival part: animated permanents are threats that dodge
+        creature removal and wipes while they're not creatures.
+  Rules:
+   - Animator replaces Many Threats / Buffer Offense for the SAME
+     effect (Bello was a token-maker; it makes no tokens).
+   - Cards that only animate THEMSELVES (Haunted Screen, vehicles that
+     crew themselves, man-lands) don't take it - use their own tags.
+   - Token copies that become creatures (Ultron) stay Makes Token.
+   - An animator that makes 0/0s or needs a count you don't have
+     (Sage of the Maze with no Gates) gets nothing.
+  Counts in the Redundancy role "Tokens, copies & animators" and as a
+  Combat win-route piece. Commanders can take Game Plan: Animator.
 
 =====================================================================
 NOTES

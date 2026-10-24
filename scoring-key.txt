@@ -1,2 +1,2 @@
 
-VERSION 0.8 (2026-10-24): rules 1.0-1.6 were renamed - the project is pre-release, so the current rules are 0.8. Older notes in this key that say 1.x are the old numbers.
+RULES 0.9: Animator family (Basic / Proficient) for cards that turn your other permanents into creatures. See tag doc Section 21.
