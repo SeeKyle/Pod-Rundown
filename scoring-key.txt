@@ -1,3 +1,2 @@
 
-RULES 0.9.1: (replaced by 0.9.2) token makers + animators boosted about 25%.
-RULES 0.9.2: Scary Threat tags +25%, Animator keeps the 0.9.1 boost, token makers (Many Threats, Makes Token C) set about 10% BELOW their 0.9 values.
+RULES 0.9.3: big one-time burn/drain = 0.75 CL + 0.75 RE at 6 total damage, +0.15 each per extra point (tag 'Non-Combat Damage One-Off Large (avg N)'). X spells: X = 10 with great ramp (Mana rating 10+), else 8.
