@@ -213,6 +213,34 @@ svg text{fill:var(--color-fg)}
 .notes h3{margin:var(--cds-gap-sm) 0 0;font-size:var(--cds-font-size-heading);font-weight:var(--cds-font-weight-medium)}
 .notes ul{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:6px;line-height:1.5}
 .notes p{margin:0;line-height:1.5;max-width:80ch}
+/* phone layout */
+.rate-cards{display:none}
+.rc{border:1px solid var(--color-border-line);border-radius:var(--cds-radius);background:var(--color-bg);padding:10px 12px;display:flex;flex-direction:column;gap:8px;text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%}
+.rc-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rc-name{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.rc-rank{color:var(--color-fg-muted);font-variant-numeric:tabular-nums;margin-right:4px}
+.rc-tot{font-family:var(--font-anthropic-serif);font-size:1.4rem;line-height:1;text-align:right;white-space:nowrap}
+.rc-tot span{display:block;font-family:var(--font-anthropic-sans);font-size:11px;color:var(--color-fg-muted)}
+.rc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 6px;font-size:12px}
+.rc-grid div{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.rc-sub{font-size:12px;color:var(--color-fg-muted)}
+details.tk-box>summary{cursor:pointer;list-style:none;font-weight:var(--cds-font-weight-medium);display:flex;justify-content:space-between;align-items:center;gap:8px}
+details.tk-box>summary::-webkit-details-marker{display:none}
+details.tk-box>summary::after{content:"＋";color:var(--color-fg-muted)}
+details.tk-box[open]>summary::after{content:"−"}
+details.tk-box[open]>summary{margin-bottom:var(--cds-gap-sm)}
+@media (max-width:640px){
+  #dash-root{padding-bottom:96px}
+  .pagetabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--color-panel);border-top:1px solid var(--color-border-line);padding:8px 10px calc(8px + env(safe-area-inset-bottom));gap:6px;flex-wrap:nowrap;box-shadow:0 -4px 16px rgba(0,0,0,.12)}
+  .ptab{flex:1;text-align:center;border-radius:12px;padding:10px 4px;font-size:13px}
+  #ratings .pr-scroll{display:none}
+  .rate-cards{display:flex;flex-direction:column;gap:8px}
+  .deck-tabs,.g-pick{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:none}
+  .deck-tabs::-webkit-scrollbar,.g-pick::-webkit-scrollbar{display:none}
+  .dtab,.g-chip{flex:0 0 auto;scroll-snap-align:start}
+  .pr-card{padding:var(--cds-pad-md)}
+  .tk-grid{grid-template-columns:1fr}
+}
 [data-dash-source-state=refreshing]{opacity:.5;transition:opacity var(--cds-dur-slow)}
 [data-dash-source-state=empty]{color:transparent}
 </style>
@@ -231,7 +259,7 @@ svg text{fill:var(--color-fg)}
 
   <section class="pr-card" id="ratings">
     <h2>Ratings</h2>
-    <p class="pr-note">Scored from card tags (rules 1.3). Each stat aims for 10, the mark of a strong deck. Engine, Offense and Defense are each out of 30, so the total is out of 90; points above 10 count half in the totals. Click a column to sort.</p>
+    <p class="pr-note">Scored from card tags (rules 1.3). Each stat aims for 10, the mark of a strong deck. Engine, Offense and Defense are each out of 30, so the total is out of 90; points above 10 count half in the totals. Click a column to sort (on a phone, tap a deck to open it).</p>
     <div class="pr-keys">
       <span class="pr-key"><span class="pill sm c-red">1–4</span>Low</span>
       <span class="pr-key"><span class="pill sm c-yellow">5–8</span>Medium</span>
@@ -260,6 +288,7 @@ svg text{fill:var(--color-fg)}
         <tbody id="rate-body"></tbody>
       </table>
     </div>
+    <div class="rate-cards" id="rate-cards"></div>
   </section>
 
   <section class="pr-card" id="deck-cards">
@@ -346,8 +375,12 @@ svg text{fill:var(--color-fg)}
 
   function decks(){const D=dash.data('decks');if(D.status!=='ok')return null;return D.data.map(r=>{const o={...r};[...S.map(s=>s[0]),'total','salt','engine','offense','defense'].forEach(k=>o[k]=Number(r[k]));return o;});}
 
-  let page='rundown', gDeck=null;
-  document.querySelectorAll('.ptab').forEach(b=>b.addEventListener('click',()=>{page=b.dataset.page;document.querySelectorAll('.ptab').forEach(x=>x.setAttribute('aria-selected',String(x===b)));['rundown','garage','notes'].forEach(p=>document.getElementById('pg-'+p).hidden=p!==page);if(page==='garage')renderGarage();}));
+  const isPhone=()=>window.matchMedia('(max-width:640px)').matches;
+  let page=isPhone()?'garage':'rundown', gDeck=null;
+  function setPage(p){page=p;document.querySelectorAll('.ptab').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.page===p)));['rundown','garage','notes'].forEach(q=>document.getElementById('pg-'+q).hidden=q!==p);if(p==='garage')renderGarage();}
+  document.querySelectorAll('.ptab').forEach(b=>b.addEventListener('click',()=>{setPage(b.dataset.page);window.scrollTo({top:0});}));
+  setPage(page);
+  const centerSel=(box,sel)=>{const e=box.querySelector(sel);if(e&&box.scrollWidth>box.clientWidth)box.scrollLeft=e.offsetLeft-box.clientWidth/2+e.offsetWidth/2;};
   dash.onData(()=>render());
   function render(){renderTake();renderTable();renderDeckTabs();renderDetail();renderGarage();}
   function renderGarage(){
@@ -355,7 +388,7 @@ svg text{fill:var(--color-fg)}
     const sorted=[...R].sort((a,b)=>b.total-a.total);if(!gDeck||!R.some(x=>x.deck===gDeck))gDeck=sorted[0].deck;
     const r=R.find(x=>x.deck===gDeck);const avg=Object.fromEntries(S.map(([k])=>[k,d3.mean(R,d=>d[k])]));
     clear(box);
-    const pickRow=el('div','g-pick');sorted.forEach(d=>{const c=el('button','g-chip');c.type='button';c.setAttribute('aria-pressed',String(d.deck===gDeck));const sp=el('span',null,`${d.icon} ${d.deck}${d.owner==='Cheez'?' ⛔':''}`);c.appendChild(sp);c.addEventListener('click',()=>{gDeck=d.deck;renderGarage();});pickRow.appendChild(c);});box.appendChild(pickRow);
+    const pickRow=el('div','g-pick');sorted.forEach(d=>{const c=el('button','g-chip');c.type='button';c.setAttribute('aria-pressed',String(d.deck===gDeck));const sp=el('span',null,`${d.icon} ${d.deck}${d.owner==='Cheez'?' ⛔':''}`);c.appendChild(sp);c.addEventListener('click',()=>{gDeck=d.deck;renderGarage();});pickRow.appendChild(c);});box.appendChild(pickRow);requestAnimationFrame(()=>centerSel(pickRow,'.g-chip[aria-pressed="true"]'));
     const stage=el('div','g-stage');const idx=sorted.findIndex(d=>d.deck===gDeck);
     const arrow=(t,dir,label)=>{const b=el('button','g-arrow',t);b.type='button';b.setAttribute('aria-label',label);b.addEventListener('click',()=>{gDeck=sorted[(idx+dir+sorted.length)%sorted.length].deck;renderGarage();});return b;};
     const title=el('div','g-title');title.appendChild(el('div','g-icon',r.icon));const tt=el('div');tt.appendChild(el('div','g-name',r.deck+(r.owner==='Cheez'?' ⛔':'')));tt.appendChild(el('div','g-sub',`${r.archetype} · #${idx+1} of ${sorted.length}`+(r.cmdr?` · ${r.cmdr}`:'')));title.appendChild(tt);
@@ -393,6 +426,11 @@ svg text{fill:var(--color-fg)}
       {const td=el('td','tot',f1(r.total));if(r.was!=null&&!isNaN(r.was)){const d=r.total-Number(r.was);td.appendChild(el('span','delta',(d>=0?'+':'')+f1(d)+' vs old'));}tr.appendChild(td);}tr.appendChild(el('td','dim '+saltC(r.salt),f1(r.salt)));
       body.appendChild(tr);
     });
+    const rc=document.getElementById('rate-cards');clear(rc);
+    [...R].sort((a,b)=>b.total-a.total).forEach((r,i)=>{const c=el('button','rc');c.type='button';c.title='Open this deck';c.addEventListener('click',()=>{if(page!=='rundown')setPage('rundown');pick(r.deck,true);});
+      const top=el('div','rc-top');const nm=el('div','rc-name');nm.appendChild(el('span','rc-rank','#'+(i+1)));nm.appendChild(document.createTextNode(`${r.icon} ${r.deck}${r.owner==='Cheez'?' ⛔':''}`));nm.appendChild(el('div','rc-sub',r.archetype+` · 🧂 ${f1(r.salt)}`));top.appendChild(nm);
+      const tt=el('div','rc-tot',f1(r.total));tt.appendChild(el('span',null,'of 90'));top.appendChild(tt);c.appendChild(top);
+      const g=el('div','rc-grid');S.forEach(([k,ic])=>{const d=el('div');d.appendChild(el('span',null,ic));d.appendChild(pill(r[k],true));g.appendChild(d);});c.appendChild(g);rc.appendChild(c);});
   }
 
   // radar graph
@@ -431,6 +469,7 @@ svg text{fill:var(--color-fg)}
     sorted.forEach(r=>{const t=el('button','dtab');t.type='button';t.setAttribute('role','tab');t.id='dtab-'+slug(r.deck);t.setAttribute('aria-selected',String(openDeck===r.deck));t.setAttribute('aria-controls','deck-view');
       t.appendChild(document.createTextNode(`${r.icon} ${r.deck}${r.owner==='Cheez'?' ⛔':''}`));t.appendChild(el('b',null,f1(r.total)));
       t.addEventListener('click',()=>{if(openDeck!==r.deck){pick(r.deck,false);}});box.appendChild(t);});
+    requestAnimationFrame(()=>centerSel(box,'.dtab[aria-selected="true"]'));
   }
 
   function renderDetail(){
@@ -503,6 +542,7 @@ svg text{fill:var(--color-fg)}
     grid.appendChild(b2);
     if(arr(t.combos).length){const b4=el('div','tk-box');b4.appendChild(el('h4',null,'🔗 Combos & key lines'));const ul=el('ul','combo');arr(t.combos).forEach(x=>ul.appendChild(el('li',null,x)));b4.appendChild(ul);grid.appendChild(b4);}
     if(arr(t.commander).length){const b3=el('div','tk-box');b3.appendChild(el('h4',null,'👑 Commander impact'));b3.appendChild(el('p','adj','Commanders score like any card, then get their Game Plan multiplier.'));b3.appendChild(bestList(t.commander,0,'hm'));grid.appendChild(b3);}
+    if(isPhone()){[...grid.children].forEach((box,idx)=>{const h=box.querySelector('h4');const d=document.createElement('details');d.className='tk-box';if(idx===0)d.open=true;const sm=document.createElement('summary');sm.textContent=h?h.textContent:'More';d.appendChild(sm);if(h)h.remove();while(box.firstChild)d.appendChild(box.firstChild);grid.replaceChild(d,box);});}
   }
 })();
 </script>
