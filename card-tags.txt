@@ -1,4 +1,4 @@
-POD RUNDOWN - CARD TAG SYSTEM  (0.9.3 - Oct 24, 2026 - pre-release)
+POD RUNDOWN - CARD TAG SYSTEM  (0.9.4 - Oct 24, 2026 - pre-release)
 Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
 divide numbers). For card points, THIS file wins.
 =====================================================================
@@ -39,7 +39,7 @@ GENERAL RULES
          depth, early game, curve/variety nudges, land drops (scoring
          key), then Win Routes, Color Strain, Redundancy (Section 16).
       7. Divide numbers, rounding, groups (scoring key).
-  - X SPELLS: X = 10 with great ramp (Mana 10+), else 8 (Section 18).
+  - X SPELLS: single X = 10 with great ramp (Mana 10+), else 8; XX = 5; XXX = 2 (Section 18).
   - Planeswalkers, Sagas, Rooms, Adventures: tag each ability, chapter,
     door or half as its own effect. A planeswalker ultimate gets
     Conditional (you rarely reach it).
@@ -559,9 +559,9 @@ GENERAL RULES
 =====================================================================
 18. X SPELLS (2026-10-24)
 =====================================================================
-  (0.9.3) X = 10 if the deck has GREAT RAMP (Mana rating 10+),
-  otherwise X = 8:
-    single X = 10 or 8 | XX = 5 or 4 | XXX = 3 or 2 (approx).
+  Single X (0.9.3): X = 10 if the deck has GREAT RAMP (Mana rating
+  10+), otherwise X = 8.
+  Multi-X (0.9.4): always XX = 5 and XXX = 2, whatever the ramp.
   No extra Big Spell penalty for the X part (only printed cost counts).
 
 =====================================================================

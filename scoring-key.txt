@@ -1,2 +1,2 @@
 
-RULES 0.9.3: big one-time burn/drain = 0.75 CL + 0.75 RE at 6 total damage, +0.15 each per extra point (tag 'Non-Combat Damage One-Off Large (avg N)'). X spells: X = 10 with great ramp (Mana rating 10+), else 8.
+RULES 0.9.4: multi-X spells are fixed: XX = 5, XXX = 2 (single X still 10 with great ramp, else 8).
