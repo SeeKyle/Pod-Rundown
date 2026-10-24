@@ -1,4 +1,4 @@
-POD RUNDOWN - CARD TAG SYSTEM  (1.3 - Oct 24, 2026)
+POD RUNDOWN - CARD TAG SYSTEM  (0.8 - Oct 24, 2026 - pre-release; was numbered 1.6)
 Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
 divide numbers). For card points, THIS file wins.
 =====================================================================
@@ -358,7 +358,13 @@ GENERAL RULES
   [+] Hexproof ............................ 0.5
   [+] Shroud .............................. 0.5
   [+] Ward ................................ 0.5
-  [+] Protection .......................... 0.5
+  Protection (1.6 - PICK ONE; it also makes the card hard to block):
+  [+] Protection Narrow ................... 0.5 SU + 0.1 RE (one color or type)
+  [+] Protection Broad .................... 0.75 SU + 0.25 RE (2+ colors,
+        or a card type like artifacts / instants)
+  [+] Protection from Creatures ........... 1.0 SU + 0.5 RE (also
+        'protection from everything' - can't be blocked or hurt by creatures)
+  (old plain 'Protection' tag = Protection Narrow)
   [+] Dies-and-Comes-Back (undying etc.) .. 0.5
   Small combat keywords:
   [+] Vigilance ........................... 0.1
@@ -450,6 +456,7 @@ GENERAL RULES
   Offense:  Tokens, Counters, Team Pump, Voltron, Evasion, Burn/Drain,
             Extra Combat, Card Eater, Poison, Alt Win
   Defense:  Removal, Opponent Discard, Stax/Tax, Theft, Protection,
+            Combat Tricks (1.6: tappers / combat rewriting),
             Recursion, Life Gain, Sacrifice, Goad, Pillowfort, Group Hug
   Themes:   Tribal, Spellslinger, Artifacts, Enchantments, Blink/ETB, Copy
   Doubles:  Doubles Triggers, Doubles Spells, Doubles Tokens, Doubles
@@ -481,7 +488,7 @@ GENERAL RULES
     (best 14 ramp / best 12 draw full, the rest half).
     ROLES (18):
       Spot removal (creature/noncreature one-offs, bounce)
-      Repeatable removal (removal engines)
+      Repeatable removal (removal engines, Provoke)
       Wipes & edicts
       Denial (counterspells, opponent discard, taxes/punishers, GY hate)
       Theft
@@ -499,7 +506,8 @@ GENERAL RULES
       Finishers & combos (overrun, damage doubler, extra combat/turn,
         alt win, combo piece)
       Doublers (doublers and adders)
-      Goad & deterrents (redirect, deterrent)
+      Goad & deterrents (redirect, deterrent, Banding Defense)
+      Combat tappers (Combat Tapper family tag - 1.6)
       Deal-making (bargain chip, vote/gift, group hug)
     Flags never count. Scary Threat tags don't count.
     Considered and REJECTED (1.2): an extra +10% when roles match the
@@ -547,6 +555,66 @@ GENERAL RULES
   Score every X card as if 10 mana goes into X:
     single X = 10 | XX = 5 | XXX = 3 (approx).
   No extra Big Spell penalty for the X part (only printed cost counts).
+
+=====================================================================
+19. BANDING AND PROVOKE (rules 1.4, buffed in 1.5, 2026-10-24)
+=====================================================================
+  BANDING - a band attacks or blocks as a group, and YOU split the
+  enemy creature's combat damage among your creatures. Two jobs, two
+  tags (a banding card usually gets both). PICK ONE level for each.
+  [B] Banding Offense Basic ............... 0.2 CL + 0.1 SU
+  [B] Banding Offense Proficient .......... 0.35 CL + 0.2 SU
+        attacking in a band: blockers can't pick off your best attacker,
+        and a big non-bander can ride along in the band.
+        Proficient = the bander also has first strike or flying (a
+        flying band can only be blocked by fliers).
+  [B] Banding Defense Basic ............... 0.3 SU + 0.15 TP
+  [B] Banding Defense Proficient .......... 0.6 SU + 0.3 TP
+        blocking with a bander: you spread the attacker's damage so your
+        blockers live and the attacker dies - attacking you is a bad deal.
+        Proficient = the bander also has first strike or 4+ toughness.
+        Banding Defense replaces Deterrent on the same card (don't tag
+        both for the banding). Counts in Redundancy role Goad & deterrents.
+  Granted banding ({1}: gains banding, Icatian Infantry) = Basic.
+
+  SHADOW (1.5) - tag it Unblockable (0.5 RE), not Evasion Other: in
+  Commander almost nothing has shadow, so it can't be blocked.
+
+  PROVOKE (pseudo-removal) - every attack, target creature untaps and
+  must block the provoker. If the provoker wins that fight it's a
+  repeatable kill; if not, it still pulls a blocker off your other
+  attackers (and sets up "attacking or blocking" pingers like Heavy
+  Ballista). PICK ONE.
+  [B] Provoke Basic ....................... 0.3 IN + 0.2 RE
+        provoker only kills small things or just survives (Swooping
+        Talon 2/6, Deftblade Elite that prevents its own damage).
+  [B] Provoke Proficient .................. 0.6 IN + 0.3 RE
+        provoker usually wins the fight: first strike, deathtouch, or
+        4+ power (Lowland Tracker).
+  Not tagged as evasion (pass set 5 rule stands). Counts in Redundancy
+  role Repeatable removal. Not "Aimable" by itself (the target is forced
+  to block you, not chosen to hurt someone else).
+
+=====================================================================
+20. COMBAT TAPPER FAMILY (rules 1.6, 2026-10-24)
+=====================================================================
+  [+] Combat Tapper ....................... 0.15 TP
+      A permanent with a REPEATABLE activated ability (usually {T}) that
+      kills, taps or shuts down creatures, or rewrites a combat:
+      ping/destroy/exile an attacker or blocker (Heavy Ballista, Elite
+      Archers, Catapult Master, Hand of Justice), tap a creature
+      (Diversionary Tactics), remove a creature from combat (Maze of Ith,
+      Reconnaissance, Labyrinth of Skophos), make an attacker blocked
+      (Trap Runner), swap blockers (General Jarkeld), extra blocks
+      (Mounted Archers), or move/prevent/reflect combat damage (Oracle's
+      Attendants, Lancers en-Kor, Shield Dancer).
+      It's ADDED on top of the card's real job tags (removal engine,
+      Gives Protection, Deterrent...). The 0.15 Politics is the "nobody
+      wants to swing into open tappers" pressure.
+      Not for one-shot effects, triggers (Captain America's Shield), or
+      mana abilities.
+      Counts in its own Redundancy role: Combat tappers (19 roles now).
+      Commanders can take Game Plan: Combat Tricks.
 
 =====================================================================
 NOTES
