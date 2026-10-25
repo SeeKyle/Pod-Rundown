@@ -1,4 +1,4 @@
-POD RUNDOWN - CARD TAG SYSTEM  (0.9.10 - Oct 25, 2026 - pre-release)
+POD RUNDOWN - CARD TAG SYSTEM  (0.9.11 - Oct 25, 2026 - pre-release)
 Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
 divide numbers). For card points, THIS file wins.
 =====================================================================
@@ -394,14 +394,14 @@ GENERAL RULES
   [B] Self-Recurring ...................... 0.5
   Rebuilding (tokens):
   (0.9.10) Token sizes: small = 2 power or less, medium = 3-4, big = 5+.
-  [B] Many Threats Basic Engine ........... 0.49 SU + 0.14 TH + 0.14 CL
-        about one small/medium token per turn cycle (0.9.10: -30%)
-  [B] Many Threats Proficient Engine ...... 0.9 SU + 0.45 TH + 0.45 CL
+  [B] Many Threats Basic Engine ........... 0.5 SU + 0.1 TH + 0.1 CL (0.9.11)
+        about one small/medium token per turn cycle
+  [B] Many Threats Proficient Engine ...... 1.0 SU + 0.5 TH + 0.5 CL (0.9.11)
         2+ tokens per turn cycle, a big token each turn, or tokens
         that grow / make more tokens
-  [B] Many Threats One-Off Basic .......... 0.32 SU + 0.14 TH
-        1-4 small tokens, or 1 medium token (0.9.10: -30%)
-  [B] Many Threats One-Off Proficient ..... 0.7 SU + 0.45 TH
+  [B] Many Threats One-Off Basic .......... 0.25 SU + 0.2 TH (0.9.11)
+        1-4 small tokens, or 1 medium token
+  [B] Many Threats One-Off Proficient ..... 0.25 SU + 0.75 TH (0.9.11)
         a big token, several medium tokens, or a large number of tokens
   [B] Token Doubler ....................... see Section 17 (Doublers)
   PICK ONE life gain tag:

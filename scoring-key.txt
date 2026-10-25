@@ -1,2 +1,2 @@
 
-RULES 0.9.10: Many Threats sizes defined (small 2 power or less / medium 3-4 / big 5+); Basic tiers -30%, Proficient unchanged.
+RULES 0.9.11: Many Threats values - Basic Engine 0.5/0.1/0.1, Proficient Engine 1.0/0.5/0.5, One-Off Basic 0.25 SU/0.2 TH, One-Off Proficient 0.25 SU/0.75 TH.
