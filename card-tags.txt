@@ -1,4 +1,4 @@
-POD RUNDOWN - CARD TAG SYSTEM  (0.9.8 - Oct 25, 2026 - pre-release)
+POD RUNDOWN - CARD TAG SYSTEM  (0.9.9 - Oct 25, 2026 - pre-release)
 Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
 divide numbers). For card points, THIS file wins.
 =====================================================================
@@ -525,7 +525,7 @@ GENERAL RULES
   the family counts above only as a guide - see Section 15.
 
 =====================================================================
-17. DOUBLERS, ADDERS AND "DOUBLED" CARDS (rules 0.9.8, 2026-10-25)
+17. DOUBLERS, ADDERS AND "DOUBLED" CARDS (rules 0.9.8, values 0.9.9, 2026-10-25)
 =====================================================================
   Three tiers, by what the card text really does:
     True Doubler - truly doubles (Doubling Season, Parallel Lives,
@@ -543,16 +543,16 @@ GENERAL RULES
 
   FORMULA (Y = how many cards in the deck this card affects):
                      base   per card it affects   each affected card
-    True Doubler ... 0.5  + Y x 0.25               gets +0.25
-    Adder Plus ..... 0.35 + Y x 0.15               gets +0.15
-    Adder .......... 0.25 + Y x 0.10               gets +0.10
+    True Doubler ... 1.0  + Y x 0.35               gets +0.35
+    Adder Plus ..... 0.35 + Y x 0.10               gets +0.10
+    Adder .......... 0.15 + Y x 0.05               gets +0.05
   X = the card's points from all its other tags + base + Y x per-card,
   put in the stat of what it doubles (tokens -> SU, counters -> CL,
   Treasure/mana -> MA, draw -> CA, death triggers -> RE, other triggers
   -> CA). Per-card diminishing returns still apply. Then if it's a
   One-Off, X is cut 50%.
   Affected cards get the flat boost in that same stat, written on the
-  card as: Doubled +0.5 (SU 0.5). Several doublers add up. Doublers
+  card as: Doubled +0.7 (SU 0.7). Several doublers add up. Doublers
   never get Doubled themselves. Lands never get Doubled (mana doublers
   keep only their base).
   Damage Doubler stays its own flat tag (1.5 CL, Section 8).
