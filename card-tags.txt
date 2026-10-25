@@ -1,4 +1,4 @@
-POD RUNDOWN - CARD TAG SYSTEM  (0.9.11 - Oct 25, 2026 - pre-release)
+POD RUNDOWN - CARD TAG SYSTEM  (0.9.12 - Oct 25, 2026 - pre-release)
 Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
 divide numbers). For card points, THIS file wins.
 =====================================================================
@@ -563,6 +563,14 @@ GENERAL RULES
   keep only their base).
   Damage Doubler stays its own flat tag (1.5 CL, Section 8).
 
+  STATS FOR THE BOOST (0.9.12):
+    Tokens -> SU | Counters -> CL | Mana / Treasure -> MA | Draw / Clue -> CA | Food -> SU (life buffer)
+    Food/Clue/Treasure (Academy Manufactor) -> split three ways MA / CA / SU.
+    ROUTED (everything else: All Triggers, Type Triggers, Death / Combat-Damage Triggers, Activated / Creature
+    Abilities, Spells): each affected card gets the boost in its OWN best stat = the stat where (its points / that
+    stat's divide) is highest, checked after its own tags + commander multiplier. The doubler's own routed X is split
+    evenly across the Y cards it affects and each share goes in that card's best stat. Routed amounts are x0.875.
+
 =====================================================================
 18. X COSTS (rules 0.9.5 - replaces every earlier X rule)
 =====================================================================
@@ -701,6 +709,21 @@ GENERAL RULES
         2 toughness or less with no evasion or protection - it trades
         or gets chumped, so the trigger may happen only once
   Triggers on "whenever YOU attack" (any creature) don't take it.
+
+=====================================================================
+23. FLAT-VALUE SQUASH (rules 0.9.12, 2026-10-25)
+=====================================================================
+  Every flat point value in the tag formulas is mapped (numbers written
+  elsewhere in this file are the ORIGINAL values; the scorer applies
+  this map on top):
+    over 1.5 -> 1.25 | 1.0 - 1.5 -> 0.75 | 0.50 - 0.99 -> 0.50 | under 0.50 -> 0.25
+  Includes base/bonus tags, PICK ONE groups, removal, wipes, theft,
+  self-mill, speed (+0.25 / -0.25), synergy enabler/payoff (0.25 / 0.5),
+  haste, life cost, big-spell penalty, Opponent Gas (0.5 free / 0.25
+  paid), big burn (0.5 at 6 + 0.25 per point).
+  NOT squashed: the doubler formula (Section 17, user-set 0.9.9 values),
+  multipliers (Conditional, Symmetric, On Attack, commander), deck-level
+  bonuses (Section 16), and the divide numbers (kept fixed).
 
 =====================================================================
 NOTES
