@@ -1,4 +1,4 @@
-POD RUNDOWN - CARD TAG SYSTEM  (0.9.6 - Oct 25, 2026 - pre-release)
+POD RUNDOWN - CARD TAG SYSTEM  (0.9.7 - Oct 25, 2026 - pre-release)
 Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
 divide numbers). For card points, THIS file wins.
 =====================================================================
@@ -534,7 +534,10 @@ GENERAL RULES
         -> stat most of its doubled triggers feed, mana -> MA, draw ->
         CA, spells -> CA). Truly doubles: Doubling Season, Parallel
         Lives, The Thing / Arcade Cabinet (counters).
-  [B] Doubler (one-off, e.g. Second Harvest) 0.25 + 0.02 per card
+  ONE-OFF vs ENGINE (0.9.7): any tier can be a one-shot - write
+  'Doubler (One-Off)', 'Adder Plus (One-Off)', 'Adder (One-Off)'. A
+  one-off counts HALF: half its own value and half its Doubled weight
+  (it only boosts what's already there, once). e.g. Second Harvest.
   [B] Adder Plus ............... 60% of a doubler: adds a COUPLE extra
         or scales (Chatterfang adds 'that many' Squirrels; Academy
         Manufactor turns one token into one of each).
@@ -558,6 +561,7 @@ GENERAL RULES
       N counts each doubler/adder in the deck whose SCOPE hits the card:
         doubler in the 99 = 1 | commander doubler = 2 (always there)
         Adder Plus = 0.6 | Adder = 0.3   (0.9.6; was adder = 0.5)
+        one-off of any tier = half of that (0.9.7)
       Example: token maker in a deck with Doubling Season + Parallel
       Lives = Doubled 2 = x1.16.
       LANDS NEVER GET DOUBLED. Mana doublers (Mana Flare, Heartbeat of

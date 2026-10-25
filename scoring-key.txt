@@ -1,2 +1,2 @@
 
-RULES 0.9.6: doublers in three tiers (Doubler 1 / Adder Plus 0.6 / Adder 0.3). Doubled bonus +8% per N (was 5%); a doubler's own value grows 0.04 per card it doubles.
+RULES 0.9.7: one-off doublers/adders (any tier) count half - own value and Doubled weight.
