@@ -1,2 +1,3 @@
 
 RULES 0.9.4: multi-X spells are fixed: XX = 5, XXX = 2 (single X still 10 with great ramp, else 8).
+RULES 0.9.5: X costs now come from each deck's 100-game goldfish turn-7 mana (all earlier X rules scrapped). New On Attack survival modifier: Safe x1.15 / Even x1 / Risky x0.85. See tag doc Sections 18 and 22.

@@ -1,4 +1,4 @@
-POD RUNDOWN - CARD TAG SYSTEM  (0.9.4 - Oct 24, 2026 - pre-release)
+POD RUNDOWN - CARD TAG SYSTEM  (0.9.5 - Oct 24, 2026 - pre-release)
 Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
 divide numbers). For card points, THIS file wins.
 =====================================================================
@@ -39,7 +39,7 @@ GENERAL RULES
          depth, early game, curve/variety nudges, land drops (scoring
          key), then Win Routes, Color Strain, Redundancy (Section 16).
       7. Divide numbers, rounding, groups (scoring key).
-  - X SPELLS: single X = 10 with great ramp (Mana 10+), else 8; XX = 5; XXX = 2 (Section 18).
+  - X COSTS: from the deck's goldfish turn-7 mana (Section 18).
   - Planeswalkers, Sagas, Rooms, Adventures: tag each ability, chapter,
     door or half as its own effect. A planeswalker ultimate gets
     Conditional (you rarely reach it).
@@ -557,11 +557,38 @@ GENERAL RULES
       Spring, etc.) keep only their own flat base and give no Doubled
       tags to anything.
 =====================================================================
-18. X SPELLS (2026-10-24)
+18. X COSTS (rules 0.9.5 - replaces every earlier X rule)
 =====================================================================
-  Single X (0.9.3): X = 10 if the deck has GREAT RAMP (Mana rating
-  10+), otherwise X = 8.
-  Multi-X (0.9.4): always XX = 5 and XXX = 2, whatever the ramp.
+  Each deck is goldfished 100 times (on the play, no draw turn 1,
+  London mulligan of 0-1 or 6-7 land hands, play a land every turn,
+  cast mana rocks / dorks / land-ramp spells cheapest first; dorks
+  tap the turn after they land; land-doublers count). The average mana
+  available on TURN 7 sets X for every X in that deck - spells AND
+  abilities:
+    X   = (turn-7 mana - the rest of the cost), rounded down
+    XX  = that / 2, XXX = that / 3 (rounded down)
+    Lands / creatures that tap as part of the cost don't count their
+    own mana. Convoke: add about 3 creatures in token decks.
+  Retag the X card at that size (draw X -> draw tier, X tokens ->
+  Basic 4 or less / Proficient 5+, X damage -> burn size, 'if X is
+  5+' riders only count if X reaches it, otherwise Hard Conditional).
+  Re-run the goldfish whenever a deck's ramp or lands change.
+  Turn-7 mana (sim/goldfish.py, 100 games, 2026-10-24):
+    tmnt       6.65
+    kotis      6.77
+    lou        7.6
+    haunted    7.21
+    grim       5.84
+    depala     5.86
+    vile       6.41
+    fantastic  8.12
+    thranduil  7.05
+    uber       6.95
+    skynet     5.85
+    ally       5.53
+    oldschool  6.15
+    mothman    6.71
+    korvold    7.46
   No extra Big Spell penalty for the X part (only printed cost counts).
 
 =====================================================================
@@ -649,6 +676,24 @@ GENERAL RULES
      (Sage of the Maze with no Gates) gets nothing.
   Counts in the Redundancy role "Tokens, copies & animators" and as a
   Combat win-route piece. Commanders can take Game Plan: Animator.
+
+=====================================================================
+22. ON-ATTACK SURVIVAL (rules 0.9.5, 2026-10-24)
+=====================================================================
+  For cards whose value comes from their OWN attack trigger ("whenever
+  this creature / equipped creature attacks"), how likely is the
+  attacker to live through combat and attack again next turn?
+  [x] On Attack: Safe .......... x1.15 on the card's points
+        flying / menace / unblockable with 3+ toughness, toughness 5+,
+        indestructible, a big evasive vehicle, or it's going on a
+        protected voltron commander (Kotis)
+  [x] On Attack: Even .......... x1.0 (tracked only)
+        average body: 3-4 toughness on the ground, small fliers,
+        equipment that can move to whoever survives
+  [x] On Attack: Risky ......... x0.85
+        2 toughness or less with no evasion or protection - it trades
+        or gets chumped, so the trigger may happen only once
+  Triggers on "whenever YOU attack" (any creature) don't take it.
 
 =====================================================================
 NOTES
