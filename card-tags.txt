@@ -1,4 +1,4 @@
-POD RUNDOWN - CARD TAG SYSTEM  (0.9.5 - Oct 24, 2026 - pre-release)
+POD RUNDOWN - CARD TAG SYSTEM  (0.9.6 - Oct 25, 2026 - pre-release)
 Works with Pod_Rundown_Scoring_Key.txt (stat meanings, deck-level rules,
 divide numbers). For card points, THIS file wins.
 =====================================================================
@@ -528,12 +528,19 @@ GENERAL RULES
 17. DOUBLERS AND "DOUBLED" CARDS (v2.2, 2026-10-24)
 =====================================================================
   DOUBLERS get a flat base value only. They NEVER get Doubled tags.
-  [B] Doubler (permanent) ................. 0.5 in the stat of what it
-        doubles (tokens -> SU, counters -> CL, triggers -> stat most of
-        its doubled triggers feed, mana -> MA, draw -> CA, spells -> CA)
-  [B] Doubler (one-off, e.g. Second Harvest) 0.25
-  [B] Adder (adds extra, doesn't double:
-        Chatterfang, Peregrin, Donatello, Doc Samson) half of the above
+  (0.9.6) THREE TIERS - a true doubler is worth the most:
+  [B] Doubler (permanent) ...... (0.5 + 0.04 per card it doubles) in the
+        stat of what it doubles (tokens -> SU, counters -> CL, triggers
+        -> stat most of its doubled triggers feed, mana -> MA, draw ->
+        CA, spells -> CA). Truly doubles: Doubling Season, Parallel
+        Lives, The Thing / Arcade Cabinet (counters).
+  [B] Doubler (one-off, e.g. Second Harvest) 0.25 + 0.02 per card
+  [B] Adder Plus ............... 60% of a doubler: adds a COUPLE extra
+        or scales (Chatterfang adds 'that many' Squirrels; Academy
+        Manufactor turns one token into one of each).
+  [B] Adder .................... 30% of a doubler: adds exactly ONE
+        extra (Peregrin Took, Donatello the Brains, Jolene, Xorn, Doc
+        Samson).
   Each doubler/adder is written with its SCOPE - what it can double:
       Doubler: Tokens | Counters | All Triggers | Attack Triggers |
       Death Triggers | ETB Triggers | Type Triggers (dwarves, legends...)
@@ -547,12 +554,12 @@ GENERAL RULES
   the same deck can boost (a token maker with Parallel Lives in the
   deck, an attack-trigger card with an Isshin-style doubler, etc.).
   [x] Doubled N ........................... LAST step for that card:
-        its points x (1 + 0.05 per N)
+        its points x (1 + 0.08 per N)   (0.9.6; was 0.05)
       N counts each doubler/adder in the deck whose SCOPE hits the card:
         doubler in the 99 = 1 | commander doubler = 2 (always there)
-        adder = 0.5
+        Adder Plus = 0.6 | Adder = 0.3   (0.9.6; was adder = 0.5)
       Example: token maker in a deck with Doubling Season + Parallel
-      Lives = Doubled 2 = x1.10.
+      Lives = Doubled 2 = x1.16.
       LANDS NEVER GET DOUBLED. Mana doublers (Mana Flare, Heartbeat of
       Spring, etc.) keep only their own flat base and give no Doubled
       tags to anything.
