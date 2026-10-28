@@ -468,4 +468,4 @@ NEEDS REPAIR: each pick now carries a fix idea (a swap in the deck's colors that
 ==================== RULES 0.10.11 (Oct 28, 2026) ====================
 QUICK AIR (Threats, per card): a creature with an evasive keyword that doesn't score as a Tall threat gets
   0.10 + 0.05 x power (max 3) + 0.10 x (3 - MV, min 0).
-AIR DENSITY (Threats, deck check): 0.25 x (number of Quick Air creatures / their average MV, min MV 1).
+AIR DENSITY (Threats, deck check): 0.40 x (number of Quick Air creatures / their average MV, min MV 1).
