@@ -413,3 +413,6 @@ PLAN B (Consistency): +1.5 x P(at least 1 commander-independent plan card in 10 
 ANSWER ON TIME (Interaction): +1.0 x P(at least 1 answer in 10 cards).
 CLOSER ON TIME (Finish): +0.75 x P(at least 1 finisher, 0.3+ Finish points, in 13 cards).
 WIDE SATURATION (Threats): Wide points past 10 per deck count half (scaled evenly across every token maker).
+THREAT VARIETY (fix): only Tall, Wide, Board Power, noncreature threats and Commander count as kinds
+  (Body floor and Feeds the Plan entries don't).
+NEEDS REPAIR replaces the old "Weak spots & fixes" box.
