@@ -464,3 +464,8 @@ NEW DECKS: Ominous Weather (Isu), Blood Suckers (Zoraline, Cheez), Double Dragon
 BASICS: Snow-Covered Plains/Island/Swamp/Mountain/Forest count as basic lands.
 NEEDS REPAIR: each pick now carries a fix idea (a swap in the deck's colors that fits its plan, or "keep").
   Ideas live in 50_Code/judge.py next to my read of the card. They don't change any score.
+
+==================== RULES 0.10.11 (Oct 28, 2026) ====================
+QUICK AIR (Threats, per card): a creature with an evasive keyword that doesn't score as a Tall threat gets
+  0.10 + 0.05 x power (max 3) + 0.10 x (3 - MV, min 0).
+QUICK AIR SWARM (Threats, deck check): +0.15 for each Quick Air creature at MV 3 or less past the 6th.
