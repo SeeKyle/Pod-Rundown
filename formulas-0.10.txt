@@ -478,3 +478,9 @@ Added missing Tall tags: Kura, the Boundless Sky; Lozhan, Dragons' Legacy; Draco
 
 ==================== RULES 0.10.13 (Oct 28, 2026) ====================
 THREATS DIVIDE: second-best deck's Threats points / 10.5 (other stats still / 10; Mana fixed at 4.00).
+
+==================== RULES 0.10.14 (Oct 28, 2026) ====================
+VEHICLES (Survival, all decks): every Vehicle card gets +0.15 Survival (dodges creature wipes).
+ALPHA-STRIKE ENABLERS (Finish): mass tap-downs and overruns are tagged finish('Burst', ...) as one-turn lethal setups
+  (Cone of Cold, Sleep, Icy Blast, Become the Avalanche; Chandra's Ignition in Korvold).
+AIR DENSITY multiplier 0.40 -> 0.60.
