@@ -1,0 +1,16 @@
+POD RUNDOWN - CHANGELOG ENTRY (add to Pod_Rundown_Changelog.txt)
+
+0.10 - Oct 28, 2026 - ground-up rebuild (pre-release)
+  WHAT: Replaced the whole 0.9.12 tag system with per-stat formulas
+        (see Pod_Rundown_Formulas_0.10.txt). Clock renamed Finish.
+        Token swarms moved from Survival to Threats; Survival now
+        Protect / Recover / Endure with blockers and fogs. Politics now
+        scored by levers (Deals / Deterrents / Direction) plus a salt
+        nudge. Burn and mill split: one-shot -> Finish, steady -> Reach.
+        All deck tags and scores dropped; decklists reset to plain
+        card lists.
+  WHY:  The old system grew piece by piece (doublers, squash, routing,
+        redundancy) and got hard to follow. The rebuild gives every
+        stat one readable formula, tested on real pod cards.
+  ARCHIVED: Pod_Rundown_Card_Tags_0.9.12.txt,
+            Pod_Rundown_Scoring_Key_0.9.12.txt (in Archive/).
