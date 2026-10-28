@@ -469,3 +469,9 @@ NEEDS REPAIR: each pick now carries a fix idea (a swap in the deck's colors that
 QUICK AIR (Threats, per card): a creature with an evasive keyword that doesn't score as a Tall threat gets
   0.10 + 0.05 x power (max 3) + 0.10 x (3 - MV, min 0).
 AIR DENSITY (Threats, deck check): 0.40 x (number of Quick Air creatures / their average MV, min MV 1).
+
+==================== RULES 0.10.12 (Oct 28, 2026) ====================
+TALL: mana penalty is now -0.08 per MV above 3 (was -0.10 per MV above 1). Bloodthirst uses Tall, so it changes too.
+COMMANDER COPY ENGINE (all decks): copy_engine(mult, what, odds) on a commander that makes a token copy of each
+  creature of a kind that enters. Plan Tag C creatures' Tall entries x (1 + (mult-1) x odds). Miirym: x1.5.
+Added missing Tall tags: Kura, the Boundless Sky; Lozhan, Dragons' Legacy; Draconic Muralists.
