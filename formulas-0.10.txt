@@ -377,3 +377,19 @@ STILL OPEN
   - Divide numbers per stat (set after decks are tagged)
   - Basic/Proficient pass: likely covered by the formulas now
   - Hand-test one full deck before converting everything
+
+==================== RULES 0.10.1 (Oct 28, 2026) ====================
+TUTOR: new destination "Graveyard" = same as Hand (+0.50), only in decks that use cards from the graveyard.
+       +0.25 for each extra card found (Buried Alive finds 3: +0.50).
+FEEDS THE PLAN (new): +0.15 once / +0.25 every turn, added to the card's best stat, when it triggers the
+       commander or a core engine. Thing & Kykar: noncreature spells MV 3 or less. Turtle: tokens (Leonardo).
+       Joel: tokens/bodies (drain). Mech: artifacts. Marina: enchantments. Kotis: auras/equipment/mutate.
+       Mathas: paying your own life. Grim: graveyard fuel for the Throne. The engine cards themselves don't get it.
+BODY FLOOR (new): a creature scoring under 0.50 also counts its body:
+       Threats 0.05 + 0.03 x power (max 4); Survival 0.02 x toughness (max 6).
+LATER WIPES: every wipe after the first is worth x0.60 (was a flat -0.5 before the x0.45 scale).
+GROWERS: creatures that grow every turn are tagged at their grown power (Michelangelo 4, Swiftspear 4,
+       Frolicking Familiar 4, Crackdown Construct 5, Tempest Hart 5), conditional x0.75 where it needs setup.
+POLITICS: + Aim: single-target removal +0.10 (Direction lever), up to 8 cards.
+          + Counterspells +0.15 (Deals lever), up to 5 cards.
+          Rating uses the square root of the final Politics points (divide = second-highest deck, as always).
