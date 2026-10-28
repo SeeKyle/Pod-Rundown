@@ -403,3 +403,13 @@ TUTOR MV PENALTY (trial): -0.25 per MV above 1 (was -0.5).
 SECOND LIFE (graveyard abilities): flashback, encore, cast-from-graveyard, "exile this card from your graveyard: ..."
   (incl. giving its abilities/keywords to another creature). Score the graveyard effect with the normal formula
   x0.60 (x0.40 if it also costs a card), plus 0.15 Cards for the extra use.
+
+==================== RULES 0.10.4 (Oct 28, 2026) ====================
+PLAN CARDS: 16-22 hand-picked cards per deck that make it do its thing; each marked 1 / 0.5 / 0 for how well it works
+  without the commander.
+HIT-RATE (Consistency): K = plan cards (+0.25 more if it has Second Life) + tutors (1) + selection cards (0.5).
+  +3 x P(at least 1 of K in your first 10 cards) + 1 x P(at least 2).
+PLAN B (Consistency): +1.5 x P(at least 1 commander-independent plan card in 10 cards), using the 1/0.5/0 weights.
+ANSWER ON TIME (Interaction): +1.0 x P(at least 1 answer in 10 cards).
+CLOSER ON TIME (Finish): +0.75 x P(at least 1 finisher, 0.3+ Finish points, in 13 cards).
+WIDE SATURATION (Threats): Wide points past 10 per deck count half (scaled evenly across every token maker).
