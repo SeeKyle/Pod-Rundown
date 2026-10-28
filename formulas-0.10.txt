@@ -416,3 +416,7 @@ WIDE SATURATION (Threats): Wide points past 10 per deck count half (scaled evenl
 THREAT VARIETY (fix): only Tall, Wide, Board Power, noncreature threats and Commander count as kinds
   (Body floor and Feeds the Plan entries don't).
 NEEDS REPAIR replaces the old "Weak spots & fixes" box.
+
+==================== RULES 0.10.5 (Oct 28, 2026) ====================
+REBOUND: the free second cast next upkeep scores the effect again x0.80.
+Full card-text review of all 9 decks (about 35 cards got missing tags; listed on the site Notes tab).
