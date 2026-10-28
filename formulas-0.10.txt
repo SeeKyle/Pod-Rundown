@@ -429,3 +429,15 @@ SWING FACTOR (Threats): a card that can suddenly flip the standing of a game.
   Transfusion, Peer into the Abyss, Sower of Discord, Tragic Arrogance, Single Combat, Promise of Loyalty,
   Akroma's Will, Dire Fleet Ravager, Quietus Spike, Villainous Wealth, White Sun's Twilight, Second Harvest,
   Porcelain Gallery, Awakening Hall, Curse of Bloodletting, Rise and Shine, Redirect, Saproling Symbiosis.
+
+==================== RULES 0.10.7 (Oct 28, 2026) ====================
+SWING: mana penalty is -0.07 per MV above 3 (was -0.05).
+PLAN TAG (replaces Feeds the Plan and the hand-picked plan lists):
+  Each nonland, non-commander card is read from its text:
+    C = works alongside the commander(s)   T = fits the deck's main plan beyond the commander
+  CARD VALUE: +0.15 (one-off) / +0.25 (does it every turn), +0.05 more if it has both C and T.
+    Goes to the stat where the synergy lands (deck routes: Thing C->Threats, Kykar C->Mana, Kotis C->Threats,
+    Mech C->Mana, Joel C->Cards and T->Reach, Mathas C->Cards); otherwise the card's best stat.
+  HIT-RATE (Consistency): K = both tags 1 + one tag 0.5 (+0.25 if it has Second Life) + tutors 1 + selection 0.5.
+    +3 x P(at least 2 of K in your first 10 cards) + 1 x P(at least 3).
+  PLAN B (Consistency): K = T-tagged cards. +1.5 x P(at least 2 in 10 cards).
