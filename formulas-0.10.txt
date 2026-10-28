@@ -398,3 +398,8 @@ MANA DIVIDE: fixed at 4.00 (every other stat still uses second-highest deck = 10
 ==================== RULES 0.10.2 (Oct 28, 2026) ====================
 BLOODTHIRST: Threat: Tall at power + N counters (X = the deck's usual damage on its own turn, Grim = 6), x0.75 condition.
 TUTOR MV PENALTY (trial): -0.25 per MV above 1 (was -0.5).
+
+==================== RULES 0.10.3 (Oct 28, 2026) ====================
+SECOND LIFE (graveyard abilities): flashback, encore, cast-from-graveyard, "exile this card from your graveyard: ..."
+  (incl. giving its abilities/keywords to another creature). Score the graveyard effect with the normal formula
+  x0.60 (x0.40 if it also costs a card), plus 0.15 Cards for the extra use.
