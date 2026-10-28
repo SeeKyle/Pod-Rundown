@@ -447,3 +447,9 @@ SYNERGY GROUPS: each deck lists 3-5 groups (creature types and non-creature them
   Every nonland, non-commander card in a group gets +0.005 per OTHER card in that group (max +0.15 per group),
   up to 2 groups per card (its two biggest). Groups and their stats are listed in 50_Code/plan_tags.py (GROUPS).
 Plan Tags and group fits re-checked card by card for all 9 decks (two passes, no changes left after the second).
+
+==================== RULES 0.10.9 (Oct 28, 2026) ====================
+COMMANDER FREE DROPS: Dr. Eggman's free Robot/Construct/Vehicle drop leaves Ramp. Best mode of the villainous choice
+  assumed to land 50% -> the cheat value (x0.5) goes to Consistency instead of Mana.
+  Hit-Rate: each Plan Tag C card in a FREE_DROP deck adds +0.25 weight (0.5 x 50%). FREE_DROP = {'mech': 0.25}.
+  Mech's Plan Tag C bonus is no longer routed to Mana (goes to the card's best stat).
