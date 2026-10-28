@@ -420,3 +420,12 @@ NEEDS REPAIR replaces the old "Weak spots & fixes" box.
 ==================== RULES 0.10.5 (Oct 28, 2026) ====================
 REBOUND: the free second cast next upkeep scores the effect again x0.80.
 Full card-text review of all 9 decks (about 35 cards got missing tags; listed on the site Notes tab).
+
+==================== RULES 0.10.6 (Oct 28, 2026) ====================
+SWING FACTOR (Threats): a card that can suddenly flip the standing of a game.
+  Small (one player's spot flips) 0.25 | Medium (a player's life or board turns around) 0.50 |
+  Large (the whole table resets) 0.75; +0.50 repeatable, +0.25 instant, -0.05 per MV above 3.
+  Added on top of the card's other tags. Tagged: Axis of Mortality, Soul Conduit, Reverse the Sands, Profane
+  Transfusion, Peer into the Abyss, Sower of Discord, Tragic Arrogance, Single Combat, Promise of Loyalty,
+  Akroma's Will, Dire Fleet Ravager, Quietus Spike, Villainous Wealth, White Sun's Twilight, Second Harvest,
+  Porcelain Gallery, Awakening Hall, Curse of Bloodletting, Rise and Shine, Redirect, Saproling Symbiosis.
