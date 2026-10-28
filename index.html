@@ -288,7 +288,7 @@ details.tk-box[open]>summary{margin-bottom:var(--cds-gap-sm)}
       <span class="pr-key"><span class="pill sm c-green">9–10</span>High</span>
       <span class="pr-key"><span class="pill sm c-blue">10+</span>Over the mark</span>
       <span class="pr-key">· Salt 🟦 0–10 🟩 11–20 🟨 21–30 🟧 31–40 🟥 41+</span>
-      <span class="pr-key">· ⛔ Cheez's decks</span>
+      <span class="pr-key">· Cheez = 🧀 Cheese Wedge icon</span>
     </div>
     <div class="pr-scroll">
       <table id="rate-table" data-source="decks" data-row-key="deck">
@@ -408,10 +408,10 @@ details.tk-box[open]>summary{margin-bottom:var(--cds-gap-sm)}
     const sorted=[...R].sort((a,b)=>b.total-a.total);if(!gDeck||!R.some(x=>x.deck===gDeck))gDeck=sorted[0].deck;
     const r=R.find(x=>x.deck===gDeck);const avg=Object.fromEntries(S.map(([k])=>[k,d3.mean(R,d=>d[k])]));
     clear(box);
-    const pickRow=el('div','g-pick');sorted.forEach(d=>{const c=el('button','g-chip');c.type='button';c.setAttribute('aria-pressed',String(d.deck===gDeck));const sp=el('span',null,`${d.icon} ${d.deck}${d.owner==='Cheez'?' ⛔':''}`);c.appendChild(sp);c.addEventListener('click',()=>{gDeck=d.deck;renderGarage();});pickRow.appendChild(c);});box.appendChild(pickRow);requestAnimationFrame(()=>centerSel(pickRow,'.g-chip[aria-pressed="true"]'));
+    const pickRow=el('div','g-pick');sorted.forEach(d=>{const c=el('button','g-chip');c.type='button';c.setAttribute('aria-pressed',String(d.deck===gDeck));const sp=el('span',null,`${d.icon} ${d.deck}${d.owner==='Cheez'?' 🧀':''}`);c.appendChild(sp);c.addEventListener('click',()=>{gDeck=d.deck;renderGarage();});pickRow.appendChild(c);});box.appendChild(pickRow);requestAnimationFrame(()=>centerSel(pickRow,'.g-chip[aria-pressed="true"]'));
     const stage=el('div','g-stage');const idx=sorted.findIndex(d=>d.deck===gDeck);
     const arrow=(t,dir,label)=>{const b=el('button','g-arrow',t);b.type='button';b.setAttribute('aria-label',label);b.addEventListener('click',()=>{gDeck=sorted[(idx+dir+sorted.length)%sorted.length].deck;renderGarage();});return b;};
-    const title=el('div','g-title');title.appendChild(el('div','g-icon',r.icon));const tt=el('div');tt.appendChild(el('div','g-name',r.deck+(r.owner==='Cheez'?' ⛔':'')));tt.appendChild(el('div','g-sub',`${r.archetype} · #${idx+1} of ${sorted.length}`+(r.cmdr?` · ${r.cmdr}`:'')));title.appendChild(tt);
+    const title=el('div','g-title');title.appendChild(el('div','g-icon',r.icon));const tt=el('div');tt.appendChild(el('div','g-name',r.deck+(r.owner==='Cheez'?' 🧀':'')));tt.appendChild(el('div','g-sub',`${r.archetype} · #${idx+1} of ${sorted.length}`+(r.cmdr?` · ${r.cmdr}`:'')));title.appendChild(tt);
     const ov=el('div','g-ovr');ov.appendChild(el('b',null,f1(r.total)));ov.appendChild(el('span',null,'OVR / 90'));
     stage.appendChild(arrow('‹',-1,'Previous deck'));stage.appendChild(title);const right=el('div','g-right');right.style.display='flex';right.style.alignItems='center';right.style.gap='12px';right.appendChild(ov);right.appendChild(arrow('›',1,'Next deck'));stage.appendChild(right);box.appendChild(stage);
     const rows=el('div','g-rows');
@@ -441,14 +441,14 @@ details.tk-box[open]>summary{margin-bottom:var(--cds-gap-sm)}
     document.querySelectorAll('#rate-head th').forEach(th=>{const b=th.querySelector('button');if(b&&b.dataset.sort===sortKey)th.setAttribute('aria-sort',sortDir>0?'ascending':'descending');else th.removeAttribute('aria-sort');});
     clear(body);
     sorted.forEach(r=>{
-      const tr=el('tr');tr.dataset.key=r.deck;tr.appendChild(el('td',null,r.icon));const dc=el('td','l deck');const db=el('button',null,r.deck+(r.owner==='Cheez'?' ⛔':''));db.type='button';db.title='Open this deck';db.addEventListener('click',()=>pick(r.deck,true));dc.appendChild(db);tr.appendChild(dc);
+      const tr=el('tr');tr.dataset.key=r.deck;tr.appendChild(el('td',null,r.icon));const dc=el('td','l deck');const db=el('button',null,r.deck+(r.owner==='Cheez'?' 🧀':''));db.type='button';db.title='Open this deck';db.addEventListener('click',()=>pick(r.deck,true));dc.appendChild(db);tr.appendChild(dc);
       S.forEach(([k])=>{const td=el('td');td.appendChild(pill(r[k]));tr.appendChild(td);});
       {const td=el('td','tot',f1(r.total));if(r.was!=null&&!isNaN(r.was)){const d=r.total-Number(r.was);td.appendChild(el('span','delta',(d>=0?'+':'')+f1(d)+' vs old'));}tr.appendChild(td);}tr.appendChild(el('td','dim '+saltC(r.salt),f1(r.salt)));
       body.appendChild(tr);
     });
     const rc=document.getElementById('rate-cards');clear(rc);
     [...R].sort((a,b)=>b.total-a.total).forEach((r,i)=>{const c=el('button','rc');c.type='button';c.title='Open this deck';c.addEventListener('click',()=>{if(page!=='rundown')setPage('rundown');pick(r.deck,true);});
-      const top=el('div','rc-top');const nm=el('div','rc-name');nm.appendChild(el('span','rc-rank','#'+(i+1)));nm.appendChild(document.createTextNode(`${r.icon} ${r.deck}${r.owner==='Cheez'?' ⛔':''}`));nm.appendChild(el('div','rc-sub',r.archetype+` · 🧂 ${f1(r.salt)}`));top.appendChild(nm);
+      const top=el('div','rc-top');const nm=el('div','rc-name');nm.appendChild(el('span','rc-rank','#'+(i+1)));nm.appendChild(document.createTextNode(`${r.icon} ${r.deck}${r.owner==='Cheez'?' 🧀':''}`));nm.appendChild(el('div','rc-sub',r.archetype+` · 🧂 ${f1(r.salt)}`));top.appendChild(nm);
       const tt=el('div','rc-tot',f1(r.total));tt.appendChild(el('span',null,'of 90'));top.appendChild(tt);c.appendChild(top);
       const g=el('div','rc-grid');S.forEach(([k,ic])=>{const d=el('div');d.appendChild(el('span',null,ic));d.appendChild(pill(r[k],true));g.appendChild(d);});c.appendChild(g);rc.appendChild(c);});
   }
@@ -470,7 +470,7 @@ details.tk-box[open]>summary{margin-bottom:var(--cds-gap-sm)}
 
   function tile(r){
     const b=el('div','tile');
-    const top=el('div','tile-top');const nm=el('div');nm.appendChild(el('div','tile-name',`${r.icon} ${r.deck}${r.owner==='Cheez'?' ⛔':''}`));nm.appendChild(el('div','tile-arch',r.archetype));
+    const top=el('div','tile-top');const nm=el('div');nm.appendChild(el('div','tile-name',`${r.icon} ${r.deck}${r.owner==='Cheez'?' 🧀':''}`));nm.appendChild(el('div','tile-arch',r.archetype));
     const ov=el('div','tile-ovr');ov.appendChild(el('b',null,f1(r.total)));ov.appendChild(el('span',null,'of 90'));top.appendChild(nm);top.appendChild(ov);b.appendChild(top);
     if(r.cmdr)b.appendChild(el('div','tile-cmdr','👑 '+r.cmdr));
     const rw=el('div','rwrap');b.appendChild(rw);radar(rw,r,260);
@@ -487,7 +487,7 @@ details.tk-box[open]>summary{margin-bottom:var(--cds-gap-sm)}
     if(!openDeck||!R.some(x=>x.deck===openDeck)){const h=decodeURIComponent((location.hash||'').replace(/^#deck-/,''));const m=R.find(x=>slug(x.deck)===h);openDeck=(m||sorted[0]).deck;}
     clear(box);
     sorted.forEach(r=>{const t=el('button','dtab');t.type='button';t.setAttribute('role','tab');t.id='dtab-'+slug(r.deck);t.setAttribute('aria-selected',String(openDeck===r.deck));t.setAttribute('aria-controls','deck-view');
-      t.appendChild(document.createTextNode(`${r.icon} ${r.deck}${r.owner==='Cheez'?' ⛔':''}`));t.appendChild(el('b',null,f1(r.total)));
+      t.appendChild(document.createTextNode(`${r.icon} ${r.deck}${r.owner==='Cheez'?' 🧀':''}`));t.appendChild(el('b',null,f1(r.total)));
       t.addEventListener('click',()=>{if(openDeck!==r.deck){pick(r.deck,false);}});box.appendChild(t);});
     requestAnimationFrame(()=>centerSel(box,'.dtab[aria-selected="true"]'));
   }
