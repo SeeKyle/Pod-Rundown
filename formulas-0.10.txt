@@ -393,3 +393,4 @@ GROWERS: creatures that grow every turn are tagged at their grown power (Michela
 POLITICS: + Aim: single-target removal +0.10 (Direction lever), up to 8 cards.
           + Counterspells +0.15 (Deals lever), up to 5 cards.
           Rating uses the square root of the final Politics points (divide = second-highest deck, as always).
+MANA DIVIDE: fixed at 4.00 (every other stat still uses second-highest deck = 10).
