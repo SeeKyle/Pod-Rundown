@@ -456,3 +456,11 @@ COMMANDER ENGINES (all decks): a cheat on a commander or secret commander counts
   If that cheat repeats every turn (eng), every Plan Tag C card adds +0.5 x odds to Hit-Rate weight.
   Now affects: Dr. Eggman (odds 0.5, eng -> +0.25 per Robot/Construct/Vehicle) and Marina Vendrell (ETB, no Hit-Rate bonus).
   Mech's Plan Tag C bonus is no longer routed to Mana (goes to the card's best stat).
+
+==================== RULES 0.10.10 (Oct 28, 2026) ====================
+NEW DECKS: Ominous Weather (Isu), Blood Suckers (Zoraline, Cheez), Double Dragons (Miirym, Cheez),
+  Korvold Eats Everything (Korvold, Cheez). 13 decks total; divides (second-best deck = 10) recomputed over all 13.
+  Each new deck has Plan Tag rules (C/T) and synergy groups in 50_Code/plan_tags.py, same formulas as every other deck.
+BASICS: Snow-Covered Plains/Island/Swamp/Mountain/Forest count as basic lands.
+NEEDS REPAIR: each pick now carries a fix idea (a swap in the deck's colors that fits its plan, or "keep").
+  Ideas live in 50_Code/judge.py next to my read of the card. They don't change any score.
