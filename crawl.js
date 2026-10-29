@@ -624,8 +624,8 @@ function findEntry(run,o){   // equipped on its hero, then the bag
   for(const k of run.team){const L=o.slot==='item'?run.heroes[k].items:[];e=L.find(x=>x.card===o.card&&x.from===o.hero);if(e)return {e,list:L};}
   run.bag=run.bag||[];e=run.bag.find(x=>x.card===o.card&&x.owner===o.hero&&(o.slot==='item')===(x.kind==='item'));return e?{e,list:run.bag,bag:1}:null;}
 function owned(run,hk,card,slot){return !!findEntry(run,{hero:hk,card,slot});}
-function offers(run,rng,n){
-  rng=rng||Math.random;const out=[];run.bag=run.bag||[];
+function offers(run,rng,n,opt){
+  rng=rng||Math.random;opt=opt||{};const out=[];run.bag=run.bag||[];
   const luck=run.team.reduce((m,k)=>m+heroBase(k,1,3).luck,0)/run.team.length+Object.values(run.heroes).reduce((m,h)=>m+h.spells.filter(s=>s.arch==='insight').reduce((a,s)=>a+s.r,0)+h.items.filter(i=>i.arch==='charm').reduce((a,i)=>a+i.r,0),0);
   const pool=[];const room=run.bag.length<BAG_SIZE;
   for(const k of run.team){const d=heroDef(k),hv=run.heroes[k];
@@ -637,7 +637,9 @@ function offers(run,rng,n){
   const used=new Set();
   while(out.length<(n||3)&&pool.length){let tot=pool.reduce((m,p)=>m+p.w,0),x=rng()*tot,i=0;for(;i<pool.length;i++){x-=pool[i].w;if(x<=0)break;}
     const p=pool.splice(Math.min(i,pool.length-1),1)[0];const key=p.hero+p.card+p.kind;if(used.has(key))continue;used.add(key);
-    p.rar=rollRarity(rng,luck,run.prestige,p.kind==='aug'?'U':null);out.push(p);}
+    if(opt.blessed){const L=CFG.rarity.find(r=>r.id==='L');const roll=rng()*100;const canL=!(L.minPrestige>run.prestige);   // blessed: 55% Uncommon, 40% Rare, 5% Legendary once unlocked
+      p.rar=CFG.rarity.find(r=>r.id===(canL&&roll>=95?'L':roll>=55?'R':'U'));p.blessed=1;}
+    else p.rar=rollRarity(rng,luck+(opt.luck||0),run.prestige,opt.min||(p.kind==='aug'?'U':null));out.push(p);}
   return out;
 }
 // returns 'ok' (equipped or bagged) or 'full' (no slot and no bag room: caller asks what to drop)
@@ -703,7 +705,7 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793297150';const BGI=new Image();BGI.src='crawl_bg.png?v=1793297150';
+const IMG=new Image();IMG.src='crawl.png?v=1793297297';const BGI=new Image();BGI.src='crawl_bg.png?v=1793297297';
 const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -1044,8 +1046,8 @@ function showCamp(){
 function showPick(){
   const s=SLOT(),run=s.run;if(!run.pending)return showCamp();
   const luckN=run.heroes&&Object.values(run.heroes).some(h=>h.spells.some(x=>x.arch==='insight'&&(x.augs||[]).length))?4:3;
-  const os=CC.offersCache||(CC.offersCache=offers(run,Math.random,luckN));
-  const P=showPanel(`<div class="cc-h">LEVEL UP!</div><p class="cc-sub">${run.pending} pick${run.pending>1?'s':''} left. Tap one.</p>
+  const isB=(run.blessed||0)>0;const os=CC.offersCache||(CC.offersCache=offers(run,Math.random,luckN,isB?{luck:60,min:'U',blessed:1}:null));
+  const P=showPanel(`<div class="cc-h">${isB?'⭐ BLESSED PICK':'LEVEL UP!'}</div><p class="cc-sub">${isB?'Every option is Uncommon or better, with a 40% shot at Rare each. ':''}${run.pending} pick${run.pending>1?'s':''} left. Tap one.</p>
     <div class="cc-offers">${os.map((o,i)=>{const d=describe(o,run,s);const hd=heroDef(o.hero);
       const kind=o.kind==='new'?(o.slot==='spell'?'New spell':'New item'):o.kind==='aug'?'Augment':'Upgrade';
       const base=o.slot==='spell'?sname(o.hero,o.card):shortCard(o.card);const nm=d.r1>=CFG.maxRank?`✦ ${esc(maxTitle(o.card,o.arch))}`:esc(base);
@@ -1055,9 +1057,9 @@ function showPick(){
         <span>${o.kind==='new'?'':`r${d.r0} → `}${rankStars(d.r1)}${d.where?` <span class="cc-sub" style="font-size:10px">· ${d.where}</span>`:''}</span><span class="tx">${esc(d.txt)}${o.kind==='aug'?` <b>${AUG[o.aug].name}:</b> ${AUG[o.aug].txt}.`:''}</span></button>`;}).join('')}</div>
     <div class="cc-row" style="margin-top:12px"><button class="cc-btn" data-reroll ${run.rerolls>0?'':'disabled'}>🎲 Reroll (${run.rerolls})</button><button class="cc-btn" data-skip>Skip (+${fmt(60*run.stage)} score)</button></div>`);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
-  P.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const o=os[+b.dataset.i];const r=applyOffer(run,o,s);if(r==='full')return showReplace(o);sfx('level');CC.offersCache=null;persist();run.pending?showPick():showCamp();});
+  P.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const o=os[+b.dataset.i];const r=applyOffer(run,o,s);if(r==='full')return showReplace(o);if(o.blessed)run.blessed=Math.max(0,(run.blessed||0)-1);sfx('level');CC.offersCache=null;persist();run.pending?showPick():showCamp();});
   P.querySelector('[data-reroll]').onclick=()=>{if(run.rerolls>0){run.rerolls--;CC.offersCache=null;persist();showPick();}};
-  P.querySelector('[data-skip]').onclick=()=>{run.pending--;run.score+=60*run.stage;CC.offersCache=null;persist();run.pending?showPick():showCamp();};
+  P.querySelector('[data-skip]').onclick=()=>{run.pending--;if(isB)run.blessed=Math.max(0,(run.blessed||0)-1);run.score+=60*run.stage;CC.offersCache=null;persist();run.pending?showPick():showCamp();};
 }
 function showReplace(o){
   const s=SLOT(),run=s.run;const hv=run.heroes[o.hero];const t=o.slot==='item'?'item':SPELL[o.arch].passive?'passive':'active';
@@ -1066,7 +1068,7 @@ function showReplace(o){
     <div class="cc-load">${eq.map(([sl,i,e])=>`<button class="cc-card" style="text-align:left" data-d="${sl}|${i}">Equipped: ${chipFor(e,sl==='item',o.hero)}</button>`).join('')}
       ${run.bag.map((e,i)=>`<button class="cc-card" style="text-align:left" data-d="bag|${i}">🎒 ${chipFor(e,e.kind==='item',e.owner)}</button>`).join('')}</div>
     <div class="cc-row" style="margin-top:12px"><button class="cc-btn" data-cancel>← Back to picks</button></div>`);
-  P.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const [w,i]=b.dataset.d.split('|');discard(run,w,o.hero,+i);applyOffer(run,o,s);sfx('level');CC.offersCache=null;persist();run.pending?showPick():showCamp();});
+  P.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const [w,i]=b.dataset.d.split('|');discard(run,w,o.hero,+i);applyOffer(run,o,s);if(o.blessed)run.blessed=Math.max(0,(run.blessed||0)-1);sfx('level');CC.offersCache=null;persist();run.pending?showPick():showCamp();});
   P.querySelector('[data-cancel]').onclick=showPick;
 }
 function endRun(s,victory){const r=s.run;if(!r)return;const tot=r.score;
@@ -1108,8 +1110,8 @@ function finishStage(g){
     for(const k of run.team){const h=run.heroes[k];if(h.dead){h.dead=false;h.hpf=.25;}else h.hpf=Math.min(1,(h.hpf||0)+.3);}
     const cleared=run.stage;run.score+=Math.round(250*cleared*(1+run.prestige));
     if(cleared>=CFG.maxStage){persist();CC.game=null;return showVictory(lvls);}
-    if(cleared>=CFG.strangerStage&&(s.partySize||2)<3){s.partySize=3;const free=DATA.heroes.filter(h=>h.owner===CC.player&&!run.team.includes(h.key));
-      run.stage++;persist();CC.game=null;if(free.length&&run.team.length<3)return showStranger(free);}
+    if(cleared===CFG.strangerStage&&run.team.length<3&&!run.strangerDone){run.strangerDone=1;s.partySize=3;const free=DATA.heroes.filter(h=>h.owner===CC.player&&!run.team.includes(h.key));
+      run.stage++;persist();CC.game=null;return showStranger(free);}
     run.stage++;run.rerolls=Math.max(run.rerolls,1);
     if(run.prestige*100+run.stage-1>s.best.prestige*100+s.best.stage){s.best.stage=run.stage-1;s.best.prestige=run.prestige;}
     persist();CC.game=null;
@@ -1126,11 +1128,15 @@ function finishStage(g){
   P.querySelector('[data-team]').onclick=showTeam;P.querySelector('[data-saves]').onclick=showSlots;
 }
 function showStranger(free){
-  const s=SLOT(),run=s.run;
+  const s=SLOT(),run=s.run;const bless=()=>{run.blessed=(run.blessed||0)+1;run.pending=(run.pending||0)+1;sfx('level');persist();showCamp();};
   const P=showPanel(`<div class="cc-h">A MYSTERY STRANGER</div><div class="cc-h2">Freed from the castle cells</div>
-    <p class="cc-sub">Someone was chained up in the dungeon. Choose who it turns out to be: they join this run now, and every new run in this save can bring 3 heroes.</p>
-    <div class="cc-heroes">${free.map(h=>`<button class="cc-hero" data-k="${h.key}"><span data-por="${h.key}"></span><div class="nm">${h.icon} ${esc(h.name)}</div><div class="dk">Inspired by deck: <b>${esc(h.deck)}</b></div><div class="lv">LV ${s.heroes[h.key].lvl}</div></button>`).join('')}</div>`);
+    ${free.length?`<p class="cc-sub">Someone was chained up in the dungeon. Choose who it turns out to be and they join this run now, or leave them be and take a ⭐ Blessed Upgrade instead (every option Uncommon or better, with much better odds of Rare). This save can now bring 3 heroes to new runs.</p>
+    <div class="cc-heroes">${free.map(h=>`<button class="cc-hero" data-k="${h.key}"><span data-por="${h.key}"></span><div class="nm">${h.icon} ${esc(h.name)}</div><div class="dk">Inspired by deck: <b>${esc(h.deck)}</b></div><div class="lv">LV ${s.heroes[h.key].lvl}</div></button>`).join('')}</div>
+    <div class="cc-row" style="margin-top:12px"><button class="cc-btn" data-bless>Leave them be: ⭐ take a Blessed Upgrade</button></div>`
+    :`<p class="cc-sub">The cell holds only a lingering spirit, with no hero of yours to answer the call yet. It leaves you a gift instead: a ⭐ Blessed Upgrade (every option Uncommon or better, with much better odds of Rare).</p>
+    <div class="cc-row"><button class="cc-btn go" data-bless>⭐ ACCEPT THE BLESSING</button></div>`}`);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
+  P.querySelector('[data-bless]').onclick=bless;
   P.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k,d=heroDef(k);run.team.push(k);
     run.heroes[k]={hpf:1,dead:false,spells:[{card:d.spells[0].card,arch:d.spells[0].arch,r:Math.max(1,Math.min(4,run.stage-3)),augs:[]}],items:[]};run.pending=(run.pending||0)+2;sfx('level');persist();showCamp();});
 }
