@@ -484,3 +484,7 @@ VEHICLES (Survival, all decks): every Vehicle card gets +0.15 Survival (dodges c
 ALPHA-STRIKE ENABLERS (Finish): mass tap-downs and overruns are tagged finish('Burst', ...) as one-turn lethal setups
   (Cone of Cold, Sleep, Icy Blast, Become the Avalanche; Chandra's Ignition in Korvold).
 AIR DENSITY multiplier 0.40 -> 0.60.
+
+==================== NEW DECK (Oct 29, 2026) ====================
+Primary Directive (Leon, Optimus Prime, Hero). Plan Tags and synergy groups in 50_Code/plan_tags.py ('robots').
+Leon's decks are marked with a jellyfish (owner 'Leon'). No formula changes.
