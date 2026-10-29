@@ -22,9 +22,9 @@ const CFG={
     {id:'L',name:'Legendary',pts:5,w:2.5,col:'#ffb020',minPrestige:2}   // locked early on purpose
   ],
   biomes:[
-    {id:'grave',name:'Hollowmere Graveyard',pool:{zombie:5,skeleton:4,ghoul:3,bat:3,ghost:2,archer:2,cultist:2},boss:'gravelord'},
-    {id:'manor',name:'Castle Sanguine',pool:{thrall:5,bat:4,hound:3,wolfman:3,gargoyle:2,knight:2,ghost:2},boss:'countess'},
-    {id:'bog',name:'The Drowned Abbey',pool:{drowned:4,spawn:4,leech:4,spider:3,wraith:3,eye:2,hag:2},boss:'maw'},
+    {id:'grave',name:'Hollowmere Graveyard',pool:{zombie:8,skeleton:7,ghoul:5,bat:3,ghost:2,archer:1.6,cultist:1.6},boss:'gravelord'},
+    {id:'manor',name:'Castle Sanguine',pool:{thrall:8,bat:4,hound:5,wolfman:5,gargoyle:2,knight:3,ghost:2},boss:'countess'},
+    {id:'bog',name:'The Drowned Abbey',pool:{drowned:7,spawn:6,leech:6,spider:5,wraith:4,eye:1.6,hag:1.6},boss:'maw'},
   ],
   enemies:{ // hp/dmg at stage 1; spd px/s; atk = seconds between hits; cost = spawn budget
     zombie:  {hp:34,dmg:6, spd:10,atk:1.3,xp:2,pts:10,cost:1.6},
@@ -57,8 +57,8 @@ const CFG={
     const P=prestige||0;
     return {n,biome:b,bi,boss:n%this.stagesPerBiome===0?b.boss:null,
       len:820+70*(n-1),
-      rate:(0.62+0.11*(n-1))*(1+0.3*P),
-      hpMul:Math.pow(1.31,n-1)*Math.pow(2.2,P),
+      rate:1.5*(0.62+0.11*(n-1))*(1+0.3*P),   // spawn budget per second
+      hpMul:Math.pow(1.28,n-1)*Math.pow(2.2,P),
       dmgMul:Math.pow(1.16,n-1)*Math.pow(1.8,P),
       xpMul:1+0.32*(n-1)+P*2.4};
   },
@@ -85,6 +85,9 @@ const STYLE={
   weather:{atk:'caster',proj:'frost',hp:1.1,dmg:.95,chill:1},
 };
 const ORDER={melee:0,duo:1,ranged:2,caster:3};
+// walking pace per hero (px/s): heavy/armored/stone slow, light and quick ones faster
+const MOVE={grim:24,vile:26,felothar:18,thing:20,kykar:26,depala:22,kotis:34,dragons:30,mathas:28,turtle:22,marina:26,korvold:26,thranduil:32,joel:28,robots:22,blood:30,mech:24,weather:24};
+const MINION_SPEED=62;
 // ---- signature abilities: every hero comes with one, on its own cooldown (not a spell slot). fn(game, hero, atk)
 const SIG={
   grim:{name:'Royal Cleave',cd:6,txt:'Sweeps every ground enemy in reach for 220% damage and shoves them back.',fn:(g,h,a)=>g.sigArea(h,46,a*2.2,{kb:1.4,ground:1,fx:'slash'})},
@@ -100,7 +103,7 @@ const SIG={
   marina:{name:'Lantern Haunt',cd:9,txt:'Lets the lantern ghost out to fight for 9s.',fn:(g,h,a)=>{g.addMinion(h,h.max*.3,a*.6,9,'spirit');return true;}},
   korvold:{name:'Gorge',cd:6,txt:'Bites the front enemy for 260% and heals for 30% of it.',fn:(g,h,a)=>g.sigFront(h,a*2.6,{heal:.3})},
   thranduil:{name:'Volley',cd:6,txt:'Looses 3 heavy arrows at random enemies for 115% each.',fn:(g,h,a)=>g.sigMulti(h,'arrow',a*1.15,3)},
-  joel:{name:'Brick Toss',cd:4.5,txt:'The scout lobs a brick for 200% that stuns and shoves.',fn:(g,h,a)=>g.sigShot(h,'brick',a*2,{stun:.7,kb:.9})},
+  joel:{name:'Brick Toss',cd:7,txt:'The scout lobs a brick for 200% that stuns the target for 0.75s.',fn:(g,h,a)=>g.sigShot(h,'brick',a*2,{stun:.75})},
   robots:{name:'Overcharge',cd:7,txt:'A piercing plasma beam hits every enemy in a line for 160%.',fn:(g,h,a)=>g.sigArea(h,260,a*1.6,{fx:'beamline',c:'#3ff0ff'})},
   blood:{name:'Blood Rite',cd:7,txt:'Drains 3 enemies for 90% and heals the whole team for half of it.',fn:(g,h,a)=>g.sigDrain(h,a*.9,3)},
   mech:{name:'Mortar Barrage',cd:7,txt:'Two big shells crash down for 160% with splash.',fn:(g,h,a)=>g.sigMulti(h,'shell',a*1.6,2,{splash:20})},
@@ -236,7 +239,7 @@ class Game{
   // ---------------------------------------------------------------- spawning
   spawnEnemy(type,opt){
     const E=CFG.enemies[type];const st=this.st;const elite=!opt&&this.rng()<.07+.01*st.n;
-    const hp=E.hp*st.hpMul*(elite?2.6:1);
+    const hp=E.hp*.85*st.hpMul*(elite?2.6:1);   // more enemies, each a bit squishier
     const e={type,E,x:this.W+10+this.rng()*20,y:E.fly?this.G-70+this.rng()*36:this.G,hp,max:hp,dmg:E.dmg*st.dmgMul*(elite?1.5:1),atkT:this.rng()*.5,
       walkT:this.rng(),anim:0,animT:0,slow:0,slowT:0,stun:0,burn:0,burnT:0,shred:0,elite,fly:!!E.fly,ranged:!!E.ranged,hitFlash:0,phase:this.rng()*6,target:null};
     if(opt)Object.assign(e,opt);
@@ -256,7 +259,7 @@ class Game{
     let crit=false;if(src&&!opt.nocrit&&this.rng()<src.crit){amt*=1.75;crit=true;}
     amt=mitigate(e,amt,opt.type); if(e.shred>0)amt*=1.2;
     if(opt.execute&&e.hp<e.max*.3)amt*=2;
-    amt=Math.max(1,amt);e.hp-=amt;e.hitFlash=.12;
+    amt=Math.max(1,amt);e.hp-=amt;e.hitFlash=.12;this.lastHit=this.t;
     if(opt.kb>0){const ratio=Math.min(1,amt/Math.max(1,e.max));let kb=ratio<.08?ratio*12:ratio<.25?2+ratio*14:5+ratio*12;   // chip ~0, medium small, big decent
       if(crit)kb*=1.6;if(e.boss)kb*=.12;kb*=opt.kb;if(e.fly)kb*=.7;e.kbv=Math.max(e.kbv||0,Math.min(18,kb)*7);}
     this.text(e.x+(this.rng()*8-4),e.y-(e.boss?100:e.fly?16:44),Math.round(amt),crit?'#ffd23f':'#ffffff',crit);
@@ -267,7 +270,7 @@ class Game{
   }
   kill(e,src){
     e.dead=true;this.kills++;
-    const xp=(e.boss?e.B.xp:e.E.xp*(e.elite?2.5:1))*this.st.xpMul;
+    const xp=(e.boss?e.B.xp:e.E.xp*(e.elite?2.5:1)*.65)*this.st.xpMul;   // regular enemies give ~1/3 less XP (there are 50% more)
     const pts=Math.round((e.boss?e.B.pts:e.E.pts*(e.elite?3:1))*(1+.4*(this.st.n-1))*(1+this.run.prestige)*(src?src.scoreM:1));
     this.stageScore+=pts;this.gainXp(xp);
     this.fx.push({k:'poof',x:e.x,y:e.y-(e.fly?0:20),t:0,big:!!e.boss||e.elite});
@@ -365,25 +368,28 @@ class Game{
     for(const t of this.timers||[])t.t-=dt;
     if(this.timers){for(const t of this.timers.filter(t=>t.t<=0))t.fn();this.timers=this.timers.filter(t=>t.t>0);}
     // formation
-    al.forEach((h,i)=>{const tx=this.slotX(i);h.x+=(tx-h.x)*Math.min(1,dt*3);});
+    // formation: everyone heads for their slot at their own pace; while marching, quicker heroes drift ahead and slow ones lag a little
+    const avgMv=al.reduce((m,h)=>m+(MOVE[h.key]||26),0)/Math.max(1,al.length);
+    al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;const tx=this.slotX(i)+drift;
+      const d=tx-h.x,st=mv*1.6*dt;h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;});
     const f=this.front();if(!f)return;
     // blocking: walk unless something is close
     const near=this.enemies.filter(e=>!e.dead&&!e.fly).reduce((m,e)=>Math.min(m,e.x-(e.boss?e.w:0)-(e.ranged?40:0)),1e9);
-    const blocked=near<f.x+70||(this.boss&&!this.boss.dead);
-    const scroll=blocked?0:CFG.walkSpeed;this.scroll=scroll;
+    const blocked=(near<f.x+70||(this.boss&&!this.boss.dead))&&!(this.t-(this.lastHit||0)>3&&!(this.boss&&!this.boss.dead));
+    const scroll=blocked?0:Math.max(18,Math.min(32,avgMv));this.scroll=scroll;
     if(!this.bossSpawned)this.dist+=scroll*dt;
     // spawning
     const stageDone=this.dist>=this.st.len;
-    if(!stageDone){this.budget+=this.st.rate*dt;
+    if(!stageDone){this.budget+=this.st.rate*dt*(scroll?1.15:.25);   // enemies come as you advance; only a trickle while you're held up
       const type=this.nextType||(this.nextType=this.pickType());const c=CFG.enemies[type].cost;
-      if(this.budget>=c&&this.enemies.filter(e=>!e.dead).length<14){this.budget-=c;this.spawnEnemy(type);this.nextType=null;}}
+      if(this.budget>=c&&this.enemies.filter(e=>!e.dead).length<20){this.budget-=c;this.spawnEnemy(type);this.nextType=null;}}
     else if(this.st.boss&&!this.bossSpawned&&!this.enemies.some(e=>!e.dead))this.spawnBoss();
     else if(!this.st.boss&&!this.enemies.some(e=>!e.dead)&&!this.demo){this.over='clear';this.ev('clear');return;}
     if(this.demo&&stageDone){this.dist=0;}
     if(this.boss&&this.boss.dead&&!this.over&&!this.demo){this.over='clear';this.ev('clear');return;}
     // heroes
     for(const h of al){
-      h.walkT+=dt*(scroll?1:0);if(h.animT>0)h.animT-=dt;if(h.hitFlash>0)h.hitFlash-=dt;if(h.buffT>0)h.buffT-=dt;
+      h.walkT+=dt*(scroll?(MOVE[h.key]||26)/26:0);if(h.animT>0)h.animT-=dt;if(h.hitFlash>0)h.hitFlash-=dt;if(h.buffT>0)h.buffT-=dt;
       if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}
       for(const it of h.items)if(it.cd>0)it.cd-=dt;
       if(this.enemies.some(e=>!e.dead&&e.x-h.x<36))this.procs(h,'near');
@@ -411,7 +417,10 @@ class Game{
         if(h.atkT>1)h.atkT=1;}
     }
     // minions
-    for(const m of this.minions){m.life-=dt;m.atkT+=dt;const tx=f.x+6;m.x+=(tx+(this.minions.indexOf(m)*6)-m.x)*Math.min(1,dt*2);
+    for(const m of this.minions){m.life-=dt;m.atkT+=dt;const mi=this.minions.indexOf(m);
+      const foe=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>f.x&&e.x-f.x<130).sort((p,q)=>p.x-q.x)[0];
+      const tx=foe?Math.max(f.x+8,foe.x-(foe.boss?foe.w:0)-14-mi*5):f.x+22+mi*7;
+      const md=tx-m.x,ms=MINION_SPEED*dt;m.x+=Math.abs(md)<=ms?md:Math.sign(md)*ms;m.moving=Math.abs(md)>1;
       const e=this.enemies.filter(e=>!e.dead&&Math.abs(e.x-(e.boss?e.w:0)-m.x)<30)[0];
       if(e&&m.atkT>=1){m.atkT=0;const d=this.hitEnemy(e,m.atk,m.owner.alive?{crit:m.owner.crit,scoreM:m.owner.scoreM,items:[]}:null,{});if(m.leech)this.healHero(this.weakest(),d*.2,true);}
       if(m.hp<=0||m.life<=0){m.dead=true;this.fx.push({k:'poof',x:m.x,y:this.G-14,t:0});
@@ -438,12 +447,14 @@ class Game{
         const stop=Math.max(e.E.stop*this.W/CFG.W,f.x+80);e.x-=scroll*dt;if(e.x>stop)e.x-=e.E.spd*sp*dt;e.x=Math.max(e.x,blockX);
         e.atkT+=dt;if(e.atkT>=e.E.atk&&e.x<this.W-10){e.atkT=0;e.anim=1;e.animT=.3;const t=al[Math.floor(this.rng()*al.length)];this.enemyShot(e,t);}
       }else{
-        e.x-=scroll*dt;if(e.x>blockX)e.x=Math.max(blockX,e.x-e.E.spd*sp*dt);
-        if(e.x<=blockX+2){e.atkT+=dt;if(e.atkT>=e.E.atk){e.atkT=0;e.anim=1;e.animT=.3;
-          if(tank){tank.hp-=e.dmg;}else{this.hurtHero(f,e.dmg,e);if(e.E.leech)e.hp=Math.min(e.max,e.hp+e.dmg*e.E.leech);}}}
+        const wall=this.minions.filter(m=>m.x<e.x+4).reduce((b,m)=>!b||m.x>b.x?m:b,null);const bx=wall&&wall.x+12>blockX?wall.x+12:blockX;
+        e.x-=scroll*dt;if(e.x>bx)e.x=Math.max(bx,e.x-e.E.spd*sp*dt);
+        if(e.x<=bx+2){e.atkT+=dt;if(e.atkT>=e.E.atk){e.atkT=0;e.anim=1;e.animT=.3;
+          if(bx>blockX&&wall){wall.hp-=e.dmg;}else if(tank){tank.hp-=e.dmg;}else{this.hurtHero(f,e.dmg,e);if(e.E.leech)e.hp=Math.min(e.max,e.hp+e.dmg*e.E.leech);}}}
       }
     }
     this.enemies=this.enemies.filter(e=>!e.dead||e.boss);
+    if(this.t>180&&!this.boss){for(const e of this.enemies)if(!e.dead)e.dmg*=1+.01*dt;}   // stage dragging on: monsters grow fierce
     // projectiles
     for(const p of this.proj){p.t+=dt;
       if(p.enemy){const tx=p.tx.x,ty=this.G-30;const dx=tx-p.x,dy=ty-p.y,d=Math.hypot(dx,dy);
@@ -483,14 +494,14 @@ class Game{
     h.compT=(h.compT||0)+dt;h.pounceT=(h.pounceT==null?5:h.pounceT)-dt;
     if(h.pounce){const P=h.pounce;P.t+=dt;const u=Math.min(1,P.t/.35);
       if(P.t<.35){h.compX=P.x0+(P.tx-P.x0)*u;h.compY=Math.sin(u*Math.PI)*22;}
-      else if(!P.hit){P.hit=1;if(!P.tgt.dead){this.hitEnemy(P.tgt,h.atk*1.5,h,{kb:.6});this.fx.push({k:'slash',x:P.tgt.x-6,y:P.tgt.boss?P.tgt.y-50:P.tgt.fly?P.tgt.y:P.tgt.y-24,t:0});}}
+      else if(!P.hit){P.hit=1;if(!P.tgt.dead){this.hitEnemy(P.tgt,h.atk*1.5,h,{});this.fx.push({k:'slash',x:P.tgt.x-6,y:P.tgt.boss?P.tgt.y-50:P.tgt.fly?P.tgt.y:P.tgt.y-24,t:0});}}
       else if(P.t<.95){const v=(P.t-.6)/.35;if(v>0){h.compX=P.tx+(P.x0-P.tx)*Math.min(1,v);h.compY=Math.sin(Math.min(1,v)*Math.PI)*14;}}
       else{h.pounce=null;h.compY=0;}
       h.compV=0;return;}
-    const want=-14+Math.sin(h.compT*.7)*12+Math.sin(h.compT*1.9)*5;const prev=h.compX==null?want:h.compX;
-    h.compX=prev+(want-prev)*Math.min(1,dt*2);h.compV=(h.compX-prev)/Math.max(dt,1e-3);h.compY=0;
+    const want=-6+Math.sin(h.compT*1.3)*26+Math.sin(h.compT*3.1)*7;const prev=h.compX==null?want:h.compX;   // quick, wide patrol
+    h.compX=prev+Math.max(-70*dt,Math.min(70*dt,(want-prev)*Math.min(1,dt*5)));h.compV=(h.compX-prev)/Math.max(dt,1e-3);h.compY=0;
     if(h.pounceT<=0){const t=this.liveE().filter(e=>e.x-(e.boss?e.w:0)-f.x<50).sort((p,q)=>p.x-q.x)[0];
-      if(t){h.pounce={t:0,x0:h.compX,tx:(t.x-(t.boss?t.w*.6:0))-h.x,tgt:t};h.pounceT=7;}else h.pounceT=1;}
+      if(t){h.pounce={t:0,x0:h.compX,tx:(t.x-(t.boss?t.w*.6:0))-h.x,tgt:t};h.pounceT=5;}else h.pounceT=1;}
   }
   liveE(){return this.enemies.filter(e=>!e.dead&&e.x<this.W+4);}
   sigArea(h,R,dmg,o){const f=this.front();let any=false;
@@ -511,7 +522,7 @@ class Game{
     for(const e of L){tot+=this.hitEnemy(e,dmg,h,{});this.fx.push({k:'drain',x:e.x,y:e.y-(e.fly?0:24),tx:h.x,c:'#ff3a5a',t:0});}for(const o of this.alive())this.healHero(o,tot*.5/this.alive().length);return true;}
   enemyShot(e,t){if(!t)return;this.proj.push({enemy:true,kind:e.E?e.E.proj:'bat',x:e.x-8,y:e.fly?e.y:e.y-30,tx:t,dmg:e.dmg,src:e,spd:150,t:0});}
   bossAI(b,dt,sp,f){
-    const al=this.alive();const k=b.type;b.walkT+=dt;
+    const al=this.alive();const k=b.type;b.walkT+=dt;b.age=(b.age||0)+dt;if(b.age>90&&!b.enraged){b.enraged=1;this.ev('enrage');}if(b.enraged)b.dmg*=1+.012*dt;   // enrage after 90s so fights always end
     const stop=k==='maw'?Math.max(f.x+b.w+30,this.W-96):f.x+b.w+(k==='countess'?14:18);
     if(b.x>stop)b.x-=Math.max(18,b.B.spd)*sp*dt*(k==='maw'?2.2:1.6);
     if(k==='countess')b.y=this.G-40+Math.sin(this.t*1.6)*10;
@@ -535,7 +546,7 @@ class Game{
   saveBack(){for(const h of this.heroes){const sv=this.run.heroes[h.key];sv.hpf=h.alive?h.hp/h.max:0;sv.dead=!h.alive;sv.spells=h.spells.map(s=>({card:s.card,arch:s.arch,r:s.r,augs:s.augs||[]}));}}
 }
 function setTimeoutSafe(g,t,fn){(g.timers=g.timers||[]).push({t,fn});}
-const BIGP={brick:.5};
+const BIGP={};
 const PSPD={arrow:200,quarrel:215,bolt:150,orb:135,fire:150,shard:160,zap:170,wisp:120,plasma:180,blood:140,shell:160,frost:145,brick:190};   // px/s   // ranged shots don't shove, except the thrown brick (a little)
 const PCOL={skull:'#7dff9a',hex:'#c050ff',bolt:'#ffb040',orb:'#c050ff',arrow:'#e8e0c8',quarrel:'#e8e0c8',fire:'#ff8a1f',shard:'#6ff0ff',zap:'#bfefff',wisp:'#7dff9a',plasma:'#3ff0ff',blood:'#ff2a3a',shell:'#ffd23f',frost:'#9ae6ff',brick:'#c0603a'};
 
@@ -589,15 +600,34 @@ const Save={
   write(d){try{localStorage.setItem(SKEY,JSON.stringify(d));}catch(e){}},
   pinHash(p,pin){return String(strHash('crypt:'+p+':'+pin+':pod'));},
 };
-function newSlot(player){const heroes={};for(const h of DATA.heroes)if(h.owner===player)heroes[h.key]={lvl:1,xp:0};return {heroes,best:{score:0,stage:0,prestige:0},runs:0,run:null,created:Date.now()};}
+const SAVE_EPOCH=1;   // bump only for a change so big that runs in progress can't be carried over (hero levels still stay)
+function migrateSlot(slot,player){
+  for(const h of DATA.heroes)if(h.owner===player&&!slot.heroes[h.key])slot.heroes[h.key]={lvl:1,xp:0};
+  for(const k of Object.keys(slot.heroes))if(!heroDef(k))delete slot.heroes[k];
+  slot.best=slot.best||{score:0,stage:0,prestige:0};
+  const run=slot.run;if(!run)return slot;
+  if((slot.epoch||1)!==SAVE_EPOCH){slot.run=null;slot.epoch=SAVE_EPOCH;return slot;}
+  run.team=run.team.filter(k=>heroDef(k));if(!run.team.length){slot.run=null;return slot;}
+  for(const k of run.team){const d=heroDef(k);const hv=run.heroes[k]=run.heroes[k]||{hpf:1,dead:false,spells:[],items:[]};
+    const fix=(list,pool)=>{const out=[];for(const e of list){let m=pool.find(x=>x.card===e.card&&x.arch===e.arch)||pool.find(x=>x.card===e.card);
+        if(!m)m=pool.find(x=>x.arch===e.arch&&!out.some(o=>o.card===x.card)&&!list.some(o=>o.card===x.card));
+        if(!m)m=pool.find(x=>!out.some(o=>o.card===x.card)&&!list.some(o=>o.card===x.card));
+        if(m)out.push(Object.assign({},e,{card:m.card,arch:m.arch,augs:(e.augs||[]).filter(g=>SPELL[m.arch]&&SPELL[m.arch].augs.includes(g)),r:Math.min(CFG.maxRank,e.r||1)}));}
+      return out;};
+    hv.spells=fix(hv.spells||[],d.spells).slice(0,CFG.slots.spell);hv.items=fix(hv.items||[],d.items).slice(0,CFG.slots.item).map(it=>Object.assign(it,{proc:procFor(it.card),augs:[]}));
+    if(!hv.spells.length)hv.spells=[{card:d.spells[0].card,arch:d.spells[0].arch,r:1,augs:[]}];}
+  for(const k of Object.keys(run.heroes))if(!run.team.includes(k))delete run.heroes[k];
+  if(run.stage>CFG.maxStage)run.stage=CFG.maxStage;
+  return slot;}
+function newSlot(player){const heroes={};for(const h of DATA.heroes)if(h.owner===player)heroes[h.key]={lvl:1,xp:0};return {epoch:SAVE_EPOCH,heroes,best:{score:0,stage:0,prestige:0},runs:0,run:null,created:Date.now()};}
 
 // ======================================================================= exports for node sims
-const API={CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
+const API={migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
 if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793294294';const BGI=new Image();BGI.src='crawl_bg.png?v=1793294294';
+const IMG=new Image();IMG.src='crawl.png?v=1793296110';const BGI=new Image();BGI.src='crawl_bg.png?v=1793296110';
 const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -653,7 +683,7 @@ function drawGame(ctx,g,W,oy){
   drawBG(ctx,g,W,oy);ctx.translate(0,-oy);const G=g.G;
   // minions
   for(const m of g.minions){const n=MINI[m.kind]||'e_ghost';const a=SP[n];shadow(ctx,m.x,G,6);
-    ctx.save();ctx.translate(m.x,G-(n==='e_skeleton'?40:32));ctx.scale(.62,.62);spr(ctx,n,Math.floor(g.t*8)%6,-FW(a)/2,0,true,.88);ctx.restore();}
+    ctx.save();ctx.translate(m.x,G-(n==='e_skeleton'?40:32));ctx.scale(.62,.62);spr(ctx,n,Math.floor(g.t*(m.moving?16:6))%6,-FW(a)/2,0,true,.88);ctx.restore();}
   // heroes (back to front)
   const hs=g.heroes.slice().sort((a,b)=>a.x-b.x);
   for(const h of hs)if(!h.alive)spr(ctx,'h_'+h.key,10,h.x-32,G-60,false,.85);
@@ -801,7 +831,7 @@ const CC={data:Save.load(),player:null,unlocked:{},slotIdx:-1,game:null,speed:1,
 const PL=()=>{const p=CC.data.players[CC.player]=CC.data.players[CC.player]||{pin:null,slots:[null,null,null]};return p;};
 const SLOT=()=>PL().slots[CC.slotIdx];
 function persist(){Save.write(CC.data);updateStripTop();}
-function migrate(slot,player){for(const h of DATA.heroes)if(h.owner===player&&!slot.heroes[h.key])slot.heroes[h.key]={lvl:1,xp:0};}
+function migrate(slot,player){migrateSlot(slot,player);}
 function bestOf(player){const p=CC.data.players[player];let b={score:0,stage:0,prestige:0};if(!p)return b;
   for(const s of p.slots)if(s&&(s.best.prestige*100+s.best.stage>b.prestige*100+b.stage||(s.best.score>b.score&&s.best.stage>=b.stage)))b=Object.assign({},s.best);
   for(const s of p.slots)if(s)b.score=Math.max(b.score,s.best.score);return b;}
@@ -833,7 +863,7 @@ function layout(){if(!root||root.hidden)return;const main=$('.cc-main',root);con
   const reserved=land?0:(info.offsetHeight+hud.offsetHeight+4);let w=Math.min(W,(H-reserved)*16/9);
   const k=Math.floor(w/384);if(k>=2&&k*384>=w*.82)w=k*384;cv.style.width=Math.floor(w)+'px';cv.style.height=Math.floor(w*9/16)+'px';
   bossEl.style.top=(cv.offsetTop+Math.floor(w*9/16)*.06)+'px';banner.style.top=(cv.offsetTop+Math.floor(w*9/16)*.38)+'px';}
-function openCrawl(){build();root.hidden=false;document.body.style.overflow='hidden';stopStrip();CC.data=Save.load();showWho();layout();}
+function openCrawl(){build();root.hidden=false;document.body.style.overflow='hidden';stopStrip();CC.data=Save.load();for(const p in CC.data.players)for(const s of CC.data.players[p].slots||[])if(s)migrateSlot(s,p);Save.write(CC.data);showWho();layout();}
 function closeCrawl(){if(CC.game&&!CC.game.over)quitToCamp(true);CC.game=null;cancelAnimationFrame(CC.raf);root.hidden=true;document.body.style.overflow='';try{if(document.fullscreenElement)document.exitFullscreen();}catch(e){}startStrip();}
 function showPanel(html){panel.hidden=false;const rb=root.querySelector('[data-a=restart]');if(rb)rb.hidden=true;panel.innerHTML=`<div class="cc-wrap">${html}</div>`;panel.scrollTop=0;hud.innerHTML='';info.innerHTML='';bossEl.textContent='';drawIdle();return panel;}
 function drawIdle(){const g=CC.idle||(CC.idle=demoGame(384));ctx.imageSmoothingEnabled=false;if(IMG.complete&&BGI.complete)drawGame(ctx,g,384,0);}
@@ -961,7 +991,7 @@ function loop(now){
   const g=CC.game;if(!g||root.hidden)return;let dt=Math.min(.05,(now-CC.last)/1000);CC.last=now;
   if(!CC.paused){for(let i=0;i<CC.speed;i++)g.step(dt);}
   for(const e of g.events){if(e.type==='levelup'){sfx('level');flash('LEVEL UP!',900);}if(e.type==='boss'){sfx('boss');flash(e.name.toUpperCase(),1800);}
-    if(e.type==='herolevel')sfx('level');if(e.type==='herodown')sfx('die');}
+    if(e.type==='herolevel')sfx('level');if(e.type==='enrage')flash('ENRAGED!',1400);if(e.type==='herodown')sfx('die');}
   g.events.length=0;
   ctx.imageSmoothingEnabled=false;drawGame(ctx,g,384,0);
   const run=g.run;info.innerHTML=`<span class="px" style="font-size:10px;color:#a6ff2e">STAGE ${run.stage}${run.prestige?' ★'+run.prestige:''}</span><span>${esc(g.st.biome.name)}</span><span>Score <b>${fmt(run.score+g.stageScore)}</b></span>
