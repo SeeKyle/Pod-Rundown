@@ -11,6 +11,7 @@ const OWNERS={Kyle:'🎩',Cheez:'🧀',Leon:'🪼'};
 const CFG={
   W:384,H:216,GROUND:190,
   stagesPerBiome:3,
+  strangerStage:6,                  // clearing this frees the mystery stranger (3rd party spot)
   maxStage:9,                       // add biomes below and raise this to extend the crawl
   slots:{spell:3,item:2},
   maxRank:10,
@@ -656,6 +657,7 @@ function migrateSlot(slot,player){
   for(const h of DATA.heroes)if(h.owner===player&&!slot.heroes[h.key])slot.heroes[h.key]={lvl:1,xp:0};
   for(const k of Object.keys(slot.heroes))if(!heroDef(k))delete slot.heroes[k];
   slot.best=slot.best||{score:0,stage:0,prestige:0};
+  if(!slot.partySize)slot.partySize=(slot.best.stage>CFG.strangerStage||slot.best.prestige||(slot.run&&slot.run.team.length>2))?3:2;
   const run=slot.run;if(!run)return slot;
   if((slot.epoch||1)!==SAVE_EPOCH){slot.run=null;slot.epoch=SAVE_EPOCH;return slot;}
   run.team=run.team.filter(k=>heroDef(k));if(!run.team.length){slot.run=null;return slot;}
@@ -671,7 +673,7 @@ function migrateSlot(slot,player){
   run.bag=(run.bag||[]).filter(b=>heroDef(b.owner)&&(b.kind==='item'?heroDef(b.owner).items:heroDef(b.owner).spells).some(x=>x.card===b.card)).slice(0,BAG_SIZE);
   if(run.stage>CFG.maxStage)run.stage=CFG.maxStage;
   return slot;}
-function newSlot(player){const heroes={};for(const h of DATA.heroes)if(h.owner===player)heroes[h.key]={lvl:1,xp:0};return {epoch:SAVE_EPOCH,heroes,best:{score:0,stage:0,prestige:0},runs:0,run:null,created:Date.now()};}
+function newSlot(player){const heroes={};for(const h of DATA.heroes)if(h.owner===player)heroes[h.key]={lvl:1,xp:0};return {epoch:SAVE_EPOCH,partySize:2,heroes,best:{score:0,stage:0,prestige:0},runs:0,run:null,created:Date.now()};}
 
 // ======================================================================= exports for node sims
 const API={slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
@@ -679,7 +681,7 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793296785';const BGI=new Image();BGI.src='crawl_bg.png?v=1793296785';
+const IMG=new Image();IMG.src='crawl.png?v=1793296879';const BGI=new Image();BGI.src='crawl_bg.png?v=1793296879';
 const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -970,15 +972,15 @@ const ROLE={melee:'Melee',ranged:'Ranged',caster:'Caster',duo:'Duo'};
 function showTeam(){
   const s=SLOT();migrate(s,CC.player);const pick=[];
   const mine=DATA.heroes.filter(h=>h.owner===CC.player);
-  const P=showPanel(`<div class="cc-h">PICK YOUR PARTY</div><p class="cc-sub">Up to 3 heroes from your decks. Fewer heroes = each one is stronger. Lower-level heroes earn catch-up XP.</p>
+  const P=showPanel(`<div class="cc-h">PICK YOUR PARTY</div><p class="cc-sub">${(s.partySize||2)>=3?'Up to 3 heroes from your decks.':'Up to 2 heroes for now. Clear stage 6 to free a mystery stranger and open a third spot.'} Fewer heroes = each one is stronger. Lower-level heroes earn catch-up XP.</p>
     <div class="cc-heroes">${mine.map(h=>{const st=STYLE[h.key];const L=s.heroes[h.key].lvl;
       return `<button class="cc-hero" data-k="${h.key}" aria-pressed="false"><span class="ord"></span><span class="por" data-por="${h.key}"></span><div class="nm">${h.icon} ${esc(h.name)}</div><div class="dk">Inspired by deck: <b>${esc(h.deck)}</b></div><div class="dk">${ROLE[st.atk]}${st.tank?' · Tank':''}${st.companion?' · with companion':''}</div>
       <div class="lv">LV ${L}</div>${statBars(h.key,L)}<div class="dk" style="margin-top:4px">⚡ ${esc(SIG[h.key].name)}: ${esc(SIG[h.key].txt)}</div><div class="dk" style="margin-top:2px">Starts with ${esc(h.spells[0].name||shortCard(h.spells[0].card))} (${SPELL[h.spells[0].arch].label})</div></button>`;}).join('')}</div>
     <div class="cc-row" style="margin-top:12px"><button class="cc-btn go" data-go disabled>START RUN</button><button class="cc-btn" data-back>← Saves</button></div>`);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
   const upd=()=>{P.querySelectorAll('.cc-hero').forEach(b=>{const i=pick.indexOf(b.dataset.k);b.setAttribute('aria-pressed',i>=0);b.querySelector('.ord').textContent=i>=0?i+1:'';});
-    const g=P.querySelector('[data-go]');g.disabled=!pick.length;g.textContent=`START RUN (${pick.length}/3)`;};
-  P.querySelectorAll('.cc-hero').forEach(b=>b.onclick=()=>{const k=b.dataset.k,i=pick.indexOf(k);if(i>=0)pick.splice(i,1);else if(pick.length<3)pick.push(k);upd();});
+    const g=P.querySelector('[data-go]');g.disabled=!pick.length;g.textContent=`START RUN (${pick.length}/${s.partySize||2})`;};
+  P.querySelectorAll('.cc-hero').forEach(b=>b.onclick=()=>{const k=b.dataset.k,i=pick.indexOf(k);if(i>=0)pick.splice(i,1);else if(pick.length<(s.partySize||2))pick.push(k);upd();});
   P.querySelector('[data-back]').onclick=showSlots;
   P.querySelector('[data-go]').onclick=()=>{s.run=newRun(pick,s);s.runs++;persist();showCamp();};upd();
 }
@@ -1078,6 +1080,8 @@ function finishStage(g){
     for(const k of run.team){const h=run.heroes[k];if(h.dead){h.dead=false;h.hpf=.25;}else h.hpf=Math.min(1,(h.hpf||0)+.3);}
     const cleared=run.stage;run.score+=Math.round(250*cleared*(1+run.prestige));
     if(cleared>=CFG.maxStage){persist();CC.game=null;return showVictory(lvls);}
+    if(cleared>=CFG.strangerStage&&(s.partySize||2)<3){s.partySize=3;const free=DATA.heroes.filter(h=>h.owner===CC.player&&!run.team.includes(h.key));
+      run.stage++;persist();CC.game=null;if(free.length&&run.team.length<3)return showStranger(free);}
     run.stage++;run.rerolls=Math.max(run.rerolls,1);
     if(run.prestige*100+run.stage-1>s.best.prestige*100+s.best.stage){s.best.stage=run.stage-1;s.best.prestige=run.prestige;}
     persist();CC.game=null;
@@ -1092,6 +1096,15 @@ function finishStage(g){
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por,48)));
   P.querySelector('[data-again]').onclick=()=>{s.run=newRun(team,s);s.runs++;persist();showCamp();};
   P.querySelector('[data-team]').onclick=showTeam;P.querySelector('[data-saves]').onclick=showSlots;
+}
+function showStranger(free){
+  const s=SLOT(),run=s.run;
+  const P=showPanel(`<div class="cc-h">A MYSTERY STRANGER</div><div class="cc-h2">Freed from the castle cells</div>
+    <p class="cc-sub">Someone was chained up in the dungeon. Choose who it turns out to be: they join this run now, and every new run in this save can bring 3 heroes.</p>
+    <div class="cc-heroes">${free.map(h=>`<button class="cc-hero" data-k="${h.key}"><span data-por="${h.key}"></span><div class="nm">${h.icon} ${esc(h.name)}</div><div class="dk">Inspired by deck: <b>${esc(h.deck)}</b></div><div class="lv">LV ${s.heroes[h.key].lvl}</div></button>`).join('')}</div>`);
+  P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
+  P.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k,d=heroDef(k);run.team.push(k);
+    run.heroes[k]={hpf:1,dead:false,spells:[{card:d.spells[0].card,arch:d.spells[0].arch,r:Math.max(1,Math.min(4,run.stage-3)),augs:[]}],items:[]};run.pending=(run.pending||0)+2;sfx('level');persist();showCamp();});
 }
 function showVictory(lvls){
   const s=SLOT(),run=s.run;const np=run.prestige+1;
