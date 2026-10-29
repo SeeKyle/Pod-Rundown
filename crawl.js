@@ -4,7 +4,7 @@
 (function(){
 'use strict';
 const DATA={"heroes":[{"key":"grim","deck":"The Grim Throne","icon":"🏴‍☠️","owner":"Kyle","cmdr":"Kenrith, the Returned King","name":"The Bone Monarch","cls":"melee","duo":false,"blurb":"A crowned grave-king who hauls a greatsword out of the tomb.","stats":{"mana":10,"cards":6,"consistency":10,"threats":10,"clock":6,"reach":10,"answers":7,"staying":9,"control":7},"spells":[{"card":"Ghalta and Mavren","arch":"summon"},{"card":"Galactus, Devourer of Worlds","arch":"smite"},{"card":"Prime Speaker Zegana","arch":"pump"},{"card":"Zacama, Primal Calamity","arch":"bolt"},{"card":"Yidaro, Wandering Monster","arch":"insight"},{"card":"Indominus Rex, Alpha","arch":"regen"},{"card":"The Coming of Galactus","arch":"drain"},{"card":"Zetalpa, Primal Dawn","arch":"aegis"}],"items":[{"card":"Throne of the Grim Captain // The Grim Captain","arch":"armor"},{"card":"Altar of the Wretched // Wretched Bonemass","arch":"blade"},{"card":"Sledge-Class Seedship","arch":"charm"},{"card":"Monster Manual // Zoological Study","arch":"charm"},{"card":"Maskwood Nexus","arch":"charm"}]},{"key":"vile","deck":"A Vile Smashing","icon":"🧪","owner":"Kyle","cmdr":"Ishai, Ojutai Dragonspeaker + Vial Smasher the Fierce","name":"Hex & Smash","cls":"caster","duo":true,"blurb":"A hooded owl hexer and a goblin brute with a spiked maul.","stats":{"mana":8,"cards":11,"consistency":12,"threats":4,"clock":6,"reach":10,"answers":7,"staying":5,"control":7},"spells":[{"card":"Kefka, Dancing Mad","arch":"aegis"},{"card":"Naktamun Lorespinner // Wheel of Fortune","arch":"insight"},{"card":"Seizan, Perverter of Truth","arch":"drain"},{"card":"The Haunt of Hightower","arch":"regen"},{"card":"Nekusar, the Mindrazer","arch":"bolt"},{"card":"Blood for the Blood God!","arch":"nova"},{"card":"Sami, Wildcat Captain","arch":"pump"},{"card":"Voracious Fell Beast","arch":"summon"}],"items":[{"card":"Matzalantli, the Great Door // The Core","arch":"relic"},{"card":"Mask of Griselbrand","arch":"blade"},{"card":"World Map","arch":"charm"},{"card":"Entropic Battlecruiser","arch":"blade"},{"card":"Chromatic Lantern","arch":"relic"}]},{"key":"felothar","deck":"Felothar","icon":"🧱","owner":"Kyle","cmdr":"Felothar the Steadfast","name":"The Bulwark","cls":"tank","duo":false,"blurb":"A walking stone rampart with a tower shield.","stats":{"mana":7,"cards":7,"consistency":6,"threats":7,"clock":2,"reach":7,"answers":9,"staying":15,"control":11},"spells":[{"card":"Betor, Kin to All","arch":"drain"},{"card":"Baldin, Century Herdmaster","arch":"pump"},{"card":"Teyo, Geometric Tactician","arch":"summon"},{"card":"Nethroi, Apex of Death","arch":"regen"},{"card":"Canopy Gargantuan","arch":"aegis"},{"card":"Ayli, Eternal Pilgrim","arch":"smite"},{"card":"Flumph","arch":"insight"},{"card":"Overgrown Battlement","arch":"haste"}],"items":[{"card":"Captain America's Shield","arch":"armor"},{"card":"Sol Ring","arch":"relic"}]},{"key":"thing","deck":"Truly Fantastic","icon":"🪨","owner":"Kyle","cmdr":"The Thing","name":"Geode Golem","cls":"caster","duo":false,"blurb":"A cracked crystal brute that flings spell shards.","stats":{"mana":11,"cards":8,"consistency":7,"threats":7,"clock":8,"reach":5,"answers":8,"staying":6,"control":7},"spells":[{"card":"Bruce Banner // The Incredible Hulk","arch":"pump"},{"card":"The Unagi of Kyoshi Island","arch":"aegis"},{"card":"Recurring Insight","arch":"insight"},{"card":"Human Torch","arch":"bolt"},{"card":"Crystal, Inhuman Princess","arch":"nova"},{"card":"Invisible Woman","arch":"summon"},{"card":"Akroma's Will","arch":"regen"},{"card":"Ultros, Obnoxious Octopus","arch":"freeze"}],"items":[{"card":"Chromatic Lantern","arch":"relic"},{"card":"Sol Ring","arch":"relic"},{"card":"Arcane Signet","arch":"relic"},{"card":"Talisman of Creativity","arch":"relic"},{"card":"Izzet Signet","arch":"relic"}]},{"key":"kykar","deck":"Kykar, Zada & Feather","icon":"🪶","owner":"Cheez","cmdr":"Kykar, Wind's Fury","name":"Gale Magus","cls":"caster","duo":false,"blurb":"A storm-feathered wizard trailed by spirit wisps.","stats":{"mana":6,"cards":6,"consistency":10,"threats":7,"clock":8,"reach":11,"answers":5,"staying":8,"control":6},"spells":[{"card":"Kitsa, Otterball Elite","arch":"pump"},{"card":"God-Eternal Kefnet","arch":"insight"},{"card":"Sorcerer Class","arch":"nova"},{"card":"Talrand, Sky Summoner","arch":"summon"},{"card":"Firemind's Research","arch":"bolt"},{"card":"Unbreakable Formation","arch":"aegis"},{"card":"Essence Capture","arch":"counter"},{"card":"Balmor, Battlemage Captain","arch":"pump"}],"items":[{"card":"Sol Ring","arch":"relic"},{"card":"Swiftfoot Boots","arch":"armor"},{"card":"River Song's Diary","arch":"charm"},{"card":"Commander's Sphere","arch":"relic"},{"card":"Azorius Locket","arch":"relic"}]},{"key":"depala","deck":"Tame Depala","icon":"⚒️","owner":"Kyle","cmdr":"Depala, Pilot Exemplar","name":"Goggles Ironbeard","cls":"melee","duo":false,"blurb":"A dwarf pilot with a rocket hammer and too much confidence.","stats":{"mana":4,"cards":3,"consistency":11,"threats":9,"clock":7,"reach":6,"answers":8,"staying":11,"control":8},"spells":[{"card":"Kíli the Resourceful","arch":"insight"},{"card":"Magda, Brazen Outlaw","arch":"summon"},{"card":"Bruenor Battlehammer","arch":"pump"},{"card":"Balin, Loremaster","arch":"nova"},{"card":"Hammers of Moradin","arch":"freeze"},{"card":"Gimli, Counter of Kills","arch":"bolt"},{"card":"Thorin Oakenshield","arch":"aegis"},{"card":"Dáin's Company","arch":"regen"}],"items":[{"card":"Orcrist, Goblin-cleaver","arch":"blade"},{"card":"The Arkenstone // Seek the Heart","arch":"charm"},{"card":"Necron Monolith","arch":"armor"},{"card":"Colossal Plow","arch":"relic"},{"card":"Skysovereign, Consul Flagship","arch":"charm"}]},{"key":"kotis","deck":"Armed Robbery","icon":"🐍","owner":"Cheez","cmdr":"Kotis, the Fangkeeper","name":"Fang Thief","cls":"melee","duo":false,"blurb":"A masked serpent rogue with twin stolen daggers.","stats":{"mana":7,"cards":5,"consistency":8,"threats":6,"clock":11,"reach":9,"answers":6,"staying":6,"control":7},"spells":[{"card":"Otrimi, the Ever-Playful","arch":"bolt"},{"card":"Tasha, the Witch Queen","arch":"summon"},{"card":"Felix Five-Boots","arch":"aegis"},{"card":"The Thirteenth Doctor","arch":"pump"},{"card":"Growth Spiral","arch":"insight"},{"card":"Dirge Bat","arch":"smite"},{"card":"Cultivate","arch":"haste"},{"card":"Counterspell","arch":"counter"}],"items":[{"card":"Sword of the Animist","arch":"blade"},{"card":"Security Bypass","arch":"charm"},{"card":"Commander's Sphere","arch":"relic"},{"card":"Blackblade Reforged","arch":"blade"},{"card":"Quietus Spike","arch":"blade"}]},{"key":"dragons","deck":"Double Dragons","icon":"🐲","owner":"Cheez","cmdr":"Miirym, Sentinel Wyrm","name":"Twinscale","cls":"ranged","duo":false,"blurb":"A two-headed wyrmling; one head breathes fire, one breathes frost.","stats":{"mana":9,"cards":3,"consistency":8,"threats":13,"clock":7,"reach":11,"answers":7,"staying":2,"control":6},"spells":[{"card":"Dragonhawk, Fate's Tempest","arch":"nova"},{"card":"Lathliss, Dragon Queen","arch":"summon"},{"card":"Intet, the Dreamer","arch":"bolt"},{"card":"Atarka, World Render","arch":"pump"},{"card":"Kairi, the Swirling Sky","arch":"aegis"},{"card":"Earthquake Dragon","arch":"devour"},{"card":"Korlessa, Scale Singer","arch":"insight"},{"card":"Savage Ventmaw","arch":"haste"}],"items":[{"card":"Orb of Dragonkind","arch":"relic"},{"card":"Swiftfoot Boots","arch":"armor"},{"card":"Dragon's Hoard","arch":"relic"},{"card":"Chromatic Lantern","arch":"relic"},{"card":"Dragonstorm Globe","arch":"relic"}]},{"key":"mathas","deck":"Life Swappin' Bounty Poppin'","icon":"💰","owner":"Kyle","cmdr":"Mathas, Fiend Seeker","name":"Bounty Fiend","cls":"ranged","duo":false,"blurb":"A horned bounty hunter with a soul crossbow.","stats":{"mana":7,"cards":11,"consistency":5,"threats":2,"clock":15,"reach":2,"answers":11,"staying":1,"control":13},"spells":[{"card":"Seizan, Perverter of Truth","arch":"drain"},{"card":"Gix, Yawgmoth Praetor","arch":"bolt"},{"card":"K'rrik, Son of Yawgmoth","arch":"regen"},{"card":"Shay Cormac","arch":"aegis"},{"card":"Profane Transfusion","arch":"summon"},{"card":"Peer into the Abyss","arch":"insight"},{"card":"Bitter Triumph","arch":"smite"},{"card":"Knight of Dusk's Shadow","arch":"pump"}],"items":[{"card":"Bounty Board","arch":"relic"},{"card":"Soul Conduit","arch":"charm"},{"card":"Cursed Recording","arch":"relic"},{"card":"Sol Ring","arch":"relic"},{"card":"Arcane Signet","arch":"relic"}]},{"key":"turtle","deck":"Turtle Power","icon":"🐢","owner":"Cheez","cmdr":"Michelangelo, the Heart + Leonardo, the Balance","name":"Shell Brothers","cls":"melee","duo":true,"blurb":"Two tortoise knights: a shield-bearer and a spear-hand.","stats":{"mana":10,"cards":4,"consistency":4,"threats":11,"clock":4,"reach":5,"answers":8,"staying":10,"control":5},"spells":[{"card":"Jetmir, Nexus of Revels","arch":"pump"},{"card":"Hazel of the Rootbloom","arch":"summon"},{"card":"Roxanne, Starfall Savant","arch":"bolt"},{"card":"Jaheira, Friend of the Forest","arch":"haste"},{"card":"Kibo, Uktabi Prince","arch":"regen"},{"card":"White Sun's Twilight","arch":"nova"},{"card":"Junk Winder","arch":"freeze"},{"card":"Lessons from Life","arch":"insight"}],"items":[{"card":"Foot Chopper","arch":"blade"},{"card":"Chromatic Lantern","arch":"relic"},{"card":"Level Up","arch":"charm"},{"card":"Skullclamp","arch":"blade"},{"card":"Coin of Mastery","arch":"relic"}]},{"key":"marina","deck":"House on Haunted Hill","icon":"👻","owner":"Kyle","cmdr":"Marina Vendrell","name":"Lantern Witch","cls":"caster","duo":false,"blurb":"A witch whose lantern keeps a captive ghost.","stats":{"mana":11,"cards":8,"consistency":9,"threats":5,"clock":3,"reach":2,"answers":7,"staying":5,"control":11},"spells":[{"card":"Bello, Bard of the Brambles","arch":"bolt"},{"card":"Unholy Annex // Ritual Chamber","arch":"drain"},{"card":"Lynde, Cheerful Tormentor","arch":"insight"},{"card":"Smoky Lounge // Misty Salon","arch":"summon"},{"card":"Moldering Gym // Weight Room","arch":"pump"},{"card":"Abuelo, Ancestral Echo","arch":"aegis"},{"card":"Meat Locker // Drowned Diner","arch":"freeze"},{"card":"Prismatic Undercurrents","arch":"haste"}],"items":[{"card":"Chromatic Lantern","arch":"relic"},{"card":"Conjurer's Closet","arch":"charm"},{"card":"Haunted Screen","arch":"relic"},{"card":"Freed from the Real","arch":"relic"}]},{"key":"korvold","deck":"Korvold Eats Everything","icon":"🐉","owner":"Cheez","cmdr":"Korvold, Fae-Cursed King","name":"Gorge King","cls":"melee","duo":false,"blurb":"A winged glutton-drake that eats what it kills.","stats":{"mana":10,"cards":3,"consistency":8,"threats":3,"clock":3,"reach":8,"answers":9,"staying":11,"control":4},"spells":[{"card":"Kingpin, Wilson Fisk","arch":"summon"},{"card":"Garruk, Cursed Huntsman","arch":"smite"},{"card":"Judith, the Scourge Diva","arch":"bolt"},{"card":"Juri, Master of the Revue","arch":"pump"},{"card":"Priest of Forgotten Gods","arch":"drain"},{"card":"Primal Growth","arch":"devour"},{"card":"Cultivate","arch":"haste"},{"card":"Moldervine Reclamation","arch":"regen"}],"items":[{"card":"Commander's Sphere","arch":"relic"},{"card":"Swiftfoot Boots","arch":"armor"},{"card":"Spawning Pit","arch":"charm"},{"card":"Golden Egg","arch":"relic"},{"card":"Sol Ring","arch":"relic"}]},{"key":"thranduil","deck":"Thranduil","icon":"🧝","owner":"Leon","cmdr":"Thranduil, the Elvenking","name":"Leafwarden","cls":"ranged","duo":false,"blurb":"An elf ranger-lord with a silverwood bow.","stats":{"mana":11,"cards":5,"consistency":10,"threats":8,"clock":5,"reach":1,"answers":6,"staying":4,"control":9},"spells":[{"card":"Thranduil, Sindarin Liege // Silvan Rally","arch":"summon"},{"card":"Círdan the Shipwright","arch":"insight"},{"card":"Lathril, Blade of the Elves","arch":"drain"},{"card":"Marwyn, the Nurturer","arch":"pump"},{"card":"Dwynen, Gilt-Leaf Daen","arch":"regen"},{"card":"Shadowheart, Dark Justiciar","arch":"devour"},{"card":"Priest of Titania","arch":"haste"},{"card":"Paradise Druid","arch":"aegis"}],"items":[{"card":"Sol Ring","arch":"relic"},{"card":"Altar of Dementia","arch":"charm"},{"card":"Dimir Signet","arch":"relic"}]},{"key":"joel","deck":"The Last of Us","icon":"🍄","owner":"Kyle","cmdr":"Ellie, Vengeful Hunter + Joel, Resolute Survivor","name":"The Spore Runners","cls":"ranged","duo":true,"blurb":"A hooded scout with a bow and a bearded brawler with a pipe.","stats":{"mana":8,"cards":7,"consistency":6,"threats":4,"clock":2,"reach":10,"answers":6,"staying":7,"control":8},"spells":[{"card":"The Mycotyrant","arch":"summon"},{"card":"Grave Venerations","arch":"drain"},{"card":"Jaheira, Friend of the Forest","arch":"haste"},{"card":"Slimefoot, the Stowaway","arch":"nova"},{"card":"Goblin Bombardment","arch":"bolt"},{"card":"Overseer of the Damned","arch":"smite"},{"card":"Grim Haruspex","arch":"insight"},{"card":"Ignoble Hierarch","arch":"pump"}],"items":[{"card":"Cauldron of Essence","arch":"charm"},{"card":"Sol Ring","arch":"relic"},{"card":"Arcane Signet","arch":"relic"},{"card":"Eerie Gravestone","arch":"charm"}]},{"key":"robots","deck":"Primary Directive","icon":"🤖","owner":"Leon","cmdr":"Optimus Prime, Hero // Optimus Prime, Autobot Leader","name":"Aegis Prime-X","cls":"tank","duo":false,"blurb":"A battle robot with an arm cannon and a reactor heart.","stats":{"mana":8,"cards":7,"consistency":6,"threats":10,"clock":2,"reach":8,"answers":5,"staying":6,"control":5},"spells":[{"card":"Iron Man, Master of Machines","arch":"pump"},{"card":"Tri-Sentinel, Act of Vengeance","arch":"bolt"},{"card":"Tameshi, Reality Architect","arch":"insight"},{"card":"H.E.R.B.I.E., Lovable Robot","arch":"haste"},{"card":"Urza, Prince of Kroog","arch":"summon"},{"card":"Kappa Cannoneer","arch":"aegis"},{"card":"Bosh, Iron Golem","arch":"devour"},{"card":"Swords to Plowshares","arch":"smite"}],"items":[{"card":"Fabrication Foundry","arch":"relic"},{"card":"Uthros Research Craft","arch":"blade"},{"card":"Braided Net // Braided Quipu","arch":"charm"},{"card":"Dowsing Device // Geode Grotto","arch":"blade"},{"card":"Arc Reactor","arch":"relic"}]},{"key":"blood","deck":"Blood Suckers","icon":"🦇","owner":"Cheez","cmdr":"Zoraline, Cosmos Caller","name":"Nightwing Cleric","cls":"caster","duo":false,"blurb":"A bat-winged priestess who heals on every bite.","stats":{"mana":3,"cards":3,"consistency":7,"threats":5,"clock":2,"reach":9,"answers":11,"staying":9,"control":8},"spells":[{"card":"Aclazotz, Deepest Betrayal // Temple of the Dead","arch":"summon"},{"card":"Momo, Friendly Flier","arch":"pump"},{"card":"Darkstar Augur","arch":"drain"},{"card":"Vito, Thorn of the Dusk Rose","arch":"regen"},{"card":"Momo, Rambunctious Rascal","arch":"bolt"},{"card":"Etchings of the Chosen","arch":"aegis"},{"card":"Star Charter","arch":"insight"},{"card":"Dirge Bat","arch":"smite"}],"items":[{"card":"Sol Ring","arch":"relic"},{"card":"Desecrated Tomb","arch":"charm"},{"card":"Arcane Signet","arch":"relic"},{"card":"Commander's Sphere","arch":"relic"},{"card":"Pristine Talisman","arch":"relic"}]},{"key":"mech","deck":"Mechanized Mayhem","icon":"🥚","owner":"Cheez","cmdr":"Dr. Eggman","name":"Gearbrain","cls":"ranged","duo":false,"blurb":"A goblin tinkerer piloting a spider-legged walker.","stats":{"mana":7,"cards":2,"consistency":8,"threats":9,"clock":3,"reach":10,"answers":5,"staying":5,"control":5},"spells":[{"card":"Tezzeret, Master of the Bridge","arch":"nova"},{"card":"Cyclonus, the Saboteur // Cyclonus, Cybertronian Fighter","arch":"bolt"},{"card":"Traxos, Scourge of Kroog","arch":"freeze"},{"card":"Davros, Dalek Creator","arch":"summon"},{"card":"Ultron, Machine Overlord","arch":"pump"},{"card":"One with the Machine","arch":"insight"},{"card":"Walking Skyscraper","arch":"aegis"},{"card":"The Antiquities War","arch":"devour"}],"items":[{"card":"The Belligerent","arch":"charm"},{"card":"Cultivator's Caravan","arch":"relic"},{"card":"Darksteel Ingot","arch":"armor"},{"card":"Rolling Hamsphere","arch":"blade"},{"card":"Skysovereign, Consul Flagship","arch":"charm"}]},{"key":"weather","deck":"Ominous Weather","icon":"❄️","owner":"Kyle","cmdr":"Isu the Abominable","name":"Frostfang Yeti","cls":"melee","duo":false,"blurb":"A shaggy yeti shaman who calls blizzards.","stats":{"mana":6,"cards":5,"consistency":8,"threats":5,"clock":4,"reach":7,"answers":8,"staying":2,"control":6},"spells":[{"card":"Marit Lage's Slumber","arch":"freeze"},{"card":"The Pride of Hull Clade","arch":"bolt"},{"card":"Hylda of the Icy Crown","arch":"summon"},{"card":"Become the Avalanche","arch":"pump"},{"card":"Rishkar's Expertise","arch":"insight"},{"card":"Search for Tomorrow","arch":"haste"},{"card":"Ascendant Spirit","arch":"bolt"},{"card":"Cone of Cold","arch":"freeze"}],"items":[{"card":"Replicating Ring","arch":"relic"},{"card":"Snow Devil","arch":"blade"},{"card":"Arcane Signet","arch":"relic"},{"card":"Coldsteel Heart","arch":"relic"},{"card":"Azorius Signet","arch":"relic"}]}],"arch":{"bolt":{"label":"Bolt","titles":["Starfall","Hellfire Lance","the Pyre Eternal"]},"nova":{"label":"Nova","titles":["Cataclysm","the Last Sunrise","Worldbreaker"]},"smite":{"label":"Smite","titles":["Executioner","Final Verdict","the Godslayer"]},"drain":{"label":"Drain","titles":["Soul Harvest","the Bleeding Moon","Crimson Tithe"]},"summon":{"label":"Summon","titles":["Legion Eternal","the Endless Horde","Army of the Damned"]},"regen":{"label":"Regen","titles":["Undying Grace","the Phoenix Psalm","Everbloom"]},"aegis":{"label":"Aegis","titles":["Bastion Unbroken","the Last Wall","Adamant Dawn"]},"pump":{"label":"Pump","titles":["Titan Rising","the Warlord Ascendant","Giantblood"]},"devour":{"label":"Devour","titles":["the Gluttonous Abyss","Bone Feast","Maw of Ages"]},"haste":{"label":"Haste","titles":["Overdrive","the Thousand Hands","Quickening Storm"]},"insight":{"label":"Insight","titles":["the Open Eye","Omniscient","Library of Ash"]},"freeze":{"label":"Freeze","titles":["Absolute Zero","the Long Winter","Glacial Tomb"]},"counter":{"label":"Counter","titles":["Null Mirror","the Silent Ward","Spellbreaker"]},"blade":{"label":"Weapon","titles":["Kingsbane","the Red Edge","Doomforged"]},"armor":{"label":"Armor","titles":["Aegis of Ages","the Unbreakable","Ironsoul"]},"relic":{"label":"Relic","titles":["Clockwork Heart","the Ever-Turning","Infinity Engine"]},"charm":{"label":"Charm","titles":["Lucky Bones","Fate's Favorite","the Gilded Skull"]}}};      // heroes from the decks (built by battler_data.py)
-const ATLAS={"sprites":{"h_grim":[0,0,64,64,9],"h_vile":[576,0,80,64,9],"h_felothar":[1296,0,64,64,9],"h_thing":[0,64,64,64,9],"h_kykar":[576,64,64,64,9],"h_depala":[1152,64,64,64,9],"h_kotis":[0,128,64,64,9],"h_dragons":[576,128,64,64,9],"h_mathas":[1152,128,64,64,9],"h_turtle":[0,192,80,64,9],"h_marina":[720,192,64,64,9],"h_korvold":[1296,192,64,64,9],"h_thranduil":[0,256,64,64,9],"h_joel":[576,256,80,64,9],"h_robots":[1296,256,64,64,9],"h_blood":[0,320,64,64,9],"h_mech":[576,320,64,64,9],"h_weather":[1152,320,64,64,9],"e_ghoul":[0,384,64,64,9],"e_cultist":[576,384,64,64,9],"e_knight":[1152,384,64,64,9],"e_wolfman":[0,448,64,64,9],"e_hag":[576,448,64,64,9],"e_zombie":[1152,448,64,64,9],"e_drowned":[0,512,64,64,9],"e_skeleton":[576,512,64,64,9],"e_archer":[1152,512,64,64,9],"e_thrall":[0,576,64,64,9],"e_wraith":[576,576,64,64,9],"e_leech":[1152,576,48,48,9],"e_bat":[1584,576,48,48,9],"e_ghost":[0,640,48,48,9],"e_gargoyle":[432,640,48,48,9],"e_hound":[864,640,48,48,9],"e_spawn":[1296,640,48,48,9],"e_eye":[0,688,48,48,9],"e_spider":[432,688,48,48,9],"b_gravelord":[864,688,128,128,3],"b_countess":[1248,688,128,128,3],"b_maw":[1632,688,128,128,3]},"bg":{"grave":{"far":[0,0,384,216],"mid":[0,216,384,140],"gr":[0,356,64,30]},"manor":{"far":[384,0,384,216],"mid":[384,216,384,140],"gr":[384,356,64,30]},"bog":{"far":[768,0,384,216],"mid":[768,216,384,140],"gr":[768,356,64,30]}}};    // sprite + backdrop atlas (built by make_crawl_art.py)
+const ATLAS={"sprites":{"h_grim":[0,0,64,64,12],"h_vile":[768,0,80,64,12],"h_vile_a":[0,64,64,64,12],"h_vile_b":[768,64,64,64,12],"h_felothar":[0,128,64,64,12],"h_thing":[768,128,64,64,12],"h_kykar":[0,192,64,64,12],"h_depala":[768,192,64,64,12],"h_kotis":[0,256,64,64,12],"h_dragons":[768,256,64,64,12],"h_mathas":[0,320,64,64,12],"h_turtle":[768,320,80,64,12],"h_turtle_a":[0,384,64,64,12],"h_turtle_b":[768,384,64,64,12],"h_marina":[0,448,64,64,12],"h_korvold":[768,448,64,64,12],"h_thranduil":[0,512,64,64,12],"h_joel":[768,512,80,64,12],"h_joel_a":[0,576,64,64,12],"h_joel_b":[768,576,64,64,12],"h_robots":[0,640,64,64,12],"h_blood":[768,640,64,64,12],"h_mech":[0,704,64,64,12],"h_weather":[768,704,64,64,12],"e_ghoul":[0,768,64,64,12],"e_cultist":[768,768,64,64,12],"e_knight":[0,832,64,64,12],"e_wolfman":[768,832,64,64,12],"e_hag":[0,896,64,64,12],"e_zombie":[768,896,64,64,12],"e_drowned":[0,960,64,64,12],"e_skeleton":[768,960,64,64,12],"e_archer":[0,1024,64,64,12],"e_thrall":[768,1024,64,64,12],"e_wraith":[0,1088,64,64,12],"e_leech":[768,1088,48,48,12],"e_bat":[1344,1088,48,48,12],"e_ghost":[0,1152,48,48,12],"e_gargoyle":[576,1152,48,48,12],"e_hound":[1152,1152,48,48,12],"e_spawn":[0,1200,48,48,12],"e_eye":[576,1200,48,48,12],"e_spider":[1152,1200,48,48,12],"b_gravelord":[0,1248,128,128,3],"b_countess":[384,1248,128,128,3],"b_maw":[768,1248,128,128,3]},"bg":{"grave":{"far":[0,0,384,216],"mid":[0,216,384,140],"gr":[0,356,64,30]},"manor":{"far":[384,0,384,216],"mid":[384,216,384,140],"gr":[384,356,64,30]},"bog":{"far":[768,0,384,216],"mid":[768,216,384,140],"gr":[768,356,64,30]}}};    // sprite + backdrop atlas (built by make_crawl_art.py)
 const OWNERS={Kyle:'🎩',Cheez:'🧀',Leon:'🪼'};
 
 // ======================================================================= CONFIG TABLES
@@ -58,7 +58,7 @@ const CFG={
     return {n,biome:b,bi,boss:n%this.stagesPerBiome===0?b.boss:null,
       len:820+70*(n-1),
       rate:(0.62+0.11*(n-1))*(1+0.3*P),
-      hpMul:Math.pow(1.29,n-1)*Math.pow(2.2,P),
+      hpMul:Math.pow(1.31,n-1)*Math.pow(2.2,P),
       dmgMul:Math.pow(1.16,n-1)*Math.pow(1.8,P),
       xpMul:1+0.32*(n-1)+P*2.4};
   },
@@ -78,13 +78,34 @@ const STYLE={
   marina:{atk:'caster',proj:'wisp',hp:.85,dmg:1},
   korvold:{atk:'melee',reach:28,hp:1.35,dmg:1.05,devour:1},
   thranduil:{atk:'ranged',proj:'arrow',range:230,hp:.85,dmg:1.05,aspd:1.1},
-  joel:{atk:'duo',a:'brick',b:'melee',reach:28,hp:1.0,dmg:.9},
+  joel:{atk:'duo',a:'arrow',b:'melee',reach:28,range:210,hp:1.0,dmg:.9},
   robots:{atk:'ranged',proj:'plasma',range:190,hp:1.35,dmg:1.0,tank:1},
   blood:{atk:'caster',proj:'blood',hp:.95,dmg:.9,leech:.25},
   mech:{atk:'ranged',proj:'shell',range:200,hp:1.05,dmg:1.1,splash:12},
   weather:{atk:'caster',proj:'frost',hp:1.1,dmg:.95,chill:1},
 };
 const ORDER={melee:0,duo:1,ranged:2,caster:3};
+// ---- signature abilities: every hero comes with one, on its own cooldown (not a spell slot). fn(game, hero, atk)
+const SIG={
+  grim:{name:'Royal Cleave',cd:6,txt:'Sweeps every ground enemy in reach for 220% damage and shoves them back.',fn:(g,h,a)=>g.sigArea(h,46,a*2.2,{kb:1.4,ground:1,fx:'slash'})},
+  vile:{name:'Hexburst',cd:5,txt:'A hex orb bursts on the nearest enemy for 160% and 80% around it.',fn:(g,h,a)=>g.sigShot(h,'orb',a*1.6,{splash:26})},
+  felothar:{name:'Shield Wall',cd:9,txt:'Shields the whole team for 10% of his max HP.',fn:(g,h,a)=>{for(const o of g.alive()){o.shield+=h.max*.1;o.shieldT=6;}g.fx.push({k:'ring',x:h.x,y:g.G-24,r:30,t:0,c:'#ffd23f'});return true;}},
+  thing:{name:'Shard Storm',cd:6,txt:'Flings 4 crystal shards at random enemies for 80% each.',fn:(g,h,a)=>g.sigMulti(h,'shard',a*.8,4)},
+  kykar:{name:'Chain Lightning',cd:6,txt:'Lightning arcs through 3 enemies for 120% each.',fn:(g,h,a)=>g.sigChain(h,a*1.2,3)},
+  depala:{name:'Rocket Hammer',cd:6,txt:'Smashes the front enemy for 260%, stunning and knocking it back.',fn:(g,h,a)=>g.sigFront(h,a*2.6,{stun:.6,kb:1.6})},
+  kotis:{name:'Venom Flurry',cd:5,txt:'Four quick stabs for 60% each; the target is poisoned.',fn:(g,h,a)=>g.sigFront(h,a*.6,{hits:4,burn:a*.4})},
+  dragons:{name:'Twin Breath',cd:7,txt:'Fire and frost wash over everything within 90px: 110% damage and a chill.',fn:(g,h,a)=>g.sigArea(h,90,a*1.1,{slow:.35,fx:'ring',c:'#ff8a1f'})},
+  mathas:{name:'Bounty Mark',cd:7,txt:'Marks the toughest enemy (takes +20% for 6s) and shoots it for 200%.',fn:(g,h,a)=>g.sigMark(h,a*2)},
+  turtle:{name:'Shell Spin',cd:6,txt:'Spins through every ground enemy in reach for 140%, shoving them back.',fn:(g,h,a)=>g.sigArea(h,40,a*1.4,{kb:1.2,ground:1,fx:'ring',c:'#c8b890'})},
+  marina:{name:'Lantern Haunt',cd:9,txt:'Lets the lantern ghost out to fight for 9s.',fn:(g,h,a)=>{g.addMinion(h,h.max*.3,a*.6,9,'spirit');return true;}},
+  korvold:{name:'Gorge',cd:6,txt:'Bites the front enemy for 260% and heals for 30% of it.',fn:(g,h,a)=>g.sigFront(h,a*2.6,{heal:.3})},
+  thranduil:{name:'Volley',cd:6,txt:'Looses 5 arrows at random enemies for 70% each.',fn:(g,h,a)=>g.sigMulti(h,'arrow',a*.7,5)},
+  joel:{name:'Brick Toss',cd:4.5,txt:'The scout lobs a brick for 200% that stuns and shoves.',fn:(g,h,a)=>g.sigShot(h,'brick',a*2,{stun:.7,kb:.9})},
+  robots:{name:'Overcharge',cd:7,txt:'A piercing plasma beam hits every enemy in a line for 160%.',fn:(g,h,a)=>g.sigArea(h,260,a*1.6,{fx:'beamline',c:'#3ff0ff'})},
+  blood:{name:'Blood Rite',cd:7,txt:'Drains 3 enemies for 90% and heals the whole team for half of it.',fn:(g,h,a)=>g.sigDrain(h,a*.9,3)},
+  mech:{name:'Mortar Barrage',cd:7,txt:'Three shells rain down for 110% with splash.',fn:(g,h,a)=>g.sigMulti(h,'shell',a*1.1,3,{splash:18})},
+  weather:{name:'Blizzard',cd:8,txt:'Chills every enemy (−50% speed, 2s) and deals 60%.',fn:(g,h,a)=>g.sigArea(h,999,a*.6,{slow:.5,fx:'frost'})},
+};
 // ---- damage pipeline: every hit goes through mitigate(). Today there is one type ('physical') and armor is a flat % reduction.
 // To add types later: list them here, tag attacks with {type:'fire'} etc., and give enemies/heroes a resist map
 // (e.g. CFG.enemies.zombie.resist={fire:-0.5, cold:0.3} = weak to fire, resists cold).
@@ -249,6 +270,7 @@ class Game{
     const pts=Math.round((e.boss?e.B.pts:e.E.pts*(e.elite?3:1))*(1+.4*(this.st.n-1))*(1+this.run.prestige)*(src?src.scoreM:1));
     this.stageScore+=pts;this.gainXp(xp);
     this.fx.push({k:'poof',x:e.x,y:e.y-(e.fly?0:20),t:0,big:!!e.boss||e.elite});
+    if(!e.boss)this.fx.push({k:'corpse',type:e.type,x:e.x,y:e.y,fly:e.fly,elite:e.elite,t:0,life:1.3});
     if(this.team.devour){this.devourStacks=Math.min(60,this.devourStacks+1);for(const h of this.alive())if(h.spells.some(s=>s.arch==='devour'))this.healHero(h,h.max*(.006+.0025*this.spellRank(h,'devour')),true);}
     if(src&&src.items)this.procs(src,'onkill',e);
     if(e.boss){this.ev('bossdown',{name:e.B.name});this.shake=1;for(const o of this.enemies)if(!o.dead){o.dead=true;this.fx.push({k:'poof',x:o.x,y:o.y-20,t:0});}}
@@ -364,16 +386,27 @@ class Game{
       if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}
       for(const it of h.items)if(it.cd>0)it.cd-=dt;
       if(this.enemies.some(e=>!e.dead&&e.x-h.x<36))this.procs(h,'near');
+      // signature ability
+      const SG=SIG[h.key];if(SG){h.sigT=(h.sigT==null?SG.cd*.5:h.sigT)-dt;if(h.sigT<=0){const ok=SG.fn(this,h,h.atk*h.pow);h.sigT=ok?SG.cd*(1-h.cdr):.6;if(ok){this.text(h.x,this.G-74,SG.name,'#ffd23f');this.procs(h,'oncast');}}}
       // spells
       for(const s of h.spells){if(SPELL[s.arch].passive)continue;s.cdT-=dt;if(s.cdT<=0){const ok=this.cast(h,s);s.cdT=ok?SPELL[s.arch].cd*(1-h.cdr):.5;}}
       // basic attack
-      h.atkT+=dt*h.aspd*(h.buffT>0?1.3:1);
-      const st=h.style;const ox=(st.atk==='melee'||st.atk==='duo')?f.x:h.x;   // melee fighters step up to the front line
-      const range=st.atk==='melee'?st.reach+6:st.atk==='duo'?(st.a!=='melee'?170:st.reach+6):st.range||170;
-      const tgt=this.enemies.filter(e=>!e.dead&&e.x-(e.boss?e.w:0)-ox<=range&&e.x>h.x-10).sort((p,q)=>p.x-q.x)[0];
-      h.lunge=(st.atk==='melee'||(st.atk==='duo'&&st.b==='melee'))&&tgt&&tgt.x-(tgt.boss?tgt.w:0)-f.x<st.reach+6?f.x-h.x:0;
-      if(tgt&&h.atkT>=1){h.atkT=0;h.anim=1;h.animT=.32;this.basic(h,tgt);}
-      if(h.atkT>1)h.atkT=1;
+      const rate=dt*h.aspd*(h.buffT>0?1.3:1);const st=h.style;
+      const findT=(kind)=>{const melee=kind==='melee';const ox=melee?f.x:h.x;const range=melee?st.reach+6:(st.range||170);
+        return this.enemies.filter(e=>!e.dead&&e.x-(e.boss?e.w:0)-ox<=range&&e.x>h.x-10).sort((p,q)=>p.x-q.x)[0];};
+      if(st.atk==='duo'){
+        // partners fight independently: each has its own swing timer, target and animation
+        if(h.animT2>0)h.animT2-=dt;
+        h.atkT=Math.min(1,h.atkT+rate);h.atkT2=Math.min(1,(h.atkT2||0)+rate*.93);
+        const ta=findT(st.a),tb=findT(st.b);
+        if(ta&&h.atkT>=1){h.atkT=0;h.animT=.32;this.basic(h,ta,st.a,.6);}
+        if(tb&&h.atkT2>=1){h.atkT2=0;h.animT2=.32;this.basic(h,tb,st.b,.6);}
+        h.lunge=st.a==='melee'&&ta?f.x-h.x:0;h.lunge2=st.b==='melee'&&tb?f.x-h.x:0;
+      }else{
+        h.atkT+=rate;const kind=st.atk==='melee'?'melee':'ranged';const tgt=findT(kind);
+        h.lunge=kind==='melee'&&tgt?f.x-h.x:0;
+        if(tgt&&h.atkT>=1){h.atkT=0;h.anim=1;h.animT=.32;this.basic(h,tgt);}
+        if(h.atkT>1)h.atkT=1;}
     }
     // minions
     for(const m of this.minions){m.life-=dt;m.atkT+=dt;const tx=f.x+6;m.x+=(tx+(this.minions.indexOf(m)*6)-m.x)*Math.min(1,dt*2);
@@ -430,22 +463,37 @@ class Game{
       if(p.t>4)p.dead=true;}
     this.proj=this.proj.filter(p=>!p.dead);
     // fx + text
-    for(const x of this.fx)x.t+=dt;this.fx=this.fx.filter(x=>x.t<.6);
+    for(const x of this.fx)x.t+=dt;this.fx=this.fx.filter(x=>x.t<(x.life||.6));
     for(const x of this.texts){x.t+=dt;x.y-=dt*14;}this.texts=this.texts.filter(x=>x.t<.9);
     if(this.shake>0)this.shake-=dt;
   }
-  basic(h,tgt){
-    const st=h.style;let kind=st.atk;
-    if(kind==='duo'){const f=this.front();const close=tgt.x-(tgt.boss?tgt.w:0)-f.x<st.reach+6;
-      kind=st.a==='melee'?'melee':(close?(h.alt++%2===0?st.a:'melee'):st.a);}
+  basic(h,tgt,kind,mult){
+    const st=h.style;kind=kind||st.atk;mult=mult||1;const A=h.atk*mult;
     if(kind==='melee'){const hits=st.double?2:1;
-      for(let i=0;i<hits;i++){this.hitEnemy(tgt,h.atk*(i?0.8:1),h,{kb:1});}
-      for(const o of this.enemies)if(o!==tgt&&!o.dead&&!o.fly&&Math.abs(o.x-tgt.x)<12)this.hitEnemy(o,h.atk*.4,h,{nocrit:1});
+      for(let i=0;i<hits;i++){this.hitEnemy(tgt,A*(i?0.8:1),h,{kb:1});}
+      for(const o of this.enemies)if(o!==tgt&&!o.dead&&!o.fly&&Math.abs(o.x-tgt.x)<12)this.hitEnemy(o,A*.4,h,{nocrit:1});
       this.fx.push({k:'slash',x:tgt.x-6,y:tgt.boss?tgt.y-50:tgt.fly?tgt.y:tgt.y-24,t:0});return;}
     const pk=kind==='ranged'||kind==='caster'?st.proj:kind;
-    const p=this.shoot(h,tgt,pk,h.atk,{});p.splash=st.splash||(pk==='orb'?12:0);p.chill=st.chill;
+    const p=this.shoot(h,tgt,pk,A,{});if(st.atk==='duo')p.x=h.x-6;p.splash=st.splash||(pk==='orb'?12:0);p.chill=st.chill;
     if(kind==='caster')p.spd=200;
   }
+  liveE(){return this.enemies.filter(e=>!e.dead&&e.x<this.W+4);}
+  sigArea(h,R,dmg,o){const f=this.front();let any=false;
+    for(const e of this.liveE())if(e.x-(e.boss?e.w:0)-f.x<R&&!(o.ground&&e.fly)){this.hitEnemy(e,dmg,h,{kb:o.kb||0});if(o.slow){e.slow=Math.max(e.slow,o.slow);e.slowT=2;}any=true;}
+    if(any){if(o.fx==='slash')this.fx.push({k:'slash',x:f.x+18,y:this.G-26,t:0});else if(o.fx==='frost')this.fx.push({k:'frost',t:0});else if(o.fx==='beamline')this.fx.push({k:'beamline',x:h.x,y:this.G-30,t:0,c:o.c});else this.fx.push({k:'ring',x:f.x+R/2,y:this.G-22,r:Math.min(R,80)*.7,t:0,c:o.c||'#fff'});}
+    return any;}
+  sigShot(h,kind,dmg,o){const t=this.liveE().sort((p,q)=>p.x-q.x)[0];if(!t)return false;const p=this.shoot(h,t,kind,dmg,{});p.splash=o.splash||0;
+    p.opt.onHit=(e,d)=>{const r=this.hitEnemy(e,d,h,{kb:o.kb||0});if(o.stun)e.stun=Math.max(e.stun,o.stun);if(o.splash)for(const x of this.enemies)if(x!==e&&!x.dead&&Math.abs(x.x-e.x)<o.splash)this.hitEnemy(x,d*.5,h,{nocrit:1});return r;};
+    if(h.style.atk==='duo'){p.x=h.x-6;h.animT=.32;}return true;}
+  sigMulti(h,kind,dmg,n,o){const L=this.liveE();if(!L.length)return false;for(let i=0;i<n;i++){const p=this.shoot(h,L[Math.floor(this.rng()*L.length)],kind,dmg,{});p.splash=(o&&o.splash)||0;p.y-=i*3;}return true;}
+  sigChain(h,dmg,n){let L=this.liveE().sort((p,q)=>p.x-q.x);if(!L.length)return false;let prev={x:h.x,y:this.G-30};
+    for(const e of L.slice(0,n)){this.fx.push({k:'zap',x:prev.x,y:prev.y,tx:e.x,ty:e.fly?e.y:e.y-24,t:0});this.hitEnemy(e,dmg,h,{});prev={x:e.x,y:e.fly?e.y:e.y-24};}return true;}
+  sigFront(h,dmg,o){const f=this.front();const t=this.liveE().filter(e=>e.x-(e.boss?e.w:0)-f.x<40).sort((p,q)=>p.x-q.x)[0];if(!t)return false;
+    let tot=0;for(let i=0;i<(o.hits||1);i++)tot+=this.hitEnemy(t,dmg,h,{kb:o.kb||0});if(o.stun)t.stun=Math.max(t.stun,o.stun);if(o.burn){t.burn=Math.max(t.burn,o.burn);t.burnT=3;}
+    if(o.heal)this.healHero(h,tot*o.heal);this.fx.push({k:'slash',x:t.x-6,y:t.boss?t.y-50:t.y-24,t:0});h.animT=.32;return true;}
+  sigMark(h,dmg){const t=this.liveE().sort((p,q)=>q.hp-p.hp)[0];if(!t)return false;t.shred=6;this.shoot(h,t,'quarrel',dmg,{});this.fx.push({k:'ring',x:t.x,y:t.boss?t.y-60:t.y-24,r:10,t:0,c:'#ffd23f'});return true;}
+  sigDrain(h,dmg,n){const L=this.liveE().sort(()=>this.rng()-.5).slice(0,n);if(!L.length)return false;let tot=0;
+    for(const e of L){tot+=this.hitEnemy(e,dmg,h,{});this.fx.push({k:'drain',x:e.x,y:e.y-(e.fly?0:24),tx:h.x,c:'#ff3a5a',t:0});}for(const o of this.alive())this.healHero(o,tot*.5/this.alive().length);return true;}
   enemyShot(e,t){if(!t)return;this.proj.push({enemy:true,kind:e.E?e.E.proj:'bat',x:e.x-8,y:e.fly?e.y:e.y-30,tx:t,dmg:e.dmg,src:e,spd:150,t:0});}
   bossAI(b,dt,sp,f){
     const al=this.alive();const k=b.type;b.walkT+=dt;
@@ -528,12 +576,12 @@ const Save={
 function newSlot(player){const heroes={};for(const h of DATA.heroes)if(h.owner===player)heroes[h.key]={lvl:1,xp:0};return {heroes,best:{score:0,stage:0,prestige:0},runs:0,run:null,created:Date.now()};}
 
 // ======================================================================= exports for node sims
-const API={CFG,STYLE,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
+const API={CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
 if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793292369';const BGI=new Image();BGI.src='crawl_bg.png?v=1793292369';
+const IMG=new Image();IMG.src='crawl.png?v=1793292914';const BGI=new Image();BGI.src='crawl_bg.png?v=1793292914';
 const SP=ATLAS.sprites,BGA=ATLAS.bg;
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -550,7 +598,8 @@ function sfx(k){if(muted)return;try{AC=AC||new (window.AudioContext||window.webk
 // ---------------------------------------------------------------- pixel font (3x5) for numbers + a few letters
 const FONT={'0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111','4':'101101111001001','5':'111100111001111','6':'111100111101111','7':'111001010010010','8':'111101111101111','9':'111101111001111','+':'000010111010000',
   'm':'000111111101101','i':'010000010010010','s':'011100010001110','d':'001001111101111','o':'000111101101111','g':'111101111001110','e':'111101111100111','L':'100100100100111','V':'101101101101010',' ':'000000000000000','x':'000101010101000'};
-function ptext(ctx,s,x,y,col,sc){sc=sc||1;const w=s.length*4*sc;let cx=Math.round(x-w/2);y=Math.round(y);
+function ptext(ctx,s,x,y,col,sc){sc=sc||1;
+  if([...s].some(ch=>!FONT[ch])){ctx.save();ctx.font=`${8*sc}px "Press Start 2P",monospace`;ctx.textAlign='center';ctx.textBaseline='top';ctx.fillStyle='#0c0810';ctx.fillText(s.toUpperCase(),Math.round(x)+1,Math.round(y)+1);ctx.fillStyle=col;ctx.fillText(s.toUpperCase(),Math.round(x),Math.round(y));ctx.restore();return;}const w=s.length*4*sc;let cx=Math.round(x-w/2);y=Math.round(y);
   for(const ch of s){const g=FONT[ch];if(g){ctx.fillStyle='#0c0810';for(let i=0;i<15;i++)if(g[i]==='1')ctx.fillRect(cx+(i%3)*sc+sc,y+Math.floor(i/3)*sc+sc,sc,sc);
     ctx.fillStyle=col;for(let i=0;i<15;i++)if(g[i]==='1')ctx.fillRect(cx+(i%3)*sc,y+Math.floor(i/3)*sc,sc,sc);}cx+=4*sc;}}
 // ---------------------------------------------------------------- renderer
@@ -577,15 +626,24 @@ function drawGame(ctx,g,W,oy){
     ctx.save();ctx.translate(m.x,G-(n==='e_skeleton'?40:32));ctx.scale(.62,.62);spr(ctx,n,Math.floor(g.t*8)%6,-a[2]/2,0,true,.88);ctx.restore();}
   // heroes (back to front)
   const hs=g.heroes.slice().sort((a,b)=>a.x-b.x);
+  for(const h of hs)if(!h.alive)spr(ctx,'h_'+h.key,10,h.x-32,G-60,false,.85);
+  for(const f of g.fx)if(f.k==='corpse'){const n='e_'+f.type,a=SP[n];if(!a)continue;const k=f.t/f.life;const big=a[3]===64;
+    const y=f.fly?Math.min(G-44,f.y-a[3]/2+f.t*160):G-(big?60:44);ctx.save();if(f.elite){ctx.translate(f.x,y+a[3]);ctx.scale(1.22,1.22);spr(ctx,n,10,-a[2]/2,-a[3],false,Math.min(1,2.2*(1-k)));}else spr(ctx,n,10,f.x-a[2]/2,y,false,Math.min(1,2.2*(1-k)));ctx.restore();}
   for(const h of hs){if(!h.alive){continue;}
-    let fr=0;if(h.animT>0)fr=6+Math.min(2,Math.floor((.32-h.animT)/.107));else if(g.scroll)fr=Math.floor(h.walkT*9)%6;
+    let fr=11;if(h.animT>0)fr=6+Math.min(2,Math.floor((.32-h.animT)/.107));else if(h.hitFlash>0)fr=9;else if(g.scroll)fr=Math.floor(h.walkT*9)%6;
     const lx=h.animT>0&&h.lunge?h.lunge*Math.sin(Math.PI*(1-h.animT/.32))*.9:0;
-    shadow(ctx,h.x+lx,G,9);spr(ctx,'h_'+h.key,fr,h.x+lx-32,G-60,false,null,h.hitFlash);
+    if(SP['h_'+h.key+'_a']){   // partner pair: two fighters, each with its own animation
+      const fa=h.animT>0?6+Math.min(2,Math.floor((.32-h.animT)/.107)):h.hitFlash>0?9:g.scroll?Math.floor(h.walkT*9)%6:11;
+      const fb=h.animT2>0?6+Math.min(2,Math.floor((.32-h.animT2)/.107)):h.hitFlash>0?9:g.scroll?Math.floor(h.walkT*9+3)%6:11;
+      const lb=h.animT2>0&&h.lunge2?h.lunge2*Math.sin(Math.PI*(1-h.animT2/.32))*.9:0;
+      shadow(ctx,h.x-9+lx,G,8);spr(ctx,'h_'+h.key+'_a',fa,h.x-9+lx-32,G-60,false,null,h.hitFlash);
+      shadow(ctx,h.x+9+lb,G,8);spr(ctx,'h_'+h.key+'_b',fb,h.x+9+lb-32,G-60,false,null,h.hitFlash);
+    }else{shadow(ctx,h.x+lx,G,9);spr(ctx,'h_'+h.key,fr,h.x+lx-32,G-60,false,null,h.hitFlash);}
     if(h.shield>0){ctx.strokeStyle='rgba(154,230,255,.7)';ctx.beginPath();ctx.ellipse(Math.round(h.x+lx),G-24,15,27,0,0,7);ctx.stroke();}
     const w=22,pct=Math.max(0,h.hp/h.max);ctx.fillStyle='#120a14';ctx.fillRect(Math.round(h.x-w/2)-1,G-63,w+2,4);ctx.fillStyle=pct>.5?'#4fd46a':pct>.25?'#ffb020':'#e8303a';ctx.fillRect(Math.round(h.x-w/2),G-62,Math.round(w*pct),2);}
   // enemies
   const es=g.enemies.filter(e=>!e.dead).sort((a,b)=>b.x-a.x);
-  for(const e of es){let fr=e.animT>0?6+Math.min(2,Math.floor((.3-e.animT)/.1)):Math.floor(e.walkT*8)%6;
+  for(const e of es){let fr=e.animT>0?6+Math.min(2,Math.floor((.3-e.animT)/.1)):e.hitFlash>0&&!e.boss?9:Math.floor(e.walkT*8)%6;
     if(e.boss){const bf=e.animT>0?2:Math.floor(g.t*2)%2;const y=e.fly?e.y-90:G-124;shadow(ctx,e.x,G,26);spr(ctx,'b_'+e.type,bf,e.x-64,y,false,null,e.hitFlash);continue;}
     const n='e_'+e.type,a=SP[n];const big=a[3]===64;
     const y=e.fly?e.y-a[3]/2:G-(big?60:44);if(!e.fly)shadow(ctx,e.x,G,big?8:7);
@@ -605,12 +663,14 @@ function drawGame(ctx,g,W,oy){
   for(const f of g.fx){const k=f.t/.6;
     if(f.k==='poof'){ctx.fillStyle=`rgba(180,170,190,${1-k})`;for(let i=0;i<(f.big?10:6);i++){const a=i*1.1;const r=4+k*(f.big?22:12);ctx.fillRect(Math.round(f.x+Math.cos(a)*r),Math.round(f.y+Math.sin(a)*r*.6),2,2);}}
     if(f.k==='ring'){ctx.strokeStyle=f.c;ctx.globalAlpha=1-k;ctx.beginPath();ctx.ellipse(Math.round(f.x),Math.round(f.y),f.r*(.3+k),f.r*(.3+k)*.45,0,0,7);ctx.stroke();ctx.globalAlpha=1;}
-    if(f.k==='slash'){ctx.fillStyle=`rgba(255,255,255,${1-k*1.5})`;for(let i=0;i<7;i++)ctx.fillRect(Math.round(f.x+i*1.4),Math.round(f.y-8+i*2.2+k*4),2,1);}
+    if(f.k==='slash'){const al=Math.max(0,1-k*1.6);for(let i=0;i<14;i++){const a2=-1.2+i*.18;const r=13+k*3;ctx.fillStyle=`rgba(240,232,214,${al*(i<3||i>11?.5:1)})`;ctx.fillRect(Math.round(f.x-6+Math.cos(a2)*r),Math.round(f.y+Math.sin(a2)*r*.9),2,i>3&&i<10?2:1);}}
     if(f.k==='spark'){ctx.fillStyle=f.c;for(let i=0;i<4;i++){const a=i*1.57+.7;ctx.fillRect(Math.round(f.x+Math.cos(a)*k*8),Math.round(f.y+Math.sin(a)*k*8),1,1);}}
     if(f.k==='beam'){ctx.fillStyle=f.c;ctx.globalAlpha=1-k;ctx.fillRect(Math.round(f.x)-2,0,5,Math.round(f.y));ctx.fillStyle='#fff';ctx.fillRect(Math.round(f.x),0,1,Math.round(f.y));ctx.globalAlpha=1;}
     if(f.k==='drain'){ctx.fillStyle=f.c;for(let i=0;i<8;i++){const u=(i/8+k)%1;ctx.fillRect(Math.round(f.x+(f.tx-f.x)*u),Math.round(f.y+(G-30-f.y)*u-Math.sin(u*3.14)*10),2,2);}}
     if(f.k==='frost'){ctx.fillStyle=`rgba(200,240,255,${1-k})`;for(let i=0;i<40;i++)ctx.fillRect((i*37+Math.round(k*30))%W,(i*53+Math.round(k*80))%G,1,1);}
     if(f.k==='tentacle'){ctx.fillStyle='#4a2a52';const h=Math.sin(k*3.14)*60;ctx.fillRect(Math.round(f.x)-3,Math.round(G-h),6,Math.round(h));ctx.fillStyle='#c050a0';ctx.fillRect(Math.round(f.x)-1,Math.round(G-h),2,2);}
+    if(f.k==='zap'){ctx.strokeStyle=`rgba(190,240,255,${1-k})`;ctx.beginPath();ctx.moveTo(f.x,f.y);for(let i=1;i<=5;i++){const u2=i/5;ctx.lineTo(f.x+(f.tx-f.x)*u2+(i<5?(Math.random()-.5)*6:0),f.y+(f.ty-f.y)*u2+(i<5?(Math.random()-.5)*6:0));}ctx.stroke();}
+    if(f.k==='beamline'){ctx.fillStyle=f.c;ctx.globalAlpha=.8*(1-k);ctx.fillRect(Math.round(f.x),Math.round(f.y)-2,W,5);ctx.fillStyle='#fff';ctx.fillRect(Math.round(f.x),Math.round(f.y),W,1);ctx.globalAlpha=1;}
     if(f.k==='beamall'){ctx.fillStyle=`rgba(255,40,60,${.8*(1-k)})`;ctx.fillRect(0,G-34,f.x,6);ctx.fillStyle=`rgba(255,220,220,${1-k})`;ctx.fillRect(0,G-32,f.x,2);}
     if(f.k==='drainall'){ctx.strokeStyle=`rgba(255,40,60,${1-k})`;for(const h of g.alive()){ctx.beginPath();ctx.moveTo(h.x,G-30);ctx.lineTo(f.x-30,f.y);ctx.stroke();}}}
   for(const t of g.texts){const a=1-t.t/.9;ctx.globalAlpha=Math.max(0,a);ptext(ctx,t.s,t.x,t.y,t.c,t.big?2:1);ctx.globalAlpha=1;}
@@ -717,13 +777,14 @@ function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
   root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL</span>
-    <button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
+    <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="mute" title="Sound">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="384" height="216"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
   document.body.appendChild(root);
   cv=$('#cc-cv',root);ctx=cv.getContext('2d');panel=$('.cc-panel',root);hud=$('.cc-hud',root);info=$('.cc-info',root);bossEl=$('.cc-boss',root);banner=$('.cc-banner',root);
   root.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
     if(a==='close')closeCrawl();
+    if(a==='restart'&&CC.game){if(!confirmInline(b,'↺?'))return;CC.game=null;cancelAnimationFrame(CC.raf);persist();beginStage();}
     if(a==='pause'){CC.paused=!CC.paused;b.textContent=CC.paused?'▶':'⏸';}
     if(a==='speed'){CC.speed=CC.speed%3+1;b.textContent=CC.speed+'×';}
     if(a==='mute'){muted=!muted;b.textContent=muted?'🔇':'🔊';try{localStorage.setItem('podrundown-crawl-mute',muted?'1':'0');}catch(_){}}
@@ -739,7 +800,7 @@ function layout(){if(!root||root.hidden)return;const main=$('.cc-main',root);con
   bossEl.style.top=(cv.offsetTop+Math.floor(w*9/16)*.06)+'px';banner.style.top=(cv.offsetTop+Math.floor(w*9/16)*.38)+'px';}
 function openCrawl(){build();root.hidden=false;document.body.style.overflow='hidden';stopStrip();CC.data=Save.load();showWho();layout();}
 function closeCrawl(){if(CC.game&&!CC.game.over)quitToCamp(true);CC.game=null;cancelAnimationFrame(CC.raf);root.hidden=true;document.body.style.overflow='';try{if(document.fullscreenElement)document.exitFullscreen();}catch(e){}startStrip();}
-function showPanel(html){panel.hidden=false;panel.innerHTML=`<div class="cc-wrap">${html}</div>`;panel.scrollTop=0;hud.innerHTML='';info.innerHTML='';bossEl.textContent='';drawIdle();return panel;}
+function showPanel(html){panel.hidden=false;const rb=root.querySelector('[data-a=restart]');if(rb)rb.hidden=true;panel.innerHTML=`<div class="cc-wrap">${html}</div>`;panel.scrollTop=0;hud.innerHTML='';info.innerHTML='';bossEl.textContent='';drawIdle();return panel;}
 function drawIdle(){const g=CC.idle||(CC.idle=demoGame(384));ctx.imageSmoothingEnabled=false;if(IMG.complete&&BGI.complete)drawGame(ctx,g,384,0);}
 // ---------------------------------------------------------------- screens
 function showWho(){
@@ -794,7 +855,7 @@ function showTeam(){
   const P=showPanel(`<div class="cc-h">PICK YOUR PARTY</div><p class="cc-sub">Up to 3 heroes from your decks. Fewer heroes = each one is stronger. Lower-level heroes earn catch-up XP.</p>
     <div class="cc-heroes">${mine.map(h=>{const st=STYLE[h.key];const L=s.heroes[h.key].lvl;
       return `<button class="cc-hero" data-k="${h.key}" aria-pressed="false"><span class="ord"></span><span class="por" data-por="${h.key}"></span><div class="nm">${h.icon} ${esc(h.name)}</div><div class="dk">${esc(h.deck)} · ${ROLE[st.atk]}${st.tank?' · Tank':''}</div>
-      <div class="lv">LV ${L}</div>${statBars(h.key,L)}<div class="dk" style="margin-top:4px">Starts with ${esc(shortCard(h.spells[0].card))} (${SPELL[h.spells[0].arch].label})</div></button>`;}).join('')}</div>
+      <div class="lv">LV ${L}</div>${statBars(h.key,L)}<div class="dk" style="margin-top:4px">⚡ ${esc(SIG[h.key].name)}: ${esc(SIG[h.key].txt)}</div><div class="dk" style="margin-top:2px">Starts with ${esc(shortCard(h.spells[0].card))} (${SPELL[h.spells[0].arch].label})</div></button>`;}).join('')}</div>
     <div class="cc-row" style="margin-top:12px"><button class="cc-btn go" data-go disabled>START RUN</button><button class="cc-btn" data-back>← Saves</button></div>`);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
   const upd=()=>{P.querySelectorAll('.cc-hero').forEach(b=>{const i=pick.indexOf(b.dataset.k);b.setAttribute('aria-pressed',i>=0);b.querySelector('.ord').textContent=i>=0?i+1:'';});
@@ -812,7 +873,7 @@ function showCamp(){
     <p class="cc-sub">Score ${fmt(run.score)} · save point. ${run.pending?`<b style="color:#a6ff2e">⬆ ${run.pending} upgrade${run.pending>1?'s':''} waiting</b>`:'No upgrades waiting.'}</p>
     <div class="cc-load">${run.team.map(k=>{const d=heroDef(k),hv=run.heroes[k],L=s.heroes[k];
       return `<div class="cc-card cc-lh"><span data-por="${k}"></span><div style="flex:1;min-width:0"><b>${d.icon} ${esc(d.name)}</b> <span class="cc-sub" style="font-size:11px">LV ${L.lvl} · ${hv.dead?'fallen (revives at 25%)':Math.round((hv.hpf==null?1:hv.hpf)*100)+'% HP'}</span>
-        <div class="cc-chips">${hv.spells.map(e=>chipFor(e)).join('')}${hv.items.map(e=>chipFor(e,1)).join('')}</div>
+        <div class="cc-chips"><span class="cc-chip" title="${esc(SIG[k].txt)}" style="border-color:#ffd23f"><b>⚡ ${esc(SIG[k].name)}</b> · signature</span>${hv.spells.map(e=>chipFor(e)).join('')}${hv.items.map(e=>chipFor(e,1)).join('')}</div>
         <div class="cc-sub" style="font-size:11px;margin:4px 0 0">Spells ${hv.spells.length}/${CFG.slots.spell} · Items ${hv.items.length}/${CFG.slots.item}</div></div></div>`;}).join('')}</div>
     <div class="cc-row" style="margin-top:14px">${run.pending?`<button class="cc-btn go" data-pick>CHOOSE UPGRADES (${run.pending})</button>`:`<button class="cc-btn go" data-begin>BEGIN STAGE ${run.stage} ▶</button>`}
       <button class="cc-btn" data-quit>Save & exit</button></div>`);
@@ -855,10 +916,10 @@ function beginStage(){
   CC.game=new Game({run,slot:s});CC.lv0=Object.fromEntries(run.team.map(k=>[k,s.heroes[k].lvl]));
   hud.style.gridTemplateColumns=`repeat(${run.team.length},minmax(0,1fr))`;
   hud.innerHTML=CC.game.heroes.map(h=>`<div class="cc-hc" data-h="${h.key}"><span data-por="${h.key}"></span><div style="flex:1;min-width:0"><div class="n">${esc(h.def.name)} <span style="color:#ffd23f">${h.lvl}</span></div><div class="bar"><i></i></div>
-    <div class="sp">${h.spells.map((s,i)=>`<span class="cc-sp" data-s="${i}"><b>${s.r>=CFG.maxRank?'✦ ':''}${esc(shortCard(s.card))}</b> ${SPELL[s.arch].label} r${s.r}<i></i></span>`).join('')}${h.items.map(it=>`<span class="cc-sp it"><b>${esc(shortCard(it.card))}</b> ${ITEM[it.arch].label} r${it.r}</span>`).join('')}</div></div></div>`).join('');
+    <div class="sp"><span class="cc-sp" data-sig style="border-color:#ffd23f"><b>⚡ ${esc(SIG[h.key].name)}</b><i></i></span>${h.spells.map((s,i)=>`<span class="cc-sp" data-s="${i}"><b>${s.r>=CFG.maxRank?'✦ ':''}${esc(shortCard(s.card))}</b> ${SPELL[s.arch].label} r${s.r}<i></i></span>`).join('')}${h.items.map(it=>`<span class="cc-sp it"><b>${esc(shortCard(it.card))}</b> ${ITEM[it.arch].label} r${it.r}</span>`).join('')}</div></div></div>`).join('');
   hud.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
   const st=CC.game.st;flash(`STAGE ${run.stage}`,1400);if(st.boss)setTimeout(()=>{},0);
-  layout();CC.last=performance.now();cancelAnimationFrame(CC.raf);CC.raf=requestAnimationFrame(loop);
+  root.querySelector('[data-a=restart]').hidden=false;layout();CC.last=performance.now();cancelAnimationFrame(CC.raf);CC.raf=requestAnimationFrame(loop);
 }
 function flash(t,ms){banner.textContent=t;banner.style.opacity=1;clearTimeout(CC.bt);CC.bt=setTimeout(()=>banner.style.opacity=0,ms||1200);}
 function loop(now){
@@ -873,6 +934,7 @@ function loop(now){
   bossEl.textContent=g.boss&&!g.boss.dead?g.boss.B.name.toUpperCase():'';
   for(const h of g.heroes){const el=hud.querySelector(`[data-h="${h.key}"]`);if(!el)continue;el.classList.toggle('dead',!h.alive);el.querySelector('.bar i').style.width=Math.max(0,h.hp/h.max*100)+'%';
     el.querySelector('.n span').textContent=SLOT().heroes[h.key].lvl;
+    if(hud.classList.contains('tall')){const sc=el.querySelector('[data-sig] i');if(sc)sc.style.width=Math.max(0,Math.min(100,(1-(h.sigT||0)/(SIG[h.key].cd*(1-h.cdr)))*100))+'%';}
     if(hud.classList.contains('tall'))h.spells.forEach((s,i)=>{const S=SPELL[s.arch];const c=el.querySelector(`[data-s="${i}"] i`);if(c)c.style.width=S.passive?'100%':Math.max(0,Math.min(100,(1-s.cdT/(S.cd*(1-h.cdr)))*100))+'%';});}
   if(g.over){return finishStage(g);}
   CC.raf=requestAnimationFrame(loop);
