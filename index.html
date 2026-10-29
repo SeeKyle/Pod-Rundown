@@ -796,7 +796,7 @@ body{background-color:var(--page-bg);background-image:
     <section class="pr-card notes" id="notes">
       <h2>What's new</h2>
       <h3>😬 Real status-bar faces in the life tracker</h3>
-      <ul><li>Each life panel now uses the classic status-bar face sprites: five rows from healthy to beat up as life drops, forward-facing faces show how healthy you are and keep looking around on their own; taking damage snaps the head to the side (plus a shocked face on a big hit: 10 at once, or 5+ in a burst); gaining life grins; the bloody dead face at 0.</li></ul>
+      <ul><li>Each life panel now uses the classic status-bar face sprites: five rows from healthy to beat up as life drops, forward-facing faces show how healthy you are and keep looking around on their own; taking damage snaps the head to the side (plus a shocked face on a big hit: 10 at once, or 5+ in a burst); gaining life grins; at 0 life the face turns into a bloody pixel skull and crossbones.</li></ul>
       <h3>💀 A meaner skeleton</h3>
       <ul><li>The corner skeleton got redrawn: a real skull with glowing green eye sockets and a hat, a red bandana, an open duster coat over the ribs and spine, bony hands, jeans and boots, on a wooden chair. Same routine: a long drag with a glowing tip, smoke puffs and a ring, head bobbing to the music, then rocking back and tapping his boot.</li></ul>
       <h3>🃏 Who goes first?</h3>
@@ -1400,10 +1400,10 @@ body{background-color:var(--page-bg);background-image:
       const next=g!==0?(r<.75?0:-g):(r<.55?0:r<.78?-1:1);if(next!==g){glances[i]=next;drawFace(i);}}},650);
   const moods={};
   // 0.10.23: the status-bar faces come from the sprite sheet you sent (faces.png: 8 columns x 6 rows).
-  // Rows 0-4 = healthy -> beat up (by life left); columns: 0 grin (heal), 2 ouch (big hit), 3/4/5 look left/ahead/right (idle), 6/7 head knocked sideways (taking damage). Row 5 col 0 = dead.
+  // Rows 0-4 = healthy -> beat up (by life left); columns: 0 grin (heal), 2 ouch (big hit), 3/4/5 look left/ahead/right (idle), 6/7 head knocked sideways (taking damage). Row 5 col 2 = skull and crossbones (0 life, drawn in the same pixel style by make_skull.py).
   function faceSprite(life,start,mood,glance){
     const ratio=life/Math.max(1,start);let row=ratio>.8?0:ratio>.6?1:ratio>.4?2:ratio>.2?3:4,col=4;
-    if(life<=0){row=5;col=0;}else if(mood==='grin')col=0;else if(mood==='hitL')col=6;else if(mood==='hitR')col=7;else if(mood==='ouch')col=2;else if(glance)col=glance<0?3:5;
+    if(life<=0){row=5;col=2;}else if(mood==='grin')col=0;else if(mood==='hitL')col=6;else if(mood==='hitR')col=7;else if(mood==='ouch')col=2;else if(glance)col=glance<0?3:5;
     return `<div class="lt-sprite" style="background-position:${-col*100/7*7}% ${-row*100/5*5}%;background-position:${col/7*100}% ${row/5*100}%"></div>`;
   }
   function drawFace(i){const f=document.querySelector(`#lt [data-face="${i}"]`);if(f)f.innerHTML=faceSprite(LT.p[i].life,LT.start,moods[i],glances[i]||0);}
