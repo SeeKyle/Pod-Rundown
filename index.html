@@ -36,6 +36,7 @@ body{margin:0;background:var(--page-bg);color:var(--color-fg);font-family:var(--
 .site-foot{margin-top:var(--cds-gap-lg);font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);text-align:center}
 svg text{fill:var(--color-fg)}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 </head>
 <body>
@@ -298,6 +299,70 @@ details.tk-box[open]>summary{margin-bottom:var(--cds-gap-sm)}
 .conf{position:absolute;top:40%;left:50%;width:8px;height:12px;border-radius:2px;pointer-events:none;animation:conf 1.4s ease-out forwards}
 @keyframes conf{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0}}
 @media (prefers-reduced-motion:reduce){.conf{display:none}.wcard.won{animation:none}}
+/* ---- 8-bit acid-punk arcade skin (one dark palette for every visitor) ---- */
+:root:root{
+  --color-fg:#f2ecff;--color-fg-muted:#b5a8d6;--color-bg:#170f2b;--color-panel:#1f1538;--color-border-line:#3c2b6b;--color-bad:#ff5a7a;
+  --cds-chart-grid:#33255c;--cds-chart-reference:#8c7cc0;--cds-border:#4a3884;--cds-surface-popover:#211640;--cds-shadow-popover:0 6px 20px rgba(0,0,0,.6);
+  --page-bg:#0c0717;
+  --acid:#b6ff00;--hot:#ff2bd6;--cyan:#19e6ff;--gold:#ffd23f;--px:"Press Start 2P",ui-monospace,monospace;
+  color-scheme:dark;
+}
+body{background-color:var(--page-bg);background-image:
+  linear-gradient(rgba(182,255,0,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(182,255,0,.045) 1px,transparent 1px),
+  radial-gradient(60% 40% at 15% 0%,rgba(255,43,214,.18),transparent 70%),radial-gradient(50% 40% at 90% 10%,rgba(25,230,255,.14),transparent 70%);
+  background-size:24px 24px,24px 24px,100% 100%,100% 100%;background-attachment:fixed}
+::selection{background:var(--acid);color:#0c0717}
+.pr-head{position:relative;padding:20px 20px 16px;border:3px solid var(--acid);background:#120a24;box-shadow:6px 6px 0 var(--hot);margin-bottom:var(--cds-gap-lg);overflow:hidden}
+.pr-head::before{content:"";position:absolute;right:-30px;top:-30px;width:180px;height:180px;background:repeating-conic-gradient(var(--acid) 0 25%,transparent 0 50%) 0 0/24px 24px;opacity:.12;transform:rotate(12deg)}
+.pr-head::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px)}
+.pr-head .pr-title{position:relative;font-family:var(--px);font-size:clamp(22px,4.6vw,38px);letter-spacing:.04em;color:var(--acid);text-shadow:3px 3px 0 var(--hot),-3px -2px 0 var(--cyan);margin:0 0 12px;animation:glitch 4s steps(1) infinite}
+@keyframes glitch{0%,92%,100%{transform:none;text-shadow:3px 3px 0 var(--hot),-3px -2px 0 var(--cyan)}93%{transform:translate(2px,-1px) skewX(-8deg);text-shadow:-4px 2px 0 var(--hot),4px -2px 0 var(--cyan)}95%{transform:translate(-2px,1px);text-shadow:5px 0 0 var(--hot),-5px 0 0 var(--cyan)}}
+.pr-head .pr-take{position:relative;color:#e6defc}
+.pr-head .coin{position:relative;font-family:var(--px);font-size:10px;color:var(--gold);margin-top:12px;animation:coin 1.1s steps(2) infinite}
+@keyframes coin{50%{opacity:0}}
+.pr-card{background:var(--color-bg);border:2px solid var(--color-border-line);border-radius:4px;box-shadow:5px 5px 0 #000}
+.pr-card h2,.notes h2{font-family:var(--px);font-size:15px;letter-spacing:.03em;line-height:1.5;color:var(--acid);text-shadow:2px 2px 0 #000}
+.notes h3{color:var(--cyan)}
+.ptab{font-family:var(--px);font-size:11px;border-radius:2px;border:2px solid var(--acid);background:#120a24;color:var(--acid);box-shadow:4px 4px 0 var(--hot);padding:11px 14px;transition:transform .05s,box-shadow .05s}
+.ptab:hover{background:#1d1140}
+.ptab:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--hot)}
+.ptab[aria-selected="true"]{background:var(--acid);color:#0c0717;border-color:var(--acid)}
+.wname,.spin-all,.arc-btn{font-family:var(--px)}
+.wname{font-size:15px}
+.spin-all{font-size:11px;border-radius:2px;border:2px solid #000;box-shadow:4px 4px 0 var(--hot)}
+.snd{border-radius:2px;border:2px solid var(--color-border-line)}
+.wcard{border-radius:6px;box-shadow:inset 0 0 0 3px var(--acid),6px 6px 0 #000}
+.who-chip{font-family:var(--px);font-size:9px;padding:8px 10px;border-radius:2px;border:2px solid var(--color-border-line);background:#120a24}
+.who-chip[aria-pressed="true"]{background:var(--cyan);color:#06121a;border-color:var(--cyan)}
+.dtab{border-radius:2px!important}
+.dtab[aria-selected="true"]{box-shadow:3px 3px 0 var(--hot)}
+.who-lab{font-family:var(--px);font-size:9px;color:var(--acid)}
+/* sim */
+.sim-seats{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;margin-bottom:12px}
+.sim-seat{display:flex;align-items:center;gap:8px;background:var(--color-panel);border:2px solid var(--color-border-line);border-radius:2px;padding:6px 8px}
+.sim-p{font-family:var(--px);font-size:10px;color:#0c0717;background:var(--acid);padding:5px 6px}
+.sim-seat select{flex:1;min-width:0;font:inherit;font-size:14px;background:transparent;color:var(--color-fg);border:0}
+.sim-seat select option{color:#111;background:#fff}
+.sim-bar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.arc-btn{font-size:11px;border:2px solid #000;border-radius:2px;padding:12px 14px;cursor:pointer;background:var(--gold);color:#2a1700;box-shadow:4px 4px 0 var(--hot)}
+.arc-btn.alt{background:var(--cyan);color:#06121a}
+.arc-btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--hot)}
+.crt{position:relative;border-radius:22px;padding:16px;background:#050208;box-shadow:inset 0 0 0 4px #2b1b55,inset 0 0 50px rgba(182,255,0,.12),6px 6px 0 #000}
+.crt::after{content:"";position:absolute;inset:0;border-radius:22px;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px)}
+.crt-in{height:440px;overflow-y:auto;padding:6px 8px;color:#c8ffd9;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;line-height:1.5;text-shadow:0 0 6px rgba(80,255,150,.35)}
+.crt-h{font-family:var(--px);font-size:11px;color:var(--gold);margin:12px 0 4px;text-shadow:0 0 8px rgba(255,210,63,.5)}
+.crt-h.go{font-size:18px;color:#ff4d6d;text-align:center;margin-top:18px}
+.crt-win{font-family:var(--px);font-size:13px;color:var(--cyan);text-align:center;margin:10px 0;line-height:1.6}
+.crt-l{margin:2px 0}
+.crt-l.big{color:#ffe14d}.crt-l.ko{color:#ff7aa2}.crt-l.life{color:#8fa3b8}.crt-l.dim{color:#8fa3b8;margin-top:10px;font-size:12px}
+.crt-blink{font-family:var(--px);font-size:11px;color:#fff;text-align:center;margin:24px 0;animation:coin 1.1s steps(2) infinite}
+.crt-row{display:grid;grid-template-columns:minmax(120px,1.2fr) 2fr 56px;gap:8px;align-items:center;margin:8px 0}
+.crt-nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crt-bar{height:14px;background:#22184a;overflow:hidden}
+.crt-fill{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--acid) 0 8px,#7fb800 8px 10px)}
+.crt-pc{text-align:right;color:#ffe14d}
+@media (max-width:640px){.pagetabs{background:#120a24;border-top:3px solid var(--acid)}.ptab{font-size:7.5px;padding:10px 2px;box-shadow:2px 2px 0 var(--hot)}.crt-in{height:380px;font-size:12.5px}}
+@media (prefers-reduced-motion:reduce){.pr-head .coin,.crt-blink,.pr-head .pr-title{animation:none}}
 [data-dash-source-state=refreshing]{opacity:.5;transition:opacity var(--cds-dur-slow)}
 [data-dash-source-state=empty]{color:transparent}
 </style>
@@ -306,11 +371,13 @@ details.tk-box[open]>summary{margin-bottom:var(--cds-gap-sm)}
   <header class="pr-head">
     <h1 class="pr-title">Pod Rundown</h1>
     <p class="pr-take" id="pr-take" data-source="decks">—</p>
+    <div class="coin">★ INSERT COIN ★ 4 PLAYERS ★</div>
   </header>
   <nav class="pagetabs" role="tablist" aria-label="Pages">
     <button type="button" class="ptab" role="tab" data-page="rundown" aria-selected="true">📊 Rundown</button>
     <button type="button" class="ptab" role="tab" data-page="garage" aria-selected="false">🏎️ Garage</button>
     <button type="button" class="ptab" role="tab" data-page="spinner" aria-selected="false">🎡 Spinner</button>
+    <button type="button" class="ptab" role="tab" data-page="sim" aria-selected="false">🕹️ Pod Sim</button>
     <button type="button" class="ptab" role="tab" data-page="notes" aria-selected="false">📓 Notes</button>
   </nav>
   <div class="pg" id="pg-rundown">
@@ -380,9 +447,21 @@ details.tk-box[open]>summary{margin-bottom:var(--cds-gap-sm)}
       <div class="wheels" id="wheels" data-source="decks"></div>
     </section>
   </div>
+  <div class="pg" id="pg-sim" hidden>
+    <section class="pr-card">
+      <h2>Pod Sim</h2>
+      <p class="pr-note">Pick four decks (or roll a random pod) and press play: a quick made-up game, turn by turn, written from each deck's ratings, key cards and win plans. Every run is different, so every pod has lots of possible endings. Run 1,000 games to see who wins most often.</p>
+      <div id="sim" data-source="decks takeaways"></div>
+    </section>
+  </div>
   <div class="pg" id="pg-notes" hidden>
     <section class="pr-card notes" id="notes">
       <h2>What's new</h2>
+      <h3>🕹️ New look + Pod Sim</h3>
+      <ul>
+        <li>The whole site got an 8-bit acid-punk arcade skin: pixel font, neon acid green / hot pink / cyan, pixel grid, CRT scanlines and a glitching title.</li>
+        <li><b>Pod Sim</b> page: pick four decks (or roll a random pod), press PLAY, and watch a made-up game play out turn by turn on a CRT screen, built from each deck's ratings, key cards, commander and win plans. Endings change every run: Flawless Sweep, Comeback, Speed Run, Last One Standing or Time Called. RUN 1,000 GAMES shows who wins most often (seats shuffled). It's a rough model for fun, not a real game engine.</li>
+      </ul>
       <h3>🎡 New page: Deck Spinner</h3>
       <ul>
         <li>One game-show wheel per player, one slice per deck they've added (equal odds). Hit SPIN in the middle of a wheel, or 🎰 SPIN EVERYONE to pick the whole pod's next game at once. New players get a wheel automatically when their first deck goes up.</li>
@@ -561,7 +640,7 @@ details.tk-box[open]>summary{margin-bottom:var(--cds-gap-sm)}
 
   const isPhone=()=>window.matchMedia('(max-width:640px)').matches;
   let page=isPhone()?'garage':'rundown', gDeck=null;
-  function setPage(p){page=p;document.querySelectorAll('.ptab').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.page===p)));['rundown','garage','spinner','notes'].forEach(q=>document.getElementById('pg-'+q).hidden=q!==p);if(p==='garage')renderGarage();if(p==='spinner')renderSpinner();}
+  function setPage(p){page=p;document.querySelectorAll('.ptab').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.page===p)));['rundown','garage','spinner','sim','notes'].forEach(q=>document.getElementById('pg-'+q).hidden=q!==p);if(p==='garage')renderGarage();if(p==='spinner')renderSpinner();if(p==='sim')renderSim();}
   document.querySelectorAll('.ptab').forEach(b=>b.addEventListener('click',()=>{setPage(b.dataset.page);window.scrollTo({top:0});}));
   setPage(page);
   const centerSel=(box,sel)=>{const e=box.querySelector(sel);if(e&&box.scrollWidth>box.clientWidth)box.scrollLeft=e.offsetLeft-box.clientWidth/2+e.offsetWidth/2;};
@@ -649,6 +728,94 @@ details.tk-box[open]>summary{margin-bottom:var(--cds-gap-sm)}
   function confetti(card){
     if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
     for(let k=0;k<36;k++){const c=el('span','conf');c.style.background=WCOL[k%WCOL.length];c.style.setProperty('--dx',(Math.random()*260-130)+'px');c.style.setProperty('--dy',(Math.random()*-220+60)+'px');c.style.setProperty('--rot',(Math.random()*720-360)+'deg');c.style.animationDelay=(Math.random()*.15)+'s';card.appendChild(c);setTimeout(()=>c.remove(),1700);}
+  }
+  // ---- Pod Sim: a quick, made-up 4-player game built from each deck's ratings and takeaway text (all in the browser)
+  const pickR=a=>a[Math.floor(Math.random()*a.length)];
+  function simDeck(r){
+    const T=(dash.data('takeaways').data||[]).find(t=>t.deck===r.deck)||{};
+    const cm=arr(obj(T.commander)).map(x=>x.card), hh=arr(obj(T.hh)).map(x=>x.card).filter(c=>!cm.includes(c)), wins=arr(obj(T.wins));
+    return {r,name:r.deck,icon:r.icon,life:40,board:0,alive:true,hh:hh.length?hh:['a big threat'],hi:0,wins:wins.length?wins:[{name:'an all-out attack',text:''}],cmdr:(cm[0]||r.cmdr||'their commander').split(' // ')[0],out:0,kills:0,lastHit:null};
+  }
+  function runSim(rows,log){
+    const P=rows.map(simDeck);const L=[];const say=(t,s,cls)=>log&&L.push({t,s,cls});
+    const st=(p,k)=>Number(p.r[k])||5;
+    let turn=0,place=P.length,ending='';
+    const alive=()=>P.filter(p=>p.alive);
+    while(alive().length>1&&turn<24){
+      turn++;
+      for(const p of P){
+        if(!p.alive||alive().length<2)continue;
+        const opp=alive().filter(o=>o!==p);
+        // develop
+        let g=(0.45+st(p,'threats')*0.11)*(0.65+Math.random()*0.7)*Math.min(1,(turn+st(p,'mana')/4)/5);
+        if(turn>6)g*=0.55+st(p,'cards')*0.045;
+        if(Math.random()<st(p,'consistency')*0.02)g*=1.4;
+        p.board+=g;
+        if(log&&!p.cm&&turn>=2+(st(p,'mana')<7?1:0)){p.cm=1;say(turn,`👑 ${p.icon} ${p.name} lands ${p.cmdr}.`);}
+        else if(log&&g>1.2&&Math.random()<0.45){say(turn,`${p.icon} ${p.name} plays ${p.hh[p.hi%p.hh.length]}.`);p.hi++;}
+        // interaction
+        const big=opp.reduce((a,b)=>b.board>a.board?b:a);
+        if(big.board>p.board*1.6&&big.board>6&&Math.random()<st(p,'answers')*0.022){
+          const wipe=big.board>10&&Math.random()<0.35;
+          if(wipe){opp.forEach(o=>o.board*=0.25);p.board*=0.6;say(turn,`💥 ${p.icon} ${p.name} wipes the board! Everyone starts over, but ${p.name} kept a little.`,'big');}
+          else{big.board*=0.5;say(turn,`✨ ${p.icon} ${p.name} answers ${big.icon} ${big.name}'s best threat.`);}
+        }
+        // attack
+        if(turn>=3&&p.board>2){
+          const w=opp.map(o=>(o.board+3)*(1.25-st(o,'control')*0.04)*(o.life<15?1.6:1)*(o.lastHit===p?1.4:1));
+          let x=Math.random()*w.reduce((a,b)=>a+b),o=opp[0];for(let k=0;k<opp.length;k++){x-=w[k];if(x<=0){o=opp[k];break;}}
+          let d=p.board*(0.5+st(p,'reach')*0.035)*(0.55+Math.random()*0.75)*(1-Math.min(0.35,st(o,'staying')*0.025));
+          d=Math.round(d);
+          if(d>0){o.life-=d;o.lastHit=p;o.board*=0.9;if(log&&(d>=6||o.life<=0||Math.random()<0.25))say(turn,`🗡️ ${p.icon} ${p.name} hits ${o.icon} ${o.name} for ${d} (${Math.max(0,o.life)} left).`);}
+        }
+        // finisher
+        if(turn>=5&&Math.random()<st(p,'clock')*0.011*Math.min(1.6,p.board/8)){
+          const wn=pickR(p.wins);const all=/each|every|all/i.test(wn.text)&&Math.random()<0.6;const dmg=10+st(p,'clock')*2+Math.round(Math.random()*8);
+          const hit=all?opp:[opp.reduce((a,b)=>b.life<a.life?b:a)];
+          hit.forEach(o=>{o.life-=all?Math.round(dmg*0.7):dmg;o.lastHit=p;});
+          say(turn,`🔥 ${p.icon} ${p.name} goes for it: ${wn.name}! ${hit.map(o=>o.icon+' '+o.name).join(', ')} take${hit.length>1?'':'s'} ${all?Math.round(dmg*0.7):dmg}.`,'big');
+        }
+        // knockouts
+        for(const o of opp)if(o.alive&&o.life<=0){o.alive=false;o.out=place--;const k=o.lastHit||p;k.kills++;
+          say(turn,`☠️ ${o.icon} ${o.name} is knocked out by ${k.icon} ${k.name}!`,'ko');}
+      }
+      if(log&&turn%3===0&&alive().length>1)say(turn,'❤️ '+alive().map(p=>`${p.icon} ${Math.max(0,p.life)}`).join(' · '),'life');
+    }
+    const al=alive();let win;
+    if(al.length===1){win=al[0];win.out=1;
+      const fast=turn<=7,sweep=win.kills>=3,comeback=win.life<=10;
+      ending=sweep?`FLAWLESS SWEEP — ${win.name} knocked out all three opponents.`:comeback?`COMEBACK — ${win.name} survived on ${win.life} life.`:fast?`SPEED RUN — over by turn ${turn}.`:`LAST ONE STANDING — ${win.name} outlasted the table.`;
+    }else{al.sort((a,b)=>b.life-a.life);win=al[0];al.forEach((p,i)=>p.out=i+1);ending=`TIME CALLED — turn ${turn}, ${win.name} ahead on life (${win.life}).`;}
+    return {win,P,L,turn,ending};
+  }
+  function renderSim(){
+    const box=document.getElementById('sim');if(!box)return;const R=decks();if(!R)return;if(box.dataset.built)return;box.dataset.built='1';clear(box);
+    const sorted=[...R].sort((a,b)=>a.deck.localeCompare(b.deck));
+    const seats=el('div','sim-seats');const sels=[];
+    for(let i=0;i<4;i++){const lab=el('label','sim-seat');lab.appendChild(el('span','sim-p',`P${i+1}`));const s=el('select');sorted.forEach(r=>{const o=el('option',null,`${r.icon} ${r.deck}`);o.value=r.deck;s.appendChild(o);});lab.appendChild(s);seats.appendChild(lab);sels.push(s);}
+    const rnd=()=>{const sh=[...sorted].sort(()=>Math.random()-.5);sels.forEach((s,i)=>s.value=sh[i].deck);};rnd();
+    const bar=el('div','sim-bar');
+    const b1=el('button','arc-btn','▶ PLAY ONE GAME'),b2=el('button','arc-btn alt','🎲 RANDOM POD'),b3=el('button','arc-btn alt','⚡ RUN 1,000 GAMES');[b1,b2,b3].forEach(b=>{b.type='button';bar.appendChild(b);});
+    const screen=el('div','crt');const out=el('div','crt-in');screen.appendChild(out);out.appendChild(el('div','crt-blink','INSERT COIN · PRESS PLAY'));
+    box.appendChild(seats);box.appendChild(bar);box.appendChild(screen);
+    const rows=()=>sels.map(s=>R.find(r=>r.deck===s.value));
+    let timer=null;
+    b2.onclick=rnd;
+    b1.onclick=()=>{clearInterval(timer);clear(out);const g=runSim(rows(),true);
+      out.appendChild(el('div','crt-h','PLAYER SELECT'));g.P.forEach((p,i)=>out.appendChild(el('div','crt-l',`P${i+1}  ${p.icon} ${p.name}`)));
+      let k=0,lastT=0;const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const step=()=>{if(k>=g.L.length){clearInterval(timer);finish();return;}const e=g.L[k++];if(e.t!==lastT){lastT=e.t;out.appendChild(el('div','crt-h',`TURN ${e.t}`));}out.appendChild(el('div','crt-l '+(e.cls||''),e.s));out.scrollTop=out.scrollHeight;};
+      const finish=()=>{out.appendChild(el('div','crt-h go','GAME OVER'));out.appendChild(el('div','crt-win',`🏆 ${g.win.icon} ${g.win.name} WINS`));out.appendChild(el('div','crt-l big',g.ending));
+        [...g.P].sort((a,b)=>a.out-b.out).forEach(p=>out.appendChild(el('div','crt-l',`${['','1ST','2ND','3RD','4TH'][p.out]}  ${p.icon} ${p.name}`)));
+        out.appendChild(el('div','crt-blink','PRESS PLAY FOR ANOTHER ENDING'));out.scrollTop=out.scrollHeight;};
+      if(reduce){while(k<g.L.length)step();finish();}else timer=setInterval(step,420);
+    };
+    b3.onclick=()=>{clearInterval(timer);clear(out);const rs=rows();const N=1000;const w=new Map(rs.map(r=>[r.deck,0]));let draws=0,turns=0;
+      for(let n=0;n<N;n++){const g=runSim(rs.map(r=>r).sort(()=>Math.random()-.5),false);w.set(g.win.name,w.get(g.win.name)+1);turns+=g.turn;if(/TIME/.test(g.ending))draws++;}
+      out.appendChild(el('div','crt-h',`1,000 GAMES · SEATS SHUFFLED`));
+      rs.map(r=>[r,w.get(r.deck)]).sort((a,b)=>b[1]-a[1]).forEach(([r,c])=>{const line=el('div','crt-row');line.appendChild(el('span','crt-nm',`${r.icon} ${r.deck}`));const bb=el('span','crt-bar');const f=el('span','crt-fill');f.style.width=(c/N*100)+'%';bb.appendChild(f);line.appendChild(bb);line.appendChild(el('span','crt-pc',(c/N*100).toFixed(1)+'%'));out.appendChild(line);});
+      out.appendChild(el('div','crt-l',`Average game: ${(turns/N).toFixed(1)} turns · ${(draws/N*100).toFixed(0)}% went to time.`));
+      out.appendChild(el('div','crt-l dim','Just for fun: a rough model built from the nine ratings, not a real game engine.'));};
   }
   dash.onData(()=>render());
   function render(){renderWho();renderTake();renderTable();renderDeckTabs();renderDetail();renderGarage();}
