@@ -575,8 +575,9 @@ class Game{
   // ---- telegraphed danger zones: marked on the ground, then they hit whoever is still inside
   zone(cx,hw,T,dmg,src,kind,c){const z={cx,hw,T,t:0,dmg,src,kind,c};(this.zones=this.zones||[]).push(z);
     for(const h of this.alive()){const hx=this.heroX(h);if(Math.abs(hx-cx)>hw+4)continue;
-      const R=h.base.reflex||8;if(this.rng()<Math.min(.85,.1+.04*R)){const delay=Math.max(.12,.65-.03*R);
-        const out=hx<cx?-(hw+8-(cx-hx)):(hw+8-(hx-cx));h.dodge={at:this.t+delay,dx:(h.dodgeX||0)+out,until:this.t+T+.5,spd:90+R*6};}}
+      // Reflex helps, never guarantees: reaction chance has diminishing returns (tops out ~65%), reaction time jitters, and the step can come up short
+      const R=h.base.reflex||8;if(this.rng()<.65*(1-Math.exp(-R/12))){const delay=Math.max(.15,.7-.025*R)+this.rng()*.45;
+        const need=hx<cx?-(hw+8-(cx-hx)):(hw+8-(hx-cx));const out=need*(.7+this.rng()*.6);h.dodge={at:this.t+delay,dx:(h.dodgeX||0)+out,until:this.t+T+.5,spd:70+R*5};}}
     return z;}
   heroX(h){return h.x+(h.dodgeX||0)+(h.wanderX||0);}   // where a hero actually stands right now
   stepZones(dt){
@@ -702,7 +703,7 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793297041';const BGI=new Image();BGI.src='crawl_bg.png?v=1793297041';
+const IMG=new Image();IMG.src='crawl.png?v=1793297150';const BGI=new Image();BGI.src='crawl_bg.png?v=1793297150';
 const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
