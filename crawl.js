@@ -198,7 +198,8 @@ function heroBase(key,lvl,teamSize){
   const L=Math.max(1,lvl||1); hp*=1+.08*(L-1); atk*=1+.06*(L-1);
   const miss=3-teamSize; hp*=1+.3*miss; atk*=1+.3*miss;
   return {hp,atk,aspd:(0.8+0.025*s.mana)*(st.aspd||1)*(st.atk==='caster'?.8:1)*(st.atk==='ranged'||st.atk==='caster'?.74:1),crit:.04+.006*s.consistency,dodge:.008*s.control,
-    pow:1+.04*s.answers,reach:1+.02*s.reach,luck:Math.round((s.consistency+s.cards)/4),xpm:1+.03*s.cards};
+    pow:1+.04*s.answers,reach:1+.02*s.reach,luck:Math.round((s.consistency+s.cards)/4),xpm:1+.03*s.cards,
+    reflex:Math.round(4+.6*s.mana+.4*s.control+(MOVE[key]||26)/6-4)};   // chance + speed to step out of marked danger
 }
 function needHeroXp(L){return Math.round(70*Math.pow(L,1.6));}
 function needRunXp(k){return 8+6*k;}
@@ -438,6 +439,7 @@ class Game{
         if(tgt&&h.atkT>=1){h.atkT=0;h.anim=1;h.animT=.32;this.basic(h,tgt);}
         if(h.atkT>1)h.atkT=1;}
     }
+    this.stepZones(dt);
     // minions
     for(const m of this.minions){m.life-=dt;m.atkT+=dt;const mi=this.minions.indexOf(m);
       // melee summons hang out ~3/4 across the screen and charge what's in front of them; ranged summons hold the middle and shoot
@@ -557,18 +559,37 @@ class Game{
     if(b.x>stop+4)return;
     if(k==='gravelord'){
       if(b.t1<=0){b.t1=2.2;b.anim=1;b.animT=.5;this.hurtHero(f,b.dmg,b);}
-      if(b.t2<=0){b.t2=7;b.anim=1;b.animT=.6;this.shake=.4;this.fx.push({k:'ring',x:f.x,y:this.G-6,r:70,t:0,c:'#a6ff2e'});for(const h of al)this.hurtHero(h,b.dmg*.7,b);}
+      if(b.t2<=0){b.t2=7;b.anim=1;b.animT=.6;this.zone(f.x-14,34,1.3,b.dmg*1.1,b,'slam','#a6ff2e');}
       if(b.t3<=0){b.t3=9;for(let i=0;i<3;i++)this.spawnEnemy('zombie',{x:b.x+10+i*12,hp:CFG.enemies.zombie.hp*this.st.hpMul*.8,max:CFG.enemies.zombie.hp*this.st.hpMul*.8});}
     }else if(k==='countess'){
       if(b.t1<=0){b.t1=1.3;b.anim=1;b.animT=.4;for(let i=0;i<2;i++){const t=al[Math.floor(this.rng()*al.length)];this.proj.push({enemy:true,kind:'batswarm',x:b.x-20,y:b.y-60,tx:t,dmg:b.dmg*.55,src:b,spd:130+i*30,t:0});}}
       if(b.t2<=0){b.t2=8;b.anim=1;b.animT=.6;let tot=0;for(const h of al){const d=b.dmg*.5;this.hurtHero(h,d,b);tot+=d;}b.hp=Math.min(b.max,b.hp+tot*.5);this.fx.push({k:'drainall',t:0,x:b.x,y:b.y-60});}
+      b.t4=(b.t4==null?4:b.t4)-dt;if(b.t4<=0){b.t4=6;for(let i=0;i<2;i++){const t=al[Math.floor(this.rng()*al.length)];this.zone(t.x+(this.rng()*12-6),17,1.1,b.dmg*.9,b,'bloodrain','#ff2a3a');}}
       if(b.t3<=0){b.t3=10;for(let i=0;i<4;i++)this.spawnEnemy('bat',{x:b.x+i*8});}
     }else{
-      if(b.t1<=0){b.t1=2.6;b.anim=1;b.animT=.5;const t=al[Math.floor(this.rng()*al.length)];this.fx.push({k:'tentacle',x:t.x,y:this.G,t:0});this.hurtHero(t,b.dmg*1.15,b);}
+      if(b.t1<=0){b.t1=2.6;b.anim=1;b.animT=.5;const t=al[Math.floor(this.rng()*al.length)];this.zone(t.x,15,1.0,b.dmg*1.25,b,'tentacle','#c050ff');}
       if(b.t2<=0){b.t2=7.5;b.anim=1;b.animT=.8;this.shake=.4;this.fx.push({k:'beamall',t:0,x:b.x,y:b.y-70});for(const h of al)this.hurtHero(h,b.dmg*.6,b);}
       if(b.t3<=0){b.t3=6.5;for(let i=0;i<2;i++)this.spawnEnemy('spawn',{x:b.x-30+i*10});}
     }
   }
+  // ---- telegraphed danger zones: marked on the ground, then they hit whoever is still inside
+  zone(cx,hw,T,dmg,src,kind,c){const z={cx,hw,T,t:0,dmg,src,kind,c};(this.zones=this.zones||[]).push(z);
+    for(const h of this.alive()){const hx=this.heroX(h);if(Math.abs(hx-cx)>hw+4)continue;
+      const R=h.base.reflex||8;if(this.rng()<Math.min(.85,.1+.04*R)){const delay=Math.max(.12,.65-.03*R);
+        const out=hx<cx?-(hw+8-(cx-hx)):(hw+8-(hx-cx));h.dodge={at:this.t+delay,dx:(h.dodgeX||0)+out,until:this.t+T+.5,spd:90+R*6};}}
+    return z;}
+  heroX(h){return h.x+(h.dodgeX||0)+(h.wanderX||0);}   // where a hero actually stands right now
+  stepZones(dt){
+    // beat-'em-up shuffle: everyone drifts a little on their own (bigger while standing and fighting) — can carry them clear of danger by luck
+    for(const h of this.heroes){if(!h.alive)continue;const ph=(h.key.length*1.7)%6.3;const amp=this.scroll?3:7;
+      h.wanderX=Math.sin(this.t*1.1+ph)*amp+Math.sin(this.t*2.7+ph*2)*amp*.45;}
+    if(!this.zones)return;for(const h of this.heroes){if(!h.alive)continue;h.dodgeX=h.dodgeX||0;
+      if(h.dodge&&this.t>=h.dodge.at){const tgt=this.t<h.dodge.until?h.dodge.dx:0;const d=tgt-h.dodgeX,st=h.dodge.spd*dt;h.dodgeX+=Math.abs(d)<=st?d:Math.sign(d)*st;h.dodging=Math.abs(d)>1;if(this.t>=h.dodge.until&&Math.abs(h.dodgeX)<.5){h.dodge=null;h.dodgeX=0;}}
+      else if(!h.dodge&&h.dodgeX){h.dodgeX*=Math.max(0,1-dt*4);}}
+    for(const z of this.zones){z.t+=dt;if(z.t>=z.T&&!z.done){z.done=1;this.shake=Math.max(this.shake,.3);
+      this.fx.push(z.kind==='tentacle'?{k:'tentacle',x:z.cx,y:this.G,t:0}:{k:'ring',x:z.cx,y:this.G-4,r:z.hw*1.4,t:0,c:z.c});
+      for(const h of this.alive()){const hx=this.heroX(h);if(Math.abs(hx-z.cx)<=z.hw)this.hurtHero(h,z.dmg,z.src);else if(Math.abs(hx-z.cx)<z.hw+12)this.text(hx,this.G-62,'dodged','#9ae6ff');}}}
+    this.zones=this.zones.filter(z=>z.t<z.T+.25);}
   // snapshot what carries to the save point
   saveBack(){for(const h of this.heroes){const sv=this.run.heroes[h.key];sv.hpf=h.alive?h.hp/h.max:0;sv.dead=!h.alive;sv.spells=h.spells.map(s=>({card:s.card,arch:s.arch,r:s.r,augs:s.augs||[]}));}}
 }
@@ -681,7 +702,7 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793296879';const BGI=new Image();BGI.src='crawl_bg.png?v=1793296879';
+const IMG=new Image();IMG.src='crawl.png?v=1793297041';const BGI=new Image();BGI.src='crawl_bg.png?v=1793297041';
 const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -735,6 +756,9 @@ function drawGame(ctx,g,W,oy){
   ctx.setTransform(RES,0,0,RES,0,0);ctx.imageSmoothingEnabled=false;ctx.save();
   if(g.shake>0)ctx.translate(Math.round((Math.random()-.5)*4*g.shake),Math.round((Math.random()-.5)*3*g.shake));
   drawBG(ctx,g,W,oy);ctx.translate(0,-oy);const G=g.G;
+  for(const z of g.zones||[]){const k=Math.min(1,z.t/z.T);const pulse=.25+.25*Math.sin(g.t*18);ctx.save();
+    ctx.fillStyle=z.c;ctx.globalAlpha=z.t>=z.T?.6*(1-(z.t-z.T)/.25):(.12+.25*k+pulse*.3*k);ctx.beginPath();ctx.ellipse(z.cx,G+2,z.hw,6,0,0,7);ctx.fill();
+    ctx.globalAlpha=.9;ctx.strokeStyle=z.c;ctx.beginPath();ctx.ellipse(z.cx,G+2,z.hw*k,6*k,0,0,7);ctx.stroke();ctx.restore();}
   // minions
   for(const m of g.minions){const n=MINI[m.kind]||'e_ghost';const a=SP[n];shadow(ctx,m.x,G,6);
     const sc=(m.small?.5:.62)*(1+.15*(m.stacks||0));ctx.save();ctx.translate(m.x,G-(n==='e_skeleton'?60:44)*sc);ctx.scale(sc,sc);spr(ctx,n,Math.floor(g.t*(m.moving?16:6))%6,-FW(a)/2,0,true,.88);ctx.restore();}
@@ -745,7 +769,9 @@ function drawGame(ctx,g,W,oy){
     const y=f.fly?Math.min(G-44,f.y-FH(a)/2+f.t*160):G-(big?60:44)+(f.lane||0);ctx.save();if(f.elite){ctx.translate(f.x,y+FH(a));ctx.scale(1.22,1.22);spr(ctx,n,10,-FW(a)/2,-FH(a),false,Math.min(1,2.2*(1-k)));}else spr(ctx,n,10,f.x-FW(a)/2,y,false,Math.min(1,2.2*(1-k)));ctx.restore();}
   for(const h of hs){if(!h.alive){continue;}
     let fr=11;if(h.animT>0)fr=6+Math.min(2,Math.floor((.32-h.animT)/.107));else if(h.hitFlash>0)fr=9;else if(g.scroll)fr=Math.floor(h.walkT*9)%6;
-    const lx=h.animT>0&&h.lunge?h.lunge*Math.sin(Math.PI*(1-h.animT/.32))*.9:0;
+    const ph=h.key.length*1.7;const wob=h.wanderX||0;const ly=Math.round(2+Math.sin(g.t*.7+ph)*2.5);
+    const lx=(h.animT>0&&h.lunge?h.lunge*Math.sin(Math.PI*(1-h.animT/.32))*.9:0)+(h.dodgeX||0)+wob;if(h.dodging&&fr===11)fr=Math.floor(g.t*12)%6;
+    ctx.save();ctx.translate(0,ly);
     if(SP['h_'+h.key+'_a']){   // partner pair: two fighters, each with its own animation
       const fa=h.animT>0?6+Math.min(2,Math.floor((.32-h.animT)/.107)):h.hitFlash>0?9:g.scroll?Math.floor(h.walkT*9)%6:11;
       const fb=h.animT2>0?6+Math.min(2,Math.floor((.32-h.animT2)/.107)):h.hitFlash>0?9:g.scroll?Math.floor(h.walkT*9+3)%6:11;
@@ -755,8 +781,9 @@ function drawGame(ctx,g,W,oy){
       if(h.style.companion){const cx=h.x+(h.compX||-12),cy=h.compY||0;const pf=h.pounce?7:(g.scroll||Math.abs(h.compV||0)>4?Math.floor(g.t*10)%6:fa);
         shadow(ctx,cx,G+4,7);spr(ctx,'h_'+h.key+'_a',h.animT>0?fa:pf,cx-32,G-60+4-cy,(h.compV||0)<-4&&!h.animT,null,0);}
     }else{shadow(ctx,h.x+lx,G,9);spr(ctx,'h_'+h.key,fr,h.x+lx-32,G-60,false,null,h.hitFlash);}
+    ctx.restore();
     if(h.shield>0){ctx.strokeStyle='rgba(154,230,255,.7)';ctx.beginPath();ctx.ellipse(Math.round(h.x+lx),G-24,15,27,0,0,7);ctx.stroke();}
-    const w=22,pct=Math.max(0,h.hp/h.max);ctx.fillStyle='#120a14';ctx.fillRect(Math.round(h.x-w/2)-1,G-63,w+2,4);ctx.fillStyle=pct>.5?'#4fd46a':pct>.25?'#ffb020':'#e8303a';ctx.fillRect(Math.round(h.x-w/2),G-62,Math.round(w*pct),2);}
+    const w=22,pct=Math.max(0,h.hp/h.max),bx=h.x+(h.dodgeX||0)+(h.wanderX||0);ctx.fillStyle='#120a14';ctx.fillRect(Math.round(bx-w/2)-1,G-63,w+2,4);ctx.fillStyle=pct>.5?'#4fd46a':pct>.25?'#ffb020':'#e8303a';ctx.fillRect(Math.round(bx-w/2),G-62,Math.round(w*pct),2);}
   // enemies
   // depth lanes: each enemy stands a few px nearer/farther; small creatures take the front lanes; back lanes draw first
   for(const e of g.enemies)if(e.lane==null){const a=SP['e_'+e.type];e.lane=e.boss||e.fly?0:(a&&FH(a)<64?5+Math.floor(Math.random()*4):Math.floor(Math.random()*5));}
@@ -967,7 +994,7 @@ function showSlots(){
 }
 function confirmInline(b,msg){if(b.dataset.armed)return true;b.dataset.armed=1;const t=b.textContent;b.textContent=msg+' Tap again';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent=t;}},2600);return false;}
 function statBars(k,lvl){const b=heroBase(k,lvl,3);const mx={hp:420,atk:40,aspd:1.4};
-  return `<div class="cc-stat"><span>HP</span><i><b style="width:${Math.min(100,b.hp/mx.hp*100)}%"></b></i><span>ATK</span><i><b style="width:${Math.min(100,b.atk/mx.atk*100)}%"></b></i><span>SPD</span><i><b style="width:${Math.min(100,b.aspd/mx.aspd*100)}%"></b></i></div>`;}
+  return `<div class="cc-stat"><span>HP</span><i><b style="width:${Math.min(100,b.hp/mx.hp*100)}%"></b></i><span>ATK</span><i><b style="width:${Math.min(100,b.atk/mx.atk*100)}%"></b></i><span>SPD</span><i><b style="width:${Math.min(100,b.aspd/mx.aspd*100)}%"></b></i><span title="Reflex: chance and speed to step out of marked boss attacks">REF</span><i><b style="width:${Math.min(100,b.reflex/18*100)}%;background:#9ae6ff"></b></i></div>`;}
 const ROLE={melee:'Melee',ranged:'Ranged',caster:'Caster',duo:'Duo'};
 function showTeam(){
   const s=SLOT();migrate(s,CC.player);const pick=[];
