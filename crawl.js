@@ -88,6 +88,12 @@ const ORDER={melee:0,duo:1,ranged:2,caster:3};
 // walking pace per hero (px/s): heavy/armored/stone slow, light and quick ones faster
 const MOVE={grim:24,vile:26,felothar:18,thing:20,kykar:26,depala:22,kotis:34,dragons:30,mathas:28,turtle:22,marina:26,korvold:26,thranduil:32,joel:28,robots:22,blood:30,mech:24,weather:24};
 const MINION_SPEED=62;
+// how each hero's Summon spell behaves when recast (easy to retune per hero)
+const SUMMON_STYLE={grim:'empower',thing:'empower',korvold:'empower',felothar:'mend',depala:'mend',robots:'mend',mech:'mend',
+  vile:'volatile',mathas:'volatile',joel:'volatile',kykar:'swarm',kotis:'swarm',dragons:'swarm',turtle:'swarm',thranduil:'swarm',blood:'swarm',marina:'linger',weather:'linger'};
+const SUMMON_TXT={empower:'Recasting grows the one already out (+25% power, up to 3 stacks) instead of adding another.',mend:'Recasting fully repairs and refreshes the one already out.',
+  volatile:'Recasting detonates the old one in a blast as the new one arrives.',swarm:'Calls two smaller ones each time.',linger:'Lasts 18s; recasting refreshes it.'};
+const RANGED_SUMMONERS=new Set(['robots','mech','marina','kykar','thing','vile']);   // their summons shoot from mid-screen; everyone else's charge in
 // ---- signature abilities: every hero comes with one, on its own cooldown (not a spell slot). fn(game, hero, atk)
 const SIG={
   grim:{name:'Royal Cleave',cd:6,txt:'Sweeps every ground enemy in reach for 220% damage and shoves them back.',fn:(g,h,a)=>g.sigArea(h,46,a*2.2,{kb:1.4,ground:1,fx:'slash'})},
@@ -100,7 +106,7 @@ const SIG={
   dragons:{name:'Twin Breath',cd:7,txt:'Fire and frost wash over everything within 90px: 110% damage and a chill.',fn:(g,h,a)=>g.sigArea(h,90,a*1.1,{slow:.35,fx:'ring',c:'#ff8a1f'})},
   mathas:{name:'Bounty Mark',cd:7,txt:'Marks the toughest enemy (takes +20% for 6s) and shoots it for 200%.',fn:(g,h,a)=>g.sigMark(h,a*2)},
   turtle:{name:'Shell Spin',cd:6,txt:'Spins through every ground enemy in reach for 140%, shoving them back.',fn:(g,h,a)=>g.sigArea(h,40,a*1.4,{kb:1.2,ground:1,fx:'ring',c:'#c8b890'})},
-  marina:{name:'Lantern Haunt',cd:9,txt:'Lets the lantern ghost out to fight for 9s.',fn:(g,h,a)=>{g.addMinion(h,h.max*.3,a*.6,9,'spirit');return true;}},
+  marina:{name:'Lantern Haunt',cd:9,txt:'Lets the lantern ghost out to fight for 9s (one at a time).',fn:(g,h,a)=>{g.addMinion(h,h.max*.3,a*.6,9,'spirit','sig',1);return true;}},
   korvold:{name:'Gorge',cd:6,txt:'Bites the front enemy for 260% and heals for 30% of it.',fn:(g,h,a)=>g.sigFront(h,a*2.6,{heal:.3})},
   thranduil:{name:'Volley',cd:6,txt:'Looses 3 heavy arrows at random enemies for 115% each.',fn:(g,h,a)=>g.sigMulti(h,'arrow',a*1.15,3)},
   joel:{name:'Brick Toss',cd:7,txt:'The scout lobs a brick for 200% that stuns the target for 0.75s.',fn:(g,h,a)=>g.sigShot(h,'brick',a*2,{stun:.75})},
@@ -142,7 +148,7 @@ const SPELL={
   drain:{label:'Drain',cd:4.5,augs:['extra','slow','leech','shred'],
     txt:(r,a,S)=>`Drains ${2+Math.floor(r/3)+(S.aug.extra?2:0)} enemies for ${Math.round(a*(.6+.12*r))}; heals the weakest ally for 40% of it.`},
   summon:{label:'Summon',cd:9,augs:['explode','taunt','extra','leech'],
-    txt:(r,a,S,o)=>`Calls ${1+Math.floor(r/5)+(S.aug.extra?1:0)} minion${r>=5||S.aug.extra?'s':''} (${Math.round(o.max*(.18+.03*r))} HP, ${Math.round(a*(.35+.06*r))} dmg) for 10s.`},
+    txt:(r,a,S,o,hk)=>{const cap=(r>=10?3:r>=5?2:1)+(S.aug.extra?1:0);const st=SUMMON_STYLE[hk]||'replace';return `Calls a minion (${Math.round(o.max*(.18+.03*r))} HP, ${Math.round(a*(.35+.06*r))} dmg). Up to ${cap} out. ${SUMMON_TXT[st]||'Recasting replaces the oldest.'}`;}},
   regen:{label:'Regen',cd:6,augs:['all','shield','echo'],
     txt:(r,a,S)=>`Heals ${S.aug.all?'every ally':'the weakest ally'} for ${Math.round(8+1.4*r)}% of their max HP.`},
   aegis:{label:'Aegis',cd:10,augs:['thorns','echo','leech'],
@@ -314,7 +320,7 @@ class Game{
         if(it.proc==='critnova'){this.fx.push({k:'ring',x:e.x,y:e.y-16,r:22,t:0,c:'#ffb040'});for(const o of this.enemies)if(!o.dead&&Math.abs(o.x-e.x)<26)this.hitEnemy(o,a*.6,null,{nocrit:1});}}
       if(trig==='onkill'){if(this.rng()>ch)continue;
         if(it.proc==='killheal')for(const o of this.alive())this.healHero(o,o.max*.04);
-        if(it.proc==='killraise')this.addMinion(h,h.max*.15,a*.4,8,'raise');}
+        if(it.proc==='killraise')this.addMinion(h,h.max*.15,a*.4,8,'raise','item:'+it.card,1);}
       if(trig==='whenhit'){
         if(it.proc==='hitshield'&&this.rng()<ch){h.shield+=h.max*.08;h.shieldT=4;}
         if(it.proc==='hitthorns'&&e&&!e.dead)this.hitEnemy(e,amt*ch*1.5,null,{nocrit:1,sure:1});}
@@ -324,9 +330,14 @@ class Game{
         for(const o of this.enemies)if(!o.dead&&o.x-h.x<60){o.slow=Math.max(o.slow,.4+.02*it.r);o.slowT=2;this.hitEnemy(o,a*(.2+.05*it.r),null,{nocrit:1});}}
     }
   }
-  addMinion(owner,hp,atk,life,kind){const f=this.front();const m={owner,hp,max:hp,atk,life,x:(f?f.x:120)+16+this.rng()*10,atkT:0,kind:kind||'spirit',taunt:false,explode:false,leech:false};this.minions.push(m);return m;}
+  // tag = which ability made it; cap = how many from that ability may be out (oldest gets replaced)
+  addMinion(owner,hp,atk,life,kind,tag,cap){const f=this.front();const m={owner,hp,max:hp,atk,life,x:(f?f.x:120)+16+this.rng()*10,atkT:0,kind:kind||'spirit',taunt:false,explode:false,leech:false,
+    ranged:RANGED_SUMMONERS.has(owner.key),tag:tag||kind,born:this.t};
+    const same=this.minions.filter(o=>o.owner===owner&&o.tag===m.tag).sort((a,b)=>a.born-b.born);
+    while(same.length>=(cap||1)){const o=same.shift();o.dead=true;this.fx.push({k:'poof',x:o.x,y:this.G-14,t:0});}
+    this.minions=this.minions.filter(o=>!o.dead);this.minions.push(m);return m;}
   shoot(h,target,kind,dmg,opt){
-    const y0=this.G-30;const p={kind,x:h.x+10,y:y0,tx:target,dmg,src:h,spd:PSPD[kind]||160,pierce:opt.pierce||0,opt,t:0,vy:kind==='brick'?-70:0,hit:new Set()};
+    const mz=MUZZLE[h.key]||[10,30];const y0=this.G-mz[1];const p={kind,x:h.x+mz[0],y:y0,tx:target,dmg,src:h,spd:PSPD[kind]||160,pierce:opt.pierce||0,opt,t:0,vy:kind==='brick'?-70:0,hit:new Set()};
     this.proj.push(p);return p;
   }
   text(x,y,s,c,big){if(this.demo&&typeof s==='number'&&this.rng()<.6)return;this.texts.push({x,y,s:String(s),c,t:0,big:!!big});}
@@ -349,8 +360,18 @@ class Game{
         if(aug.chain&&tg[1]){fx('beam',{x:tg[1].x,y:tg[1].y,c:'#fff4a0'});onHit(tg[1],a*(1.2+.22*r));}break;}
       case 'drain':{if(!live.length){did=false;break;}const n=2+Math.floor(r/3)+(aug.extra?2:0);let tot=0;const tg=live.slice().sort(()=>this.rng()-.5).slice(0,n);
         for(const e of tg){tot+=onHit(e,a*(.6+.12*r),0);fx('drain',{x:e.x,y:e.y-(e.fly?0:24),tx:h.x,c:'#ff3a5a'});}this.healHero(this.weakest(),tot*.4);break;}
-      case 'summon':{const n=1+Math.floor(r/5)+extra;for(let i=0;i<n;i++){const m=this.addMinion(h,h.max*(.18+.03*r),a*(.35+.06*r),10,h.key==='blood'?'bat':h.key==='joel'?'spore':h.key==='robots'||h.key==='mech'?'drone':'spirit');
-        m.taunt=!!aug.taunt;m.explode=!!aug.explode;m.leech=!!aug.leech;}break;}
+      case 'summon':{const style=SUMMON_STYLE[h.key]||'replace';const tag='spell:'+s.card;const kind=h.key==='blood'?'bat':h.key==='joel'?'spore':h.key==='robots'||h.key==='mech'?'drone':h.key==='grim'||h.key==='korvold'?'raise':'spirit';
+        const hp=h.max*(.18+.03*r),atk=a*(.35+.06*r);const mine=this.minions.filter(m=>m.owner===h&&m.tag===tag);const cap=(r>=10?3:r>=5?2:1)+extra;
+        if((style==='empower'||style==='mend'||style==='linger')&&mine.length>=cap){
+          const m=mine.sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
+          if(style==='empower'&&(m.stacks||0)<3){m.stacks=(m.stacks||0)+1;m.max*=1.25;m.atk*=1.25;}
+          m.hp=m.max;m.life=style==='linger'?18:10;this.fx.push({k:'ring',x:m.x,y:this.G-16,r:12,t:0,c:style==='empower'?'#ffd23f':'#7dff9a'});break;}
+        if(style==='volatile')for(const o of mine.slice(0,Math.max(0,mine.length-cap+1))){o.dead=true;this.fx.push({k:'ring',x:o.x,y:this.G-16,r:26,t:0,c:'#ff8a1f'});
+          for(const e of this.enemies)if(!e.dead&&Math.abs(e.x-o.x)<32)this.hitEnemy(e,o.atk*2.4,h,{nocrit:1,kb:.6});}
+        this.minions=this.minions.filter(o=>!o.dead);
+        const n=style==='swarm'?2:1,mult=style==='swarm'?.55:1;
+        for(let i=0;i<n;i++){const m=this.addMinion(h,hp*mult,atk*mult,style==='linger'?18:10,kind,tag,style==='swarm'?cap*2:cap);
+          m.taunt=!!aug.taunt||h.key==='felothar';m.explode=!!aug.explode;m.leech=!!aug.leech;m.small=style==='swarm';}break;}
       case 'regen':{const pct=.08+.014*r;if(aug.all){for(const o of this.alive())this.healHero(o,o.max*pct);}else{const w=this.weakest();if(!w||w.hp>=w.max){did=false;break;}this.healHero(w,w.max*pct);}
         if(aug.shield){h.shield+=h.max*.06;h.shieldT=5;}fx('ring',{x:h.x,y:this.G-24,r:14,c:'#7dff9a'});break;}
       case 'aegis':{for(const o of this.alive()){o.shield+=h.max*(.05+.013*r);o.shieldT=6;o.thorns=!!aug.thorns;}fx('ring',{x:h.x,y:this.G-24,r:26,c:'#9ae6ff'});break;}
@@ -418,11 +439,15 @@ class Game{
     }
     // minions
     for(const m of this.minions){m.life-=dt;m.atkT+=dt;const mi=this.minions.indexOf(m);
-      const foe=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>f.x&&e.x-f.x<130).sort((p,q)=>p.x-q.x)[0];
-      const tx=foe?Math.max(f.x+8,foe.x-(foe.boss?foe.w:0)-14-mi*5):f.x+22+mi*7;
+      // melee summons hang out ~3/4 across the screen and charge what's in front of them; ranged summons hold the middle and shoot
+      const home=this.W*(m.ranged?.5:.75)+((mi%3)-1)*7;const src=m.owner.alive?{crit:m.owner.crit,scoreM:m.owner.scoreM,items:[]}:null;
+      const foe=m.ranged?null:this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>f.x+10).sort((p,q)=>Math.abs(p.x-home)-Math.abs(q.x-home))[0];
+      const tx=foe&&Math.abs(foe.x-home)<this.W*.3?Math.max(f.x+10,foe.x-(foe.boss?foe.w:0)-14-mi*4):home;
       const md=tx-m.x,ms=MINION_SPEED*dt;m.x+=Math.abs(md)<=ms?md:Math.sign(md)*ms;m.moving=Math.abs(md)>1;
-      const e=this.enemies.filter(e=>!e.dead&&Math.abs(e.x-(e.boss?e.w:0)-m.x)<30)[0];
-      if(e&&m.atkT>=1){m.atkT=0;const d=this.hitEnemy(e,m.atk,m.owner.alive?{crit:m.owner.crit,scoreM:m.owner.scoreM,items:[]}:null,{});if(m.leech)this.healHero(this.weakest(),d*.2,true);}
+      if(m.ranged){const e=this.enemies.filter(e=>!e.dead&&e.x>m.x-20&&e.x-m.x<170).sort((p,q)=>p.x-q.x)[0];
+        if(e&&m.atkT>=1.3){m.atkT=0;this.proj.push({kind:m.kind==='drone'?'plasma':'wisp',x:m.x+6,y:this.G-26,tx:e,dmg:m.atk*1.1,src,spd:PSPD[m.kind==='drone'?'plasma':'wisp'],pierce:0,opt:{},t:0,hit:new Set()});}}
+      else{const e=this.enemies.filter(e=>!e.dead&&Math.abs(e.x-(e.boss?e.w:0)-m.x)<30)[0];
+        if(e&&m.atkT>=1){m.atkT=0;const d=this.hitEnemy(e,m.atk,src,{});if(m.leech)this.healHero(this.weakest(),d*.2,true);}}
       if(m.hp<=0||m.life<=0){m.dead=true;this.fx.push({k:'poof',x:m.x,y:this.G-14,t:0});
         if(m.explode){this.fx.push({k:'ring',x:m.x,y:this.G-16,r:24,t:0,c:'#ff8a1f'});for(const e of this.enemies)if(!e.dead&&Math.abs(e.x-m.x)<30)this.hitEnemy(e,m.atk*2.2,null,{nocrit:1});}}}
     this.minions=this.minions.filter(m=>!m.dead);
@@ -487,7 +512,8 @@ class Game{
       for(const o of this.enemies)if(o!==tgt&&!o.dead&&!o.fly&&Math.abs(o.x-tgt.x)<12)this.hitEnemy(o,A*.4,h,{nocrit:1});
       this.fx.push({k:'slash',x:tgt.x-6,y:tgt.boss?tgt.y-50:tgt.fly?tgt.y:tgt.y-24,t:0});return;}
     const pk=kind==='ranged'||kind==='caster'?st.proj:kind;
-    const p=this.shoot(h,tgt,pk,A,{});if(st.atk==='duo')p.x=st.companion?h.x+(h.compX||-12)+6:h.x-6;p.splash=st.splash||(pk==='orb'?12:0);p.chill=st.chill;
+    setTimeoutSafe(this,.11,()=>{if(!h.alive)return;const tg=tgt.dead?this.liveE().sort((p,q)=>p.x-q.x)[0]:tgt;if(!tg)return;
+    const p=this.shoot(h,tg,pk,A,{});if(st.atk==='duo')p.x=(st.companion?h.x+(h.compX||-12):h.x-9)+(MUZZLE[h.key]||[10])[0];p.splash=st.splash||(pk==='orb'?12:0);p.chill=st.chill;});
   }
   // the scout roams around her partner (can't be targeted), and now and then pounces on the front enemy with a knife
   companion(h,dt,f){
@@ -510,7 +536,7 @@ class Game{
     return any;}
   sigShot(h,kind,dmg,o){const t=this.liveE().sort((p,q)=>p.x-q.x)[0];if(!t)return false;const p=this.shoot(h,t,kind,dmg,{});p.splash=o.splash||0;
     p.opt.onHit=(e,d)=>{const r=this.hitEnemy(e,d,h,{kb:o.kb||0});if(o.stun)e.stun=Math.max(e.stun,o.stun);if(o.splash)for(const x of this.enemies)if(x!==e&&!x.dead&&Math.abs(x.x-e.x)<o.splash)this.hitEnemy(x,d*.5,h,{nocrit:1});return r;};
-    if(h.style.atk==='duo'){p.x=h.x-6;h.animT=.32;}return true;}
+    if(h.style.atk==='duo'){p.x=(h.style.companion?h.x+(h.compX||-12):h.x-9)+(MUZZLE[h.key]||[10])[0];h.animT=.32;}return true;}
   sigMulti(h,kind,dmg,n,o){const L=this.liveE();if(!L.length)return false;for(let i=0;i<n;i++)setTimeoutSafe(this,i*.25,()=>{const M=this.liveE();if(!M.length||!h.alive)return;const p=this.shoot(h,M[Math.floor(this.rng()*M.length)],kind,dmg,{});p.splash=(o&&o.splash)||0;});return true;}
   sigChain(h,dmg,n){let L=this.liveE().sort((p,q)=>p.x-q.x);if(!L.length)return false;let prev={x:h.x,y:this.G-30};
     for(const e of L.slice(0,n)){this.fx.push({k:'zap',x:prev.x,y:prev.y,tx:e.x,ty:e.fly?e.y:e.y-24,t:0});this.hitEnemy(e,dmg,h,{});prev={x:e.x,y:e.fly?e.y:e.y-24};}return true;}
@@ -547,12 +573,14 @@ class Game{
 }
 function setTimeoutSafe(g,t,fn){(g.timers=g.timers||[]).push({t,fn});}
 const BIGP={};
+// where shots leave each hero (px ahead of the hero's x, px above the ground), matched to the strike frame
+const MUZZLE={vile:[3,30],thing:[14,30],kykar:[15,46],dragons:[18,38],mathas:[17,33],marina:[11,25],thranduil:[12,34],joel:[11,33],robots:[18,33],blood:[13,46],mech:[20,30],weather:[14,47]};
 const PSPD={arrow:200,quarrel:215,bolt:150,orb:135,fire:150,shard:160,zap:170,wisp:120,plasma:180,blood:140,shell:160,frost:145,brick:190};   // px/s   // ranged shots don't shove, except the thrown brick (a little)
 const PCOL={skull:'#7dff9a',hex:'#c050ff',bolt:'#ffb040',orb:'#c050ff',arrow:'#e8e0c8',quarrel:'#e8e0c8',fire:'#ff8a1f',shard:'#6ff0ff',zap:'#bfefff',wisp:'#7dff9a',plasma:'#3ff0ff',blood:'#ff2a3a',shell:'#ffd23f',frost:'#9ae6ff',brick:'#c0603a'};
 
 // ======================================================================= RUN / PICKS (pure)
 function newRun(team,slot){
-  const run={team:team.slice(),stage:1,prestige:0,score:0,xp:0,lv:0,pending:0,rerolls:1,heroes:{}};
+  const run={team:team.slice(),stage:1,prestige:0,score:0,xp:0,lv:0,pending:0,rerolls:1,heroes:{},bag:[]};
   for(const k of team){const d=heroDef(k);run.heroes[k]={hpf:1,dead:false,spells:[{card:d.spells[0].card,arch:d.spells[0].arch,r:1,augs:[]}],items:[]};}
   return run;
 }
@@ -562,35 +590,58 @@ function rollRarity(rng,luck,prestige,min){
   if(min&&CFG.rarity.indexOf(pick)<CFG.rarity.findIndex(r=>r.id===min))pick=CFG.rarity.find(r=>r.id===min);
   return pick;
 }
+// ---- loadout: per-hero slots grow with the hero's permanent level; a shared 6-space backpack holds the rest
+function slotCaps(lvl){lvl=lvl||1;return {active:lvl>=12?4:lvl>=5?3:2,passive:lvl>=8?2:1,item:CFG.slots.item};}
+const BAG_SIZE=6;
+function typeOf(e){return e.kind==='item'||ITEM[e.arch]&&!SPELL[e.arch]?'item':SPELL[e.arch].passive?'passive':'active';}
+function heroLvl(slot,k){return (slot&&slot.heroes[k]||{lvl:1}).lvl;}
+function countType(hv,t){return t==='item'?hv.items.length:hv.spells.filter(s=>!!SPELL[s.arch].passive===(t==='passive')).length;}
+function findEntry(run,o){   // equipped on its hero, then the bag
+  const hv=run.heroes[o.hero];const list=o.slot==='spell'?hv.spells:hv.items;let e=list.find(x=>x.card===o.card);if(e)return {e,list};
+  for(const k of run.team){const L=o.slot==='item'?run.heroes[k].items:[];e=L.find(x=>x.card===o.card&&x.from===o.hero);if(e)return {e,list:L};}
+  run.bag=run.bag||[];e=run.bag.find(x=>x.card===o.card&&x.owner===o.hero&&(o.slot==='item')===(x.kind==='item'));return e?{e,list:run.bag,bag:1}:null;}
+function owned(run,hk,card,slot){return !!findEntry(run,{hero:hk,card,slot});}
 function offers(run,rng,n){
-  rng=rng||Math.random;const out=[];const luck=run.team.reduce((m,k)=>m+heroBase(k,1,3).luck,0)/run.team.length+(run.heroes&&Object.values(run.heroes).reduce((m,h)=>m+h.spells.filter(s=>s.arch==='insight').reduce((a,s)=>a+s.r,0)+h.items.filter(i=>i.arch==='charm').reduce((a,i)=>a+i.r,0),0));
-  const pool=[];
+  rng=rng||Math.random;const out=[];run.bag=run.bag||[];
+  const luck=run.team.reduce((m,k)=>m+heroBase(k,1,3).luck,0)/run.team.length+Object.values(run.heroes).reduce((m,h)=>m+h.spells.filter(s=>s.arch==='insight').reduce((a,s)=>a+s.r,0)+h.items.filter(i=>i.arch==='charm').reduce((a,i)=>a+i.r,0),0);
+  const pool=[];const room=run.bag.length<BAG_SIZE;
   for(const k of run.team){const d=heroDef(k),hv=run.heroes[k];
-    for(const s of d.spells)if(!hv.spells.some(x=>x.card===s.card))pool.push({kind:'new',slot:'spell',hero:k,card:s.card,arch:s.arch,w:1.1});
-    for(const it of d.items)if(!hv.items.some(x=>x.card===it.card))pool.push({kind:'new',slot:'item',hero:k,card:it.card,arch:it.arch,w:.9});
-    for(const s of hv.spells){if(s.r<CFG.maxRank)pool.push({kind:'up',slot:'spell',hero:k,card:s.card,arch:s.arch,w:1.5});
-      const A=SPELL[s.arch].augs.filter(g=>!(s.augs||[]).includes(g));if(A.length&&(s.augs||[]).length<1+Math.floor(s.r/4))pool.push({kind:'aug',slot:'spell',hero:k,card:s.card,arch:s.arch,aug:A[Math.floor(rng()*A.length)],w:.8});}
-    for(const it of hv.items)if(it.r<CFG.maxRank)pool.push({kind:'up',slot:'item',hero:k,card:it.card,arch:it.arch,w:1.2});}
+    for(const s of d.spells)if(!owned(run,k,s.card,'spell'))pool.push({kind:'new',slot:'spell',hero:k,card:s.card,arch:s.arch,w:1.1});
+    for(const it of d.items)if(!owned(run,k,it.card,'item'))pool.push({kind:'new',slot:'item',hero:k,card:it.card,arch:it.arch,w:.9});
+    const mine=[...hv.spells.map(e=>['spell',e]),...run.bag.filter(b=>b.owner===k&&b.kind!=='item').map(e=>['spell',e]),...run.team.flatMap(t=>run.heroes[t].items.filter(x=>(x.from||t)===k)).map(e=>['item',e]),...run.bag.filter(b=>b.owner===k&&b.kind==='item').map(e=>['item',e])];
+    for(const [sl,e] of mine){if(e.r<CFG.maxRank)pool.push({kind:'up',slot:sl,hero:k,card:e.card,arch:e.arch,w:sl==='spell'?1.5:1.2});
+      if(sl==='spell'){const A=SPELL[e.arch].augs.filter(g=>!(e.augs||[]).includes(g));if(A.length&&(e.augs||[]).length<1+Math.floor(e.r/4))pool.push({kind:'aug',slot:'spell',hero:k,card:e.card,arch:e.arch,aug:A[Math.floor(rng()*A.length)],w:.8});}}}
   const used=new Set();
   while(out.length<(n||3)&&pool.length){let tot=pool.reduce((m,p)=>m+p.w,0),x=rng()*tot,i=0;for(;i<pool.length;i++){x-=pool[i].w;if(x<=0)break;}
     const p=pool.splice(Math.min(i,pool.length-1),1)[0];const key=p.hero+p.card+p.kind;if(used.has(key))continue;used.add(key);
     p.rar=rollRarity(rng,luck,run.prestige,p.kind==='aug'?'U':null);out.push(p);}
   return out;
 }
-function applyOffer(run,o,replaceIdx){
-  const hv=run.heroes[o.hero];const list=o.slot==='spell'?hv.spells:hv.items;
-  if(o.kind==='new'){const e={card:o.card,arch:o.arch,r:o.rar.pts,augs:[]};if(o.slot==='item')e.proc=procFor(o.card);
-    if(list.length>=CFG.slots[o.slot]){if(replaceIdx==null)return 'full';list.splice(replaceIdx,1,e);}else list.push(e);}
-  else{const e=list.find(x=>x.card===o.card);if(!e)return;if(o.kind==='up')e.r=Math.min(CFG.maxRank,e.r+o.rar.pts);else{(e.augs=e.augs||[]).push(o.aug);e.r=Math.min(CFG.maxRank,e.r+o.rar.pts-1);}}
+// returns 'ok' (equipped or bagged) or 'full' (no slot and no bag room: caller asks what to drop)
+function applyOffer(run,o,slot){
+  run.bag=run.bag||[];const hv=run.heroes[o.hero];
+  if(o.kind==='new'){const e={card:o.card,arch:o.arch,r:o.rar.pts,augs:[]};if(o.slot==='item'){e.proc=procFor(o.card);e.from=o.hero;}
+    const t=o.slot==='item'?'item':SPELL[o.arch].passive?'passive':'active';const cap=slotCaps(heroLvl(slot,o.hero))[t];
+    if(countType(hv,t)<cap)(o.slot==='spell'?hv.spells:hv.items).push(e);
+    else if(run.bag.length<BAG_SIZE)run.bag.push(Object.assign(e,{owner:o.hero,kind:o.slot==='item'?'item':'spell'}));
+    else return 'full';}
+  else{const f=findEntry(run,o);if(!f)return 'ok';const e=f.e;if(o.kind==='up')e.r=Math.min(CFG.maxRank,e.r+o.rar.pts);else{(e.augs=e.augs||[]).push(o.aug);e.r=Math.min(CFG.maxRank,e.r+o.rar.pts-1);}}
   run.pending=Math.max(0,run.pending-1);return 'ok';
 }
+// camp actions
+function unequip(run,hk,slotName,idx){run.bag=run.bag||[];if(run.bag.length>=BAG_SIZE)return false;const hv=run.heroes[hk];const L=slotName==='item'?hv.items:hv.spells;if(slotName!=='item'&&L.length<=1)return false;
+  const e=L.splice(idx,1)[0];run.bag.push(Object.assign(e,{owner:slotName==='item'?(e.from||hk):hk,kind:slotName==='item'?'item':'spell'}));return true;}
+function equip(run,slot,bagIdx,hk){const e=run.bag[bagIdx];if(!e)return false;if(e.kind!=='item'&&e.owner!==hk)return false;const hv=run.heroes[hk];const t=typeOf(e);
+  if(countType(hv,t)>=slotCaps(heroLvl(slot,hk))[t])return false;run.bag.splice(bagIdx,1);const c=Object.assign({},e);delete c.owner;delete c.kind;(t==='item'?hv.items:hv.spells).push(c);return true;}
+function discard(run,where,hk,idx){if(where==='bag'){run.bag.splice(idx,1);return;}const hv=run.heroes[hk];(where==='item'?hv.items:hv.spells).splice(idx,1);}
 function describe(o,run,slot){
-  const hv=run.heroes[o.hero];const list=o.slot==='spell'?hv.spells:hv.items;const cur=list.find(x=>x.card===o.card);
+  const f=findEntry(run,o);const cur=f&&f.e;
   const r0=cur?cur.r:0,r1=o.kind==='new'?o.rar.pts:Math.min(CFG.maxRank,r0+(o.kind==='aug'?o.rar.pts-1:o.rar.pts));
-  const lvl=(slot&&slot.heroes[o.hero]||{lvl:1}).lvl;const b=heroBase(o.hero,lvl,run.team.length);const a=b.atk*b.pow;const fake={max:b.hp};
+  const b=heroBase(o.hero,heroLvl(slot,o.hero),run.team.length);const a=b.atk*b.pow;const fake={max:b.hp};
   const augs={};for(const g of (cur&&cur.augs)||[])augs[g]=1;if(o.kind==='aug')augs[o.aug]=1;
-  let txt;if(o.slot==='spell')txt=SPELL[o.arch].txt(r1,a,{aug:augs},fake);else{txt=ITEM[o.arch].txt(r1);const pr=cur?cur.proc:procFor(o.card);if(pr)txt+='. '+PROCS[pr].txt(procChance(r1));}
-  return {r0,r1,txt,augs:Object.keys(augs)};
+  let txt;if(o.slot==='spell')txt=SPELL[o.arch].txt(r1,a,{aug:augs},fake,o.hero);else{txt=ITEM[o.arch].txt(r1);const pr=cur?cur.proc:procFor(o.card);if(pr)txt+='. '+PROCS[pr].txt(procChance(r1));}
+  let where='';if(o.kind==='new'){const t=o.slot==='item'?'item':SPELL[o.arch].passive?'passive':'active';const hv=run.heroes[o.hero];where=countType(hv,t)<slotCaps(heroLvl(slot,o.hero))[t]?'Equips now':'Goes to the backpack';}
+  return {r0,r1,txt,augs:Object.keys(augs),where};
 }
 
 // ======================================================================= SAVES
@@ -614,20 +665,21 @@ function migrateSlot(slot,player){
         if(!m)m=pool.find(x=>!out.some(o=>o.card===x.card)&&!list.some(o=>o.card===x.card));
         if(m)out.push(Object.assign({},e,{card:m.card,arch:m.arch,augs:(e.augs||[]).filter(g=>SPELL[m.arch]&&SPELL[m.arch].augs.includes(g)),r:Math.min(CFG.maxRank,e.r||1)}));}
       return out;};
-    hv.spells=fix(hv.spells||[],d.spells).slice(0,CFG.slots.spell);hv.items=fix(hv.items||[],d.items).slice(0,CFG.slots.item).map(it=>Object.assign(it,{proc:procFor(it.card),augs:[]}));
+    hv.spells=fix(hv.spells||[],d.spells);hv.items=fix(hv.items||[],d.items).slice(0,CFG.slots.item).map(it=>Object.assign(it,{proc:procFor(it.card),augs:[]}));
     if(!hv.spells.length)hv.spells=[{card:d.spells[0].card,arch:d.spells[0].arch,r:1,augs:[]}];}
   for(const k of Object.keys(run.heroes))if(!run.team.includes(k))delete run.heroes[k];
+  run.bag=(run.bag||[]).filter(b=>heroDef(b.owner)&&(b.kind==='item'?heroDef(b.owner).items:heroDef(b.owner).spells).some(x=>x.card===b.card)).slice(0,BAG_SIZE);
   if(run.stage>CFG.maxStage)run.stage=CFG.maxStage;
   return slot;}
 function newSlot(player){const heroes={};for(const h of DATA.heroes)if(h.owner===player)heroes[h.key]={lvl:1,xp:0};return {epoch:SAVE_EPOCH,heroes,best:{score:0,stage:0,prestige:0},runs:0,run:null,created:Date.now()};}
 
 // ======================================================================= exports for node sims
-const API={migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
+const API={slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
 if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793296110';const BGI=new Image();BGI.src='crawl_bg.png?v=1793296110';
+const IMG=new Image();IMG.src='crawl.png?v=1793296785';const BGI=new Image();BGI.src='crawl_bg.png?v=1793296785';
 const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -683,7 +735,7 @@ function drawGame(ctx,g,W,oy){
   drawBG(ctx,g,W,oy);ctx.translate(0,-oy);const G=g.G;
   // minions
   for(const m of g.minions){const n=MINI[m.kind]||'e_ghost';const a=SP[n];shadow(ctx,m.x,G,6);
-    ctx.save();ctx.translate(m.x,G-(n==='e_skeleton'?40:32));ctx.scale(.62,.62);spr(ctx,n,Math.floor(g.t*(m.moving?16:6))%6,-FW(a)/2,0,true,.88);ctx.restore();}
+    const sc=(m.small?.5:.62)*(1+.15*(m.stacks||0));ctx.save();ctx.translate(m.x,G-(n==='e_skeleton'?60:44)*sc);ctx.scale(sc,sc);spr(ctx,n,Math.floor(g.t*(m.moving?16:6))%6,-FW(a)/2,0,true,.88);ctx.restore();}
   // heroes (back to front)
   const hs=g.heroes.slice().sort((a,b)=>a.x-b.x);
   for(const h of hs)if(!h.alive)spr(ctx,'h_'+h.key,10,h.x-32,G-60,false,.85);
@@ -800,7 +852,8 @@ const CSS=`
 .cc-lh{display:flex;gap:8px;align-items:flex-start}
 .cc-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .cc-chip{font-size:11px;padding:3px 6px;border-radius:6px;background:#1e1228;border:1px solid #3a2450}
-.cc-chip.it{border-style:dashed}.cc-chip b{font-weight:600}
+.cc-chip.it{border-style:dashed}
+.cc-chipw{display:inline-flex;gap:2px;align-items:center}.cc-mini{font-size:11px;padding:3px 7px;border-radius:6px;background:#2a1430;border:1px solid #6a2a8a}.cc-slotrow{margin-top:5px}.cc-chip b{font-weight:600}
 .cc-offers{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
 .cc-offer{background:#120a18;border:2px solid var(--rc);border-radius:12px;padding:10px;text-align:left;display:flex;flex-direction:column;gap:4px}
 .cc-offer .rar{font-family:var(--px,monospace);font-size:9px;color:var(--rc)}
@@ -919,7 +972,7 @@ function showTeam(){
   const mine=DATA.heroes.filter(h=>h.owner===CC.player);
   const P=showPanel(`<div class="cc-h">PICK YOUR PARTY</div><p class="cc-sub">Up to 3 heroes from your decks. Fewer heroes = each one is stronger. Lower-level heroes earn catch-up XP.</p>
     <div class="cc-heroes">${mine.map(h=>{const st=STYLE[h.key];const L=s.heroes[h.key].lvl;
-      return `<button class="cc-hero" data-k="${h.key}" aria-pressed="false"><span class="ord"></span><span class="por" data-por="${h.key}"></span><div class="nm">${h.icon} ${esc(h.name)}</div><div class="dk">${esc(h.deck)} · ${ROLE[st.atk]}${st.tank?' · Tank':''}</div>
+      return `<button class="cc-hero" data-k="${h.key}" aria-pressed="false"><span class="ord"></span><span class="por" data-por="${h.key}"></span><div class="nm">${h.icon} ${esc(h.name)}</div><div class="dk">Inspired by deck: <b>${esc(h.deck)}</b></div><div class="dk">${ROLE[st.atk]}${st.tank?' · Tank':''}${st.companion?' · with companion':''}</div>
       <div class="lv">LV ${L}</div>${statBars(h.key,L)}<div class="dk" style="margin-top:4px">⚡ ${esc(SIG[h.key].name)}: ${esc(SIG[h.key].txt)}</div><div class="dk" style="margin-top:2px">Starts with ${esc(h.spells[0].name||shortCard(h.spells[0].card))} (${SPELL[h.spells[0].arch].label})</div></button>`;}).join('')}</div>
     <div class="cc-row" style="margin-top:12px"><button class="cc-btn go" data-go disabled>START RUN</button><button class="cc-btn" data-back>← Saves</button></div>`);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
@@ -931,18 +984,29 @@ function showTeam(){
 }
 function rankStars(r){return r>=CFG.maxRank?'<span class="cc-asc">✦ MAX ✦</span>':'<span class="cc-stars">'+'★'.repeat(Math.min(5,Math.ceil(r/2)))+'</span> <span class="cc-sub" style="font-size:11px">r'+r+'</span>';}
 function chipFor(e,item,hk){const base=item?shortCard(e.card):sname(hk,e.card);const name=e.r>=CFG.maxRank?`✦ ${esc(maxTitle(e.card,e.arch))}`:esc(base);
-  return `<span class="cc-chip ${item?'it':''}" title="${item?esc(e.card):'Inspired by '+esc(e.card)}"><b>${name}</b> · ${item?ITEM[e.arch].label:SPELL[e.arch].label} r${e.r}${(e.augs||[]).map(g=>' +'+AUG[g].name).join('')}${item&&e.proc?' · ✦'+PROCS[e.proc].t:''}</span>`;}
+  return `<span class="cc-chip ${item?'it':''}" title="${item?esc(e.card):'Inspired by '+esc(e.card)}"><b>${name}</b> · ${item?ITEM[e.arch].label:SPELL[e.arch].label} r${e.r}${(e.augs||[]).map(g=>' +'+AUG[g].name).join('')}${item&&e.proc?' · ✦ '+({onhit:'on hit',oncrit:'on crit',onkill:'on kill',whenhit:'when hit',near:'when close',allylow:'ally low',oncast:'on cast'}[PROCS[e.proc].t]||''):''}</span>`;}
 function showCamp(){
-  const s=SLOT();const run=s.run;migrate(s,CC.player);const st=CFG.stage(run.stage,run.prestige);
+  const s=SLOT();const run=s.run;migrate(s,CC.player);run.bag=run.bag||[];const st=CFG.stage(run.stage,run.prestige);
+  const btn=(attrs,label,title)=>`<button class="cc-mini" ${attrs} ${title?`title="${esc(title)}"`:''}>${label}</button>`;
   const P=showPanel(`<div class="cc-h">STAGE ${run.stage}${run.prestige?' · ★'+run.prestige:''}</div><div class="cc-h2">${esc(st.biome.name)}${st.boss?` — ${esc(CFG.bosses[st.boss].name)} awaits`:''}</div>
     <p class="cc-sub">Score ${fmt(run.score)} · save point. ${run.pending?`<b style="color:#a6ff2e">⬆ ${run.pending} upgrade${run.pending>1?'s':''} waiting</b>`:'No upgrades waiting.'}</p>
-    <div class="cc-load">${run.team.map(k=>{const d=heroDef(k),hv=run.heroes[k],L=s.heroes[k];
+    <div class="cc-load">${run.team.map(k=>{const d=heroDef(k),hv=run.heroes[k],L=s.heroes[k],cap=slotCaps(L.lvl);
+      const act=hv.spells.map((e,i)=>[e,i]).filter(([e])=>!SPELL[e.arch].passive),pas=hv.spells.map((e,i)=>[e,i]).filter(([e])=>SPELL[e.arch].passive);
+      const row=(lbl,list,n,c,slotName)=>`<div class="cc-slotrow"><span class="cc-sub" style="font-size:11px;margin:0">${lbl} ${n}/${c}</span><div class="cc-chips">${list.map(([e,i])=>`<span class="cc-chipw">${chipFor(e,slotName==='item',k)}${btn(`data-un="${k}|${slotName}|${i}"`,'↓','Move to backpack')}</span>`).join('')}</div></div>`;
       return `<div class="cc-card cc-lh"><span data-por="${k}"></span><div style="flex:1;min-width:0"><b>${d.icon} ${esc(d.name)}</b> <span class="cc-sub" style="font-size:11px">LV ${L.lvl} · ${hv.dead?'fallen (revives at 25%)':Math.round((hv.hpf==null?1:hv.hpf)*100)+'% HP'}</span>
-        <div class="cc-chips"><span class="cc-chip" title="${esc(SIG[k].txt)}" style="border-color:#ffd23f"><b>⚡ ${esc(SIG[k].name)}</b> · signature</span>${hv.spells.map(e=>chipFor(e,0,k)).join('')}${hv.items.map(e=>chipFor(e,1,k)).join('')}</div>
-        <div class="cc-sub" style="font-size:11px;margin:4px 0 0">Spells ${hv.spells.length}/${CFG.slots.spell} · Items ${hv.items.length}/${CFG.slots.item}</div></div></div>`;}).join('')}</div>
+        <div class="cc-chips"><span class="cc-chip" title="${esc(SIG[k].txt)}" style="border-color:#ffd23f"><b>⚡ ${esc(SIG[k].name)}</b> · signature</span></div>
+        ${row('Abilities',act,act.length,cap.active,'spell')}${row('Passives',pas,pas.length,cap.passive,'spell')}${row('Items',hv.items.map((e,i)=>[e,i]),hv.items.length,cap.item,'item')}</div></div>`;}).join('')}
+      <div class="cc-card"><b>🎒 Backpack</b> <span class="cc-sub" style="font-size:11px">${run.bag.length}/${BAG_SIZE} · skills only fit the hero they came from; items fit anyone · more slots unlock at hero level 5, 8 and 12</span>
+        <div class="cc-load" style="margin-top:6px">${run.bag.length?run.bag.map((e,bi)=>{const isItem=e.kind==='item';const who=isItem?run.team:[e.owner];
+          return `<div class="cc-chips" style="align-items:center">${chipFor(e,isItem,e.owner)}<span class="cc-sub" style="font-size:11px;margin:0">${isItem?'':'('+esc(heroDef(e.owner).name)+')'}</span>
+            ${who.filter(k=>run.team.includes(k)).map(k=>btn(`data-eq="${bi}|${k}"`,'↑ '+esc(heroDef(k).name.split(' ').slice(-1)[0]),'Equip on '+heroDef(k).name)).join('')}${btn(`data-dis="${bi}"`,'✕','Discard')}</div>`;}).join(''):'<span class="cc-sub" style="font-size:12px;margin:0">Empty. New picks that don\'t fit a slot land here.</span>'}</div></div></div>
     <div class="cc-row" style="margin-top:14px">${run.pending?`<button class="cc-btn go" data-pick>CHOOSE UPGRADES (${run.pending})</button>`:`<button class="cc-btn go" data-begin>BEGIN STAGE ${run.stage} ▶</button>`}
-      <button class="cc-btn" data-quit>Save & exit</button></div>`);
+      <button class="cc-btn" data-quit>Save & exit</button></div><p class="cc-sub" id="cc-campmsg" style="margin-top:8px"></p>`);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por,56)));
+  const msg=t=>{const m=P.querySelector('#cc-campmsg');if(m)m.textContent=t;};
+  P.querySelectorAll('[data-un]').forEach(b=>b.onclick=()=>{const [k,sl,i]=b.dataset.un.split('|');if(unequip(run,k,sl,+i)){persist();showCamp();}else msg(run.bag.length>=BAG_SIZE?'Backpack is full.':'Each hero keeps at least one skill equipped.');});
+  P.querySelectorAll('[data-eq]').forEach(b=>b.onclick=()=>{const [bi,k]=b.dataset.eq.split('|');if(equip(run,s,+bi,k)){persist();showCamp();}else msg('No free slot of that kind on '+heroDef(k).name+'. Move something to the backpack first.');});
+  P.querySelectorAll('[data-dis]').forEach(b=>b.onclick=()=>{if(!confirmInline(b,'✕?'))return;discard(run,'bag',null,+b.dataset.dis);persist();showCamp();});
   const pk=P.querySelector('[data-pick]');if(pk)pk.onclick=showPick;
   const bg=P.querySelector('[data-begin]');if(bg)bg.onclick=beginStage;
   P.querySelector('[data-quit]').onclick=showSlots;
@@ -958,19 +1022,21 @@ function showPick(){
       return `<button class="cc-offer" style="--rc:${o.rar.col}" data-i="${i}"><span class="rar">${o.rar.name.toUpperCase()}</span><span class="kind">${kind} · ${o.slot==='spell'?SPELL[o.arch].label:ITEM[o.arch].label}${o.kind==='aug'?' · '+AUG[o.aug].name:''}</span>
         <span class="cn">${nm}</span>${d.r1>=CFG.maxRank?`<span class="cc-sub" style="margin:0;font-size:11px">${esc(base)} at max rank</span>`:''}${o.slot==='spell'?`<span class="cc-sub" style="margin:0;font-size:10px">inspired by ${esc(shortCard(o.card))}</span>`:''}
         <span class="who"><span data-por="${o.hero}"></span>${esc(hd.name)}</span>
-        <span>${o.kind==='new'?'':`r${d.r0} → `}${rankStars(d.r1)}</span><span class="tx">${esc(d.txt)}${o.kind==='aug'?` <b>${AUG[o.aug].name}:</b> ${AUG[o.aug].txt}.`:''}</span></button>`;}).join('')}</div>
+        <span>${o.kind==='new'?'':`r${d.r0} → `}${rankStars(d.r1)}${d.where?` <span class="cc-sub" style="font-size:10px">· ${d.where}</span>`:''}</span><span class="tx">${esc(d.txt)}${o.kind==='aug'?` <b>${AUG[o.aug].name}:</b> ${AUG[o.aug].txt}.`:''}</span></button>`;}).join('')}</div>
     <div class="cc-row" style="margin-top:12px"><button class="cc-btn" data-reroll ${run.rerolls>0?'':'disabled'}>🎲 Reroll (${run.rerolls})</button><button class="cc-btn" data-skip>Skip (+${fmt(60*run.stage)} score)</button></div>`);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
-  P.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const o=os[+b.dataset.i];const r=applyOffer(run,o);if(r==='full')return showReplace(o);sfx('level');CC.offersCache=null;persist();run.pending?showPick():showCamp();});
+  P.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const o=os[+b.dataset.i];const r=applyOffer(run,o,s);if(r==='full')return showReplace(o);sfx('level');CC.offersCache=null;persist();run.pending?showPick():showCamp();});
   P.querySelector('[data-reroll]').onclick=()=>{if(run.rerolls>0){run.rerolls--;CC.offersCache=null;persist();showPick();}};
   P.querySelector('[data-skip]').onclick=()=>{run.pending--;run.score+=60*run.stage;CC.offersCache=null;persist();run.pending?showPick():showCamp();};
 }
 function showReplace(o){
-  const s=SLOT(),run=s.run;const hv=run.heroes[o.hero];const list=o.slot==='spell'?hv.spells:hv.items;
-  const P=showPanel(`<div class="cc-h">SLOTS FULL</div><p class="cc-sub">${esc(heroDef(o.hero).name)} can hold ${CFG.slots[o.slot]} ${o.slot}s. Replace one with <b>${esc(o.slot==='spell'?sname(o.hero,o.card):shortCard(o.card))}</b>?</p>
-    <div class="cc-load">${list.map((e,i)=>`<button class="cc-card" style="text-align:left" data-r="${i}">${chipFor(e,o.slot==='item',o.hero)}<div class="cc-sub" style="margin:4px 0 0;font-size:12px">${esc(o.slot==='spell'?SPELL[e.arch].txt(e.r,heroBase(o.hero,1,3).atk,{aug:{}},{max:heroBase(o.hero,1,3).hp}):ITEM[e.arch].txt(e.r))}</div></button>`).join('')}</div>
+  const s=SLOT(),run=s.run;const hv=run.heroes[o.hero];const t=o.slot==='item'?'item':SPELL[o.arch].passive?'passive':'active';
+  const eq=(t==='item'?hv.items.map((e,i)=>['item',i,e]):hv.spells.map((e,i)=>['spell',i,e]).filter(([,,e])=>!!SPELL[e.arch].passive===(t==='passive')));
+  const P=showPanel(`<div class="cc-h">NO ROOM</div><p class="cc-sub">${esc(heroDef(o.hero).name)}'s ${t==='item'?'item':t==='passive'?'passive':'ability'} slots and the backpack are full. Drop one to take <b>${esc(o.slot==='spell'?sname(o.hero,o.card):shortCard(o.card))}</b>:</p>
+    <div class="cc-load">${eq.map(([sl,i,e])=>`<button class="cc-card" style="text-align:left" data-d="${sl}|${i}">Equipped: ${chipFor(e,sl==='item',o.hero)}</button>`).join('')}
+      ${run.bag.map((e,i)=>`<button class="cc-card" style="text-align:left" data-d="bag|${i}">🎒 ${chipFor(e,e.kind==='item',e.owner)}</button>`).join('')}</div>
     <div class="cc-row" style="margin-top:12px"><button class="cc-btn" data-cancel>← Back to picks</button></div>`);
-  P.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{applyOffer(run,o,+b.dataset.r);sfx('level');CC.offersCache=null;persist();run.pending?showPick():showCamp();});
+  P.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const [w,i]=b.dataset.d.split('|');discard(run,w,o.hero,+i);applyOffer(run,o,s);sfx('level');CC.offersCache=null;persist();run.pending?showPick():showCamp();});
   P.querySelector('[data-cancel]').onclick=showPick;
 }
 function endRun(s,victory){const r=s.run;if(!r)return;const tot=r.score;
