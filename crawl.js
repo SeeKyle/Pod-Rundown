@@ -32,7 +32,7 @@ const CFG={
     // Kyle's zombie: 50 HP, 1d6 per hit, swings every 1.25s, 12px reach, very slow, 3 armor (=6% less damage), small-medium knockback resistance,
     // 25% on hit to Bleed (20 dmg over 5s), item 4% / small gold 17.5%. Three looks (skins), identical stats.
     zombie:  {hp:50,dmgDie:6,spd:8,atk:1.25,reach:12,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
-              itemChance:.04,goldChance:.175,goldAmt:[2,5],xp:2,pts:10,cost:1.2,animAtk:.6,hitAt:.38,skins:['zombie','zombie_f','zombie_b']},
+              itemChance:.04,goldChance:.175,goldAmt:[2,5],stack:true,xp:2,pts:10,cost:1.2,animAtk:.6,hitAt:.38,skins:['zombie','zombie_f','zombie_b']},
   },
   bosses:{
     gravelord:{name:'The Gravelord',hp:950,dmg:20,spd:9, xp:60, pts:1500},
@@ -519,7 +519,8 @@ class Game{
           const ty=LANES[e.laneI];e.gy+=Math.sign(ty-e.gy)*Math.min(Math.abs(ty-e.gy),LANE_SPD*dt);e.y=e.gy;
           // queue politely behind a zombie already hitting this hero in this lane
           const front=this.enemies.filter(o=>o!==e&&!o.dead&&o.laneI===e.laneI&&o.x<e.x&&Math.abs(o.gy-e.gy)<3).reduce((b,o)=>!b||o.x>b.x?o:b,null);
-          let stopX=this.heroX(T)+ENEMY_BODY+e.E.reach*.6;if(front&&front.x>=stopX-1)stopX=Math.max(stopX,front.x+11);
+          if(e.stackOff==null)e.stackOff=this.rng()*5;
+          let stopX=this.heroX(T)+ENEMY_BODY+e.E.reach*.6+(e.E.stack?e.stackOff:0);if(!e.E.stack&&front&&front.x>=stopX-1)stopX=Math.max(stopX,front.x+11);   // stackers pile onto the same spot
           const sameLane=Math.abs(e.gy-T.gy)<2;const inRange=sameLane&&e.x<=this.heroX(T)+Rch+.5;
           e.x-=scroll*dt;if(e.x>stopX)e.x=Math.max(stopX,e.x-e.E.spd*sp*dt);
           if(!inRange)e.atkT=Math.min(e.E.atk,e.atkT+dt);
@@ -797,8 +798,8 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793372894';const BGI=new Image();BGI.src='crawl_bg.png?v=1793372894';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793372894';
+const IMG=new Image();IMG.src='crawl.png?v=1793373217';const BGI=new Image();BGI.src='crawl_bg.png?v=1793373217';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793373217';
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('en-US');
@@ -1048,7 +1049,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.10.60</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.10.61</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="mute" title="Sound">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES}" height="${216*RES}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
