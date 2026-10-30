@@ -409,25 +409,27 @@ class Game{
     // formation
     // formation: everyone heads for their slot at their own pace; while marching, quicker heroes drift ahead and slow ones lag a little
     const avgMv=al.reduce((m,h)=>m+(MOVE[h.key]||26),0)/Math.max(1,al.length);
-    al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;const tx=this.home(h)+drift;
-      const d=tx-h.x,st=mv*1.6*dt;h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;});
+    al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;const tx=this.exiting?this.W+60:this.home(h)+drift;
+      const d=tx-h.x,st=mv*(this.exiting?2.6:1.6)*dt;h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;});
     const f=this.front();if(!f)return;
     // blocking: walk unless something is close
     const near=this.enemies.filter(e=>!e.dead&&!e.fly).reduce((m,e)=>Math.min(m,e.x-(e.boss?e.w:0)-(e.ranged?40:0)),1e9);
     const blocked=(near<f.x+70||(this.boss&&!this.boss.dead))&&!(this.t-(this.lastHit||0)>3&&!(this.boss&&!this.boss.dead));
-    const scroll=blocked?0:Math.max(18,Math.min(32,avgMv));this.scroll=scroll;
+    const scroll=this.exiting?0:blocked?0:Math.max(18,Math.min(32,avgMv));this.scroll=scroll;if(this.exiting){this.exitT+=dt;for(const h of al)h.walkT+=dt*(MOVE[h.key]||26)/26;}
     if(!this.bossSpawned)this.dist+=scroll*dt;
     // spawning
     const stageDone=this.dist>=this.st.len;
-    if(!stageDone){this.budget+=this.st.rate*dt*(scroll?1.15:.25);   // enemies come as you advance; only a trickle while you're held up
+    const prog=Math.min(1,this.dist/this.st.len),ramp=.3+1.4*prog;   // light at the start, heavy near the end
+    if(!stageDone&&!this.exiting){this.budget+=this.st.rate*ramp*dt*(scroll?1.15:.25);   // enemies come as you advance; only a trickle while you're held up
       const type=this.nextType||(this.nextType=this.pickType());const c=CFG.enemies[type].cost;
       if(this.budget>=c&&this.enemies.filter(e=>!e.dead).length<20){this.budget-=c;this.spawnEnemy(type);this.nextType=null;}}
     if(!stageDone&&!this.demo){if(!this.wolfPlan){const k=WOLVES_PER_STAGE(this.st.n);this.wolfPlan=[];for(let i=0;i<k;i++)this.wolfPlan.push(this.st.len*(.12+.68*(i+.2+.4*this.rng())/k));}
       while(this.wolfPlan.length&&this.dist>=this.wolfPlan[0]){this.wolfPlan.shift();this.spawnEnemy('werewolf');}}
     else if(this.st.boss&&!this.bossSpawned&&!this.enemies.some(e=>!e.dead))this.spawnBoss();
-    else if(!this.st.boss&&!this.enemies.some(e=>!e.dead)&&!this.demo){this.over='clear';this.ev('clear');return;}
+    else if(!this.st.boss&&!this.enemies.some(e=>!e.dead)&&!this.demo&&!this.exiting){this.exiting=true;this.exitT=0;}
     if(this.demo&&stageDone){this.dist=0;}
-    if(this.boss&&this.boss.dead&&!this.over&&!this.demo){this.over='clear';this.ev('clear');return;}
+    if(this.boss&&this.boss.dead&&!this.over&&!this.demo&&!this.exiting){this.exiting=true;this.exitT=0;}
+    if(this.exiting&&!this.over){const al2=this.alive();if(!this.loot.length&&al2.every(h=>h.x>this.W+24)||this.exitT>12){this.over='clear';this.ev('clear');return;}}
     // heroes
     for(const [i,h] of this.heroes.entries()){if(h.laneI==null){h.laneI=[1,0,2][i%3];h.gy=LANES[h.laneI];}}
     for(const h of al){
@@ -814,8 +816,8 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793375362';const BGI=new Image();BGI.src='crawl_bg.png?v=1793375362';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793375362';
+const IMG=new Image();IMG.src='crawl.png?v=1793375707';const BGI=new Image();BGI.src='crawl_bg.png?v=1793375707';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793375707';
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('en-US');
@@ -1069,7 +1071,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.10.67</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.10.68</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="mute" title="Sound">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES}" height="${216*RES}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
