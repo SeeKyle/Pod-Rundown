@@ -230,7 +230,7 @@ class Game{
   isMeleeHero(h){return h.style.atk==='melee'||h.style.atk==='duo';}
   // where each hero stands: melee 4/10 of the screen, ranged/casters 2/10 (several of a kind spread out a little)
   home(h){const al=this.alive().length?this.alive():this.heroes;const grp=al.filter(o=>this.isMeleeHero(o)===this.isMeleeHero(h));const j=Math.max(0,grp.indexOf(h));
-    return Math.round(this.W*(this.isMeleeHero(h)?.4:.2))-j*16+(this.isMeleeHero(h)?0:(grp.length>1?8:0));}
+    return Math.round(this.W*(this.isMeleeHero(h)?.46:.2))-j*16+(this.isMeleeHero(h)?0:(grp.length>1?8:0));}   // melee line stands further forward
   slotX(i){return this.home(this.heroes[i]);}
   // team-wide passives + per-hero items
   recalc(){
@@ -409,7 +409,8 @@ class Game{
     // formation
     // formation: everyone heads for their slot at their own pace; while marching, quicker heroes drift ahead and slow ones lag a little
     const avgMv=al.reduce((m,h)=>m+(MOVE[h.key]||26),0)/Math.max(1,al.length);
-    al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;const tx=this.exiting?this.W+60:this.home(h)+drift;
+    al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;let tx=this.exiting?this.W+60:this.home(h)+drift;
+      if(!this.exiting&&this.isMeleeHero(h)){const foe=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&e.gy!=null&&Math.abs(e.gy-(h.gy||190))<4&&e.x>h.x&&e.x-h.x<90).reduce((b,e)=>!b||e.x<b.x?e:b,null);if(foe)tx=Math.max(tx,Math.min(this.home(h)+28,foe.x-24));}   // push forward into the fight
       const d=tx-h.x,st=mv*(this.exiting?2.6:1.6)*dt;h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;});
     const f=this.front();if(!f)return;
     // blocking: walk unless something is close
@@ -816,8 +817,8 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793375707';const BGI=new Image();BGI.src='crawl_bg.png?v=1793375707';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793375707';
+const IMG=new Image();IMG.src='crawl.png?v=1793376055';const BGI=new Image();BGI.src='crawl_bg.png?v=1793376055';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793376055';
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('en-US');
@@ -1071,7 +1072,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.10.68</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.10.69</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="mute" title="Sound">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES}" height="${216*RES}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
