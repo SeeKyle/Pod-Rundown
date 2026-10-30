@@ -183,6 +183,8 @@ function sname(hk,card){const d=DATA.heroes.find(h=>h.key===hk);const s=d&&d.spe
 function heroDef(key){return DATA.heroes.find(h=>h.key===key);}
 // Abilities (spells, passives, signatures, level-up picks) are switched off while Kyle rebuilds them from scratch.
 const ABILITIES_OFF=true;
+// Lanes: feet rows units can stand on (190 = the original ground). Units drift between them so they can pass each other.
+const LANES=[175,190,205],LANE_SPD=26;
 const ENEMY_BODY=18;   // px between a melee enemy's centre and the front hero's centre before reach is added
 const HERO_FLAT_HP=0,HP_PER_STAMINA=5,HERO_DIE=6;
 function heroBase(key,lvl,teamSize){
@@ -281,7 +283,7 @@ class Game{
     const pts=Math.round((e.boss?e.B.pts:e.E.pts*(e.elite?3:1))*(1+.4*(this.st.n-1))*(1+this.run.prestige)*(src?src.scoreM:1));
     this.stageScore+=pts;this.gainXp(xp);
     this.fx.push({k:'poof',x:e.x,y:e.y-(e.fly?0:20),t:0,big:!!e.boss||e.elite});
-    if(!e.boss)this.fx.push({k:'corpse',type:e.type,skin:e.skin,x:e.x,y:e.y,fly:e.fly,elite:e.elite,lane:e.lane||0,t:0,life:1.3});
+    if(!e.boss)this.fx.push({k:'corpse',gy:e.gy,type:e.type,skin:e.skin,x:e.x,y:e.y,fly:e.fly,elite:e.elite,lane:e.lane||0,t:0,life:1.3});
     if(this.team.devour){this.devourStacks=Math.min(60,this.devourStacks+1);for(const h of this.alive())if(h.spells.some(s=>s.arch==='devour'))this.healHero(h,h.max*(.006+.0025*this.spellRank(h,'devour')),true);}
     if(src&&src.items)this.procs(src,'onkill',e);
     if(!this.demo){const st=this.st;const r=this.rng();
@@ -419,7 +421,9 @@ class Game{
     if(this.demo&&stageDone){this.dist=0;}
     if(this.boss&&this.boss.dead&&!this.over&&!this.demo){this.over='clear';this.ev('clear');return;}
     // heroes
+    for(const [i,h] of this.heroes.entries()){if(h.laneI==null){h.laneI=[1,0,2][i%3];h.gy=LANES[h.laneI];}}
     for(const h of al){
+      {const ty=LANES[h.laneI];h.gy+=Math.sign(ty-h.gy)*Math.min(Math.abs(ty-h.gy),LANE_SPD*1.4*dt);}
       h.walkT+=dt*(scroll?(MOVE[h.key]||26)/26:0);if(h.animT>0)h.animT-=dt;if(h.hitFlash>0)h.hitFlash-=dt;if(h.buffT>0)h.buffT-=dt;
       if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}
       if(h.bleedT>0){h.bleedT-=dt;h.bleedTick+=dt;if(h.bleedTick>=1||h.bleedT<=0){const d=h.bleedDps*Math.min(1,h.bleedTick);h.bleedTick=0;h.hp-=d;this.text(h.x+6,this.G-58,Math.round(d),'#c0102a');if(h.hp<=0){this.heroDown(h);continue;}}}
@@ -432,7 +436,12 @@ class Game{
       // basic attack
       const rate=dt*h.aspd*(h.buffT>0?1.3:1);const st=h.style;
       const findT=(kind)=>{const melee=kind==='melee';const ox=melee?f.x:h.x;const range=melee?st.reach+6:(st.range||170);
-        return this.enemies.filter(e=>!e.dead&&(melee?(e.x-(e.boss?e.w:0)-ox<=range&&e.x>h.x-range-8):(Math.abs(e.x-h.x)<=range))).sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x))[0];};
+        const L=this.enemies.filter(e=>!e.dead&&(melee?(e.x-(e.boss?e.w:0)-h.x<=range&&e.x>h.x-range-8):(Math.abs(e.x-h.x)<=range))).sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x));
+        if(!melee)return L[0];
+        // melee only reaches its own lane; if the nearest foe is in another lane, step one lane toward it
+        const mine=L.find(e=>e.boss||e.fly||e.gy==null||Math.abs(e.gy-h.gy)<3);if(mine)return mine;
+        if(L[0]&&L[0].laneI!=null&&Math.abs(h.gy-LANES[h.laneI])<1)h.laneI+=Math.sign(L[0].laneI-h.laneI);
+        return null;};
       if(st.atk==='duo'){
         // partners fight independently: each has its own swing timer, target and animation
         if(h.animT2>0)h.animT2-=dt;
@@ -492,6 +501,32 @@ class Game{
           if(!e.target||!e.target.alive||this.isMeleeHero(e.target))e.target=back[Math.floor(this.rng()*back.length)];
           const tx=this.heroX(e.target)+12;e.x-=scroll*dt;if(e.x>tx)e.x=Math.max(tx,e.x-e.E.spd*1.15*sp*dt);else if(e.x<tx-2)e.x+=e.E.spd*.5*sp*dt;
           if(Math.abs(e.x-tx)<4){e.atkT+=dt;if(e.atkT>=e.E.atk){e.atkT=0;e.anim=1;e.animT=e.E.animAtk||.3;this.hurtHero(e.target,e.dmg,e);if(e.E.leech)e.hp=Math.min(e.max,e.hp+e.dmg*e.E.leech);}}
+        }else if(e.E.reach!=null&&!e.fly){
+          // ---- lane walker (Kyle's rules): shambles at whoever is closest in its own lane; until it is 50px from the first hero it may
+          // randomly drift into another lane; it sticks with the hero in front of it, but on rare occasions switches to someone closer
+          if(e.laneI==null){e.laneI=Math.floor(this.rng()*LANES.length);e.gy=LANES[e.laneI];}
+          const Rch=ENEMY_BODY+e.E.reach;const firstX=Math.max(...al.map(h=>this.heroX(h)));const far=e.x>firstX+50;
+          const inLane=al.filter(h=>h.laneI===e.laneI);
+          const nearestIn=L=>L.reduce((b,h)=>!b||Math.abs(this.heroX(h)-e.x)<Math.abs(this.heroX(b)-e.x)?h:b,null);
+          if(!e.target||!e.target.alive)e.target=nearestIn(inLane)||nearestIn(al);
+          else if(e.target.laneI!==e.laneI&&inLane.length&&Math.abs(e.gy-LANES[e.laneI])<1)e.target=nearestIn(inLane);
+          e.think=(e.think==null?1+this.rng()*2:e.think)-dt;
+          if(e.think<=0){e.think=1.5+this.rng()*2.5;
+            if(far&&this.rng()<.3){const alt=[e.laneI-1,e.laneI+1].filter(l=>l>=0&&l<LANES.length);e.laneI=alt[Math.floor(this.rng()*alt.length)];const t2=nearestIn(al.filter(h=>h.laneI===e.laneI));if(t2)e.target=t2;}   // random drift
+            else if(this.rng()<.06){const c=nearestIn(al);if(c&&c!==e.target)e.target=c;}}   // rare: go after someone closer
+          const T=e.target;
+          if(!far||!inLane.length||T.laneI!==e.laneI){if(Math.abs(e.gy-LANES[e.laneI])<1&&T.laneI!==e.laneI)e.laneI+=Math.sign(T.laneI-e.laneI);}   // head for the target's lane
+          const ty=LANES[e.laneI];e.gy+=Math.sign(ty-e.gy)*Math.min(Math.abs(ty-e.gy),LANE_SPD*dt);e.y=e.gy;
+          // queue politely behind a zombie already hitting this hero in this lane
+          const front=this.enemies.filter(o=>o!==e&&!o.dead&&o.laneI===e.laneI&&o.x<e.x&&Math.abs(o.gy-e.gy)<3).reduce((b,o)=>!b||o.x>b.x?o:b,null);
+          let stopX=this.heroX(T)+ENEMY_BODY+e.E.reach*.6;if(front&&front.x>=stopX-1)stopX=Math.max(stopX,front.x+11);
+          const sameLane=Math.abs(e.gy-T.gy)<2;const inRange=sameLane&&e.x<=this.heroX(T)+Rch+.5;
+          e.x-=scroll*dt;if(e.x>stopX)e.x=Math.max(stopX,e.x-e.E.spd*sp*dt);
+          if(!inRange)e.atkT=Math.min(e.E.atk,e.atkT+dt);
+          else{e.atkT+=dt;if(e.atkT>=e.E.atk){e.atkT=0;e.anim=1;e.animT=e.E.animAtk||.3;
+            const blow=()=>{if(e.dead||e.stun>0||!T.alive||Math.abs(e.gy-T.gy)>3)return;const d=e.E.dmgDie?(1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul:e.dmg;const took=this.hurtHero(T,d,e);
+              const B=e.E.bleed;if(B&&took&&T.alive&&this.rng()<B.chance)this.bleed(T,B.dmg*e.dmgMul,B.dur);};
+            if(e.E.hitAt)setTimeoutSafe(this,e.E.hitAt,blow);else blow();}}
         }else{
         const wall=this.minions.filter(m=>m.x<e.x+4&&m.x>f.x+10).reduce((b,m)=>!b||m.x>b.x?m:b,null);const bx=wall&&wall.x+12>blockX?wall.x+12:blockX;
         // reach: can hit from (body width + reach) away; it keeps shuffling in a little closer so small knockbacks don't push it out of range
@@ -757,13 +792,13 @@ function migrateSlot(slot,player){
 function newSlot(player){const heroes={};for(const h of DATA.heroes)if(h.owner===player)heroes[h.key]={lvl:1,xp:0};return {epoch:SAVE_EPOCH,partySize:2,gold:0,heroes,best:{score:0,stage:0,prestige:0},runs:0,run:null,created:Date.now()};}
 
 // ======================================================================= exports for node sims
-const API={ABILITIES_OFF,armorReduction,HP_PER_STAMINA,gearScore,heroGear,giveItem,rollItem,stockShop,itemPrice,honePrice,slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
+const API={LANES,ABILITIES_OFF,armorReduction,HP_PER_STAMINA,gearScore,heroGear,giveItem,rollItem,stockShop,itemPrice,honePrice,slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
 if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793372409';const BGI=new Image();BGI.src='crawl_bg.png?v=1793372409';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793372409';
+const IMG=new Image();IMG.src='crawl.png?v=1793372795';const BGI=new Image();BGI.src='crawl_bg.png?v=1793372795';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793372795';
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('en-US');
@@ -840,10 +875,10 @@ function drawGame(ctx,g,W,oy){
   const hs=g.heroes.slice().sort((a,b)=>a.x-b.x);
   for(const h of hs)if(!h.alive)spr(ctx,'h_'+h.key,10,h.x-32,G-60,false,.85);
   for(const f of g.fx)if(f.k==='corpse'&&UNITS[f.skin||f.type]){const U=UNITS[f.skin||f.type],k=f.t/f.life;const fall=Math.min(1,k*3.2);
-    drawUnit(ctx,U.walk,0,f.x+fall*6,G+(f.lane||0),f.elite?1.1:1,Math.min(1,2.2*(1-k)),0,-fall*Math.PI/2*.96);}
+    drawUnit(ctx,U.walk,0,f.x+fall*6,f.gy!=null?f.gy:G+(f.lane||0),f.elite?1.1:1,Math.min(1,2.2*(1-k)),0,-fall*Math.PI/2*.96);}
   for(const f of g.fx)if(f.k==='corpse'){const n='e_'+f.type,a=SP[n];if(!a||UNITS[f.type])continue;const k=f.t/f.life;const big=FH(a)===64;
     const y=f.fly?Math.min(G-44,f.y-FH(a)/2+f.t*160):G-(big?60:44)+(f.lane||0);ctx.save();if(f.elite){ctx.translate(f.x,y+FH(a));ctx.scale(1.22,1.22);spr(ctx,n,10,-FW(a)/2,-FH(a),false,Math.min(1,2.2*(1-k)));}else spr(ctx,n,10,f.x-FW(a)/2,y,false,Math.min(1,2.2*(1-k)));ctx.restore();}
-  for(const h of hs){if(!h.alive){continue;}
+  const drawHero=(h)=>{const G=h.gy||g.G;if(!h.alive){return;}
     if(h.bleedT>0){const p=.5+.5*Math.sin(g.t*10);ctx.save();ctx.globalCompositeOperation='lighter';
       for(let r=0;r<3;r++){const rr=((g.t*1.4+r/3)%1);ctx.strokeStyle=`rgba(220,20,40,${.55*(1-rr)})`;ctx.beginPath();ctx.ellipse(h.x,G-26,8+rr*14,(8+rr*14)*1.25,0,0,7);ctx.stroke();}
       glow(ctx,h.x,G-26,10+2*p,'#c0102a',.18);ctx.restore();
@@ -863,26 +898,30 @@ function drawGame(ctx,g,W,oy){
     }else{shadow(ctx,h.x+lx,G,9);spr(ctx,'h_'+h.key,fr,h.x+lx-32,G-60,false,null,h.hitFlash);}
     ctx.restore();
     if(h.shield>0){ctx.strokeStyle='rgba(154,230,255,.7)';ctx.beginPath();ctx.ellipse(Math.round(h.x+lx),G-24,15,27,0,0,7);ctx.stroke();}
-    const w=22,pct=Math.max(0,h.hp/h.max),bx=h.x+(h.dodgeX||0)+(h.wanderX||0);ctx.fillStyle='#120a14';ctx.fillRect(Math.round(bx-w/2)-1,G-63,w+2,4);ctx.fillStyle=pct>.5?'#4fd46a':pct>.25?'#ffb020':'#e8303a';ctx.fillRect(Math.round(bx-w/2),G-62,Math.round(w*pct),2);}
+    const w=22,pct=Math.max(0,h.hp/h.max),bx=h.x+(h.dodgeX||0)+(h.wanderX||0);ctx.fillStyle='#120a14';ctx.fillRect(Math.round(bx-w/2)-1,G-63,w+2,4);ctx.fillStyle=pct>.5?'#4fd46a':pct>.25?'#ffb020':'#e8303a';ctx.fillRect(Math.round(bx-w/2),G-62,Math.round(w*pct),2);};
   // enemies
   // depth lanes: each enemy stands a few px nearer/farther; small creatures take the front lanes; back lanes draw first
   for(const e of g.enemies)if(e.lane==null){const a=SP['e_'+e.type];e.lane=e.boss||e.fly?0:UNITS[e.type]?Math.floor(Math.random()*6):(a&&FH(a)<64?5+Math.floor(Math.random()*4):Math.floor(Math.random()*5));}
   const es=g.enemies.filter(e=>!e.dead).sort((a,b)=>a.lane-b.lane||b.x-a.x);
-  for(const e of es){let fr=e.animT>0?6+Math.min(2,Math.floor((.3-e.animT)/.1)):e.hitFlash>0&&!e.boss?9:Math.floor(e.walkT*8)%6;
-    if(e.boss){const bf=e.animT>0?2:Math.floor(g.t*2)%2;const y=e.fly?e.y-90:G-124;shadow(ctx,e.x,G,26);spr(ctx,'b_'+e.type,bf,e.x-64,y,false,null,e.hitFlash);continue;}
-    if(UNITS[e.skin||e.type]){const U=UNITS[e.skin||e.type];const [A,uf]=unitFrame(e,U);const gy=G+e.lane;const sc=e.elite?1.1:1;shadow(ctx,e.x,gy,8);
+  const drawEnemy=(e)=>{const G=(e.gy!=null&&!e.fly&&!e.boss)?e.gy:g.G;let fr=e.animT>0?6+Math.min(2,Math.floor((.3-e.animT)/.1)):e.hitFlash>0&&!e.boss?9:Math.floor(e.walkT*8)%6;
+    if(e.boss){const bf=e.animT>0?2:Math.floor(g.t*2)%2;const y=e.fly?e.y-90:G-124;shadow(ctx,e.x,G,26);spr(ctx,'b_'+e.type,bf,e.x-64,y,false,null,e.hitFlash);return;}
+    if(UNITS[e.skin||e.type]){const U=UNITS[e.skin||e.type];const [A,uf]=unitFrame(e,U);const gy=e.gy!=null?G:G+e.lane;const sc=e.elite?1.1:1;shadow(ctx,e.x,gy,8);
       drawUnit(ctx,A,uf,e.x,gy,sc,null,e.hitFlash);const y=gy-U.walk.ay*sc;
       if(e.slow>0){ctx.fillStyle='rgba(154,230,255,.8)';for(let i=0;i<3;i++)ctx.fillRect(Math.round(e.x-6+i*5),Math.round(y+8+((g.t*20+i*7)%20)),1,1);}
       if(e.burnT>0){ctx.fillStyle=Math.random()<.5?'#ffb040':'#ff5a1a';ctx.fillRect(Math.round(e.x-3+Math.random()*6),Math.round(y+10+Math.random()*12),1,2);}
       if(e.hp<e.max){const w=e.elite?20:14;ctx.fillStyle='#120a14';ctx.fillRect(Math.round(e.x-w/2)-1,Math.round(y)-2,w+2,3);ctx.fillStyle=e.elite?'#ffb020':'#e8303a';ctx.fillRect(Math.round(e.x-w/2),Math.round(y)-1,Math.round(w*Math.max(0,e.hp/e.max)),1);}
-      continue;}
+      return;}
     const n='e_'+e.type,a=SP[n];const big=FH(a)===64;
     const y=e.fly?e.y-FH(a)/2:G-(big?60:44)+e.lane;if(!e.fly)shadow(ctx,e.x,G+e.lane,big?8:7);
     if(e.elite){ctx.save();ctx.translate(e.x,y+FH(a));ctx.scale(1.22,1.22);spr(ctx,n,fr,-FW(a)/2,-FH(a),false,null,e.hitFlash);ctx.restore();}
     else spr(ctx,n,fr,e.x-FW(a)/2,y,false,null,e.hitFlash);
     if(e.slow>0){ctx.fillStyle='rgba(154,230,255,.8)';for(let i=0;i<3;i++)ctx.fillRect(Math.round(e.x-6+i*5),Math.round(y+8+((g.t*20+i*7)%20)),1,1);}
     if(e.burnT>0){ctx.fillStyle=Math.random()<.5?'#ffb040':'#ff5a1a';ctx.fillRect(Math.round(e.x-3+Math.random()*6),Math.round(y+10+Math.random()*12),1,2);}
-    if(e.hp<e.max){const w=e.elite?20:14;ctx.fillStyle='#120a14';ctx.fillRect(Math.round(e.x-w/2)-1,Math.round(y)-2,w+2,3);ctx.fillStyle=e.elite?'#ffb020':'#e8303a';ctx.fillRect(Math.round(e.x-w/2),Math.round(y)-1,Math.round(w*Math.max(0,e.hp/e.max)),1);}}
+    if(e.hp<e.max){const w=e.elite?20:14;ctx.fillStyle='#120a14';ctx.fillRect(Math.round(e.x-w/2)-1,Math.round(y)-2,w+2,3);ctx.fillStyle=e.elite?'#ffb020':'#e8303a';ctx.fillRect(Math.round(e.x-w/2),Math.round(y)-1,Math.round(w*Math.max(0,e.hp/e.max)),1);}};
+  // draw heroes and enemies back-to-front by lane so units in the far lane sit behind the near ones
+  const items=[...hs.filter(h=>h.alive).map(h=>[h.gy||G,0,h.x,()=>drawHero(h)]),...es.map(e=>[e.boss?G-.5:(e.gy!=null&&!e.fly?e.gy:G+e.lane-5),1,-e.x,()=>drawEnemy(e)])]
+    .sort((a,b)=>a[0]-b[0]||a[1]-b[1]||a[2]-b[2]);
+  for(const it of items)it[3]();
   // projectiles
   for(const p of g.proj){const x=Math.round(p.x),y=Math.round(p.y);const c=PCOL[p.kind]||'#ff3a3a';
     if(p.kind==='arrow'||p.kind==='quarrel'){const d=p.enemy?-1:1;ctx.fillStyle='#8a6a4a';ctx.fillRect(d>0?x-8:x-1,y,9,1);
@@ -1009,7 +1048,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.10.58</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.10.59</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="mute" title="Sound">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES}" height="${216*RES}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
