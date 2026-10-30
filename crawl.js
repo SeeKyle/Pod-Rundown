@@ -529,7 +529,8 @@ class Game{
           // queue politely behind a zombie already hitting this hero in this lane
           const front=this.enemies.filter(o=>o!==e&&!o.dead&&o.laneI===e.laneI&&o.x<e.x&&Math.abs(o.gy-e.gy)<3).reduce((b,o)=>!b||o.x>b.x?o:b,null);
           if(e.stackOff==null)e.stackOff=this.rng()*5;
-          let stopX=this.heroX(T)+ENEMY_BODY+e.E.reach*.6+(e.E.stack?e.stackOff:0);if(!e.E.stack&&front&&front.x>=stopX-1)stopX=Math.max(stopX,front.x+11);   // stackers pile onto the same spot
+          const stacks=e.E.stack!==false;   // every unit can stack now (a future 'block' ability can turn this off)
+          let stopX=this.heroX(T)+ENEMY_BODY+e.E.reach*.6+(stacks?e.stackOff:0);if(!stacks&&front&&front.x>=stopX-1)stopX=Math.max(stopX,front.x+11);
           const sameLane=Math.abs(e.gy-T.gy)<2;const inRange=sameLane&&e.x<=this.heroX(T)+Rch+.5;
           // ---- leap attack: from about 20px outside its reach, in the target's lane, it bounds in and lands on the hero
           const LP=e.E.leap;e.leapCd=(e.leapCd||0)-dt;
@@ -813,8 +814,8 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793375115';const BGI=new Image();BGI.src='crawl_bg.png?v=1793375115';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793375115';
+const IMG=new Image();IMG.src='crawl.png?v=1793375362';const BGI=new Image();BGI.src='crawl_bg.png?v=1793375362';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793375362';
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('en-US');
@@ -1068,7 +1069,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.10.66</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.10.67</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="mute" title="Sound">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES}" height="${216*RES}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
