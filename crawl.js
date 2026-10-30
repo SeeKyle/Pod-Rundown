@@ -10,9 +10,9 @@ const OWNERS={Kyle:'🎩',Cheez:'🧀',Leon:'🪼'};
 // ======================================================================= CONFIG TABLES
 const CFG={
   W:384,H:216,GROUND:190,
-  stagesPerBiome:3,
-  strangerStage:6,                  // clearing this frees the mystery stranger (3rd party spot)
-  maxStage:9,                       // add biomes below and raise this to extend the crawl
+  stagesPerBiome:5,
+  strangerStage:10,                  // clearing this frees the mystery stranger (3rd party spot)
+  maxStage:15,                      // add biomes below and raise this to extend the crawl
   slots:{spell:3,item:2},
   maxRank:10,
   walkSpeed:26,
@@ -57,11 +57,11 @@ const CFG={
     const bi=Math.floor((n-1)/this.stagesPerBiome)%this.biomes.length, b=this.biomes[bi];
     const P=prestige||0;
     return {n,biome:b,bi,boss:n%this.stagesPerBiome===0?b.boss:null,
-      len:2*(820+70*(n-1)),   // stages run about twice as long (so about twice the monsters)
-      rate:1.5*(0.62+0.11*(n-1))*(1+0.3*P),   // spawn budget per second
-      hpMul:Math.pow(1.28,n-1)*Math.pow(2.2,P),
-      dmgMul:Math.pow(1.16,n-1)*Math.pow(1.8,P),
-      xpMul:1+0.32*(n-1)+P*2.4};
+      len:1.5*(820+42*(n-1)),   // 5 stages per biome; each about 25% shorter than before
+      rate:1.5*(0.62+0.061*(n-1))*(1+0.3*P),   // spawn budget per second
+      hpMul:Math.pow(1.28,.555*(n-1))*Math.pow(2.2,P),   // difficulty climbs over 15 stages the way it used to over 9
+      dmgMul:Math.pow(1.16,.555*(n-1))*Math.pow(1.8,P),
+      xpMul:1+0.19*(n-1)+P*2.4};
   },
 };
 // hero fighting styles (basic attack + body), keyed by deck
@@ -677,7 +677,7 @@ function applyOffer(run,o,slot){
 function teamItemPool(run){const out=[];for(const k of run.team)for(const it of heroDef(k).items)if(!owned(run,k,it.card,'item'))out.push({hero:k,card:it.card,arch:it.arch});return out;}
 // source caps keep the best gear off basic mobs: mob ≤ Uncommon, elite ≤ Rare, boss/merchant can reach Legendary (once unlocked)
 const SRC_CAP={mob:'U',elite:'R',boss:'L',shop:'L'};
-function itemTier(run){return run.stage+9*(run.prestige||0);}
+function itemTier(run){return Math.round(.6*run.stage)+9*(run.prestige||0);}
 function rollItem(run,rng,min,src){const pool=teamItemPool(run);if(!pool.length)return null;const p=pool[Math.floor(rng()*pool.length)];
   // odds climb with depth (stage + 9 per prestige); each source has its own table and cap
   const depth=itemTier(run),x=rng(),Lok=!(RAR('L').minPrestige>run.prestige);let id;
@@ -691,8 +691,8 @@ function rollItem(run,rng,min,src){const pool=teamItemPool(run);if(!pool.length)
 function gearScore(e){return Math.round(10*(e.r||1)+4*(e.tier||1));}
 function heroGear(hv){return hv.items.reduce((m,e)=>m+gearScore(e),0);}
 const RAR=id=>CFG.rarity.find(r=>r.id===id)||CFG.rarity[0];
-function itemPrice(rarId,stage){return Math.round({C:45,U:110,R:260,L:700}[rarId]*(1+.18*((stage||1)-1)));}
-function honePrice(r,stage){return Math.round(30*(r+1)*(1+.12*((stage||1)-1)));}
+function itemPrice(rarId,stage){return Math.round({C:45,U:110,R:260,L:700}[rarId]*(1+.108*((stage||1)-1)));}
+function honePrice(r,stage){return Math.round(30*(r+1)*(1+.072*((stage||1)-1)));}
 function sellValue(it){return Math.round(12*(it.r||1));}
 // put an item on its hero / any hero with room, else the bag; returns false if nowhere fits
 function giveItem(run,slot,it){run.bag=run.bag||[];const e={card:it.card,arch:it.arch,r:RAR(it.rar).pts,augs:[],proc:procFor(it.card),from:it.hero,tier:it.tier||run.stage,rar:it.rar};
@@ -753,7 +753,7 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793332165';const BGI=new Image();BGI.src='crawl_bg.png?v=1793332165';
+const IMG=new Image();IMG.src='crawl.png?v=1793367489';const BGI=new Image();BGI.src='crawl_bg.png?v=1793367489';
 const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -980,7 +980,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.10.47</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.10.48</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="mute" title="Sound">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES}" height="${216*RES}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -1010,7 +1010,7 @@ function drawIdle(){const g=CC.idle||(CC.idle=demoGame(384));ctx.imageSmoothingE
 // ---------------------------------------------------------------- screens
 function showWho(){
   const rows=Object.keys(OWNERS).map(p=>{const b=bestOf(p);return {p,b};}).sort((a,b)=>(b.b.prestige*100+b.b.stage)-(a.b.prestige*100+a.b.stage)||b.b.score-a.b.score);
-  const P=showPanel(`<div class="cc-h">⚰️ CRYPT CRAWL</div><p class="cc-sub">Your deck heroes march through the crypt on their own. You pick the team, the upgrades and when to push on. Three biomes, a boss every third stage, and it's meant to take a lot of tries.</p>
+  const P=showPanel(`<div class="cc-h">⚰️ CRYPT CRAWL</div><p class="cc-sub">Your deck heroes march through the crypt on their own. You pick the team, the upgrades and when to push on. Three biomes of five stages, a boss every fifth stage, and it's meant to take a lot of tries.</p>
   <div class="cc-who">${Object.keys(OWNERS).map(p=>{const b=bestOf(p);const has=CC.data.players[p]&&CC.data.players[p].pin;
     return `<button data-p="${p}"><div class="e">${OWNERS[p]}</div><div class="nm px">${p}</div><div class="cc-sub" style="margin:0">${has?'🔒 PIN':'New player · set a PIN'}${b.stage?` · best stage ${b.stage}${b.prestige?' ★'+b.prestige:''}`:''}</div></button>`;}).join('')}</div>
   <div class="cc-h" style="margin-top:18px;font-size:12px">🏆 LEADERBOARD</div>
