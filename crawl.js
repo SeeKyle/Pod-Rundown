@@ -29,7 +29,7 @@ const CFG={
   ],
   enemies:{ // hp/dmg at stage 1; spd px/s; atk = seconds between hits; cost = spawn budget
     // rebuilt roster: only the zombie so far. animAtk = attack animation length (s), hitAt = when in it the blow lands (s)
-    // Kyle's zombie: 50 HP, 1d6 per hit, swings every 1.25s, 5px reach, very slow, 3 armor (=3% less damage), small-medium knockback resistance,
+    // Kyle's zombie: 50 HP, 1d6 per hit, swings every 1.25s, 5px reach, very slow, 3 armor (=6% less damage), small-medium knockback resistance,
     // 25% on hit to Bleed (20 dmg over 5s), item 4% / small gold 17.5%. Two looks (skins), identical stats.
     zombie:  {hp:50,dmgDie:6,spd:8,atk:1.25,reach:5,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
               itemChance:.04,goldChance:.175,goldAmt:[2,5],xp:2,pts:10,cost:1.2,animAtk:.6,hitAt:.38,skins:['zombie','zombie_f']},
@@ -106,8 +106,8 @@ const SIG={
 // To add types later: list them here, tag attacks with {type:'fire'} etc., and give enemies/heroes a resist map
 // (e.g. CFG.enemies.zombie.resist={fire:-0.5, cold:0.3} = weak to fire, resists cold).
 const DMG_TYPES={physical:{name:'Damage'}};
-// Kyle's armor rule: points 1-20 = 1% less damage each, 21-40 = 0.75% each, 41+ = 0.5% each (capped at 90%)
-function armorReduction(a){a=Math.max(0,a||0);return Math.min(.9,Math.min(a,20)*.01+Math.min(Math.max(a-20,0),20)*.0075+Math.max(a-40,0)*.005);}
+// Kyle's armor rule: points 1-20 = 2% less damage each, 21-40 = 1% each, 41+ = 0.5% each (capped at 90%)
+function armorReduction(a){a=Math.max(0,a||0);return Math.min(.9,Math.min(a,20)*.02+Math.min(Math.max(a-20,0),20)*.01+Math.max(a-40,0)*.005);}
 function mitigate(target,amt,type){
   type=type||'physical';
   const armor=target.armor!=null?target.armor:((target.E&&target.E.armor)||(target.B&&target.B.armor)||0);
@@ -750,8 +750,8 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793369395';const BGI=new Image();BGI.src='crawl_bg.png?v=1793369395';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793369395';
+const IMG=new Image();IMG.src='crawl.png?v=1793369459';const BGI=new Image();BGI.src='crawl_bg.png?v=1793369459';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793369459';
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('en-US');
