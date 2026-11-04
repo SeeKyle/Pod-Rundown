@@ -206,6 +206,35 @@ function rollAirAim(acc,rng,centre){let r=rng()*100;for(const [p,lo,hi] of airBa
 function rollLaneOffset(acc,rng){const m=accTighten(acc);const off2=10*(1-m),off1=30*(1-m),r=rng()*100;if(r<off2)return rng()<.5?-2:2;if(r<off2+off1)return rng()<.5?-1:1;return 0;}
 // hitboxes, ruler units: w = width, h = height above the feet
 const HITBOX={zombie:{w:16,h:46},werewolf:{w:30,h:30}};
+// 0.11: heroes have bodies too. Every non-boss unit has a hitbox about its own size (ruler units). Per-hero overrides go in HERO_HB.
+const HERO_HITBOX={w:20,h:46},HERO_HB={};
+function hbOf(u){return u&&u.key?(HERO_HB[u.key]||HERO_HITBOX):(u&&HITBOX[u.type])||{w:16,h:44};}
+function depthHalf(hb){return Math.max(1.5,hb.w*.12);}   // how much lane depth (px, top view) a body fills either side of its feet
+// ---- 0.11 Aiming reticle (Kyle): when a ranged unit picks a target, a 'shoot box' is laid over the target where it stands.
+//   Height: the box is 3x the target's height. Its bottom starts near the target's FEET when close, its WAIST at medium range and
+//   its CHEST when far (40-tall target: close 5-125, medium 20-140, far 30-150). Shots bunch toward the bottom of the box.
+//   Width (top view, across the lanes): centred on the target, one target-width either side, bunched in the middle.
+//   A shot that misses keeps flying and hits whatever hitbox it passes through (friend of the target or not). pierce = extra bodies it can go through.
+const AIM_RANGE={close:40,far:170};   // px between shooter and target
+const AIM_POINTS={feet:.125,waist:.5,chest:.75};   // fractions of the target's height
+const AIM_SHAPE={bunch:4};   // higher = shots bunch harder toward the bottom of the box (tuning knob)
+function reticle(acc,tg,dist,rng){const hb=hbOf(tg);const m=accTighten(acc);
+  const t=Math.max(0,Math.min(1,(dist-AIM_RANGE.close)/(AIM_RANGE.far-AIM_RANGE.close)));
+  const f=t<.5?AIM_POINTS.feet+(AIM_POINTS.waist-AIM_POINTS.feet)*t/.5:AIM_POINTS.waist+(AIM_POINTS.chest-AIM_POINTS.waist)*(t-.5)/.5;
+  const lo=f*hb.h,span=3*hb.h*(1-.7*m);   // accuracy shrinks the box toward its bottom
+  const h=lo+span*Math.pow(rng(),AIM_SHAPE.bunch);   // most shots near the bottom of the box
+  const side=((rng()+rng()+rng())/1.5-1)*(1-.5*m);   // -1..1 target-widths, bunched in the middle
+  return {h,off:side*2*depthHalf(hb),lo,hi:lo+span};}
+// ---- 0.11 Facing: every hero and regular enemy can turn around, but only does so when its target is really behind it.
+//   Turning takes TURN_T seconds and a unit can't swing or shoot while it turns. (Bosses will be rebuilt separately.)
+const TURN_T=.22;
+function faceToward(u,tx,dt){if(u.face==null)u.face=u.key?1:-1;const want=tx>u.x+2?1:tx<u.x-2?-1:u.face;
+  if(want!==u.face){u.turnT=(u.turnT||0)+dt;if(u.turnT>=TURN_T){u.face=want;u.turnT=0;return true;}return false;}u.turnT=0;return true;}
+// ---- 0.11 Energy: every unit has an energy pool (like rogue energy). 100 max, refills 10 per second for now (a formula later).
+//   Abilities will spend it with spendEnergy(unit, cost) once they come back.
+const ENERGY={max:u=>100,regen:u=>10};
+function regenEnergy(u,dt){const M=ENERGY.max(u);if(u.en==null)u.en=M;u.enMax=M;u.en=Math.min(M,u.en+ENERGY.regen(u)*dt);}
+function spendEnergy(u,c){if((u.en||0)<c)return false;u.en-=c;return true;}
 // Werewolves come in a set number per stage (Kyle: 1 on stage 1, 2 on stage 3), spread along the stage instead of from the random pool
 const WOLVES_PER_STAGE=n=>n<=2?1:n<=4?2:n===5?3:Math.min(6,2+Math.floor((n-5)/2));
 const ENEMY_BODY=9;   // px between a melee enemy's centre and the front hero's centre before reach is added
@@ -294,7 +323,7 @@ class Game{
     amt=Math.max(1,amt);e.hp-=amt;e.hitFlash=.12;this.lastHit=this.t;
     this.splatter(e,amt,1,crit);
     if(opt.kb>0){const ratio=Math.min(1,amt/Math.max(1,e.max));let kb=ratio<.08?ratio*12:ratio<.25?2+ratio*14:5+ratio*12;   // chip ~0, medium small, big decent
-      if(crit)kb*=1.6;if(e.boss)kb*=.12;kb*=opt.kb;if(e.fly)kb*=.7;if(e.E&&e.E.kbRes)kb*=1-e.E.kbRes;e.kbv=Math.max(e.kbv||0,Math.min(18,kb)*7);}
+      if(crit)kb*=1.6;if(e.boss)kb*=.12;kb*=opt.kb;if(e.fly)kb*=.7;if(e.E&&e.E.kbRes)kb*=1-e.E.kbRes;e.kbv=Math.max(e.kbv||0,Math.min(18,kb)*7);e.kbDir=src&&src.x!=null&&!e.boss?(e.x>=src.x?1:-1):1;}
     this.text(e.x+(this.rng()*8-4),e.y-(e.boss?100:e.fly?16:44),Math.round(amt),crit?'#ffd23f':'#ffffff',crit);
     if(!ABILITIES_OFF&&src&&src.style&&src.style.leech)this.healHero(this.weakest(),amt*src.style.leech*.5,true);
     if(src&&src.items&&src.items.length)this.procs(src,crit?'oncrit':'onhit',e);
@@ -378,13 +407,16 @@ class Game{
     while(same.length>=(cap||1)){const o=same.shift();o.dead=true;this.fx.push({k:'poof',x:o.x,y:this.G-14,t:0});}
     this.minions=this.minions.filter(o=>!o.dead);this.minions.push(m);return m;}
   shoot(h,target,kind,dmg,opt){
-    const mz=MUZZLE[h.key]||[10,30];const y0=this.G-mz[1];const p={kind,x:h.x+mz[0],y:y0,tx:target,dmg,src:h,spd:PSPD[kind]||160,pierce:opt.pierce||0,opt,t:0,vy:kind==='brick'?-70:0,hit:new Set()};
+    const mz=MUZZLE[h.key]||[10,30];const y0=this.G-mz[1];const p={kind,x:h.x+(h.face<0?-mz[0]:mz[0]),y:y0,tx:target,dmg,src:h,spd:PSPD[kind]||160,pierce:opt.pierce||(h.style&&h.style.pierce)||0,opt,t:0,vy:kind==='brick'?-70:0,hit:new Set()};
     this.proj.push(p);return p;
   }
-  aim(p,h,tg){   // turn a basic shot into a free-flying projectile aimed at a height on the target
-    p.aimed=true;p.gy=h.gy||this.G;p.h=28;const air=tg.fly&&!tg.boss;const flyH=air?(this.G-tg.y)/UNIT_SCALE:0;
-    p.aimH=air?rollAirAim(h.acc,this.rng,flyH):rollAimHeight(h.acc,this.rng);p.tgy=air?p.gy:(tg.gy!=null?tg.gy:this.G);
-    p.x0=p.x;p.dist=Math.max(20,(tg.x-(tg.boss?tg.w*.5:0))-p.x);p.gy0=p.gy;p.tx=null;}
+  aim(p,h,tg){   // turn a shot into a free-flying projectile aimed with the reticle (0.11): either direction, heroes or enemies
+    p.aimed=true;p.gy=h.gy!=null?h.gy:this.G;p.h=h.fly?(this.G-h.y)/UNIT_SCALE:28;const air=tg.fly&&!tg.boss;const flyH=air?(this.G-tg.y)/UNIT_SCALE:0;
+    const tx=tg.boss?tg.x-tg.w*.5:(tg.key?this.heroX(tg):tg.x);p.dir=tx>=p.x?1:-1;const dist=Math.abs(tx-p.x);
+    if(air){p.aimH=rollAirAim(h.acc||0,this.rng,flyH);p.tgy=p.gy;}
+    else if(tg.boss){p.aimH=rollAimHeight(h.acc||0,this.rng);p.tgy=tg.gy!=null?tg.gy:this.G;}
+    else{const R=reticle(h.acc||0,tg,dist,this.rng);p.aimH=R.h;p.tgy=(tg.gy!=null?tg.gy:this.G)+R.off;}
+    p.h0=p.h;p.x0=p.x;p.dist=Math.max(14,dist);p.gy0=p.gy;p.tx=null;p.foes=h.key?'enemies':'heroes';}
   text(x,y,s,c,big){if(this.demo&&typeof s==='number'&&this.rng()<.6)return;this.texts.push({x,y,s:String(s),c,t:0,big:!!big});}
   // ---------------------------------------------------------------- spells
   cast(h,s){
@@ -462,7 +494,7 @@ class Game{
     for(const [i,h] of this.heroes.entries()){if(h.laneI==null){h.laneI=[2,1,3][i%3];h.gy=LANES[h.laneI];}}
     for(const h of al){
       {const ty=LANES[h.laneI];h.gy+=Math.sign(ty-h.gy)*Math.min(Math.abs(ty-h.gy),LANE_SPD*1.4*dt);}
-      h.walkT+=dt*(scroll?(MOVE[h.key]||26)/26:0);if(h.animT>0)h.animT-=dt;if(h.hitFlash>0)h.hitFlash-=dt;if(h.buffT>0)h.buffT-=dt;
+      regenEnergy(h,dt);h.walkT+=dt*(scroll?(MOVE[h.key]||26)/26:0);if(h.animT>0)h.animT-=dt;if(h.hitFlash>0)h.hitFlash-=dt;if(h.buffT>0)h.buffT-=dt;
       if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}
       if(h.bleedT>0){h.bleedT-=dt;h.bleedTick+=dt;if(h.bleedTick>=1||h.bleedT<=0){const d=h.bleedDps*Math.min(1,h.bleedTick);h.bleedTick=0;h.hp-=d;this.text(h.x+6,this.G-58,Math.round(d),'#c0102a');if(h.hp<=0){this.heroDown(h);continue;}}}
       for(const it of h.items)if(it.cd>0)it.cd-=dt;
@@ -474,7 +506,7 @@ class Game{
       // basic attack
       const rate=dt*h.aspd*(h.buffT>0?1.3:1);const st=h.style;
       const findT=(kind)=>{const melee=kind==='melee';const ox=melee?f.x:h.x;const range=melee?st.reach*UNIT_SCALE+3:(st.range||170);
-        const L=this.enemies.filter(e=>!e.dead&&(melee?(e.x-(e.boss?e.w:0)-h.x<=range&&e.x>h.x-range-8):(Math.abs(e.x-h.x)<=range))).sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x));
+        const L=this.enemies.filter(e=>!e.dead&&(melee?(e.boss?e.x-e.w-h.x<=range&&e.x>h.x:Math.abs(e.x-h.x)<=range):(Math.abs(e.x-h.x)<=range))).sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x));
         if(!melee)return L[0];
         // melee only reaches its own lane; if the nearest foe is in another lane, step one lane toward it
         const mine=L.find(e=>e.boss||e.fly||e.gy==null||Math.abs(e.gy-h.gy)<2.5);if(mine)return mine;
@@ -485,14 +517,16 @@ class Game{
         if(h.animT2>0)h.animT2-=dt;
         h.atkT=Math.min(1,h.atkT+rate);h.atkT2=Math.min(1,(h.atkT2||0)+rate*.93);
         const ta=findT(st.a),tb=findT(st.b);
-        if(ta&&h.atkT>=1){h.atkT=0;h.animT=.32;this.basic(h,ta,st.a,.6);}
-        if(tb&&h.atkT2>=1){h.atkT2=0;h.animT2=.32;this.basic(h,tb,st.b,.6);}
+        const rd=faceToward(h,(ta||tb)?(ta||tb).x:h.x+10,dt);
+        if(rd&&ta&&h.atkT>=1){h.atkT=0;h.animT=.32;this.basic(h,ta,st.a,.6);}
+        if(rd&&tb&&h.atkT2>=1){h.atkT2=0;h.animT2=.32;this.basic(h,tb,st.b,.6);}
         h.lunge=st.a==='melee'&&ta?f.x-h.x:0;h.lunge2=st.b==='melee'&&tb?f.x-h.x:0;
         if(st.companion)this.companion(h,dt,f);
       }else{
         h.atkT+=rate;const kind=st.atk==='melee'?'melee':'ranged';const tgt=findT(kind);
-        h.lunge=kind==='melee'&&tgt?f.x-h.x:0;
-        if(tgt&&h.atkT>=1){h.atkT=0;h.anim=1;h.animT=.32;this.basic(h,tgt);}
+        const rd=faceToward(h,tgt?tgt.x:h.x+10,dt);
+        h.lunge=kind==='melee'&&tgt?(h.face>0?f.x-h.x:Math.max(-10,tgt.x-h.x+8)):0;
+        if(rd&&tgt&&h.atkT>=1){h.atkT=0;h.anim=1;h.animT=.32;this.basic(h,tgt);}
         if(h.atkT>1)h.atkT=1;}
     }
     this.stepZones(dt);
@@ -514,10 +548,10 @@ class Game{
     this.minions=this.minions.filter(m=>!m.dead);
     // enemies
     for(const e of this.enemies){if(e.dead)continue;
-      e.walkT+=dt;if(e.hitFlash>0)e.hitFlash-=dt;if(e.animT>0)e.animT-=dt;if(e.shred>0)e.shred-=dt;
+      if(!e.boss)regenEnergy(e,dt);e.walkT+=dt;if(e.hitFlash>0)e.hitFlash-=dt;if(e.animT>0)e.animT-=dt;if(e.shred>0)e.shred-=dt;
       if(e.burnT>0){e.burnT-=dt;e.hp-=e.burn*dt;if(e.hp<=0){this.kill(e,null);continue;}}
       if(e.slowT>0){e.slowT-=dt;if(e.slowT<=0)e.slow=0;}
-      if(e.kbv>0){e.x+=e.kbv*dt;e.kbv=Math.max(0,e.kbv-e.kbv*8*dt-4*dt);}
+      if(e.kbv>0){e.x+=(e.kbDir||1)*e.kbv*dt;e.kbv=Math.max(0,e.kbv-e.kbv*8*dt-4*dt);}
       if(e.stun>0){e.stun-=dt;continue;}
       const sp=(1-e.slow);
       if(e.boss){this.bossAI(e,dt,sp,f);continue;}
@@ -545,7 +579,7 @@ class Game{
           if(e.laneI==null){e.laneI=Math.floor(this.rng()*LANES.length);e.gy=LANES[e.laneI];}
           const Rch=ENEMY_BODY+e.E.reach;const firstX=Math.max(...al.map(h=>this.heroX(h)));const far=e.x>firstX+50;
           const inLane=al.filter(h=>h.laneI===e.laneI);
-          if(e.E.backline){const back=al.reduce((b,h)=>!b||this.heroX(h)<this.heroX(b)?h:b,null);e.target=back;e.think=99;}
+          if(e.E.backline){const rear=al.filter(h=>!this.isMeleeHero(h));const back=rear.length?rear.reduce((b,h)=>!b||this.heroX(h)<this.heroX(b)?h:b,null):al.reduce((b,h)=>!b||Math.abs(this.heroX(h)-e.x)<Math.abs(this.heroX(b)-e.x)?h:b,null);e.target=back;e.think=99;}
           const nearestIn=L=>L.reduce((b,h)=>!b||Math.abs(this.heroX(h)-e.x)<Math.abs(this.heroX(b)-e.x)?h:b,null);
           if(!e.E.backline&&(!e.target||!e.target.alive))e.target=nearestIn(inLane)||nearestIn(al);
           else if(!e.E.backline&&e.target.laneI!==e.laneI&&inLane.length&&Math.abs(e.gy-LANES[e.laneI])<1)e.target=nearestIn(inLane);
@@ -560,18 +594,19 @@ class Game{
           const front=this.enemies.filter(o=>o!==e&&!o.dead&&o.laneI===e.laneI&&o.x<e.x&&Math.abs(o.gy-e.gy)<3).reduce((b,o)=>!b||o.x>b.x?o:b,null);
           if(e.stackOff==null)e.stackOff=this.rng()*5;
           const stacks=e.E.stack!==false;   // every unit can stack now (a future 'block' ability can turn this off)
-          let stopX=this.heroX(T)+ENEMY_BODY+e.E.reach*.6+(stacks?e.stackOff:0);if(!stacks&&front&&front.x>=stopX-1)stopX=Math.max(stopX,front.x+11);
-          const sameLane=Math.abs(e.gy-T.gy)<2;const inRange=sameLane&&e.x<=this.heroX(T)+Rch+.5;
+          const hx=this.heroX(T);const side=e.x>=hx?1:-1;   // 0.11: which side of its hero it stands on (it can end up behind the heroes)
+          let stopX=hx+side*(ENEMY_BODY+e.E.reach*.6+(stacks?e.stackOff:0));if(!stacks&&front&&side>0&&front.x>=stopX-1)stopX=Math.max(stopX,front.x+11);
+          const sameLane=Math.abs(e.gy-T.gy)<2;const ready=faceToward(e,hx,dt);const inRange=ready&&sameLane&&Math.abs(e.x-hx)<=Rch+.5;   // must face the hero and touch it
           // ---- leap attack: from about 20px outside its reach, in the target's lane, it bounds in and lands on the hero
           const LP=e.E.leap;e.leapCd=(e.leapCd||0)-dt;
           if(e.leapA){const A2=e.leapA;A2.t+=dt;const u=Math.min(1,A2.t/A2.dur);e.x=A2.x0+(A2.x1-A2.x0)*u-scroll*dt;e.moving=true;
-            if(u>=1){e.leapA=null;if(T.alive&&Math.abs(e.gy-T.gy)<3&&e.x<=this.heroX(T)+Rch+2){this.hurtHero(T,LP.dmg*e.dmgMul,e);this.shake=Math.max(this.shake,.25);}e.atkT=e.E.atk*.4;}
+            if(u>=1){e.leapA=null;if(T.alive&&Math.abs(e.gy-T.gy)<3&&Math.abs(e.x-this.heroX(T))<=Rch+2){this.hurtHero(T,LP.dmg*e.dmgMul,e);this.shake=Math.max(this.shake,.25);}e.atkT=e.E.atk*.4;}
             continue;}
-          if(LP&&e.leapCd<=0&&sameLane&&!e.stun){const gap=e.x-(this.heroX(T)+Rch);if(gap>LP.gap*.6&&gap<=LP.gap+4){e.leapA={t:0,dur:LP.dur,x0:e.x,x1:e.x-gap+2};e.leapCd=LP.cd;e.animT=0;continue;}}
-          const x0=e.x;e.x-=scroll*dt;if(e.x>stopX)e.x=Math.max(stopX,e.x-e.E.spd*sp*dt);e.moving=Math.abs(e.x-x0)>.05||Math.abs(e.gy-LANES[e.laneI])>.5;
+          if(LP&&e.leapCd<=0&&sameLane&&ready&&!e.stun){const gap=Math.abs(e.x-hx)-Rch;if(gap>LP.gap*.6&&gap<=LP.gap+4){e.leapA={t:0,dur:LP.dur,x0:e.x,x1:e.x-side*(gap-2)};e.leapCd=LP.cd;e.animT=0;continue;}}
+          const x0=e.x;e.x-=scroll*dt;if(side>0&&e.x>stopX)e.x=Math.max(stopX,e.x-e.E.spd*sp*dt);else if(side<0&&e.x<stopX)e.x=Math.min(stopX,e.x+e.E.spd*sp*dt);e.moving=Math.abs(e.x-x0)>.05||Math.abs(e.gy-LANES[e.laneI])>.5;
           if(!inRange)e.atkT=Math.min(e.E.atk,e.atkT+dt);
           else{e.atkT+=dt;if(e.atkT>=e.E.atk){e.atkT=0;e.anim=1;e.animT=e.E.animAtk||.3;
-            const blow=()=>{if(e.dead||e.stun>0||!T.alive||Math.abs(e.gy-T.gy)>3)return;const d=e.E.dmgDie?(1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul:e.dmg;const took=this.hurtHero(T,d,e);
+            const blow=()=>{if(e.dead||e.stun>0||!T.alive||Math.abs(e.gy-T.gy)>3||Math.abs(e.x-this.heroX(T))>Rch+2)return;/* no swinging at thin air */const d=e.E.dmgDie?(1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul:e.dmg;const took=this.hurtHero(T,d,e);
               const B=e.E.bleed;if(B&&took&&T.alive&&this.rng()<B.chance)this.bleed(T,B.dmg*e.dmgMul,B.dur);};
             if(e.E.hitAt)setTimeoutSafe(this,e.E.hitAt,blow);else blow();}}
         }else{
@@ -594,15 +629,20 @@ class Game{
     // projectiles
     for(const p of this.proj){p.t+=dt;
       if(p.aimed){
-        p.x+=p.spd*dt;const u=Math.min(1.6,(p.x-p.x0)/p.dist);
-        p.gy=p.gy0+(p.tgy-p.gy0)*Math.min(1,u);p.h=28+(p.aimH-28)*u;p.y=p.gy-p.h*UNIT_SCALE;
-        if(p.h<=0||p.x>this.W+20||p.t>4){p.dead=true;if(p.h<=0)this.fx.push({k:'spark',x:p.x,y:p.gy,t:0,c:'#8a6a4a'});continue;}
+        p.x+=(p.dir||1)*p.spd*dt;const u=Math.min(1.6,Math.abs(p.x-p.x0)/p.dist);const h0=p.h0==null?28:p.h0;
+        p.gy=p.gy0+(p.tgy-p.gy0)*u;p.h=h0+(p.aimH-h0)*u;p.y=p.gy-p.h*UNIT_SCALE;
+        if(p.h<=0||p.x>this.W+20||p.x<-20||p.t>4){p.dead=true;if(p.h<=0)this.fx.push({k:'spark',x:p.x,y:p.gy,t:0,c:'#8a6a4a'});continue;}
+        if(p.foes==='heroes'){   // an enemy's aimed shot: any hero body it passes through takes it
+          for(const o of this.alive()){if(p.hit.has(o))continue;const hb=hbOf(o);
+            if(Math.abs((o.gy||this.G)-p.gy)<=depthHalf(hb)&&Math.abs(p.x-this.heroX(o))<=hb.w*UNIT_SCALE/2&&p.h>=0&&p.h<=hb.h){p.hit.add(o);this.hurtHero(o,p.dmg,p.src);
+              this.fx.push({k:'spark',x:p.x,y:p.y,t:0,c:PCOL[p.kind]||'#fff'});if(p.pierce>0)p.pierce--;else{p.dead=true;break;}}}
+          continue;}
         for(const e of this.enemies){if(e.dead||p.hit.has(e))continue;
           let ok;
           if(e.boss)ok=Math.abs(p.x-(e.x-e.w*.4))<e.w*.6&&p.h<220;
           else if(e.fly){const hb=HITBOX[e.type]||{w:16,h:16};const fh=(this.G-e.y)/UNIT_SCALE;ok=Math.abs(p.x-e.x)<=hb.w*UNIT_SCALE/2&&Math.abs(p.h-fh)<=hb.h/2;}   // fliers: any lane, height window around the body
           else{const hb=HITBOX[e.type]||{w:16,h:44};const lift=e.leapA?Math.sin(Math.PI*Math.min(1,e.leapA.t/e.leapA.dur))*28:0;const sc=(e.E.scale||1)*(e.elite?1.1:1);
-            ok=Math.abs((e.gy!=null?e.gy:this.G)-p.gy)<=2.5&&Math.abs(p.x-e.x)<=hb.w*sc*UNIT_SCALE/2&&p.h>=lift&&p.h<=lift+hb.h*sc;}
+            ok=Math.abs((e.gy!=null?e.gy:this.G)-p.gy)<=depthHalf(hb)*sc&&Math.abs(p.x-e.x)<=hb.w*sc*UNIT_SCALE/2&&p.h>=lift&&p.h<=lift+hb.h*sc;}
           if(!ok)continue;
           p.hit.add(e);const big=BIGP[p.kind]||0;p.opt.onHit?p.opt.onHit(e,p.dmg,0):this.hitEnemy(e,p.dmg,p.src,{kb:big});
           this.fx.push({k:'spark',x:p.x,y:p.y,t:0,c:PCOL[p.kind]||'#fff'});
@@ -672,7 +712,8 @@ class Game{
   sigMark(h,dmg){const t=this.liveE().sort((p,q)=>q.hp-p.hp)[0];if(!t)return false;t.shred=6;this.shoot(h,t,'quarrel',dmg,{});this.fx.push({k:'ring',x:t.x,y:t.boss?t.y-60:t.y-24,r:10,t:0,c:'#ffd23f'});return true;}
   sigDrain(h,dmg,n){const L=this.liveE().sort(()=>this.rng()-.5).slice(0,n);if(!L.length)return false;let tot=0;
     for(const e of L){tot+=this.hitEnemy(e,dmg,h,{});this.fx.push({k:'drain',x:e.x,y:e.y-(e.fly?0:24),tx:h.x,c:'#ff3a5a',t:0});}for(const o of this.alive())this.healHero(o,tot*.5/this.alive().length);return true;}
-  enemyShot(e,t){if(!t)return;this.proj.push({enemy:true,kind:e.E?e.E.proj:'bat',x:e.x-8,y:e.fly?e.y:e.y-30,tx:t,dmg:e.dmg,src:e,spd:150,t:0});}
+  enemyShot(e,t){if(!t)return;const p={enemy:true,kind:e.E?e.E.proj:'bat',x:e.x+(e.face>0?8:-8),y:e.fly?e.y:e.y-30,tx:t,dmg:e.dmg,src:e,spd:150,t:0,pierce:(e.E&&e.E.pierce)||0,opt:{},hit:new Set()};
+    this.proj.push(p);if(!e.boss)this.aim(p,e,t);}
   bossAI(b,dt,sp,f){
     const al=this.alive();const k=b.type;b.walkT+=dt;b.age=(b.age||0)+dt;if(b.age>90&&!b.enraged){b.enraged=1;this.ev('enrage');}if(b.enraged)b.dmg*=1+.012*dt;   // enrage after 90s so fights always end
     const stop=k==='maw'?Math.max(f.x+b.w+30,this.W-96):f.x+b.w+(k==='countess'?14:18);
@@ -854,13 +895,13 @@ function migrateSlot(slot,player){
 function newSlot(player){const heroes={};for(const h of DATA.heroes)if(h.owner===player)heroes[h.key]={lvl:1,xp:0};return {epoch:SAVE_EPOCH,partySize:2,gold:0,heroes,best:{score:0,stage:0,prestige:0},runs:0,run:null,created:Date.now()};}
 
 // ======================================================================= exports for node sims
-const API={accTighten,LANES,UNIT_SCALE,HITBOX,aimBands,airBands,rollAirAim,rollAimHeight,rollLaneOffset,ABILITIES_OFF,armorReduction,HP_PER_STAMINA,gearScore,heroGear,giveItem,rollItem,stockShop,itemPrice,honePrice,slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
+const API={reticle,hbOf,HERO_HITBOX,ENERGY,spendEnergy,faceToward,AIM_RANGE,accTighten,LANES,UNIT_SCALE,HITBOX,aimBands,airBands,rollAirAim,rollAimHeight,rollLaneOffset,ABILITIES_OFF,armorReduction,HP_PER_STAMINA,gearScore,heroGear,giveItem,rollItem,stockShop,itemPrice,honePrice,slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
 if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793455371';const BGI=new Image();BGI.src='crawl_bg.png?v=1793455371';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793455371';
+const IMG=new Image();IMG.src='crawl.png?v=1793802830';const BGI=new Image();BGI.src='crawl_bg.png?v=1793802830';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793802830';
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('en-US');
@@ -895,7 +936,7 @@ function unitFrame(e,U){const A=e.animT>0&&U.atk?U.atk:U.walk;let fr;
   if(A===U.atk){const dur=e.E.animAtk||.3;fr=Math.min(A.n-1,Math.floor((1-e.animT/dur)*A.n));return [A,fr];}
   if(U.idle&&e.moving===false)return [U.idle,Math.floor(e.walkT*6)%U.idle.n];
   return [A,Math.floor(e.walkT*(e.E.fps||7))%A.n];}
-function drawUnit(ctx,A,fr,x,gy,sc,alpha,flash,rot){if(!UIMG.complete)return;ctx.save();ctx.translate(Math.round(x*RES)/RES,Math.round(gy*RES)/RES);if(rot)ctx.rotate(rot);ctx.scale(sc,sc);if(alpha!=null)ctx.globalAlpha=alpha;
+function drawUnit(ctx,A,fr,x,gy,sc,alpha,flash,rot,flip){if(!UIMG.complete)return;ctx.save();ctx.translate(Math.round(x*RES)/RES,Math.round(gy*RES)/RES);if(rot)ctx.rotate(rot);ctx.scale(flip?-sc:sc,sc);if(alpha!=null)ctx.globalAlpha=alpha;
   const sx=A.x+fr*A.fw;ctx.drawImage(UIMG,sx,A.y,A.fw,A.fh,-A.ax,-A.ay-1,A.fw,A.fh);
   if(flash>0){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.min(1,flash*6)*.7;ctx.drawImage(UIMG,sx,A.y,A.fw,A.fh,-A.ax,-A.ay-1,A.fw,A.fh);}ctx.restore();}
 function drawBG(ctx,g,W,oy){
@@ -924,6 +965,18 @@ function shadow(ctx,x,y,w){ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.e
 const MINI={bat:'e_bat',spirit:'e_ghost',raise:'e_skeleton',spore:'e_spawn',drone:'e_eye'};
 const HS=UNIT_SCALE;   // units, effects and projectiles are drawn at half size so the world reads bigger
 function shrinkAt(ctx,x,y,s){ctx.translate(x,y);ctx.scale(s,s);ctx.translate(-x,-y);}
+// 0.11 unit status plate: framed health bar (a tick every 10 HP), energy bar under it, and status pips above it
+const PIPS=[['bleedT','#d01830','drop'],['burnT','#ff8a1f','flame'],['slow','#9ae6ff','snow'],['stun','#ffffff','star'],['shield','#7fd8ff','shield'],['buffT','#ffd23f','up']];
+function pip(ctx,x,y,c,k){ctx.fillStyle='#120a14';ctx.fillRect(x-1,y-1,5,5);ctx.fillStyle=c;
+  if(k==='drop'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,2);}else if(k==='flame'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,1);ctx.fillRect(x+1,y+2,1,1);}
+  else if(k==='snow'){ctx.fillRect(x+1,y,1,3);ctx.fillRect(x,y+1,3,1);}else if(k==='star'){ctx.fillRect(x,y,1,1);ctx.fillRect(x+2,y,1,1);ctx.fillRect(x+1,y+1,1,1);ctx.fillRect(x,y+2,1,1);ctx.fillRect(x+2,y+2,1,1);}
+  else if(k==='shield'){ctx.fillRect(x,y,3,2);ctx.fillRect(x+1,y+2,1,1);}else{ctx.fillRect(x+1,y,1,3);ctx.fillRect(x,y+1,3,1);}}
+function plate(ctx,u,x,y,w,hero,col){x=Math.round(x-w/2);y=Math.round(y);const pct=Math.max(0,Math.min(1,u.hp/u.max));
+  ctx.fillStyle='#120a14';ctx.fillRect(x-1,y-1,w+2,hero?6:4);ctx.fillStyle='#3a1a24';ctx.fillRect(x,y,w,2);
+  ctx.fillStyle=col||(pct>.5?'#4fd46a':pct>.25?'#ffb020':'#e8303a');ctx.fillRect(x,y,Math.round(w*pct),2);
+  if(u.max>=20){ctx.fillStyle='rgba(18,10,20,.55)';const n=Math.floor(u.max/10);for(let i=1;i<n;i++){const tx=x+Math.round(w*i*10/u.max);if(tx<x+w)ctx.fillRect(tx,y,1,1);}}
+  if(hero){const e=u.enMax?Math.max(0,(u.en||0)/u.enMax):1;ctx.fillStyle='#2a2410';ctx.fillRect(x,y+3,w,1);ctx.fillStyle='#ffd23f';ctx.fillRect(x,y+3,Math.round(w*e),1);}
+  let px=x;for(const [k,c,sh] of PIPS)if(u[k]>0){pip(ctx,px+1,y-6,c,sh);px+=5;}}
 function drawGame(ctx,g,W,oy){
   ctx.setTransform(RES,0,0,RES,0,0);ctx.imageSmoothingEnabled=false;ctx.save();
   if(g.shake>0)ctx.translate(Math.round((Math.random()-.5)*4*g.shake),Math.round((Math.random()-.5)*3*g.shake));
@@ -966,10 +1019,10 @@ function drawGame(ctx,g,W,oy){
       shadow(ctx,h.x+9+lb,G,8);spr(ctx,'h_'+h.key+'_b',fb,h.x+9+lb-32,G-60,false,null,h.hitFlash);
       if(h.style.companion){const cx=h.x+(h.compX||-12),cy=h.compY||0;const pf=h.pounce?7:(g.scroll||Math.abs(h.compV||0)>4?Math.floor(g.t*10)%6:fa);
         shadow(ctx,cx,G+4,7);spr(ctx,'h_'+h.key+'_a',h.animT>0?fa:pf,cx-32,G-60+4-cy,(h.compV||0)<-4&&!h.animT,null,0);}
-    }else{shadow(ctx,h.x+lx,G,9);spr(ctx,'h_'+h.key,fr,h.x+lx-32,G-60,false,null,h.hitFlash);}
+    }else{shadow(ctx,h.x+lx,G,9);spr(ctx,'h_'+h.key,fr,h.x+lx-32,G-60,h.face<0,null,h.hitFlash);}
     ctx.restore();
     if(h.shield>0){ctx.strokeStyle='rgba(154,230,255,.7)';ctx.beginPath();ctx.ellipse(Math.round(h.x+lx),G-24,15,27,0,0,7);ctx.stroke();}
-    const w=22,pct=Math.max(0,h.hp/h.max),bx=h.x+(h.dodgeX||0)+(h.wanderX||0);ctx.fillStyle='#120a14';ctx.fillRect(Math.round(bx-w/2)-1,G-63,w+2,4);ctx.fillStyle=pct>.5?'#4fd46a':pct>.25?'#ffb020':'#e8303a';ctx.fillRect(Math.round(bx-w/2),G-62,Math.round(w*pct),2);};
+    const bx=h.x+(h.dodgeX||0)+(h.wanderX||0);plate(ctx,h,bx,G-63,22,true);};
   // enemies
   // depth lanes: each enemy stands a few px nearer/farther; small creatures take the front lanes; back lanes draw first
   for(const e of g.enemies)if(e.lane==null){const a=SP['e_'+e.type];e.lane=e.boss||e.fly?0:UNITS[e.type]?Math.floor(Math.random()*6):(a&&FH(a)<64?5+Math.floor(Math.random()*4):Math.floor(Math.random()*5));}
@@ -978,10 +1031,10 @@ function drawGame(ctx,g,W,oy){
   const drawEnemy0=(e)=>{const G=(e.gy!=null&&!e.fly&&!e.boss)?e.gy:g.G;let fr=e.animT>0?6+Math.min(2,Math.floor((.3-e.animT)/.1)):e.hitFlash>0&&!e.boss?9:Math.floor(e.walkT*8)%6;
     if(e.boss){const bf=e.animT>0?2:Math.floor(g.t*2)%2;const y=e.fly?e.y-90:G-124;shadow(ctx,e.x,G,26);spr(ctx,'b_'+e.type,bf,e.x-64,y,false,null,e.hitFlash);return;}
     if(UNITS[e.skin||e.type]){const U=UNITS[e.skin||e.type];const [A,uf]=unitFrame(e,U);const gy=e.gy!=null?G:G+e.lane;const sc=(e.E.scale||1)*(e.elite?1.1:1);shadow(ctx,e.x,gy,8);
-      drawUnit(ctx,A,uf,e.x,gy,sc,null,e.hitFlash);const y=gy-U.walk.ay*sc;
+      drawUnit(ctx,A,uf,e.x,gy,sc,null,e.hitFlash,0,e.face>0);const y=gy-U.walk.ay*sc;
       if(e.slow>0){ctx.fillStyle='rgba(154,230,255,.8)';for(let i=0;i<3;i++)ctx.fillRect(Math.round(e.x-6+i*5),Math.round(y+8+((g.t*20+i*7)%20)),1,1);}
       if(e.burnT>0){ctx.fillStyle=Math.random()<.5?'#ffb040':'#ff5a1a';ctx.fillRect(Math.round(e.x-3+Math.random()*6),Math.round(y+10+Math.random()*12),1,2);}
-      if(e.hp<e.max){const w=e.elite?20:14;ctx.fillStyle='#120a14';ctx.fillRect(Math.round(e.x-w/2)-1,Math.round(y)-2,w+2,3);ctx.fillStyle=e.elite?'#ffb020':'#e8303a';ctx.fillRect(Math.round(e.x-w/2),Math.round(y)-1,Math.round(w*Math.max(0,e.hp/e.max)),1);}
+      if(e.hp<e.max||e.bleedT>0||e.burnT>0||e.slow>0||e.stun>0)plate(ctx,e,e.x,y-2,e.elite?20:14,false,e.elite?'#ffb020':'#e8303a');
       return;}
     const n='e_'+e.type,a=SP[n];const big=FH(a)===64;
     const y=e.fly?e.y-FH(a)/2:G-(big?60:44)+e.lane;if(!e.fly)shadow(ctx,e.x,G+e.lane,big?8:7);
@@ -989,7 +1042,7 @@ function drawGame(ctx,g,W,oy){
     else spr(ctx,n,fr,e.x-FW(a)/2,y,false,null,e.hitFlash);
     if(e.slow>0){ctx.fillStyle='rgba(154,230,255,.8)';for(let i=0;i<3;i++)ctx.fillRect(Math.round(e.x-6+i*5),Math.round(y+8+((g.t*20+i*7)%20)),1,1);}
     if(e.burnT>0){ctx.fillStyle=Math.random()<.5?'#ffb040':'#ff5a1a';ctx.fillRect(Math.round(e.x-3+Math.random()*6),Math.round(y+10+Math.random()*12),1,2);}
-    if(e.hp<e.max){const w=e.elite?20:14;ctx.fillStyle='#120a14';ctx.fillRect(Math.round(e.x-w/2)-1,Math.round(y)-2,w+2,3);ctx.fillStyle=e.elite?'#ffb020':'#e8303a';ctx.fillRect(Math.round(e.x-w/2),Math.round(y)-1,Math.round(w*Math.max(0,e.hp/e.max)),1);}};
+    if(e.hp<e.max||e.bleedT>0||e.burnT>0||e.slow>0||e.stun>0)plate(ctx,e,e.x,y-2,e.elite?20:14,false,e.elite?'#ffb020':'#e8303a');};
   // draw heroes and enemies back-to-front by lane so units in the far lane sit behind the near ones
   const items=[...hs.filter(h=>h.alive).map(h=>[h.gy||G,0,h.x,()=>drawHero(h)]),...es.map(e=>[e.boss?G-.5:(e.gy!=null&&!e.fly?e.gy:G+e.lane-5),1,-e.x,()=>drawEnemy(e)])]
     .sort((a,b)=>a[0]-b[0]||a[1]-b[1]||a[2]-b[2]);
@@ -1128,7 +1181,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.10.71</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.0</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="mute" title="Sound">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES}" height="${216*RES}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
