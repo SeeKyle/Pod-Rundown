@@ -101,7 +101,7 @@ const SIG={
   marina:{name:'Lantern Haunt',cd:9,txt:'Lets the lantern ghost out to fight for 9s (one at a time).',fn:(g,h,a)=>{g.addMinion(h,h.max*.3,a*.6,9,'spirit','sig',1);return true;}},
   korvold:{name:'Gorge',cd:6,txt:'Bites the front enemy for 260% and heals for 30% of it.',fn:(g,h,a)=>g.sigFront(h,a*2.6,{heal:.3})},
   thranduil:{name:'Volley',cd:6,txt:'Looses 3 heavy arrows at random enemies for 115% each.',fn:(g,h,a)=>g.sigMulti(h,'arrow',a*1.15,3)},
-  flannel:{name:'Aimed Shot',cd:14,txt:'40 energy, 14s cooldown. A carefully aimed rifle shot that always goes to the middle (head) box, with +5% crit chance and 2.5x crit damage.',fn:()=>false},   // runs from Game.gunner (CHAR abilities), shown here
+  flannel:{name:'Aimed Shot',cd:14,txt:'40 energy, 14s cooldown, 2s cast (laser sight). A carefully aimed rifle shot that always goes to the middle (head) box, with +5% crit chance and 2.5x crit damage.',fn:()=>false},   // runs from Game.gunner (CHAR abilities), shown here
   joel:{name:'Brick Toss',cd:7,txt:'The scout lobs a brick for 200% that stuns the target for 0.75s.',fn:(g,h,a)=>g.sigShot(h,'brick',a*2,{stun:.75})},
   robots:{name:'Overcharge',cd:7,txt:'A piercing plasma beam hits every enemy in a line for 160%.',fn:(g,h,a)=>g.sigArea(h,260,a*1.6,{fx:'beamline',c:'#3ff0ff'})},
   blood:{name:'Blood Rite',cd:7,txt:'Drains 3 enemies for 90% and heals the whole team for half of it.',fn:(g,h,a)=>g.sigDrain(h,a*.9,3)},
@@ -270,7 +270,7 @@ const CHAR={
     // abilities (Kyle). Aimed Shot: skips the accuracy roll and lands in the MIDDLE box, +5% crit chance, crits hit 2.5x.
     //   Damage = the rifle's dice + every flat damage bonus, so it grows with future flat-damage items/effects.
     //   Cost: 40 energy (8s of base regen) and 14s cooldown: a big hit you see a few times a stage, leaving room for more abilities.
-    abilities:[{id:'aimed',name:'Aimed Shot',en:40,cd:14,box:'mid',critAdd:.05,critMul:2.5}]},
+    abilities:[{id:'aimed',name:'Aimed Shot',en:40,cd:14,cast:2,box:'mid',critAdd:.05,critMul:2.5}]},
 };
 
 // ---- 0.12.3 Inspiration Decks (Kyle): pick a player, then one of their decks. Each deck gives one small, unique bonus tied to
@@ -930,14 +930,22 @@ class Game{
         if(dealt&&!mt.dead&&K>0){const res=mt.boss?.9:((mt.E&&mt.E.kbRes)||0);mt.kbv=Math.max(mt.kbv||0,K/100*40*8*(1-res));mt.kbDir=mt.x>=h.x?1:-1;}   
         this.fx.push({k:'slash',x:mt.x-6,y:mt.boss?mt.y-50:mt.y-24,t:0});}return;}
     const AB=(C.abilities||[]).find(a=>a.id==='aimed');h.sigT=Math.max(0,(h.abT==null?(h.abT=AB?AB.cd*.4:0):h.abT));if(AB&&h.abT>0)h.abT-=dt;
-    // IF Aimed Shot is ready AND loaded AND standing still AND enough energy (Preserve-minded units keep a cushion) THEN take the shot
-    if(AB&&h.abT<=0&&h.ammo>0&&!h.moving&&h.rT>=.5&&(h.en||0)>=AB.en*(1+.4*trait(h,'energy')-.2)&&spendEnergy(h,AB.en)){
-      h.abT=AB.cd*(1-(h.cdr||0));h.rT=0;h.ammo-=1;h.animR=.5;h.firedMoving=false;this.text(h.x,this.G-70,AB.name.toUpperCase(),'#ffd23f');
-      const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(h.atk/h.base.atk)*h.rangedDmg;
-      h._forceBox=AB.box;const p=this.shoot(h,tgt,st.proj,dmg,{});p.critAdd=AB.critAdd;p.critMul=AB.critMul;this.aim(p,h,tgt);h._forceBox=null;return;}
+    // Aimed Shot has a 2s cast: he stands still with a laser on the target, then fires. A foe in crowbar reach breaks the cast
+    //   (no energy spent, the cooldown doesn't start). If the target dies mid-cast he swings the laser to the next one in range.
+    if(h.cast){const K=h.cast;
+      if(mt){h.cast=null;this.text(h.x,this.G-70,'interrupted','#9aa');}
+      else{if(!K.tgt||K.tgt.dead){K.tgt=findT('ranged');if(!K.tgt){h.cast=null;return;}}
+        K.t+=dt;h.pauseT=Math.max(h.pauseT||0,.1);
+        if(K.t>=K.T){h.cast=null;if(!spendEnergy(h,AB.en))return;
+          h.abT=AB.cd*(1-(h.cdr||0));h.rT=0;h.ammo-=1;h.animR=.5;h.firedMoving=false;this.text(h.x,this.G-70,AB.name.toUpperCase(),'#ffd23f');this.ev('gun',{big:1});this.shake=Math.max(this.shake||0,.2);
+          const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(h.atk/h.base.atk)*h.rangedDmg;
+          h._forceBox=AB.box;const p=this.shoot(h,K.tgt,st.proj,dmg,{});p.critAdd=AB.critAdd;p.critMul=AB.critMul;this.aim(p,h,K.tgt);h._forceBox=null;}
+        return;}}
+    // IF Aimed Shot is ready AND loaded AND standing still AND enough energy (Preserve-minded units keep a cushion) THEN start the cast
+    if(AB&&!mt&&h.abT<=0&&h.ammo>0&&!h.moving&&h.rT>=.5&&(h.en||0)>=AB.en*(1+.4*trait(h,'energy')-.2)){h.cast={t:0,T:AB.cast||2,tgt};this.text(h.x,this.G-70,'aiming...','#ff5a5a');return;}
     if(h.ammo>0&&h.rT>=C.ranged.every){
       if(h.moving&&trait(h,'exec')>.5&&!(h.plan&&h.plan.intent==='retreat')&&(h.plantT=(h.plantT||0)+dt)<.6)return;   // optimal shooters plant their feet first (but not when running away)
-      h.plantT=0;h.rT=0;h.ammo-=1;h.animR=.5;h.firedMoving=h.moving;
+      h.plantT=0;h.rT=0;h.ammo-=1;h.animR=.5;h.firedMoving=h.moving;this.ev('gun',{});
       const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(h.atk/h.base.atk)*h.rangedDmg;
       for(let i=0;i<C.ranged.pellets;i++){const tg=tgt;const acc=h.moving?Math.max(1,h.acc-C.walkPenalty):h.acc;h._accBonus=acc-h.acc;
         const p=this.shoot(h,tg,st.proj,dmg/C.ranged.pellets,{});this.aim(p,h,tg);h._accBonus=0;}}}
@@ -1039,7 +1047,7 @@ class Game{
 function setTimeoutSafe(g,t,fn){(g.timers=g.timers||[]).push({t,fn});}
 const BIGP={};
 // where shots leave each hero (px ahead of the hero's x, px above the ground), matched to the strike frame
-const MUZZLE={flannel:[22,33],vile:[3,30],thing:[14,30],kykar:[15,46],dragons:[18,38],mathas:[17,33],marina:[11,25],thranduil:[12,34],joel:[11,33],robots:[18,33],blood:[13,46],mech:[20,30],weather:[14,47]};
+const MUZZLE={flannel:[12,30],vile:[3,30],thing:[14,30],kykar:[15,46],dragons:[18,38],mathas:[17,33],marina:[11,25],thranduil:[12,34],joel:[11,33],robots:[18,33],blood:[13,46],mech:[20,30],weather:[14,47]};
 const PSPD={arrow:200,quarrel:215,bolt:150,orb:135,fire:150,shard:160,zap:170,wisp:120,plasma:180,blood:140,shell:160,frost:145,brick:190};   // px/s   // ranged shots don't shove, except the thrown brick (a little)
 const PCOL={skull:'#7dff9a',hex:'#c050ff',bolt:'#ffb040',orb:'#c050ff',arrow:'#e8e0c8',quarrel:'#e8e0c8',fire:'#ff8a1f',shard:'#6ff0ff',zap:'#bfefff',wisp:'#7dff9a',plasma:'#3ff0ff',blood:'#ff2a3a',shell:'#ffd23f',frost:'#9ae6ff',brick:'#c0603a'};
 
@@ -1176,8 +1184,8 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793829464';const BGI=new Image();BGI.src='crawl_bg.png?v=1793829464';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793829464';
+const IMG=new Image();IMG.src='crawl.png?v=1793829692';const BGI=new Image();BGI.src='crawl_bg.png?v=1793829692';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793829692';
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('en-US');
@@ -1188,6 +1196,10 @@ function sfx(k){if(muted)return;try{AC=AC||new (window.AudioContext||window.webk
     g.gain.setValueAtTime(v||.05,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d);};
   if(k==='hit')tone(180,.06,'square',.025,90);if(k==='crit')tone(520,.1,'square',.04,180);
   if(k==='level'){[523,659,784,1046].forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.04,t+i*.07);g.gain.exponentialRampToValueAtTime(.0001,t+i*.07+.12);o.connect(g);g.connect(AC.destination);o.start(t+i*.07);o.stop(t+i*.07+.13);});}
+  if(k==='gun'||k==='biggun'){const big=k==='biggun',d=big?.45:.16,n=Math.floor(AC.sampleRate*d),buf=AC.createBuffer(1,n,AC.sampleRate),ch=buf.getChannelData(0);
+    for(let i=0;i<n;i++)ch[i]=(Math.random()*2-1)*Math.pow(1-i/n,big?2.2:3.5);
+    const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=buf;f.type='lowpass';f.frequency.value=big?2400:1800;g.gain.value=big?.55:.16;
+    s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t);tone(big?90:140,big?.35:.12,'sine',big?.35:.09,big?32:60);if(big)tone(1400,.06,'square',.03,500);}
   if(k==='boss')tone(70,1.2,'sawtooth',.08,40);if(k==='clear')tone(392,.5,'triangle',.07,784);if(k==='die')tone(220,.6,'sawtooth',.06,55);
 }catch(e){}}
 // ---------------------------------------------------------------- pixel font (3x5) for numbers + a few letters
@@ -1277,6 +1289,10 @@ function drawGame(ctx,g,W,oy){
     drawUnit(ctx,U.walk,0,f.x+fall*3,f.gy!=null?f.gy:G+(f.lane||0),HS*(f.elite?1.1:1),Math.min(1,2.2*(1-k)),0,-fall*Math.PI/2*.96);}
   for(const f of g.fx)if(f.k==='corpse'){const n='e_'+f.type,a=SP[n];if(!a||UNITS[f.type])continue;const k=f.t/f.life;const big=FH(a)===64;
     const y=f.fly?Math.min(G-44,f.y-FH(a)/2+f.t*160):G-(big?60:44)+(f.lane||0);ctx.save();if(f.elite){ctx.translate(f.x,y+FH(a));ctx.scale(1.22,1.22);spr(ctx,n,10,-FW(a)/2,-FH(a),false,Math.min(1,2.2*(1-k)));}else spr(ctx,n,10,f.x-FW(a)/2,y,false,Math.min(1,2.2*(1-k)));ctx.restore();}
+  const laser=()=>{for(const h of g.heroes){const K=h.cast;if(!h.alive||!K||!K.tgt||K.tgt.dead)continue;const T=K.tgt,mz=MUZZLE[h.key]||[10,30];
+      const x0=g.heroX(h)+(h.face<0?-1:1)*7,y0=(h.gy||g.G)-15,tx=T.x,ty=(T.gy!=null&&!T.fly?T.gy:g.G)-(T.type==='werewolf'?18:38)*HS*((T.E&&T.E.scale)||1);
+      const k=K.t/K.T;ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(255,40,40,${.35+.45*k})`;ctx.lineWidth=.6+k*.6;ctx.setLineDash(k>.75?[]:[3,2]);
+      ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(tx,ty);ctx.stroke();ctx.setLineDash([]);glow(ctx,tx,ty,3+3*k,'#ff2828',.35+.3*Math.sin(g.t*30));ctx.restore();}};
   const drawHero=(h)=>{const G0=h.gy||g.G;ctx.save();shrinkAt(ctx,h.x,G0,HS);drawHero0(h);ctx.restore();};
   const drawHero0=(h)=>{const G=h.gy||g.G;if(!h.alive){return;}
     if(h.bleedT>0){const p=.5+.5*Math.sin(g.t*10);ctx.save();ctx.globalCompositeOperation='lighter';
@@ -1331,6 +1347,7 @@ function drawGame(ctx,g,W,oy){
   const items=[...hs.filter(h=>h.alive).map(h=>[h.gy||G,0,h.x,()=>drawHero(h)]),...es.map(e=>[e.boss?G-.5:(e.gy!=null&&!e.fly?e.gy:G+e.lane-5),1,-e.x,()=>drawEnemy(e)])]
     .sort((a,b)=>a[0]-b[0]||a[1]-b[1]||a[2]-b[2]);
   for(const it of items)it[3]();
+  laser();
   // projectiles
   for(const p of g.proj){const x=Math.round(p.x),y=p.aimed?Math.round(p.y):Math.round(G+(p.y-G)*HS);const c=PCOL[p.kind]||'#ff3a3a';ctx.save();shrinkAt(ctx,x,y,HS);
     if(p.kind==='arrow'||p.kind==='quarrel'){const d=p.enemy?-1:1;ctx.fillStyle='#8a6a4a';ctx.fillRect(d>0?x-8:x-1,y,9,1);
@@ -1664,7 +1681,7 @@ function loop(now){
   const g=CC.game;if(!g||root.hidden)return;let dt=Math.min(.05,(now-CC.last)/1000);CC.last=now;
   if(!CC.paused){for(let i=0;i<CC.speed;i++)g.step(dt);}
   for(const e of g.events){if(e.type==='levelup'){sfx('level');flash('LEVEL UP!',900);}if(e.type==='boss'){sfx('boss');flash(e.name.toUpperCase(),1800);}
-    if(e.type==='herolevel')sfx('level');if(e.type==='enrage')flash('ENRAGED!',1400);if(e.type==='itemdrop'){sfx('level');flash('ITEM FOUND!',900);}if(e.type==='herodown')sfx('die');}
+    if(e.type==='herolevel')sfx('level');if(e.type==='enrage')flash('ENRAGED!',1400);if(e.type==='itemdrop'){sfx('level');flash('ITEM FOUND!',900);}if(e.type==='herodown')sfx('die');if(e.type==='gun')sfx(e.big?'biggun':'gun');}
   g.events.length=0;
   ctx.imageSmoothingEnabled=false;drawGame(ctx,g,384,0);
   const run=g.run;info.innerHTML=`<span class="px" style="font-size:10px;color:#a6ff2e">STAGE ${run.stage}${run.prestige?' ★'+run.prestige:''}</span><span>${esc(g.st.biome.name)}</span><span>Score <b>${fmt(run.score+g.stageScore)}</b></span><span>💰 <b>${fmt((SLOT().gold||0)+g.stageGold)}</b></span>
