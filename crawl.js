@@ -101,7 +101,7 @@ const SIG={
   marina:{name:'Lantern Haunt',cd:9,txt:'Lets the lantern ghost out to fight for 9s (one at a time).',fn:(g,h,a)=>{g.addMinion(h,h.max*.3,a*.6,9,'spirit','sig',1);return true;}},
   korvold:{name:'Gorge',cd:6,txt:'Bites the front enemy for 260% and heals for 30% of it.',fn:(g,h,a)=>g.sigFront(h,a*2.6,{heal:.3})},
   thranduil:{name:'Volley',cd:6,txt:'Looses 3 heavy arrows at random enemies for 115% each.',fn:(g,h,a)=>g.sigMulti(h,'arrow',a*1.15,3)},
-  flannel:{name:'Aimed Shot',cd:14,txt:'40 energy, 14s cooldown, 2s cast (laser sight). A carefully aimed rifle shot that always goes to the middle (head) box, with +5% crit chance and 2.5x crit damage.',fn:()=>false},   // runs from Game.gunner (CHAR abilities), shown here
+  flannel:{name:'Aimed Shot',cd:14,txt:'40 energy, 14s cooldown, 2s cast (laser sight). A carefully aimed rifle shot that always goes to the middle (head) box, with +5% crit chance and 2.5x crit damage. Pierces through one enemy.',fn:()=>false},   // runs from Game.gunner (CHAR abilities), shown here
   joel:{name:'Brick Toss',cd:7,txt:'The scout lobs a brick for 200% that stuns the target for 0.75s.',fn:(g,h,a)=>g.sigShot(h,'brick',a*2,{stun:.75})},
   robots:{name:'Overcharge',cd:7,txt:'A piercing plasma beam hits every enemy in a line for 160%.',fn:(g,h,a)=>g.sigArea(h,260,a*1.6,{fx:'beamline',c:'#3ff0ff'})},
   blood:{name:'Blood Rite',cd:7,txt:'Drains 3 enemies for 90% and heals the whole team for half of it.',fn:(g,h,a)=>g.sigDrain(h,a*.9,3)},
@@ -270,7 +270,7 @@ const CHAR={
     // abilities (Kyle). Aimed Shot: skips the accuracy roll and lands in the MIDDLE box, +5% crit chance, crits hit 2.5x.
     //   Damage = the rifle's dice + every flat damage bonus, so it grows with future flat-damage items/effects.
     //   Cost: 40 energy (8s of base regen) and 14s cooldown: a big hit you see a few times a stage, leaving room for more abilities.
-    abilities:[{id:'aimed',name:'Aimed Shot',en:40,cd:14,cast:2,box:'mid',critAdd:.05,critMul:2.5}]},
+    abilities:[{id:'aimed',name:'Aimed Shot',en:40,cd:14,cast:2,pierce:1,box:'mid',critAdd:.05,critMul:2.5}]},
 };
 
 // ---- 0.12.3 Inspiration Decks (Kyle): pick a player, then one of their decks. Each deck gives one small, unique bonus tied to
@@ -939,7 +939,7 @@ class Game{
         if(K.t>=K.T){h.cast=null;if(!spendEnergy(h,AB.en))return;
           h.abT=AB.cd*(1-(h.cdr||0));h.rT=0;h.ammo-=1;h.animR=.5;h.firedMoving=false;this.text(h.x,this.G-70,AB.name.toUpperCase(),'#ffd23f');this.ev('gun',{big:1});this.shake=Math.max(this.shake||0,.2);
           const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(h.atk/h.base.atk)*h.rangedDmg;
-          h._forceBox=AB.box;const p=this.shoot(h,K.tgt,st.proj,dmg,{});p.critAdd=AB.critAdd;p.critMul=AB.critMul;this.aim(p,h,K.tgt);h._forceBox=null;}
+          h._forceBox=AB.box;const p=this.shoot(h,K.tgt,st.proj,dmg,{pierce:AB.pierce||0});p.critAdd=AB.critAdd;p.critMul=AB.critMul;this.aim(p,h,K.tgt);h._forceBox=null;}
         return;}}
     // IF Aimed Shot is ready AND loaded AND standing still AND enough energy (Preserve-minded units keep a cushion) THEN start the cast
     if(AB&&!mt&&h.abT<=0&&h.ammo>0&&!h.moving&&h.rT>=.5&&(h.en||0)>=AB.en*(1+.4*trait(h,'energy')-.2)){h.cast={t:0,T:AB.cast||2,tgt};this.text(h.x,this.G-70,'aiming...','#ff5a5a');return;}
@@ -1184,8 +1184,8 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793829692';const BGI=new Image();BGI.src='crawl_bg.png?v=1793829692';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793829692';
+const IMG=new Image();IMG.src='crawl.png?v=1793829747';const BGI=new Image();BGI.src='crawl_bg.png?v=1793829747';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793829747';
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('en-US');
