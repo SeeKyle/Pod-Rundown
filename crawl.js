@@ -266,8 +266,7 @@ function heroBase(key,lvl,teamSize){
   // ability power (spells, signatures, summons) keeps its old formula; only the basic attack is a d6 for now
   let atk=(7+.7*s.threats+.4*s.clock)*st.dmg;const L=Math.max(1,lvl||1);atk*=1+.06*(L-1);atk*=1+.3*(3-teamSize);
   return {hp,atk,stamina,flatHp:HERO_FLAT_HP,dice:HERO_DICE,aspd:(0.8+0.025*s.mana)*(st.aspd||1)*(st.atk==='caster'?.8:1)*(st.atk==='ranged'||st.atk==='caster'?.74:1),crit:HERO_BASE_CRIT,acc:0,dodge:.008*s.control,
-    pow:1+.04*s.answers,reach:1+.02*s.reach,luck:Math.round((s.consistency+s.cards)/4),xpm:1+.03*s.cards,
-    reflex:Math.round(4+.6*s.mana+.4*s.control+(MOVE[key]||26)/6-4)};   // chance + speed to step out of marked danger
+    pow:1+.04*s.answers,reach:1+.02*s.reach,luck:Math.round((s.consistency+s.cards)/4),xpm:1+.03*s.cards};
 }
 function needHeroXp(L){return Math.round(70*Math.pow(L,1.6));}
 function needRunXp(k){return 8+6*k;}
@@ -383,6 +382,25 @@ const Brain={
   energyCall(u){const pres=trait(u,'energy');const en=u.en||0;if(u.burst>0)return true;
     if(pres<.5){return en>=30&&Math.random()<1-pres;}
     if(en>=90){u.burst=3;return true;}return false;},
+  // Danger zones (marked boss attacks). Replaces the old Reflex stat with if/then rules on the sliders:
+  //   notice it?  Enemy Awareness and Optimal units watch the ground; Blind Aggression and units locked on a target miss it more.
+  //   react?      Calculated units step out; Blind Aggression may stand and keep swinging; Selfish units always look after themselves;
+  //               a Showoff may wait to the last moment on purpose; New Plan units drop what they are doing faster than On Track ones.
+  //   how fast?   Fast and Furious moves sooner and quicker; Slow and Steady takes a beat. Low HP makes everyone jumpier.
+  //   how far?    Optimal steps fully clear with a margin; Suboptimal often comes up short.
+  dangerCall(g,u,z,ux){const ag=trait(u,'aggr'),aw=trait(u,'aware'),pc=trait(u,'pace'),se=trait(u,'self'),pl=trait(u,'plan'),ex=trait(u,'exec'),fl=trait(u,'flair'),r=()=>g.rng();
+    const low=u.max?1-Math.max(0,u.hp)/u.max:0;let why;
+    let notice=.55+.3*(1-aw)+.2*ex-.25*ag+.25*low;if(u.atkTgt||u.target)notice-=.1*(1-pl);
+    if(r()>Math.min(.97,Math.max(.15,notice)))return {react:0,why:'did not see it'};
+    let stay=.45*ag*(1-low)-.25*se-.2*(1-ag);if(fl>.6&&low<.5)stay+=.1;
+    if(r()<Math.max(0,stay))return {react:0,why:'ignores it, keeps fighting'};
+    let delay=.15+.45*(1-pc)+.25*(1-pl)-.2*low+r()*.3;let showoff=0;
+    if(fl>.7&&low<.4&&r()<fl-.5){delay+=.35;showoff=1;}
+    delay=Math.max(.08,Math.min(z.T-.05,delay));
+    const mul=ex>.6?1+.3*ex+r()*.15:.6+.5*ex+r()*.5;
+    const spd=60+60*pc+30*low;
+    why=showoff?'waits till the last second':mul<1?'steps out (short)':'steps clear';
+    return {react:1,delay,mul,spd,why};},
   showoff(g,u,what){const fl=trait(u,'flair');if(Math.random()>fl*.8)return;const L=SHOW_LINES[u.key?'hero':u.type]||SHOW_LINES.hero;
     const x=u.key?g.heroX(u):u.x;g.text(x,(u.key?g.G:u.y)-62,L[Math.floor(Math.random()*L.length)],'#ffd23f');u.pauseT=.25+.5*fl;}   // showing off costs a moment
 };
@@ -894,9 +912,10 @@ class Game{
   // ---- telegraphed danger zones: marked on the ground, then they hit whoever is still inside
   zone(cx,hw,T,dmg,src,kind,c){const z={cx,hw,T,t:0,dmg,src,kind,c};(this.zones=this.zones||[]).push(z);
     for(const h of this.alive()){const hx=this.heroX(h);if(Math.abs(hx-cx)>hw+4)continue;
-      // Reflex helps, never guarantees: reaction chance has diminishing returns (tops out ~65%), reaction time jitters, and the step can come up short
-      const R=h.base.reflex||8;if(this.rng()<.65*(1-Math.exp(-R/12))){const delay=Math.max(.15,.7-.025*R)+this.rng()*.45;
-        const need=hx<cx?-(hw+8-(cx-hx)):(hw+8-(hx-cx));const out=need*(.7+this.rng()*.6);h.dodge={at:this.t+delay,dx:(h.dodgeX||0)+out,until:this.t+T+.5,spd:70+R*5};}}
+      // 0.12.2: the old Reflex stat is gone; the unit's personality decides if, when and how well it steps out (Brain.dangerCall)
+      const D=Brain.dangerCall(this,h,z,hx);if(D.react){
+        const need=hx<cx?-(hw+8-(cx-hx)):(hw+8-(hx-cx));const out=need*D.mul;h.dodge={at:this.t+D.delay,dx:(h.dodgeX||0)+out,until:this.t+T+.5,spd:D.spd};}
+      h.dangerWhy='⚠ '+D.why;h.dangerT=this.t+T+.6;}
     return z;}
   hurtMinion(m,amt,from){if(!m||m.dead)return;m.hp-=amt;m.hitFlash=.12;this.text(m.x,this.G-40,Math.round(amt),'#ffb0b0');}
   heroX(h){return h.x+(h.dodgeX||0)+(h.wanderX||0);}   // where a hero actually stands right now
@@ -1054,8 +1073,8 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793826657';const BGI=new Image();BGI.src='crawl_bg.png?v=1793826657';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793826657';
+const IMG=new Image();IMG.src='crawl.png?v=1793826861';const BGI=new Image();BGI.src='crawl_bg.png?v=1793826861';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793826861';
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('en-US');
@@ -1235,7 +1254,7 @@ function drawGame(ctx,g,W,oy){
     const tag=(u,x,y,lines,c)=>{lines=lines.filter(Boolean);const w=Math.max(...lines.map(l=>ctx.measureText(l).width))+4;ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(Math.round(x-w/2),Math.round(y-6*lines.length-1),Math.round(w),6*lines.length+2);
       ctx.fillStyle=c;lines.forEach((l,i)=>ctx.fillText(l,Math.round(x),Math.round(y-6*(lines.length-1-i))));};
     const nm=t=>!t?'nobody':t.key?(heroDef(t.key)||{name:t.key}).name.split(' ').slice(-1)[0]:(t.type||'foe');
-    for(const h of g.alive()){const P=h.plan;if(!P)continue;tag(h,g.heroX(h),(h.gy||G)-60,[personaTitle(h),`${P.intent.toUpperCase()} → ${nm(P.tgt)}`,P.why,h.pauseT>0?'(thinking...)':h.burst>0?'BURST!':''],'#b6ff00');}
+    for(const h of g.alive()){const P=h.plan;if(!P)continue;tag(h,g.heroX(h),(h.gy||G)-60,[personaTitle(h),`${P.intent.toUpperCase()} → ${nm(P.tgt)}`,P.why,...(h.dangerT>g.t?[h.dangerWhy]:[]),h.pauseT>0?'(thinking...)':h.burst>0?'BURST!':''],'#b6ff00');}
     for(const e of g.enemies){if(e.dead||!e.plan)continue;tag(e,e.x,(e.gy||G)-(e.type==='werewolf'?40:52),[`${e.retreatT>0?'BACK OFF':'HUNT'} → ${nm(e.plan.tgt)}`,e.plan.why,e.pauseT>0?'(shambling...)':''],'#ff9a9a');}
     ctx.restore();}
   for(const t of g.texts){const a=1-t.t/.9;ctx.globalAlpha=Math.max(0,a);ptext(ctx,t.s,t.x,Math.round(G+(t.y-G)*HS),t.c,t.big?2:1);ctx.globalAlpha=1;}
@@ -1415,7 +1434,7 @@ function showSlots(){
 }
 function confirmInline(b,msg){if(b.dataset.armed)return true;b.dataset.armed=1;const t=b.textContent;b.textContent=msg+' Tap again';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent=t;}},2600);return false;}
 function statBars(k,lvl){const b=heroBase(k,lvl,3);const mx={hp:80,atk:40,aspd:1.4};
-  return `<div class="cc-stat"><span title="${b.stamina} Stamina × 5 = ${b.hp} HP">HP ${b.hp}</span><i><b style="width:${Math.min(100,b.hp/mx.hp*100)}%"></b></i><span title="Basic attack ${b.dice[0]}d${b.dice[1]}, crit ${Math.round(b.crit*100)}%, accuracy ${b.acc||0}; bar = ability power">PWR</span><i><b style="width:${Math.min(100,b.atk/mx.atk*100)}%"></b></i><span>SPD</span><i><b style="width:${Math.min(100,b.aspd/mx.aspd*100)}%"></b></i><span title="Reflex: chance and speed to step out of marked boss attacks">REF</span><i><b style="width:${Math.min(100,b.reflex/18*100)}%;background:#9ae6ff"></b></i></div>`;}
+  return `<div class="cc-stat"><span title="${b.stamina} Stamina × 5 = ${b.hp} HP">HP ${b.hp}</span><i><b style="width:${Math.min(100,b.hp/mx.hp*100)}%"></b></i><span title="Basic attack ${b.dice[0]}d${b.dice[1]}, crit ${Math.round(b.crit*100)}%, accuracy ${b.acc||0}; bar = ability power">PWR</span><i><b style="width:${Math.min(100,b.atk/mx.atk*100)}%"></b></i><span>SPD</span><i><b style="width:${Math.min(100,b.aspd/mx.aspd*100)}%"></b></i></div>`;}
 const ROLE={melee:'Melee',ranged:'Ranged',caster:'Caster',duo:'Duo'};
 function showTeam(){
   const s=SLOT();migrate(s,CC.player);s.partySize=s.strangerSaved&&!s.forsook?3:2;const pick=[];
