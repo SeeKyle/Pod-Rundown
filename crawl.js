@@ -205,7 +205,7 @@ function airBands(acc){const m=accTighten(acc);const p3=10*(1-m),p2=20*(1-m*.85)
 function rollAirAim(acc,rng,centre){let r=rng()*100;for(const [p,lo,hi] of airBands(acc)){if(r<p)return centre+(rng()<.5?-1:1)*(lo+rng()*(hi-lo));r-=p;}return centre;}
 function rollLaneOffset(acc,rng){const m=accTighten(acc);const off2=10*(1-m),off1=30*(1-m),r=rng()*100;if(r<off2)return rng()<.5?-2:2;if(r<off2+off1)return rng()<.5?-1:1;return 0;}
 // hitboxes, ruler units: w = width, h = height above the feet
-const HITBOX={zombie:{w:16,h:46},werewolf:{w:30,h:30}};
+const HITBOX={zombie:{w:16,h:46},werewolf:{w:30,h:36}};   // werewolf h is before his 0.77 draw scale (~28 tall walking)
 // 0.11: heroes have bodies too. Every non-boss unit has a hitbox about its own size (ruler units). Per-hero overrides go in HERO_HB.
 const HERO_HITBOX={w:20,h:46},HERO_HB={};
 function hbOf(u){return u&&u.key?(HERO_HB[u.key]||HERO_HITBOX):(u&&HITBOX[u.type])||{w:16,h:44};}
@@ -218,13 +218,32 @@ function depthHalf(hb){return Math.max(1.5,hb.w*.12);}   // how much lane depth 
 const AIM_RANGE={close:40,far:170};   // px between shooter and target
 const AIM_POINTS={feet:.125,waist:.5,chest:.75};   // fractions of the target's height
 const AIM_SHAPE={bunch:4};   // higher = shots bunch harder toward the bottom of the box (tuning knob)
+// ---- 0.12.2 Aim boxes (Kyle): every target has 3 stacked boxes, measured in ruler units above its feet (already at drawn size).
+//   A shot first rolls WHICH box it goes to (by the box %), then a random height inside that box.
+//   Accuracy: each 1 point slides 0.25% from TOP -> BOTTOM and 0.25% from BOTTOM -> MIDDLE (so 10 accuracy on a zombie:
+//   top 40 -> 37.5, bottom 50 stays 50, middle 10 -> 12.5). Negative accuracy (shooting on the move) slides it back the other way.
+//   Shapes that change (the werewolf rearing up to swipe) get a second set of boxes for that pose.
+const AIM_BOXES={
+  zombie:  {top:[49,85,40],mid:[28,49,10],bot:[0,28,50]},            // Kyle's numbers: [low, high, %]
+  werewolf:{top:[24,44,40],mid:[13,24,40],bot:[0,13,20],             // walking: low and long
+            tall:{top:[35,54,30],mid:[15,35,40],bot:[0,15,30]}},     // reared up mid-attack
+};
+const AIM_STEP=.25;   // % moved per accuracy point
+function aimPose(tg){const B=AIM_BOXES[tg&&tg.type];if(!B)return null;
+  if(B.tall&&tg.anim===1&&tg.animT>0&&tg.E){const f=1-tg.animT/(tg.E.animAtk||.3);if(f>.12&&f<.62)return B.tall;}return B;}
+function aimBoxesOf(tg){const B=aimPose(tg);if(B)return B;
+  const h=hbOf(tg).h*((tg&&tg.E&&tg.E.scale)||1);   // anyone without their own boxes (heroes too) uses the zombie's shape scaled to their height
+  return {top:[1.065*h,1.85*h,40],mid:[.61*h,1.065*h,10],bot:[0,.61*h,50]};}
+function aimOdds(B,acc){let t=B.top[2],b=B.bot[2],m=B.mid[2];const k=AIM_STEP*(acc||0);
+  if(k>=0){const a=Math.min(t,k);t-=a;b+=a;const c=Math.min(b,k);b-=c;m+=c;}
+  else{const a=Math.min(m,-k);m-=a;b+=a;const c=Math.min(b,-k);b-=c;t+=c;}
+  return {top:t,mid:m,bot:b};}
 function reticle(acc,tg,dist,rng){const hb=hbOf(tg);const m=accTighten(acc);
-  const t=Math.max(0,Math.min(1,(dist-AIM_RANGE.close)/(AIM_RANGE.far-AIM_RANGE.close)));
-  const f=t<.5?AIM_POINTS.feet+(AIM_POINTS.waist-AIM_POINTS.feet)*t/.5:AIM_POINTS.waist+(AIM_POINTS.chest-AIM_POINTS.waist)*(t-.5)/.5;
-  const lo=f*hb.h,span=3*hb.h*(1-.7*m);   // accuracy shrinks the box toward its bottom
-  const h=lo+span*Math.pow(rng(),AIM_SHAPE.bunch);   // most shots near the bottom of the box
+  const B=aimBoxesOf(tg),P=aimOdds(B,acc);let r=rng()*(P.top+P.mid+P.bot),box;
+  box=r<P.top?'top':r<P.top+P.mid?'mid':'bot';const [lo,hi]=B[box];
+  const h=lo+rng()*(hi-lo);
   const side=((rng()+rng()+rng())/1.5-1)*(1-.5*m);   // -1..1 target-widths, bunched in the middle
-  return {h,off:side*2*depthHalf(hb),lo,hi:lo+span};}
+  return {h,off:side*2*depthHalf(hb),lo:B.bot[0],hi:B.top[1],box,odds:P};}
 // ---- 0.11 Facing: every hero and regular enemy can turn around, but only does so when its target is really behind it.
 //   Turning takes TURN_T seconds and a unit can't swing or shoot while it turns. (Bosses will be rebuilt separately.)
 const TURN_T=.22;
@@ -254,6 +273,119 @@ function needHeroXp(L){return Math.round(70*Math.pow(L,1.6));}
 function needRunXp(k){return 8+6*k;}
 
 // ======================================================================= GAME (headless-capable)
+// ================= 0.12.2 UNIT BEHAVIOR AI (Kyle's sliders) =================
+// Every unit has 13 personality sliders (0 = left trait, 10 = right trait). Each "think", a unit builds every option it has
+// (which foe to fight, which lane to stand in, how far to push or hang back, how fast to move, when to spend energy, whether to
+// show off) and scores each one with a long list of if/then rules. The sliders set how much each rule counts, so two units
+// looking at the same screen make different choices. Buffs/debuffs can slide the scales for a while: addMood(u,{k:+/-n},secs).
+const SLIDERS=[
+ ['aggr','Calculated Play','Blind Aggression','Safe plays and retreats vs. charging into danger'],
+ ['aware','Enemy Awareness','Ally Awareness','Decides by where the enemies are vs. by where allies are'],
+ ['pace','Slow and Steady','Fast and Furious','Walks and stops to think vs. always running, thinking on the move'],
+ ['lane','Stay In Your Lane','Switch It Up','Works the lane it is in vs. hunts for a better lane'],
+ ['self','Selfless','Selfish','Protects allies vs. does what is best for itself'],
+ ['range','Shooter','Slasher','Prefers fighting from far vs. up close'],
+ ['plan','On Track','New Plan','Sticks to its plan vs. rethinks often'],
+ ['energy','Squander','Preserve','Spends energy whenever it can vs. saves it for a big burst'],
+ ['size','Small Targets','Large Targets','Picks off the small ones vs. goes for the big ones'],
+ ['exec','Suboptimal','Optimal','Sloppy (fires on the move) vs. efficient (plants its feet, finishes the weak)'],
+ ['grudge','Forgiving','Vengeful','Forgets who hit it vs. hunts whoever hit it last'],
+ ['pack','Pack Hunter','Lone Wolf','Piles onto what allies are fighting vs. picks its own fight'],
+ ['flair','Stoic','Showoff','All business vs. taunts and celebrates'],
+];
+const PERSONA={   // starting values (Kyle's test numbers: middling with a few extremes, and very different between the two heroes)
+ joel:   {aggr:6,aware:7,pace:8,lane:7,self:3,range:7,plan:7,energy:2,size:3,exec:4,grudge:3,pack:2,flair:8},   // The Spore Runners
+ mathas: {aggr:3,aware:2,pace:3,lane:2,self:8,range:1,plan:2,energy:9,size:10,exec:9,grudge:9,pack:9,flair:1},  // Bounty Fiend
+ zombie: {aggr:10,aware:1,pace:1,lane:3,self:9,range:10,plan:2,energy:5,size:5,exec:1,grudge:6,pack:6,flair:2},
+ werewolf:{aggr:7,aware:2,pace:10,lane:9,self:9,range:10,plan:6,energy:3,size:1,exec:6,grudge:8,pack:8,flair:7},
+ _default:{aggr:5,aware:5,pace:5,lane:5,self:5,range:5,plan:5,energy:5,size:5,exec:5,grudge:5,pack:5,flair:5},
+};
+const TRAIT_WORDS={aggr:['Careful','Reckless'],aware:['Hunter','Guardian'],pace:['Patient','Frantic'],lane:['Steadfast','Roaming'],self:['Loyal','Greedy'],
+ range:['Sharpshooter','Brawler'],plan:['Stubborn','Fickle'],energy:['Spendthrift','Hoarder'],size:['Swarm-Breaker','Giant-Slayer'],exec:['Sloppy','Precise'],
+ grudge:['Forgiving','Vengeful'],pack:['Pack','Lone'],flair:['Stoic','Showoff']};
+function personaOf(u){if(!u.persona){const key=u.key||u.type;const b=PERSONA[key]||PERSONA._default;u.persona={...b};
+  if(!u.key){for(const k in u.persona)u.persona[k]=Math.max(0,Math.min(10,u.persona[k]+Math.round((Math.random()-.5)*2)));}   // monsters vary a little
+  u.moods=[];}return u.persona;}
+function addMood(u,shift,secs,name){personaOf(u);u.moods.push({shift,t:secs,name});}
+function trait(u,k){const p=personaOf(u);let v=p[k];for(const m of u.moods)v+=(m.shift[k]||0);return Math.max(0,Math.min(10,v))/10;}   // 0..1
+function personaTitle(u){const p=personaOf(u);const ex=Object.keys(p).filter(k=>k in TRAIT_WORDS).map(k=>[k,Math.abs(p[k]-5),p[k]]).sort((a,b)=>b[1]-a[1]);
+  const w=ex.slice(0,2).map(([k,,v])=>TRAIT_WORDS[k][v>=5?1:0]);return w.join(' ');}
+function personaLines(u){const p=personaOf(u);return SLIDERS.map(([k,l,r])=>`${l} ${'▮'.repeat(p[k])}${'▯'.repeat(10-p[k])} ${r}`);}
+const SHOW_LINES={hero:['HA!','Too easy!','Next!','Boom!','Did you see that?'],zombie:['Brainsss','Grrah!','*moans*'],werewolf:['AWOOO!','*snarl*','Grrr!']};
+const Brain={
+  // one shared picture of the battlefield per tick: every unit can see every other unit
+  snapshot(g){const H=g.alive(),E=g.enemies.filter(e=>!e.dead&&e.x<g.W+10);const onTarget=new Map();
+    for(const h of H)if(h.plan&&h.plan.tgt)onTarget.set(h.plan.tgt,(onTarget.get(h.plan.tgt)||0)+1);
+    const heat=new Map();for(const e of E)if(e.target)heat.set(e.target,(heat.get(e.target)||0)+1);
+    const maxE=Math.max(1,...E.map(e=>e.max||1)),maxH=Math.max(1,...H.map(h=>h.max||1));
+    g.bb={H,E,onTarget,heat,maxE,maxH,t:g.t};},
+  // the decision loop: how often a unit rethinks comes from On Track/New Plan, Slow/Fast and its current mood
+  due(g,u,dt){u.thinkT=(u.thinkT==null?Math.random()*.4:u.thinkT)-dt;if(u.thinkT>0)return false;
+    u.thinkT=.3+1.6*(1-trait(u,'plan'))+.5*(1-trait(u,'pace'))+Math.random()*.25;return true;},
+  tick(u,dt){if(u.moods)u.moods=u.moods.filter(m=>(m.t-=dt)>0);if(u.grudgeT>0)u.grudgeT-=dt;if(u.pauseT>0)u.pauseT-=dt;},
+  // score every foe a unit could fight
+  pickTarget(g,u,foes,friends,isHero){if(!foes.length)return null;const bb=g.bb;const A=trait(u,'aware'),ef=1-A;
+    const big=trait(u,'size'),venge=trait(u,'grudge'),lone=trait(u,'pack'),selfish=trait(u,'self'),opt=trait(u,'exec'),stay=1-trait(u,'lane'),commit=1-trait(u,'plan'),
+          aggr=trait(u,'aggr'),slash=trait(u,'range');
+    const ux=isHero?g.heroX(u):u.x,maxSize=isHero?bb.maxE:bb.maxH;const weakAlly=friends.reduce((b,f)=>!b||f.hp/f.max<b.hp/b.max?f:b,null);
+    let best=null,bs=-1e9,why='';
+    for(const c of foes){const cx=c.owner?c.x:(c.key?g.heroX(c):c.x);const d=Math.abs(cx-ux);let sc=0,w=[];
+      // IF it is close THEN it's easier (enemy-focused units care most; slashers care even more)
+      const near=Math.max(0,1-d/220);sc+=near*(1.2+1.2*slash)*(.6+.4*ef);
+      // IF it is in my lane THEN good, unless I like switching lanes
+      if(c.laneI!=null&&u.laneI!=null&&c.laneI===u.laneI){sc+=.9*stay;w.push('in my lane');}
+      // IF I prefer big THEN size counts up, ELSE small ones count up
+      const sz=(c.max||10)/maxSize;sc+=(big*sz+(1-big)*(1-sz))*1.1;
+      // IF it hit me recently AND I hold grudges THEN go get it
+      if(u.lastHitBy===c&&u.grudgeT>0){sc+=2.2*venge;if(venge>.5)w.push('grudge');}
+      // IF allies are already on it THEN pack hunters join, lone wolves look elsewhere
+      const n=bb.onTarget.get(c)||(c.key?0:0);const allies=isHero?(bb.onTarget.get(c)||0):(bb.heat.get(c)||0);
+      sc+=allies*(.7*(1-lone)-.6*lone)*(.5+.5*A);if(allies&&lone<.4)w.push('with the pack');
+      // IF it is hurting my weakest friend THEN selfless units step in
+      if(weakAlly&&c.target===weakAlly&&weakAlly.hp/weakAlly.max<.7){sc+=1.8*(1-selfish)*(.4+.6*A)*(1-weakAlly.hp/weakAlly.max);if(selfish<.5)w.push('protecting');}
+      // IF it is nearly dead THEN optimal units finish it
+      if(c.hp!=null&&c.max)sc+=opt*(1-c.hp/c.max)*.9;
+      // IF it is my current target THEN stubborn units keep at it
+      if(u.plan&&u.plan.tgt===c)sc+=1.4*commit;
+      // IF it is a big threat to me and I'm careful THEN I'd rather not walk into it... unless I'm reckless
+      if(!isHero&&u.E&&u.E.backline&&!g.isMeleeHero(c)){sc+=2.5;w.push('going for the back line');}   // IF I'm a back-line hunter THEN the squishy ones first
+      if(isHero&&c.dmg)sc+=(aggr-.5)*.4*Math.min(2,c.dmg/10);
+      sc+=(Math.random()-.5)*(1.2-opt);   // sloppy units are less predictable
+      if(sc>bs){bs=sc;best=c;why=w[0]||(big>.6?'big target':big<.4?'small target':'closest');}}
+    return {tgt:best,why};},
+  // which lane to stand in
+  pickLane(g,u,tgt,isHero){const bb=g.bb;const cur=u.laneI;const roam=trait(u,'lane'),A=trait(u,'aware'),lone=trait(u,'pack'),aggr=trait(u,'aggr'),commit=1-trait(u,'plan');
+    const melee=isHero?g.isMeleeHero(u):true;let best=cur,bs=-1e9;
+    const reach=roam>.6?2:1;
+    for(let l=Math.max(0,cur-reach);l<=Math.min(LANES.length-1,cur+reach);l++){let sc=0;
+      if(l===cur)sc+=1.2*(1-roam)+.6*commit;   // IF I stay put by nature THEN my lane wins ties
+      sc-=Math.abs(l-cur)*.35;
+      if(tgt&&tgt.laneI!=null){if(l===tgt.laneI)sc+=melee?2.4:.8;}   // melee has to share a lane with what it hits
+      const foesHere=bb.E.filter(e=>e.laneI===l).length,friendsHere=(isHero?bb.H:bb.E).filter(o=>o!==u&&o.laneI===l).length;
+      sc+=foesHere*(isHero?(aggr-.5):0)*.5;   // IF careful THEN avoid crowded enemy lanes; IF reckless THEN wade in
+      sc+=friendsHere*(A*(1-lone)*.5-lone*.4);   // ally-minded pack units bunch up, lone wolves spread out
+      if(sc>bs){bs=sc;best=l;}}
+    return best;},
+  // how far ahead of / behind its formation spot a hero stands, and how fast it moves
+  pickPosition(g,h,tgt){const bb=g.bb;const aggr=trait(h,'aggr'),slash=trait(h,'range'),pace=trait(h,'pace'),A=trait(h,'aware'),selfish=trait(h,'self');
+    let xoff=(aggr-.5)*36+(slash-.5)*(g.isMeleeHero(h)?20:14),intent='hold';
+    const hp=h.hp/h.max,danger=bb.heat.get(h)||0;const near=bb.E.filter(e=>Math.abs(e.x-g.heroX(h))<45).length;
+    // IF hurt AND careful THEN back off (the more careful, the earlier)
+    const bail=.18+.42*(1-aggr);if(hp<bail&&(danger||near)){xoff-=30+30*(1-aggr);intent='retreat';}
+    // IF a ranged unit has foes in its face THEN shooters step back to keep their distance
+    else if(!g.isMeleeHero(h)&&near&&slash<.5){xoff-=24*(1-slash);intent='kite';}
+    else if(aggr>.7&&tgt){intent='charge';}
+    // IF an ally is getting mobbed AND I'm selfless and ally-minded THEN move up to help
+    const mobbed=bb.H.filter(o=>o!==h&&(bb.heat.get(o)||0)>=2&&o.hp/o.max<.6)[0];if(mobbed&&selfish<.5&&A>.4&&intent!=='retreat'){xoff+=14;intent='cover';}
+    const runMul=.75+.75*pace;
+    return {xoff:Math.max(-60,Math.min(45,xoff)),intent,runMul};},
+  // energy: squanderers spend at every chance; preservers wait to unload several big hits in a row
+  energyCall(u){const pres=trait(u,'energy');const en=u.en||0;if(u.burst>0)return true;
+    if(pres<.5){return en>=30&&Math.random()<1-pres;}
+    if(en>=90){u.burst=3;return true;}return false;},
+  showoff(g,u,what){const fl=trait(u,'flair');if(Math.random()>fl*.8)return;const L=SHOW_LINES[u.key?'hero':u.type]||SHOW_LINES.hero;
+    const x=u.key?g.heroX(u):u.x;g.text(x,(u.key?g.G:u.y)-62,L[Math.floor(Math.random()*L.length)],'#ffd23f');u.pauseT=.25+.5*fl;}   // showing off costs a moment
+};
 class Game{
   constructor(opt){
     this.W=opt.W||CFG.W;this.H=CFG.H;this.G=CFG.GROUND;
@@ -315,7 +447,7 @@ class Game{
   pickType(){const pool=this.st.biome.pool;let tot=0;for(const k in pool)tot+=pool[k];let r=this.rng()*tot;for(const k in pool){r-=pool[k];if(r<=0)return k;}return Object.keys(pool)[0];}
   // ---------------------------------------------------------------- damage
   hitEnemy(e,amt,src,opt){
-    if(e.dead||amt<=0)return 0;opt=opt||{};
+    if(e.dead||amt<=0)return 0;opt=opt||{};if(src&&src.key){e.lastHitBy=src;e.grudgeT=6;}
     if(!opt.sure&&e.E&&e.E.dodge&&this.rng()<e.E.dodge){this.text(e.x,e.y-30,'miss','#9aa');return 0;}
     let crit=false;if(src&&!opt.nocrit&&this.rng()<src.crit){amt*=1.75;crit=true;}
     amt=mitigate(e,amt,opt.type); if(e.shred>0)amt*=1.2;
@@ -331,7 +463,7 @@ class Game{
     return amt;
   }
   kill(e,src){
-    e.dead=true;this.kills++;
+    e.dead=true;this.kills++;if(src&&src.key&&!this.demo)Brain.showoff(this,src,'kill');
     const xp=(e.boss?e.B.xp:e.E.xp*(e.elite?2.5:1)*.33)*this.st.xpMul;   // regular enemies give about half the XP they used to (stages are twice as long)
     const pts=Math.round((e.boss?e.B.pts:e.E.pts*(e.elite?3:1))*(1+.4*(this.st.n-1))*(1+this.run.prestige)*(src?src.scoreM:1));
     this.stageScore+=pts;this.gainXp(xp);
@@ -366,7 +498,7 @@ class Game{
   // Bleed: damage over time that ignores armor; reapplying refreshes it (doesn't stack)
   bleed(h,total,dur){const fresh=!(h.bleedT>0);h.bleedT=dur;h.bleedDps=total/dur;h.bleedTick=h.bleedTick||0;if(fresh)this.text(h.x,this.G-66,'BLEED','#ff3a4a');}
   hurtHero(h,amt,from){
-    if(!h||!h.alive)return;
+    if(!h||!h.alive)return;if(from&&from.E){h.lastHitBy=from;h.grudgeT=6;}
     if(this.rng()<h.dodge){this.text(h.x,this.G-52,'dodge','#9ae6ff');return false;}
     amt=mitigate(h,amt,'physical');
     if(h.shield>0){const s=Math.min(h.shield,amt);h.shield-=s;amt-=s;if(h.thorns&&from&&!from.dead)this.hitEnemy(from,s*.3,null,{nocrit:1,sure:1});}
@@ -378,7 +510,7 @@ class Game{
     if(h.hp<=0)this.heroDown(h);
     return true;
   }
-  heroDown(h){h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
+  heroDown(h){if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
     if(!this.alive().length){this.over='defeat';this.ev('defeat');}}
   procs(h,trig,e,amt,ally){
     if(ABILITIES_OFF)return;
@@ -413,9 +545,9 @@ class Game{
   aim(p,h,tg){   // turn a shot into a free-flying projectile aimed with the reticle (0.11): either direction, heroes or enemies
     p.aimed=true;p.gy=h.gy!=null?h.gy:this.G;p.h=h.fly?(this.G-h.y)/UNIT_SCALE:28;const air=tg.fly&&!tg.boss;const flyH=air?(this.G-tg.y)/UNIT_SCALE:0;
     const tx=tg.boss?tg.x-tg.w*.5:(tg.key?this.heroX(tg):tg.x);p.dir=tx>=p.x?1:-1;const dist=Math.abs(tx-p.x);
-    if(air){p.aimH=rollAirAim(h.acc||0,this.rng,flyH);p.tgy=p.gy;}
-    else if(tg.boss){p.aimH=rollAimHeight(h.acc||0,this.rng);p.tgy=tg.gy!=null?tg.gy:this.G;}
-    else{const R=reticle(h.acc||0,tg,dist,this.rng);p.aimH=R.h;p.tgy=(tg.gy!=null?tg.gy:this.G)+R.off;}
+    if(air){p.aimH=rollAirAim((h.acc||0)+(h._accBonus||0),this.rng,flyH);p.tgy=p.gy;}
+    else if(tg.boss){p.aimH=rollAimHeight((h.acc||0)+(h._accBonus||0),this.rng);p.tgy=tg.gy!=null?tg.gy:this.G;}
+    else{const R=reticle((h.acc||0)+(h._accBonus||0),tg,dist,this.rng);p.aimH=R.h;p.tgy=(tg.gy!=null?tg.gy:this.G)+R.off;}
     p.h0=p.h;p.x0=p.x;p.dist=Math.max(14,dist);p.gy0=p.gy;p.tx=null;p.foes=h.key?'enemies':'heroes';}
   text(x,y,s,c,big){if(this.demo&&typeof s==='number'&&this.rng()<.6)return;this.texts.push({x,y,s:String(s),c,t:0,big:!!big});}
   // ---------------------------------------------------------------- spells
@@ -465,12 +597,18 @@ class Game{
     const T=this;const al=this.alive();
     for(const t of this.timers||[])t.t-=dt;
     if(this.timers){for(const t of this.timers.filter(t=>t.t<=0))t.fn();this.timers=this.timers.filter(t=>t.t>0);}
+    // 0.12.2 behavior AI: everyone reads the same snapshot of the battlefield, then each hero thinks on its own clock
+    Brain.snapshot(this);
+    for(const h of al){Brain.tick(h,dt);if(Brain.due(this,h,dt)){const foes=this.enemies.filter(e=>!e.dead&&e.x<this.W+4);
+      const pk=Brain.pickTarget(this,h,foes,al,true);const lane=Brain.pickLane(this,h,pk&&pk.tgt,true);const pos=Brain.pickPosition(this,h,pk&&pk.tgt);
+      h.plan={tgt:pk&&pk.tgt,why:pk?pk.why:'',lane,...pos};
+      if(pos.intent==='hold'&&trait(h,'pace')<.45&&Math.random()<(1-trait(h,'pace'))*.25)h.pauseT=.5+.6*(1-trait(h,'pace'));}}   // slow-and-steady units stop to think
     // formation
     // formation: everyone heads for their slot at their own pace; while marching, quicker heroes drift ahead and slow ones lag a little
     const avgMv=al.reduce((m,h)=>m+(MOVE[h.key]||26),0)/Math.max(1,al.length);
-    al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;let tx=this.exiting?this.W+60:this.home(h)+drift;
-      if(!this.exiting&&this.isMeleeHero(h)){const foe=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&e.gy!=null&&Math.abs(e.gy-(h.gy||190))<4&&e.x>h.x&&e.x-h.x<90).reduce((b,e)=>!b||e.x<b.x?e:b,null);if(foe)tx=Math.max(tx,Math.min(this.home(h)+28,foe.x-12));}   // push forward into the fight
-      const d=tx-h.x,st=mv*(this.exiting?2.6:1.6)*dt;h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;});
+    al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;let tx=this.exiting?this.W+60:this.home(h)+drift+(h.plan?h.plan.xoff:0);tx=Math.max(8,Math.min(this.W-8,tx));
+      if(!this.exiting&&this.isMeleeHero(h)&&!(h.plan&&h.plan.intent==='retreat')){const foe=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&e.gy!=null&&Math.abs(e.gy-(h.gy||190))<4&&e.x>h.x&&e.x-h.x<90).reduce((b,e)=>!b||e.x<b.x?e:b,null);if(foe)tx=Math.max(tx,Math.min(this.home(h)+28,foe.x-12));}   // push forward into the fight
+      const x0=h.x;const d=tx-h.x,st=mv*(this.exiting?2.6:1.6)*(h.plan?h.plan.runMul:1)*dt;if(!(h.pauseT>0)||this.exiting)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;});
     const f=this.front();if(!f)return;
     // blocking: walk unless something is close
     const near=this.enemies.filter(e=>!e.dead&&!e.fly).reduce((m,e)=>Math.min(m,e.x-(e.boss?e.w:0)-(e.ranged?40:0)),1e9);
@@ -493,6 +631,7 @@ class Game{
     // heroes
     for(const [i,h] of this.heroes.entries()){if(h.laneI==null){h.laneI=[2,1,3][i%3];h.gy=LANES[h.laneI];}}
     for(const h of al){
+      if(h.plan&&h.plan.lane!=null&&h.plan.lane!==h.laneI&&Math.abs(h.gy-LANES[h.laneI])<1)h.laneI+=Math.sign(h.plan.lane-h.laneI);
       {const ty=LANES[h.laneI];h.gy+=Math.sign(ty-h.gy)*Math.min(Math.abs(ty-h.gy),LANE_SPD*1.4*dt);}
       regenEnergy(h,dt);h.walkT+=dt*(scroll?(MOVE[h.key]||26)/26:0);if(h.animT>0)h.animT-=dt;if(h.hitFlash>0)h.hitFlash-=dt;if(h.buffT>0)h.buffT-=dt;
       if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}
@@ -507,10 +646,11 @@ class Game{
       const rate=dt*h.aspd*(h.buffT>0?1.3:1);const st=h.style;
       const findT=(kind)=>{const melee=kind==='melee';const ox=melee?f.x:h.x;const range=melee?st.reach*UNIT_SCALE+3:(st.range||170);
         const L=this.enemies.filter(e=>!e.dead&&(melee?(e.boss?e.x-e.w-h.x<=range&&e.x>h.x:Math.abs(e.x-h.x)<=range):(Math.abs(e.x-h.x)<=range))).sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x));
+        const P=h.plan&&h.plan.tgt;if(P&&!P.dead&&L.includes(P)&&(!melee||P.boss||P.fly||P.gy==null||Math.abs(P.gy-h.gy)<2.5))return P;   // 0.12.2: the brain's pick, if it's in reach
         if(!melee)return L[0];
         // melee only reaches its own lane; if the nearest foe is in another lane, step one lane toward it
         const mine=L.find(e=>e.boss||e.fly||e.gy==null||Math.abs(e.gy-h.gy)<2.5);if(mine)return mine;
-        if(L[0]&&L[0].laneI!=null&&Math.abs(h.gy-LANES[h.laneI])<1)h.laneI+=Math.sign(L[0].laneI-h.laneI);
+        if(!h.plan&&L[0]&&L[0].laneI!=null&&Math.abs(h.gy-LANES[h.laneI])<1)h.laneI+=Math.sign(L[0].laneI-h.laneI);
         return null;};
       if(st.atk==='duo'){
         // partners fight independently: each has its own swing timer, target and animation
@@ -518,16 +658,17 @@ class Game{
         h.atkT=Math.min(1,h.atkT+rate);h.atkT2=Math.min(1,(h.atkT2||0)+rate*.93);
         const ta=findT(st.a),tb=findT(st.b);
         const rd=faceToward(h,(ta||tb)?(ta||tb).x:h.x+10,dt);
-        if(rd&&ta&&h.atkT>=1){h.atkT=0;h.animT=.32;this.basic(h,ta,st.a,.6);}
+        if(rd&&ta&&h.atkT>=1){h.atkT=0;h.animT=.32;this.basic(h,ta,st.a,.6*this.powerMul(h));}
         if(rd&&tb&&h.atkT2>=1){h.atkT2=0;h.animT2=.32;this.basic(h,tb,st.b,.6);}
         h.lunge=st.a==='melee'&&ta?f.x-h.x:0;h.lunge2=st.b==='melee'&&tb?f.x-h.x:0;
         if(st.companion)this.companion(h,dt,f);
       }else{
-        h.atkT+=rate;const kind=st.atk==='melee'?'melee':'ranged';const tgt=findT(kind);
+        h.atkT=Math.min(1.6,h.atkT+rate);const kind=st.atk==='melee'?'melee':'ranged';const tgt=findT(kind);
         const rd=faceToward(h,tgt?tgt.x:h.x+10,dt);
         h.lunge=kind==='melee'&&tgt?(h.face>0?f.x-h.x:Math.max(-10,tgt.x-h.x+8)):0;
-        if(rd&&tgt&&h.atkT>=1){h.atkT=0;h.anim=1;h.animT=.32;this.basic(h,tgt);}
-        if(h.atkT>1)h.atkT=1;}
+        const plant=kind!=='melee'&&h.moving&&trait(h,'exec')>.5&&h.atkT<1.6;   // optimal shooters plant their feet before firing
+        if(rd&&tgt&&h.atkT>=1&&!plant){h.atkT=0;h.anim=1;h.animT=.32;this.basic(h,tgt,undefined,this.powerMul(h));}
+        if(h.atkT>1&&!h.moving)h.atkT=1;}
     }
     this.stepZones(dt);
     for(const l of this.loot){l.t+=dt;l.x-=scroll*dt;if(l.x<=f.x+14||this.over){l.got=1;if(l.kind==='gold'){this.stageGold+=l.amt;this.text(l.x,this.G-30,'+'+l.amt,'#ffd23f');}else{this.stageItems.push(l.item);this.ev('itemdrop',{item:l.item});}}}
@@ -579,23 +720,31 @@ class Game{
           if(e.laneI==null){e.laneI=Math.floor(this.rng()*LANES.length);e.gy=LANES[e.laneI];}
           const Rch=ENEMY_BODY+e.E.reach;const firstX=Math.max(...al.map(h=>this.heroX(h)));const far=e.x>firstX+50;
           const inLane=al.filter(h=>h.laneI===e.laneI);
-          if(e.E.backline){const rear=al.filter(h=>!this.isMeleeHero(h));const back=rear.length?rear.reduce((b,h)=>!b||this.heroX(h)<this.heroX(b)?h:b,null):al.reduce((b,h)=>!b||Math.abs(this.heroX(h)-e.x)<Math.abs(this.heroX(b)-e.x)?h:b,null);e.target=back;e.think=99;}
+          // 0.12.2 behavior AI: the monster thinks on its own clock (who to chase, which lane, when to pause or back off)
+          Brain.tick(e,dt);if(Brain.due(this,e,dt)){const others=this.enemies.filter(o=>o!==e&&!o.dead);const pk=Brain.pickTarget(this,e,al,others,false);
+            if(pk&&pk.tgt){e.target=pk.tgt;e.plan={tgt:pk.tgt,why:pk.why,lane:Brain.pickLane(this,e,pk.tgt,false)};}
+            const aggr=trait(e,'aggr');if(aggr<.6&&e.hp/e.max<.18+.42*(1-aggr)&&!(e.retreatT>0))e.retreatT=1.5+2*(1-aggr);
+            if(far&&trait(e,'pace')<.4&&Math.random()<.2*(1-trait(e,'pace')))e.pauseT=.4+.4*(1-trait(e,'pace'));}
+          if(e.retreatT>0)e.retreatT-=dt;
+          if(!e.plan&&e.E.backline){const rear=al.filter(h=>!this.isMeleeHero(h));const back=rear.length?rear.reduce((b,h)=>!b||this.heroX(h)<this.heroX(b)?h:b,null):al.reduce((b,h)=>!b||Math.abs(this.heroX(h)-e.x)<Math.abs(this.heroX(b)-e.x)?h:b,null);e.target=back;e.think=99;}
           const nearestIn=L=>L.reduce((b,h)=>!b||Math.abs(this.heroX(h)-e.x)<Math.abs(this.heroX(b)-e.x)?h:b,null);
-          if(!e.E.backline&&(!e.target||!e.target.alive))e.target=nearestIn(inLane)||nearestIn(al);
-          else if(!e.E.backline&&e.target.laneI!==e.laneI&&inLane.length&&Math.abs(e.gy-LANES[e.laneI])<1)e.target=nearestIn(inLane);
+          if(e.plan&&(!e.target||!e.target.alive)){e.target=nearestIn(inLane)||nearestIn(al);e.thinkT=0;}
+          if(!e.plan&&!e.E.backline&&(!e.target||!e.target.alive))e.target=nearestIn(inLane)||nearestIn(al);
+          else if(!e.plan&&!e.E.backline&&e.target.laneI!==e.laneI&&inLane.length&&Math.abs(e.gy-LANES[e.laneI])<1)e.target=nearestIn(inLane);
           e.think=(e.think==null?this.rng():e.think)-dt;
-          if(e.think<=0){e.think=1;   // once a second of walking: 10% chance to drift a lane (only while still 50px+ out)
+          if(!e.plan&&e.think<=0){e.think=1;   // once a second of walking: 10% chance to drift a lane (only while still 50px+ out)
             if(far&&this.rng()<.1){const alt=[e.laneI-1,e.laneI+1].filter(l=>l>=0&&l<LANES.length);e.laneI=alt[Math.floor(this.rng()*alt.length)];const t2=nearestIn(al.filter(h=>h.laneI===e.laneI));if(t2)e.target=t2;}   // random drift
             else if(this.rng()<.02){const c=nearestIn(al);if(c&&c!==e.target)e.target=c;}}   // rare: go after someone closer
           const T=e.target;
-          if(e.E.backline||!far||!inLane.length||T.laneI!==e.laneI){if(Math.abs(e.gy-LANES[e.laneI])<1&&T.laneI!==e.laneI)e.laneI+=Math.sign(T.laneI-e.laneI);}   // head for the target's lane
+          const wantL=e.plan&&e.plan.lane!=null?e.plan.lane:T.laneI;
+          if(e.plan||e.E.backline||!far||!inLane.length||T.laneI!==e.laneI){if(Math.abs(e.gy-LANES[e.laneI])<1&&wantL!==e.laneI)e.laneI+=Math.sign(wantL-e.laneI);}   // head for the chosen lane
           const ty=LANES[e.laneI];e.gy+=Math.sign(ty-e.gy)*Math.min(Math.abs(ty-e.gy),LANE_SPD*dt);e.y=e.gy;
           // queue politely behind a zombie already hitting this hero in this lane
           const front=this.enemies.filter(o=>o!==e&&!o.dead&&o.laneI===e.laneI&&o.x<e.x&&Math.abs(o.gy-e.gy)<3).reduce((b,o)=>!b||o.x>b.x?o:b,null);
           if(e.stackOff==null)e.stackOff=this.rng()*5;
           const stacks=e.E.stack!==false;   // every unit can stack now (a future 'block' ability can turn this off)
           const hx=this.heroX(T);const side=e.x>=hx?1:-1;   // 0.11: which side of its hero it stands on (it can end up behind the heroes)
-          let stopX=hx+side*(ENEMY_BODY+e.E.reach*.6+(stacks?e.stackOff:0));if(!stacks&&front&&side>0&&front.x>=stopX-1)stopX=Math.max(stopX,front.x+11);
+          let stopX=hx+side*(ENEMY_BODY+e.E.reach*.6+(stacks?e.stackOff:0)+(e.retreatT>0?42:0));if(!stacks&&front&&side>0&&front.x>=stopX-1)stopX=Math.max(stopX,front.x+11);
           const sameLane=Math.abs(e.gy-T.gy)<2;const ready=faceToward(e,hx,dt);const inRange=ready&&sameLane&&Math.abs(e.x-hx)<=Rch+.5;   // must face the hero and touch it
           // ---- leap attack: from about 20px outside its reach, in the target's lane, it bounds in and lands on the hero
           const LP=e.E.leap;e.leapCd=(e.leapCd||0)-dt;
@@ -603,7 +752,8 @@ class Game{
             if(u>=1){e.leapA=null;if(T.alive&&Math.abs(e.gy-T.gy)<3&&Math.abs(e.x-this.heroX(T))<=Rch+2){this.hurtHero(T,LP.dmg*e.dmgMul,e);this.shake=Math.max(this.shake,.25);}e.atkT=e.E.atk*.4;}
             continue;}
           if(LP&&e.leapCd<=0&&sameLane&&ready&&!e.stun){const gap=Math.abs(e.x-hx)-Rch;if(gap>LP.gap*.6&&gap<=LP.gap+4){e.leapA={t:0,dur:LP.dur,x0:e.x,x1:e.x-side*(gap-2)};e.leapCd=LP.cd;e.animT=0;continue;}}
-          const x0=e.x;e.x-=scroll*dt;if(side>0&&e.x>stopX)e.x=Math.max(stopX,e.x-e.E.spd*sp*dt);else if(side<0&&e.x<stopX)e.x=Math.min(stopX,e.x+e.E.spd*sp*dt);e.moving=Math.abs(e.x-x0)>.05||Math.abs(e.gy-LANES[e.laneI])>.5;
+          const x0=e.x;e.x-=scroll*dt;if(!(e.pauseT>0)){if(side>0&&e.x>stopX)e.x=Math.max(stopX,e.x-e.E.spd*sp*dt);else if(side<0&&e.x<stopX)e.x=Math.min(stopX,e.x+e.E.spd*sp*dt);
+            else if(e.retreatT>0)e.x+=Math.sign(stopX-e.x)*Math.min(Math.abs(stopX-e.x),e.E.spd*.6*sp*dt);}   // backing offe.moving=Math.abs(e.x-x0)>.05||Math.abs(e.gy-LANES[e.laneI])>.5;
           if(!inRange)e.atkT=Math.min(e.E.atk,e.atkT+dt);
           else{e.atkT+=dt;if(e.atkT>=e.E.atk){e.atkT=0;e.anim=1;e.animT=e.E.animAtk||.3;
             const blow=()=>{if(e.dead||e.stun>0||!T.alive||Math.abs(e.gy-T.gy)>3||Math.abs(e.x-this.heroX(T))>Rch+2)return;/* no swinging at thin air */const d=e.E.dmgDie?(1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul:e.dmg;const took=this.hurtHero(T,d,e);
@@ -641,8 +791,8 @@ class Game{
           let ok;
           if(e.boss)ok=Math.abs(p.x-(e.x-e.w*.4))<e.w*.6&&p.h<220;
           else if(e.fly){const hb=HITBOX[e.type]||{w:16,h:16};const fh=(this.G-e.y)/UNIT_SCALE;ok=Math.abs(p.x-e.x)<=hb.w*UNIT_SCALE/2&&Math.abs(p.h-fh)<=hb.h/2;}   // fliers: any lane, height window around the body
-          else{const hb=HITBOX[e.type]||{w:16,h:44};const lift=e.leapA?Math.sin(Math.PI*Math.min(1,e.leapA.t/e.leapA.dur))*28:0;const sc=(e.E.scale||1)*(e.elite?1.1:1);
-            ok=Math.abs((e.gy!=null?e.gy:this.G)-p.gy)<=depthHalf(hb)*sc&&Math.abs(p.x-e.x)<=hb.w*sc*UNIT_SCALE/2&&p.h>=lift&&p.h<=lift+hb.h*sc;}
+          else{const hb=HITBOX[e.type]||{w:16,h:44};const hbT=(e.type==='werewolf'&&aimPose(e)===AIM_BOXES.werewolf.tall)?{w:hb.w,h:66}:hb;const lift=e.leapA?Math.sin(Math.PI*Math.min(1,e.leapA.t/e.leapA.dur))*28:0;const sc=(e.E.scale||1)*(e.elite?1.1:1);
+            ok=Math.abs((e.gy!=null?e.gy:this.G)-p.gy)<=depthHalf(hb)*sc&&Math.abs(p.x-e.x)<=hb.w*sc*UNIT_SCALE/2&&p.h>=lift&&p.h<=lift+hbT.h*sc;}
           if(!ok)continue;
           p.hit.add(e);const big=BIGP[p.kind]||0;p.opt.onHit?p.opt.onHit(e,p.dmg,0):this.hitEnemy(e,p.dmg,p.src,{kb:big});
           this.fx.push({k:'spark',x:p.x,y:p.y,t:0,c:PCOL[p.kind]||'#fff'});
@@ -671,15 +821,19 @@ class Game{
     for(const x of this.texts){x.t+=dt;x.y-=dt*14;}this.texts=this.texts.filter(x=>x.t<.9);
     if(this.shake>0)this.shake-=dt;
   }
+  // 0.12.2 test move for the energy sliders (until real abilities come back): a Power Attack costs 30 energy and hits x1.8
+  powerMul(u){if(this.demo||!Brain.energyCall(u))return 1;if(!spendEnergy(u,30)){u.burst=0;return 1;}if(u.burst>0)u.burst--;
+    const x=u.key?this.heroX(u):u.x;this.text(x,(u.key?this.G:u.y)-66,'POWER!','#ff8a1f');return 1.8;}
   basic(h,tgt,kind,mult){
     const st=h.style;kind=kind||st.atk;const [nd,ds]=h.base.dice||[2,4];let roll=0;for(let i=0;i<nd;i++)roll+=1+Math.floor(this.rng()*ds);const A=roll*(h.atk/h.base.atk);   // basic attack: a fresh 2d4 every swing/shot (item/team damage bonuses still apply)
+    const M=mult==null?1:mult;
     if(kind==='melee'){const hits=st.double&&!ABILITIES_OFF?2:1;
-      for(let i=0;i<hits;i++){this.hitEnemy(tgt,A*(i?0.8:1),h,{kb:1});}
+      for(let i=0;i<hits;i++){this.hitEnemy(tgt,A*M*(i?0.8:1),h,{kb:1});}
       if(!ABILITIES_OFF)for(const o of this.enemies)if(o!==tgt&&!o.dead&&!o.fly&&Math.abs(o.x-tgt.x)<12)this.hitEnemy(o,A*.4,h,{nocrit:1});
       this.fx.push({k:'slash',x:tgt.x-6,y:tgt.boss?tgt.y-50:tgt.fly?tgt.y:tgt.y-24,t:0});return;}
     const pk=kind==='ranged'||kind==='caster'?st.proj:kind;
     setTimeoutSafe(this,.11,()=>{if(!h.alive)return;const tg=tgt.dead?this.liveE().sort((p,q)=>p.x-q.x)[0]:tgt;if(!tg)return;
-    const p=this.shoot(h,tg,pk,A,{});this.aim(p,h,tg);if(st.atk==='duo')p.x=(st.companion?h.x+(h.compX||-12):h.x-9)+(MUZZLE[h.key]||[10])[0];if(!ABILITIES_OFF){p.splash=st.splash||(pk==='orb'?12:0);p.chill=st.chill;}});
+    h._accBonus=h.moving?-45*(1-trait(h,'exec')):12*trait(h,'exec');const p=this.shoot(h,tg,pk,A*M,{});this.aim(p,h,tg);h._accBonus=0;if(st.atk==='duo')p.x=(st.companion?h.x+(h.compX||-12):h.x-9)+(MUZZLE[h.key]||[10])[0];if(!ABILITIES_OFF){p.splash=st.splash||(pk==='orb'?12:0);p.chill=st.chill;}});
   }
   // the scout roams around her partner (can't be targeted), and now and then pounces on the front enemy with a knife
   companion(h,dt,f){
@@ -895,13 +1049,13 @@ function migrateSlot(slot,player){
 function newSlot(player){const heroes={};for(const h of DATA.heroes)if(h.owner===player)heroes[h.key]={lvl:1,xp:0};return {epoch:SAVE_EPOCH,partySize:2,gold:0,heroes,best:{score:0,stage:0,prestige:0},runs:0,run:null,created:Date.now()};}
 
 // ======================================================================= exports for node sims
-const API={reticle,hbOf,HERO_HITBOX,ENERGY,spendEnergy,faceToward,AIM_RANGE,accTighten,LANES,UNIT_SCALE,HITBOX,aimBands,airBands,rollAirAim,rollAimHeight,rollLaneOffset,ABILITIES_OFF,armorReduction,HP_PER_STAMINA,gearScore,heroGear,giveItem,rollItem,stockShop,itemPrice,honePrice,slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
+const API={reticle,AIM_BOXES,aimOdds,aimBoxesOf,hbOf,HERO_HITBOX,ENERGY,spendEnergy,faceToward,AIM_RANGE,accTighten,LANES,UNIT_SCALE,HITBOX,aimBands,airBands,rollAirAim,rollAimHeight,rollLaneOffset,ABILITIES_OFF,armorReduction,HP_PER_STAMINA,gearScore,heroGear,giveItem,rollItem,stockShop,itemPrice,honePrice,slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
 if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793821002';const BGI=new Image();BGI.src='crawl_bg.png?v=1793821002';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793821002';
+const IMG=new Image();IMG.src='crawl.png?v=1793826657';const BGI=new Image();BGI.src='crawl_bg.png?v=1793826657';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793826657';
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('en-US');
@@ -1077,6 +1231,13 @@ function drawGame(ctx,g,W,oy){
     if(f.k==='beamline'){ctx.fillStyle=f.c;ctx.globalAlpha=.8*(1-k);ctx.fillRect(Math.round(f.x),Math.round(f.y)-2,W,5);ctx.fillStyle='#fff';ctx.fillRect(Math.round(f.x),Math.round(f.y),W,1);ctx.globalAlpha=1;}
     if(f.k==='beamall'){ctx.fillStyle=`rgba(255,40,60,${.8*(1-k)})`;ctx.fillRect(0,G-34,f.x,6);ctx.fillStyle=`rgba(255,220,220,${1-k})`;ctx.fillRect(0,G-32,f.x,2);}
     if(f.k==='drainall'){ctx.strokeStyle=`rgba(255,40,60,${1-k})`;for(const h of g.alive()){ctx.beginPath();ctx.moveTo(h.x,G-30);ctx.lineTo(f.x-30,f.y);ctx.stroke();}}ctx.restore();}
+  if(CC.brain&&!g.demo){ctx.save();ctx.font='5px monospace';ctx.textAlign='center';
+    const tag=(u,x,y,lines,c)=>{lines=lines.filter(Boolean);const w=Math.max(...lines.map(l=>ctx.measureText(l).width))+4;ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(Math.round(x-w/2),Math.round(y-6*lines.length-1),Math.round(w),6*lines.length+2);
+      ctx.fillStyle=c;lines.forEach((l,i)=>ctx.fillText(l,Math.round(x),Math.round(y-6*(lines.length-1-i))));};
+    const nm=t=>!t?'nobody':t.key?(heroDef(t.key)||{name:t.key}).name.split(' ').slice(-1)[0]:(t.type||'foe');
+    for(const h of g.alive()){const P=h.plan;if(!P)continue;tag(h,g.heroX(h),(h.gy||G)-60,[personaTitle(h),`${P.intent.toUpperCase()} → ${nm(P.tgt)}`,P.why,h.pauseT>0?'(thinking...)':h.burst>0?'BURST!':''],'#b6ff00');}
+    for(const e of g.enemies){if(e.dead||!e.plan)continue;tag(e,e.x,(e.gy||G)-(e.type==='werewolf'?40:52),[`${e.retreatT>0?'BACK OFF':'HUNT'} → ${nm(e.plan.tgt)}`,e.plan.why,e.pauseT>0?'(shambling...)':''],'#ff9a9a');}
+    ctx.restore();}
   for(const t of g.texts){const a=1-t.t/.9;ctx.globalAlpha=Math.max(0,a);ptext(ctx,t.s,t.x,Math.round(G+(t.y-G)*HS),t.c,t.big?2:1);ctx.globalAlpha=1;}
   ctx.restore();
   // boss bar / stage progress
@@ -1181,9 +1342,9 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.1</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.2</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
-    <button class="cc-ib" data-a="mute" title="Sound">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
+    <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES}" height="${216*RES}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
   document.body.appendChild(root);
   cv=$('#cc-cv',root);ctx=cv.getContext('2d');panel=$('.cc-panel',root);hud=$('.cc-hud',root);info=$('.cc-info',root);bossEl=$('.cc-boss',root);banner=$('.cc-banner',root);
@@ -1192,6 +1353,7 @@ function build(){
     if(a==='restart'&&CC.game){if(!confirmInline(b,'↺?'))return;CC.game=null;cancelAnimationFrame(CC.raf);persist();beginStage();}
     if(a==='pause'){CC.paused=!CC.paused;b.textContent=CC.paused?'▶':'⏸';}
     if(a==='speed'){CC.speed=CC.speed%3+1;b.textContent=CC.speed+'×';}
+    if(a==='brain'){CC.brain=!CC.brain;b.classList.toggle('on',CC.brain);b.style.outline=CC.brain?'2px solid #b6ff00':'';}
     if(a==='mute'){muted=!muted;b.textContent=muted?'🔇':'🔊';try{localStorage.setItem('podrundown-crawl-mute',muted?'1':'0');}catch(_){}}
     if(a==='fs'){if(window.PodSideways)PodSideways.goBig(root);setTimeout(layout,120);}
     if(a==='side'){if(window.PodSideways){PodSideways.sidewaysPref(!root.classList.contains('rot-side'));PodSideways.fitSideways(root);}setTimeout(layout,60);}});
@@ -1261,7 +1423,7 @@ function showTeam(){
   const P=showPanel(`<div class="cc-h">PICK YOUR PARTY</div><p class="cc-sub">${(s.partySize||2)>=3?'Up to 3 heroes from your decks.':s.forsook?'Up to 2 heroes: this save chose the blessing over the stranger.':'Up to 2 heroes for now. Clear stage 6 to free a mystery stranger and open a third spot.'} Fewer heroes = each one is stronger. Lower-level heroes earn catch-up XP.</p>
     <div class="cc-heroes">${mine.map(h=>{const st=STYLE[h.key];const L=s.heroes[h.key].lvl;
       return `<button class="cc-hero" data-k="${h.key}" aria-pressed="false"><span class="ord"></span><span class="por" data-por="${h.key}"></span><div class="nm">${h.icon} ${esc(h.name)}</div><div class="dk">Inspired by deck: <b>${esc(h.deck)}</b></div><div class="dk">${ROLE[st.atk]}${st.tank?' · Tank':''}${st.companion?' · with companion':''}</div>
-      <div class="lv">LV ${L}</div>${statBars(h.key,L)}<div class="dk" style="margin-top:4px">⚡ ${esc(SIG[h.key].name)}: ${esc(SIG[h.key].txt)}</div><div class="dk" style="margin-top:2px">Starts with ${esc(h.spells[0].name||shortCard(h.spells[0].card))} (${SPELL[h.spells[0].arch].label})</div></button>`;}).join('')}</div>
+      <div class="lv">LV ${L}</div><div class="dk" title="${esc(personaLines({key:h.key}).join('\n'))}">🧠 Personality: <b>${esc(personaTitle({key:h.key}))}</b> <span style="opacity:.7">(hover for sliders)</span></div>${statBars(h.key,L)}<div class="dk" style="margin-top:4px">⚡ ${esc(SIG[h.key].name)}: ${esc(SIG[h.key].txt)}</div><div class="dk" style="margin-top:2px">Starts with ${esc(h.spells[0].name||shortCard(h.spells[0].card))} (${SPELL[h.spells[0].arch].label})</div></button>`;}).join('')}</div>
     <div class="cc-row" style="margin-top:12px"><button class="cc-btn go" data-go disabled>START RUN</button><button class="cc-btn" data-back>← Saves</button></div>`);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
   const upd=()=>{P.querySelectorAll('.cc-hero').forEach(b=>{const i=pick.indexOf(b.dataset.k);b.setAttribute('aria-pressed',i>=0);b.querySelector('.ord').textContent=i>=0?i+1:'';});
