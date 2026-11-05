@@ -812,9 +812,21 @@ body{background-color:var(--page-bg);background-image:
   <div class="pg" id="pg-notes" hidden>
     <section class="pr-card notes" id="notes">
       <h2>What's new</h2>
-      <h3>🕯️ 0.12.21: Void_Cultist</h3>
+      <h3>🤝 0.12.22: Downed and Revive</h3>
+      <ul><li><b>Downed, not dead:</b> a hero who runs out of HP falls and stays down, with a green + over them.</li>
+      <li><b>Reviving:</b> an ally who stands on them for 5 seconds helps them back up with 25% HP and 0 energy. The + fills as they work, and it slowly drains if they step away.</li>
+      <li><b>Getting back up:</b> every hero has a rise animation built from their own death frames played backwards (fallen ones rotate back upright), with a moment of safety while they stand.</li>
+      <li><b>In the behavior system:</b> most units go help a downed ally. Selfless, pack-minded and ally-aware units are the keenest; selfish lone wolves less so. If enemies are standing over the body, only the bold go in. The reviver shouts for cover ("Getting Jack up!") and allies who listen protect them.</li>
+      <li>The run is only lost when everyone is down at once.</li>
+      <li><b>Void_Cultist:</b> recoloured in blacks and purples (black hood and mantle, deep purple robe, ashen mask, violet eye) and shrunk to Flannel_Man's size.</li>
+      <li><b>Void_Cultist's eyes</b> are now two small red embers that glow in the dark of his hood.</li>
+      <li><b>Void_Cultist's void bolts</b> are weaker (1d3) but fire about twice as fast as other ranged heroes' attacks (every 0.95s).</li>
+      <li><b>Tentacle:</b> 15% taller, very slightly thinner at the base, and the pale claw tip is gone. Its lash reach now matches its attack animation (35 world px, about 105 screen px). It hits for 2d6 and has 15 HP. There's no timer any more: it withers 5% of max HP a second, enemies standing on it swat at it, and only its 40% life steal keeps it alive. Any number can be out at once (one per cast).</li>
+      <li><b>Energy:</b> every non-passive ability costs 5 more energy (for example 20 → 25, 45 → 50).</li>
+      <li><b>Herald_of_Life_and_Death</b> (Void_Cultist's new passive, replacing Dark_Communion): while he's up, reviving an ally takes 4s instead of 5. Each of his critical hits gives him +1 energy and +1 HP every 0.5s for 5s, and gives every tentacle in play +1 HP every 0.5s for 5s. Tentacle crits don't count.</li></ul>
+    <h3>🕯️ 0.12.21: Void_Cultist</h3>
       <ul><li><b>Void_Cultist</b> (Kyle's): a new hero, original pixel art. He wears a crimson robe with a tattered swaying hem, a deep navy hood and a bone mask with one burning red eye, and carries a curved ritual dagger. His animations are walk, idle, dagger slash, a void-bolt cast with a violet orb, a two-handed summon pose, hurt, and a death where he crumbles into ash and violet sparks. He fights with void bolts at range and the dagger up close.</li>
-      <li><b>Call_of_the_Deep</b> (40 energy, 18s): a huge dark tentacle (black-violet skin, suckers, a bone hook) tears out of the ground near the enemies for 10s. It can't move, but it wriggles and whips a long way (about 90px) every 1.4s for 1d8 with knockback. It has its own emerge, wriggle, lash, flinch and wilt animations.</li>
+      <li><b>Call_of_the_Deep</b> (45 energy, 7s, cast up to 250px away): a huge dark tentacle (black-violet skin, suckers, a bone hook) tears out of the ground near the enemies for 10s. It can't move, but it wriggles and whips a long way (about 90px) every 1.4s for 1d8 with knockback. It has its own emerge, wriggle, lash, flinch and wilt animations.</li>
       <li><b>Blood_Pact</b> (20 energy, 20s): he pays 15% of his own HP (never below 40%) to give every ally +20% damage for 6s, shown as red rings under them.</li>
       <li><b>Spreading_Hex</b> (25 energy, 12s): curses the biggest threat, which rots for 2.5% max HP a second. If it dies cursed, the hex leaps to the nearest enemy, up to 3 times.</li>
       <li><b>Dread_Chant</b> (30 energy, 16s): when he's swarmed, every non-boss enemy within 180px backs away in terror for 2.5s.</li>
