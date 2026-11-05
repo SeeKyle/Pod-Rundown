@@ -103,7 +103,7 @@ const SIG={
   marina:{name:'Lantern Haunt',cd:9,txt:'Lets the lantern ghost out to fight for 9s (one at a time).',fn:(g,h,a)=>{g.addMinion(h,h.max*.3,a*.6,9,'spirit','sig',1);return true;}},
   korvold:{name:'Gorge',cd:6,txt:'Bites the front enemy for 260% and heals for 30% of it.',fn:(g,h,a)=>g.sigFront(h,a*2.6,{heal:.3})},
   thranduil:{name:'Volley',cd:6,txt:'Looses 3 heavy arrows at random enemies for 115% each.',fn:(g,h,a)=>g.sigMulti(h,'arrow',a*1.15,3)},
-  chibi:{name:'Wave Dash · War Cry',cd:10,txt:'Wave Dash (30 energy, 10s cooldown): dashes forward with a blue energy wave on his sword, cutting every enemy in the line for 1.6x a sword hit. War Cry (20 energy, 7s cooldown): every ally within 800px gets +25% damage and attack speed for 7s. Sword combo: Attack 1, Attack 2, and a running slash.',fn:()=>false},
+  chibi:{name:'Wave Dash · War Cry',cd:10,txt:'Wave Dash (45 energy, 16s cooldown): rides a blue energy wave up to 400px forward, hitting everything it passes through (2 lanes up and down) for 1.4x a sword hit. War Cry (20 energy, 7s cooldown): every ally within 800px gets +25% damage and attack speed for 7s. Sword combo: Attack 1, Attack 2, and a running slash.',fn:()=>false},
   flannel:{name:'Aimed Shot · Trip Bomb · Traveling_Companion',cd:14,txt:'Call Traveling_Companion (25 energy, 24s cooldown, 0.8s whistle): calls his Traveling_Companion, a timid partner who hangs back, with a third of his stats and her own Brick Throw (never misses, 75% stun). If she is already out, she heals 7% of her max HP instead. Trip Bomb (30 energy, 20s cooldown, 1s to set): a nail bomb on a tripwire that blows up the first enemy to walk into it, hurting everything around it (area damage, knockback, 50% bleed). Aimed Shot (40 energy, 14s cooldown, 2s cast with a laser sight): a carefully aimed rifle shot that always goes to the middle (head) box, with +5% crit chance and 2.5x crit damage. Pierces through one enemy.',fn:()=>false},   // runs from Game.gunner (CHAR abilities), shown here
   joel:{name:'Brick Toss',cd:7,txt:'The scout lobs a brick for 200% that stuns the target for 0.75s.',fn:(g,h,a)=>g.sigShot(h,'brick',a*2,{stun:.75})},
   robots:{name:'Overcharge',cd:7,txt:'A piercing plasma beam hits every enemy in a line for 160%.',fn:(g,h,a)=>g.sigArea(h,260,a*1.6,{fx:'beamline',c:'#3ff0ff'})},
@@ -353,9 +353,10 @@ CHAR.chibi={name:'Chibi_Warrior',flatHp:0,stamina:10,hpPerStamina:5,armorPts:8,d
   melee:{dice:[2,6],every:1.1,reach:24,kb:15,hitAt:.18},ranged:null,
   acc:0,walkPenalty:0,crit:.10,critMul:1.75,luck:15,xp:0,run:2,turn:.18,enMax:100,enRegen:5,
   abilities:[
-    // Wave Dash: dashes ~70px forward along his lane in 0.32s with a blue energy wave (1.5x his height) riding his sword;
-    //   every enemy in the line takes 1.6x a sword roll (+flat bonuses) and a small shove. 30 energy, 10s cooldown.
-    {id:'dash',name:'Wave Dash',en:30,cd:10,dist:70,dur:.42,dmgMul:1.6,depth:5,kb:20},
+    // Wave Dash (Kyle: big AoE dash up to 400px): he rides a blue energy wave (1.5x his height) up to 400px forward in 0.9s.
+    //   Everything the wave passes through (2 lanes up and down) takes 1.4x a sword roll (+flat bonuses) and a shove.
+    //   Bigger reach and area, so it costs more: 45 energy, 16s cooldown.
+    {id:'dash',name:'Wave Dash',en:45,cd:16,dist:400,dur:.9,dmgMul:1.4,depth:12,kb:25,minHits:2},
     // War Cry: every ally within 800px gets +25% damage and +25% attack speed for 7s. 20 energy, 7s cooldown (Kyle).
     {id:'shout',name:'War Cry',en:20,cd:7,range:800,dur:7,dmg:.25,spd:.25}]};
 const PAL_FRAC=1/3;
@@ -1009,8 +1010,9 @@ class Game{
       this.text(h.x,this.G-74,'WAR CRY!','#ffd23f',true);this.fx.push({k:'ring',x:h.x,y:this.G-14,r:46,t:0,c:'#ffd23f'});this.ev('shout',{});}
     // IF Wave Dash is ready AND an enemy is in my lane a short way ahead (not in my face) THEN dash through the line
     if(DA&&h.daT<=0&&(h.en||0)>=DA.en*(1+.3*trait(h,'energy')-.15)){
-      const foe=this.enemies.find(e=>!e.dead&&!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=3&&e.x-h.x>18&&e.x-h.x<DA.dist+20);
-      if(foe&&spendEnergy(h,DA.en)){h.daT=DA.cd*(1-(h.cdr||0));h.face=1;
+      const inPath=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=DA.depth&&e.x-h.x>14&&e.x-h.x<Math.min(DA.dist,this.W-h.x));
+      // IF at least 2 enemies are in the wave's path (or 1 if it's the last one around) THEN ride the wave through them
+      if((inPath.length>=DA.minHits||(inPath.length&&this.enemies.filter(e=>!e.dead).length===1))&&spendEnergy(h,DA.en)){h.daT=DA.cd*(1-(h.cdr||0));h.face=1;
         const dmg=(this.rollDice(C.melee.dice)+(C.melee.flat||0)+(h.flatMelee||0))*(C.melee.dmgMul||1)*DA.dmgMul*(h.atk/h.base.atk)*h.meleeDmg*(h.cryDmg||1);
         h.dash={t:0,T:DA.dur,x0:h.x,x1:Math.min(this.W-12,h.x+DA.dist),hit:new Set(),dmg,A:DA,trail:[]};this.text(h.x,this.G-70,'WAVE DASH!','#7fd8ff');this.ev('dash',{});return;}}
     const tgt=mt||(C.ranged?findT('ranged'):(findT('melee'),null));const rd=faceToward(h,tgt?tgt.x:h.x+10,dt);if(!rd||!tgt)return;
@@ -1314,8 +1316,8 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793865004';const BGI=new Image();BGI.src='crawl_bg.png?v=1793865004';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793865004';const XIMG={flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image()};XIMG.wave.src='crawl_wave.png?v=1793865004';XIMG.chibi.src='crawl_chibi.png?v=1793865004';XIMG.flannel.src='crawl_flannel.png?v=1793865004';XIMG.pal.src='crawl_pal.png?v=1793865004';XIMG.boom.src='crawl_boom.png?v=1793865004';
+const IMG=new Image();IMG.src='crawl.png?v=1793865162';const BGI=new Image();BGI.src='crawl_bg.png?v=1793865162';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793865162';const XIMG={flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image()};XIMG.wave.src='crawl_wave.png?v=1793865162';XIMG.chibi.src='crawl_chibi.png?v=1793865162';XIMG.flannel.src='crawl_flannel.png?v=1793865162';XIMG.pal.src='crawl_pal.png?v=1793865162';XIMG.boom.src='crawl_boom.png?v=1793865162';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
