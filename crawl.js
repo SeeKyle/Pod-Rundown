@@ -211,8 +211,9 @@ const LANES=[188,194,200,206,212],LANE_SPD=26;
 //   Units walk around them (lane change). Tall ones (blk > 0, in hitbox units like body heights) stop shots that fly low enough.
 //   Never more than 2 lanes blocked near each other at once, so there's always a way around.
 const OBST={"rock_moss": {"x": 0, "y": 33, "fw": 44, "fh": 36, "lanes": 1, "blk": 34, "foot": [[-7.98, 7.98]]}, "rock_pile": {"x": 46, "y": 39, "fw": 32, "fh": 30, "lanes": 1, "blk": 26, "foot": [[-5.7, 5.7]]}, "rock_crack": {"x": 80, "y": 35, "fw": 32, "fh": 34, "lanes": 1, "blk": 32, "foot": [[-5.7, 5.7]]}, "rock_swirl": {"x": 114, "y": 37, "fw": 30, "fh": 32, "lanes": 1, "blk": 30, "foot": [[-5.32, 5.32]]}, "rock_dirt": {"x": 146, "y": 37, "fw": 30, "fh": 32, "lanes": 1, "blk": 30, "foot": [[-5.38, 4.88]]}, "rock_crumble": {"x": 178, "y": 41, "fw": 30, "fh": 28, "lanes": 1, "blk": 24, "foot": [[-5.32, 5.32]]}, "log_big": {"x": 210, "y": 35, "fw": 80, "fh": 34, "lanes": 2, "blk": 14, "foot": [[-19.5, 6.5], [-10.0, 20.0]]}, "trunk": {"x": 292, "y": 29, "fw": 29, "fh": 40, "lanes": 1, "blk": 40, "foot": [[-5.528, 2.5279999999999996]]}, "stump": {"x": 323, "y": 37, "fw": 18, "fh": 32, "lanes": 1, "blk": 30, "foot": [[-3.16, 2.16]]}, "bush_a": {"x": 343, "y": 49, "fw": 22, "fh": 20, "lanes": 1, "blk": 0, "foot": [[-3.04, 3.04]]}, "bush_b": {"x": 367, "y": 47, "fw": 23, "fh": 22, "lanes": 1, "blk": 0, "foot": [[-3.7199999999999998, 3.12]]}, "deadtree": {"x": 392, "y": 0, "fw": 43, "fh": 69, "lanes": 1, "blk": 52, "foot": [[-9.12, -2.2800000000000002]]}};
-const OBST_POOL=[['rock_moss',3],['rock_pile',3],['rock_crack',3],['rock_swirl',2],['rock_dirt',3],['rock_crumble',3],['log_big',2],['trunk',2],['stump',3],['bush_a',2],['bush_b',2],['deadtree',1]];
-const SEARCHABLE=/^rock_|^log_|^stump|^trunk|^bush|^deadtree/;   // 0.12.28 Herbalist searches these (foliage too)
+const CARS={"car_hatch": {"x": 0, "y": 8, "fw": 110, "fh": 40, "lanes": 2, "blk": 32, "foot": [[-25.3, 25.3], [-25.3, 25.3]], "img": "cars"}, "car_van": {"x": 112, "y": 0, "fw": 141, "fh": 48, "lanes": 2, "blk": 38, "foot": [[-32.4, 32.4], [-32.4, 32.4]], "img": "cars"}, "car_sedan": {"x": 255, "y": 6, "fw": 94, "fh": 42, "lanes": 2, "blk": 34, "foot": [[-21.6, 21.6], [-21.6, 21.6]], "img": "cars"}, "car_coupe": {"x": 351, "y": 12, "fw": 129, "fh": 36, "lanes": 2, "blk": 29, "foot": [[-29.7, 29.7], [-29.7, 29.7]], "img": "cars"}};Object.assign(OBST,CARS);   // 0.12.29 broken-down cars (Kyle's art), real-car sized, smooth edges, 2 lanes, tall
+const OBST_POOL=[['car_hatch',1.5],['car_van',1.2],['car_sedan',1.5],['car_coupe',1.4],['rock_moss',3],['rock_pile',3],['rock_crack',3],['rock_swirl',2],['rock_dirt',3],['rock_crumble',3],['log_big',2],['trunk',2],['stump',3],['bush_a',2],['bush_b',2],['deadtree',1]];
+const SEARCHABLE=/^rock_|^log_|^stump|^trunk|^bush|^deadtree/;const SEARCH_RE={herbalist:SEARCHABLE,scavenger:/^car_/},SEARCH_T={herbalist:1.5,scavenger:2};   // 0.12.28 Herbalist searches these (foliage too)
 const GROUND_FX=new Set(['corpse','stuck','thorn','poof','boom','quake','mend','spark','blood','splat','scorch','ring']);
 // Units are drawn at half size (the world reads bigger); heights for aiming/hitboxes are in 'ruler units' = full-size sprite pixels
 const UNIT_SCALE=.5;
@@ -332,7 +333,7 @@ const INSP={   // 0.12.4 (Kyle): every bonus doubled
  'Dice Boys Casino':{o:'Kyle',why:'Mr. House: the biggest ramp deck in the pod',mod:{enRegen:2},sl:{flair:2}},
  'Tame Depala':{o:'Kyle',why:'Dwarves crewing heavy vehicles',mod:{kbRes:20},sl:{pace:-2}},
  "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat',passive:'bounty',sl:{size:2}},
- 'The Last of Us':{o:'Kyle',why:'Survivors who know when to duck',mod:{dodge:4},sl:{aware:2}},
+ 'The Last of Us':{o:'Kyle',why:'Survivors who live off what they can scrounge from the wrecks',passive:'scavenger',sl:{aware:2}},
  'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming',passive:'haunt',sl:{aware:-2}},
  'Mothman Cometh!':{o:'Kyle',why:'A dark omen that is never quite where you hit',passive:'omen',sl:{lane:2}},
  'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back',mod:{kb:30},sl:{pace:-2}},
@@ -419,6 +420,7 @@ function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.pas
 // 0.12.27 (Kyle): more decks give one unique passive instead of a small stat; fewer give two things at once
 const INSP_PASSIVE={
  herbalist:['Herbalist','he searches nearby foliage, rocks, stumps and fallen logs for healing herbs (1.5s each; the chance is good and goes up with his Luck and with how Perceptive he is) and carries up to 3. When he or an ally within about 50px is under 80% health, he uses one: it heals 20% of their max HP over 5s, but any damage stops it. He searches whatever is close by without going far out of his way, and goes to hurt allies with herbs.'],
+ scavenger:['Scavenger','he searches broken-down cars (2s each; the chance goes up with his Luck and how Perceptive he is). He can turn up a Medkit (heals an ally under 60% for 25% at once), a Battery (+30 energy for an ally running low) or loose scrap worth gold, and carries up to 3 Medkits and Batteries. He searches wrecks close by without going far out of his way, and brings supplies to whoever needs them.'],
  bounty:['Bounty Hunter','his first hit on the biggest enemy on the field puts a bounty on it: it is marked (takes 25% more damage from everyone for 8s), and when it dies the party gets +10 gold.'],
  haunt:['Haunted','anything that hits him has a 20% chance to be spooked and back away for 1.5s.'],
  omen:['Dark Omen','once every 12s, the first hit that would land on him passes straight through.'],
@@ -608,28 +610,29 @@ const SLIDERS=[
  ['pack','Pack Hunter','Lone Wolf','Piles onto what allies are fighting vs. picks its own fight'],
  ['flair','Stoic','Showoff','All business vs. taunts and celebrates'],
  ['talk','Quiet','Chatty','Almost never calls anything out vs. calls out everything it sees'],
+ ['tech','Primitive','Techy','Trusts muscle, nature and old ways vs. drawn to machines: shuts off car alarms, picks through wrecks, works the gadgets'],
  ['perc','Tunnel Vision','Perceptive','Locks onto the obvious target vs. keeps looking around for what isn\'t obvious (flankers, danger, things worth searching)'],
  ['listen','Ignores Callouts','Follows Callouts','Does its own thing vs. does what allies shout for'],
 ];
 const PERSONA={   // starting values (Kyle's test numbers: middling with a few extremes, and very different between the two heroes)
- cultist:{aggr:4,aware:4,pace:4,lane:4,self:9,range:2,plan:5,energy:3,size:7,exec:6,grudge:8,pack:4,flair:8,talk:7,listen:3,perc:6},   // Void_Cultist: hangs back, selfish, theatrical
- robot:{aggr:6,aware:6,pace:2,lane:3,self:3,range:6,plan:2,energy:4,size:7,exec:6,grudge:4,pack:6,flair:2,talk:4,listen:7,perc:6},   // Moss_Mech: slow, steady, team-minded
- lumberjack:{aggr:7,aware:4,pace:6,lane:5,self:6,range:7,plan:5,energy:4,size:8,exec:4,grudge:8,pack:4,flair:6,talk:7,listen:1,perc:2},   // Lumber_Jack: big, angry, goes for the big ones
- druid:{aggr:2,aware:9,pace:4,lane:3,self:0,range:2,plan:4,energy:4,size:5,exec:6,grudge:2,pack:6,flair:3,talk:6,listen:8,perc:7},   // Druid: selfless healer
- archer:{aggr:2,aware:5,pace:3,lane:3,self:5,range:0,plan:2,energy:7,size:7,exec:9,grudge:4,pack:7,flair:2,talk:2,listen:7,perc:8},   // Yumi_Archer: patient marksman
- chibi:{aggr:8,aware:3,pace:7,lane:6,self:6,range:9,plan:6,energy:3,size:6,exec:5,grudge:7,pack:3,flair:7,talk:9,listen:2,perc:3},   // Chibi_Warrior: bold front-liner
- flannel_pal:{aggr:1,aware:9,pace:4,lane:2,self:5,range:1,plan:3,energy:6,size:2,exec:6,grudge:3,pack:2,flair:0,talk:3,listen:10,perc:7},   // the companion (timid): hangs back, keeps her distance, picks off small ones next to him
- flannel:{aggr:3,aware:7,pace:5,lane:4,self:1,range:5,plan:3,energy:4,size:8,exec:7,grudge:8,pack:6,flair:1,talk:5,listen:6,perc:6},   // Flannel_Man (Kyle's sheet)
- joel:   {aggr:6,aware:7,pace:8,lane:7,self:3,range:7,plan:7,energy:2,size:3,exec:4,grudge:3,pack:2,flair:8,talk:8,listen:3,perc:5},   // The Spore Runners
- mathas: {aggr:3,aware:2,pace:3,lane:2,self:8,range:1,plan:2,energy:9,size:10,exec:9,grudge:9,pack:9,flair:1,talk:1,listen:1,perc:4},  // Bounty Fiend
+ cultist:{aggr:4,aware:4,pace:4,lane:4,self:9,range:2,plan:5,energy:3,size:7,exec:6,grudge:8,pack:4,flair:8,talk:7,listen:3,perc:6,tech:3},   // Void_Cultist: hangs back, selfish, theatrical
+ robot:{aggr:6,aware:6,pace:2,lane:3,self:3,range:6,plan:2,energy:4,size:7,exec:6,grudge:4,pack:6,flair:2,talk:4,listen:7,perc:6,tech:10},   // Moss_Mech: slow, steady, team-minded
+ lumberjack:{aggr:7,aware:4,pace:6,lane:5,self:6,range:7,plan:5,energy:4,size:8,exec:4,grudge:8,pack:4,flair:6,talk:7,listen:1,perc:2,tech:2},   // Lumber_Jack: big, angry, goes for the big ones
+ druid:{aggr:2,aware:9,pace:4,lane:3,self:0,range:2,plan:4,energy:4,size:5,exec:6,grudge:2,pack:6,flair:3,talk:6,listen:8,perc:7,tech:0},   // Druid: selfless healer
+ archer:{aggr:2,aware:5,pace:3,lane:3,self:5,range:0,plan:2,energy:7,size:7,exec:9,grudge:4,pack:7,flair:2,talk:2,listen:7,perc:8,tech:1},   // Yumi_Archer: patient marksman
+ chibi:{aggr:8,aware:3,pace:7,lane:6,self:6,range:9,plan:6,energy:3,size:6,exec:5,grudge:7,pack:3,flair:7,talk:9,listen:2,perc:3,tech:2},   // Chibi_Warrior: bold front-liner
+ flannel_pal:{aggr:1,aware:9,pace:4,lane:2,self:5,range:1,plan:3,energy:6,size:2,exec:6,grudge:3,pack:2,flair:0,talk:3,listen:10,perc:7,tech:4},   // the companion (timid): hangs back, keeps her distance, picks off small ones next to him
+ flannel:{aggr:3,aware:7,pace:5,lane:4,self:1,range:5,plan:3,energy:4,size:8,exec:7,grudge:8,pack:6,flair:1,talk:5,listen:6,perc:6,tech:6},   // Flannel_Man (Kyle's sheet)
+ joel:   {aggr:6,aware:7,pace:8,lane:7,self:3,range:7,plan:7,energy:2,size:3,exec:4,grudge:3,pack:2,flair:8,talk:8,listen:3,perc:5,tech:5},   // The Spore Runners
+ mathas: {aggr:3,aware:2,pace:3,lane:2,self:8,range:1,plan:2,energy:9,size:10,exec:9,grudge:9,pack:9,flair:1,talk:1,listen:1,perc:4,tech:6},  // Bounty Fiend
  zombie: {aggr:10,aware:1,pace:1,lane:3,self:9,range:10,plan:2,energy:5,size:5,exec:1,grudge:6,pack:6,flair:2},
  werewolf:{aggr:7,aware:2,pace:10,lane:9,self:9,range:10,plan:6,energy:3,size:1,exec:6,grudge:8,pack:8,flair:7},
  _default:{aggr:5,aware:5,pace:5,lane:5,self:5,range:5,plan:5,energy:5,size:5,exec:5,grudge:5,pack:5,flair:5},
 };
 const TRAIT_WORDS={aggr:['Careful','Reckless'],aware:['Hunter','Guardian'],pace:['Patient','Frantic'],lane:['Steadfast','Roaming'],self:['Loyal','Greedy'],
  range:['Sharpshooter','Brawler'],plan:['Stubborn','Fickle'],energy:['Spendthrift','Hoarder'],size:['Swarm-Breaker','Giant-Slayer'],exec:['Sloppy','Precise'],
- grudge:['Forgiving','Vengeful'],pack:['Pack','Lone'],flair:['Stoic','Showoff'],talk:['Silent','Loudmouth'],listen:['Headstrong','Team Player'],perc:['Tunnel-Visioned','Watchful']};
-function personaOf(u){if(!u.persona){const key=u.key||u.type;const b=PERSONA[key]||PERSONA._default;u.persona={talk:5,listen:5,perc:5,...b};
+ grudge:['Forgiving','Vengeful'],pack:['Pack','Lone'],flair:['Stoic','Showoff'],talk:['Silent','Loudmouth'],listen:['Headstrong','Team Player'],perc:['Tunnel-Visioned','Watchful'],tech:['Old-Ways','Gearhead']};
+function personaOf(u){if(!u.persona){const key=u.key||u.type;const b=PERSONA[key]||PERSONA._default;u.persona={talk:5,listen:5,perc:5,tech:5,...b};
   if(u.insp)for(const [k,d] of Object.entries((INSP[u.insp]||{}).sl||{})){const v=u.persona[k]+d;if(v>=0&&v<=10)u.persona[k]=v;}   // Kyle: a slide past 0 or 10 doesn't move at all
   if(!u.key){for(const k in u.persona)u.persona[k]=Math.max(0,Math.min(10,u.persona[k]+Math.round((Math.random()-.5)*2)));}   // monsters vary a little
   u.moods=[];}return u.persona;}
@@ -718,10 +721,19 @@ const Brain={
          let w=.62+.3*(1-selfish)+.18*(1-lone)+.12*A-.12*(hp<.35?1:0);if(danger)w*=.35+.85*aggr;w=Math.max(.05,Math.min(.97,w));
          h.revDecide={D,until:g.t+1.6+Math.random()*.8,go:Math.random()<w};}
        if(h.revDecide.go){const runMul=.45+1.4*pace;return {xoff:0,intent:'revive',runMul,reviveD:D,reviveLane:D.laneI};}}}
+    // 0.12.30 car alarm: IF an alarm is blaring nearby THEN units go shut it off. Techy units (and Perceptive ones) are much keener;
+    //   IF zombies are already around the car THEN only the bold go. Primitive units mostly leave it to someone else.
+    {const car=(g.obst||[]).filter(o=>o.alarmT>0&&Math.abs(o.x-g.heroX(h))<140).sort((p,q)=>Math.abs(p.x-g.heroX(h))-Math.abs(q.x-g.heroX(h)))[0];
+     if(car&&!h.pet){if(!h.alDecide||h.alDecide.o!==car||g.t>h.alDecide.until){const tech=trait(h,'tech'),danger=bb.E.filter(e=>Math.abs(e.x-car.x)<40).length;
+         let w=.4+.55*tech+.12*trait(h,'perc');if(danger)w*=.55+.6*aggr;   /* an alarm is treated as a big threat: most units go, Techy ones nearly always */h.alDecide={o:car,until:g.t+1.2+Math.random()*.8,go:Math.random()<Math.min(.95,w)};
+         if(h.alDecide.go&&Math.random()<.5)Comms.bubble(g,h,Comms.pick(['I\'ll kill the alarm!','On the alarm!','Leave the car to me!']));}
+       if(h.alDecide.go){const runMul=.45+1.4*pace;return {xoff:0,intent:'disarm',runMul,goTo:{ob:car},reviveLane:car.lanes[0]};}}}
     // 0.12.27 Bodyguard (Family Matters, a deck-scripted behavior): IF an ally is hurt (under 90%) THEN stand beside the most hurt one
     if(insP(h)==='bodyguard'){const H=g.alive().filter(o=>o!==h&&!o.pet&&o.hp/o.max<.9).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];if(H&&!(hp<.25)){const runMul=.45+1.4*pace;return {xoff:0,intent:'guard',runMul,goTo:H,reviveLane:H.laneI};}}
     // 0.12.28 Herbalist: IF I have room for herbs AND there's unsearched debris close by AND it isn't swarmed THEN go search it
-    if(insP(h)==='herbalist'&&(h.herbs||0)<3&&!(h.search)){const look=30+45*trait(h,'perc');const o=(g.obst||[]).filter(o=>SEARCHABLE.test(o.k)&&!(o.searched&&o.searched[h.key])&&Math.abs(o.x-g.heroX(h))<look).sort((p,q)=>Math.abs(p.x-g.heroX(h))-Math.abs(q.x-g.heroX(h)))[0];
+    {const sp=insP(h);if(sp==='scavenger'&&(h.kit||[]).includes('med')){const H=g.alive().filter(o=>o!==h&&!o.pet&&o.hp/o.max<.6).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
+      if(H&&Math.random()<.55+.35*(1-selfish)){const runMul=.45+1.4*pace;return {xoff:0,intent:'herb',runMul,goTo:H,reviveLane:H.laneI};}}}
+    if(((insP(h)==='herbalist'&&(h.herbs||0)<3)||(insP(h)==='scavenger'&&(h.kit||[]).length<3))&&!(h.search)){const RE=SEARCH_RE[insP(h)];const look=30+45*trait(h,'perc')+(insP(h)==='scavenger'?20:0);const o=(g.obst||[]).filter(o=>RE.test(o.k)&&!(o.searched&&o.searched[h.key])&&Math.abs(o.x-g.heroX(h))<look).sort((p,q)=>Math.abs(p.x-g.heroX(h))-Math.abs(q.x-g.heroX(h)))[0];
       if(o){const danger=bb.E.filter(e=>Math.abs(e.x-o.x)<35).length;if(!h.srDecide||h.srDecide.o!==o||g.t>h.srDecide.until)h.srDecide={o,until:g.t+1.5+Math.random(),go:Math.random()<(danger?(.15+.5*aggr):.8+.15*trait(h,'perc'))};
         if(h.srDecide.go){const runMul=.45+1.4*pace;return {xoff:0,intent:'search',runMul,goTo:{ob:o},reviveLane:o.lanes[0]};}}}
     if(h.search)return {xoff:0,intent:'search',runMul:1,goTo:{ob:h.search.o},reviveLane:h.laneI};
@@ -1171,7 +1183,7 @@ class Game{
     const avgMv=al.reduce((m,h)=>m+(MOVE[h.key]||26),0)/Math.max(1,al.length);
     al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;let tx=this.exiting?this.W+60:(h.plan&&h.plan.reviveD&&!h.plan.reviveD.alive?h.plan.reviveD.x:h.plan&&h.plan.goTo&&h.plan.goTo.ob?(()=>{const o=h.plan.goTo.ob,[a,b]=this.obSpan(o,o.lanes[0]);return h.x<(a+b)/2?a-6:b+6;})():h.plan&&h.plan.goTo&&h.plan.goTo.alive?this.heroX(h.plan.goTo)+(h.plan.goTo.x<h.x?8:-8):this.home(h)+drift+(h.plan?h.plan.xoff:0));tx=Math.max(8,Math.min(this.W-8,tx));
       if(!this.exiting&&trait(h,'range')>.55&&!(h.plan&&(h.plan.intent==='retreat'||h.plan.reviveD||h.plan.goTo))){const foe=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&e.gy!=null&&Math.abs(e.gy-(h.gy||190))<4&&e.x>h.x&&e.x-h.x<90).reduce((b,e)=>!b||e.x<b.x?e:b,null);if(foe)tx=Math.max(tx,Math.min(this.home(h)+28,foe.x-12));}   // push forward into the fight
-      const x0=h.x;const C=h.base.char;const rm=C?((h.plan&&/retreat|charge|kite|cover|regroup|gather|revive|herb|guard|search/.test(h.plan.intent))||this.exiting?C.run:1):(h.plan?h.plan.runMul:1);h.running=C?rm>1:false;
+      const x0=h.x;const C=h.base.char;const rm=C?((h.plan&&/retreat|charge|kite|cover|regroup|gather|revive|herb|guard|search|disarm/.test(h.plan.intent))||this.exiting?C.run:1):(h.plan?h.plan.runMul:1);h.running=C?rm>1:false;
       const d=tx-h.x,st=mv*(h.mvMul||1)*(h.whirl?.5:1)*(this.exiting&&!C?2.6:1.6)*rm*(rm>1?.75:.85)*dt;/* 0.12.13 (Kyle): walking 15% slower, running 25% slower */if(!(h.pauseT>0)||this.exiting)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;h.moveT=h.moving?(h.moveT||0)+dt:0;});
     const f=this.front();if(!f)return;
     // blocking: walk unless something is close
@@ -1447,7 +1459,7 @@ class Game{
     this.proj=this.proj.filter(p=>!p.dead);
     // fx + text
     // 0.12.14 (Kyle): nothing lying on the ground slides along with the party: bodies, stuck arrows, thorns, scorch marks scroll with the ground
-    this.stepRevive(dt);this.stepHerbs(dt,scroll);
+    this.stepRevive(dt);this.stepHerbs(dt,scroll);this.stepDisarm(dt);
     for(const h of this.alive())this.obClamp(h,true);for(const e of this.enemies)if(!e.dead)this.obClamp(e,false);
     for(const x of this.fx){x.t+=dt;if(scroll&&GROUND_FX.has(x.k))x.x-=scroll*dt;}this.fx=this.fx.filter(x=>x.t<(x.life||.6));
     if(scroll)for(const h of this.heroes.concat(this.pets||[]))if(!h.alive&&h.x!=null)h.x-=scroll*dt;   // fallen heroes stay where they fell
@@ -1580,7 +1592,7 @@ class Game{
       if(h.whirl){const W=h.whirl;W.t+=dt;W.tick+=dt;
         const inReach=this.enemies.some(e=>!e.dead&&!e.fly&&Math.abs(e.x-h.x)<=WH.r+(e.boss?e.w:0));W.idle=inReach?0:(W.idle||0)+dt;
         if((h.plan&&h.plan.intent==='retreat'&&h.hp/h.max<.3)||W.idle>1.5){h.whirl=null;return;}   /* breaks off early */
-        if(W.tick>=WH.every){W.tick-=WH.every;for(const e of this.enemies){if(e.dead||e.fly)continue;if(Math.abs(e.x-h.x)<=WH.r+(e.boss?e.w:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=WH.depth)){this.hitEnemy(e,(this.rollDice(WH.dice)+flat)*mul,h,{kb:.6});if(!e.dead&&WH.bleed){e.bleedT=WH.bleed.dur;e.bleedDps=WH.bleed.dmg/WH.bleed.dur;}}}this.ev('whoosh',{});}
+        if(W.tick>=WH.every){W.tick-=WH.every;this.disturb(h.x,h.gy||this.G,WH.r);for(const e of this.enemies){if(e.dead||e.fly)continue;if(Math.abs(e.x-h.x)<=WH.r+(e.boss?e.w:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=WH.depth)){this.hitEnemy(e,(this.rollDice(WH.dice)+flat)*mul,h,{kb:.6});if(!e.dead&&WH.bleed){e.bleedT=WH.bleed.dur;e.bleedDps=WH.bleed.dmg/WH.bleed.dur;}}}this.ev('whoosh',{});}
         if(W.t>=WH.dur)h.whirl=null;return;}
       if(h.leap){const P=h.leap;P.t+=dt;const k=Math.min(1,P.t/LP.dur);h.x=P.x0+(P.x1-P.x0)*k;h.leapH=Math.sin(Math.PI*k)*22;h.pauseT=Math.max(h.pauseT||0,.05);
         if(k>=1){h.leap=null;h.leapH=0;this.shake=Math.max(this.shake||0,.35);this.fx.push({k:'ring',x:h.x,y:this.G-4,r:LP.r*1.6,t:0,c:'#c8a060'});this.ev('thorns',{});
@@ -1816,7 +1828,7 @@ class Game{
   heroX(h){return h.x+(h.dodgeX||0)+(h.wanderX||0);}
   obHw(o){return Math.max(3,OBST[o.k].fw*.5*.5*.8);}   // half-width in world px (sheet is 2 px per world px)
   // each obstacle's footprint follows its picture: a rock blocks only under its base; the diagonal log blocks its left end in the near lane and its right end in the far lane
-  obSpan(o,l){const F=OBST[o.k].foot;const i=o.lanes.length===2?(l===Math.max(...o.lanes)?0:1):0;const f=F[i]||F[0];return [o.x+f[0],o.x+f[1]];}
+  obSpan(o,l){const F=OBST[o.k].foot;const i=o.lanes.length===2?(l===Math.max(...o.lanes)?0:1):0;const f=F[i]||F[0];return o.flip?[o.x-f[1],o.x-f[0]]:[o.x+f[0],o.x+f[1]];}
   laneBlocked(l,x0,x1){for(const o of this.obst||[]){if(!o.lanes.includes(l))continue;const [a,b]=this.obSpan(o,l);if(b>x0&&a<x1)return o;}return null;}
   // IF the lane I want is blocked just ahead THEN take the nearest open lane (ties go to whichever way I was already heading)
   freeLane(want,cur,x0,x1){if(!this.laneBlocked(want,x0,x1))return want;let best=null,bd=99;for(let l=0;l<LANES.length;l++){if(this.laneBlocked(l,x0,x1))continue;const d=Math.abs(l-want)+Math.abs(l-cur)*.3;if(d<bd){bd=d;best=l;}}return best==null?want:best;}
@@ -1852,18 +1864,32 @@ class Game{
   obNear(h,o){const l=o.lanes.reduce((b,l)=>Math.abs(LANES[l]-(h.gy||this.G))<Math.abs(LANES[b]-(h.gy||this.G))?l:b,o.lanes[0]);if(Math.abs(LANES[l]-(h.gy||this.G))>7)return false;const [a,b]=this.obSpan(o,l);return h.x>a-9&&h.x<b+9;}
   stepHerbs(dt,scroll){const al=this.alive().filter(o=>!o.pet||true);
     for(const o of al){if(o.herbT>0){o.herbT-=dt;o.hp=Math.min(o.max,o.hp+o.herbHps*dt);}}
-    for(const h of al){if(insP(h)!=='herbalist')continue;
+    for(const h of al){const sp=insP(h);if(sp!=='herbalist'&&sp!=='scavenger')continue;const RE=SEARCH_RE[sp],ST=SEARCH_T[sp],full=sp==='herbalist'?(h.herbs||0)>=3:(h.kit||[]).length>=3;
       // searching debris: stand next to an unsearched rock/stump/log for 1.5s; chance 45% + 1.2% per Luck (max 95%)
+      if(h.search&&h.search.disarm)continue;
       if(h.search){const S=h.search,o=S.o;const near=o&&this.obst&&this.obst.includes(o)&&this.obNear(h,o);
-        if(!near){h.search=null;}else{S.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);
-          if(S.t>=1.5){o.searched=o.searched||{};o.searched[h.key]=1;h.search=null;const ch=Math.min(.95,.35+.012*(h.luck||0)+.3*trait(h,'perc'));   /* luck AND perception both help */
-            if(this.rng()<ch&&(h.herbs||0)<3){h.herbs=(h.herbs||0)+1;this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.9,raw:1});if(Math.random()<.5)Comms.bubble(this,h,Comms.pick(['Found one!','An herb!','Aha!','Lucky!']));}
+        if(!near){h.search=null;}else{S.t+=dt;S.T=ST;h.pauseT=Math.max(h.pauseT||0,.05);
+          if(S.t>=ST){o.searched=o.searched||{};o.searched[h.key]=1;h.search=null;const ch=Math.min(.95,.35+.012*(h.luck||0)+.3*trait(h,'perc')+(sp==='scavenger'?.15*(trait(h,'tech')-.5)*2:.15*(.5-trait(h,'tech'))*2));   /* luck AND perception both help */
+            if(sp==='scavenger'&&this.rng()<ch){const r=this.rng();
+              if(r<.3||full){const gd=6+Math.floor(this.rng()*7);this.stageGold+=gd;this.text(o.x,LANES[o.lanes[0]]-30,'+'+gd,'#ffd23f');if(Math.random()<.4)Comms.bubble(this,h,Comms.pick(['Scrap!','Spare change!','Something shiny!']));}
+              else{const it=r<.7?'med':'bat';(h.kit=h.kit||[]).push(it);this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.9,raw:1,kit:it});if(Math.random()<.5)Comms.bubble(this,h,it==='med'?Comms.pick(['Medkit!','Bandages!','First aid!']):Comms.pick(['A battery!','Still has juice!','Power cell!']));}}
+            else if(sp==='herbalist'&&this.rng()<ch&&(h.herbs||0)<3){h.herbs=(h.herbs||0)+1;this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.9,raw:1});if(Math.random()<.5)Comms.bubble(this,h,Comms.pick(['Found one!','An herb!','Aha!','Lucky!']));}
             else{this.fx.push({k:'poof',x:o.x,y:(LANES[o.lanes[0]])-10,t:0});if(Math.random()<.3)Comms.bubble(this,h,Comms.pick(['Nothing.','Empty.','Just dirt.']));}}}}
-      else if((h.herbs||0)<3){const o=(this.obst||[]).find(o=>SEARCHABLE.test(o.k)&&!(o.searched&&o.searched[h.key])&&this.obNear(h,o));if(o)h.search={o,t:0};}
+      else if(!full){const o=(this.obst||[]).find(o=>RE.test(o.k)&&!(o.searched&&o.searched[h.key])&&this.obNear(h,o));if(o){h.search={o,t:0,T:ST};if(/^car_/.test(o.k))this.disturb(o.x,LANES[o.lanes[0]],2,Math.max(.05,.25-.006*(h.luck||0)));   /* careful searching: 25% minus luck (about 13% at 20 Luck), blasts are 50% */}}
+      // Scavenger: use a Medkit on anyone close under 60%, a Battery on anyone close under 30 energy who has abilities
+      if(sp==='scavenger'&&(h.kit||[]).length&&!((h.herbCd||0)>this.t)){const near=al.filter(o=>Math.abs(this.heroX(o)-this.heroX(h))<=17&&Math.abs((o.gy||this.G)-(h.gy||this.G))<6);
+        const mi=h.kit.indexOf('med'),bi=h.kit.indexOf('bat');const mt=mi>=0&&near.filter(o=>o.hp/o.max<.6).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
+        const bt=bi>=0&&near.filter(o=>(o.en||0)<30&&((CHAR[o.key]||{}).abilities||[]).some(a=>!a.passive)).sort((p,q)=>(p.en||0)-(q.en||0))[0];
+        if(mt){h.kit.splice(mi,1);h.herbCd=this.t+.6;this.healHero(mt,mt.max*.25);this.fx.push({k:'mend',x:this.heroX(mt),gy:mt.gy||this.G,t:0,life:.7,raw:1});this.ev('heal',{});if(mt!==h&&Math.random()<.5)Comms.bubble(this,h,Comms.pick(['Patch up!','Here, a medkit!','Hold still.']));}
+        else if(bt){h.kit.splice(bi,1);h.herbCd=this.t+.6;bt.en=Math.min(bt.enMax||100,(bt.en||0)+30);this.fx.push({k:'ring',x:this.heroX(bt),y:this.G-14,r:10,t:0,c:'#ffe060'});if(bt!==h&&Math.random()<.5)Comms.bubble(this,h,'Catch, fresh battery!');}}
       if(!(h.herbs>0)||(h.herbCd||0)>this.t)continue;
       const tg=al.filter(o=>o.hp/o.max<.8&&!(o.herbT>0)&&Math.abs(this.heroX(o)-this.heroX(h))<=17&&Math.abs((o.gy||this.G)-(h.gy||this.G))<6).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
       if(tg){h.herbs--;h.herbCd=this.t+.6;tg.herbT=5;tg.herbHps=tg.max*.2/5;this.fx.push({k:'mend',x:this.heroX(tg),gy:tg.gy||this.G,t:0,life:.7,raw:1});this.ev('heal',{});
         if(tg!==h&&Math.random()<.5)Comms.bubble(this,h,Comms.pick(['Here, chew this.','Herb for you!','Hold still.','This\'ll help.','Eat up!']));}}}
+  stepDisarm(dt){for(const h of this.alive()){const P=h.plan;if(!P||P.intent!=='disarm'||!P.goTo||!P.goTo.ob)continue;const o=P.goTo.ob;
+      if(!(o.alarmT>0)||!this.obNear(h,o)){if(h.search&&h.search.disarm)h.search=null;continue;}
+      const need=2.6-1.9*trait(h,'tech');if(!h.search||!h.search.disarm)h.search={o,t:0,T:need,disarm:1};const S=h.search;S.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);
+      if(S.t>=need){o.alarmT=0;o.alarmN=0;h.search=null;h.plan=null;h.thinkT=0;this.fx.push({k:'ring',x:o.x,y:LANES[o.lanes[0]]-10,t:0,r:10,c:'#c8d0d8'});Comms.bubble(this,h,Comms.pick(['Alarm\'s off!','Got it!','Quiet, you.','Wires cut!','Silenced!']));}}}
   stepRevive(dt){const downs=this.heroes.filter(h=>!h.alive&&h.downed);if(!downs.length)return;
     const al=this.alive().filter(o=>!o.pet);const herald=o=>(o.base.char&&o.base.char.abilities||[]).some(a=>a.id==='herald');
     for(const d of downs){const helpers=al.filter(o=>Math.abs(o.x-d.x)<9&&Math.abs((o.gy||this.G)-(d.gy||this.G))<4.5&&!(o.riseT>0));const need=helpers.some(herald)?4:5;d.revNeed=need;   /* 4s when the Herald is the one helping, 5s for everyone else */
@@ -1901,14 +1927,27 @@ class Game{
         for(const o of this.alive()){if(Math.abs(this.heroX(o)-S.x)<S.r&&Math.abs((o.gy||this.G)-S.gy)<14)o.smokeT=.25;}}
       this.clouds=this.clouds.filter(S=>S.t<S.life);}
     for(const e of this.enemies){if(e.smokeT>0)e.smokeT-=dt;if(e.markT>0)e.markT-=dt;if(e.rootT>0)e.rootT-=dt;}for(const o of this.alive())if(o.smokeT>0)o.smokeT-=dt;}
+  // 0.12.30 car alarms (Kyle): disturbing a wrecked car (a damaging ability's blast nearby, or searching it) has a 50% chance to set off
+  //   its alarm, once per car. The alarm blares for 3s and a fresh pack of zombies comes in from the edge, on top of the normal waves.
+  disturb(x,gy,r,chance){chance=chance==null?.5:chance;for(const o of this.obst||[]){if(!/^car_/.test(o.k)||o.alarmed!=null)continue;const l=o.lanes.reduce((b,l)=>Math.abs(LANES[l]-gy)<Math.abs(LANES[b]-gy)?l:b,o.lanes[0]);
+      if(Math.abs(LANES[l]-gy)>r*.5+6)continue;const [a,b]=this.obSpan(o,l);if(x<a-r||x>b+r)continue;
+      o.alarmed=this.rng()<chance;if(o.alarmed)this.carAlarm(o);}}
+  carAlarm(o){o.alarmT=6;o.alarmN=4+Math.floor(this.st.n/2);o.alarmTick=.4;this.ev('shout',{});this.shake=Math.max(this.shake||0,.2);
+    const sp=this.alive().filter(h=>h.key).sort((p,q)=>Math.abs(p.x-o.x)-Math.abs(q.x-o.x))[0];if(sp){Comms.bubble(this,sp,Comms.pick(['Car alarm!','Shut it off!','Great, now they heard us!','Here they come!','Who touched the car?!']));
+      for(const o2 of this.alive())if(o2!==sp&&Math.random()<.4+.5*trait(o2,'listen'))o2.alDecide=null,o2.thinkT=Math.min(o2.thinkT||1,.1);}   // everyone rethinks right away
+    if(this.demo)o.alarmN=0;}
   stepObstacles(dt,scroll){if(!this.obst)this.obst=[];if(this.obNext==null)this.obNext=60+this.rng()*120;
-    for(const o of this.obst)o.x-=scroll*dt;this.obst=this.obst.filter(o=>o.x>-50);
+    for(const o of this.obst){o.x-=scroll*dt;if(o.alarmT>0){o.alarmT-=dt;o.alarmTick-=dt;   // the alarm keeps pulling zombies in until it runs out or someone shuts it off
+        if(o.alarmTick<=0&&o.alarmN>0&&!this.over&&!this.exiting){o.alarmN--;o.alarmTick=6/Math.max(4,o.alarmN+4);this.spawnEnemy('zombie',{x:this.W+8+this.rng()*24,elite:'roll',alarm:1});}
+        if(o.alarmT<=0)o.alarmN=0;}}
+    // blasts from damaging abilities disturb wrecks near them (no damage to the car)
+    for(const f of this.fx){if(f._dist)continue;f._dist=1;const R={boom:22,quake:18,thorn:8,stuck:6,ring:f.r||0}[f.k];if(R)this.disturb(f.x,f.gy!=null?f.gy:(f.y!=null?f.y+10:this.G),R);}this.obst=this.obst.filter(o=>o.x>-50);
     if(scroll&&!this.exiting&&this.dist>=this.obNext&&!(this.boss&&!this.boss.dead)){this.obNext=this.dist+110+this.rng()*230;
       const tot=OBST_POOL.reduce((s,p)=>s+p[1],0);let r=this.rng()*tot,k='rock_crack';for(const [n,w] of OBST_POOL){if((r-=w)<0){k=n;break;}}const D=OBST[k];
       const x=this.W+40;const near=this.obst.filter(o=>Math.abs(o.x-x)<90);const used=new Set(near.flatMap(o=>o.lanes));
       for(let tries=0;tries<8;tries++){const l=Math.floor(this.rng()*(LANES.length-D.lanes+1));const lanes=D.lanes===2?[l,l+1]:[l];const all=new Set([...used,...lanes]);
         if(all.size>2)continue;const arr=[...all].sort();if(arr.length===2&&arr[1]-arr[0]>1&&near.length)continue;   // never two lanes walled off side by side plus another
-        this.obst.push({k,x:x+this.rng()*20,lanes,blk:D.blk});break;}}}
+        this.obst.push({k,x:x+this.rng()*20,lanes,blk:D.blk,flip:/^car_/.test(k)&&this.rng()<.5});   /* cars can face either way */break;}}}
   // keep bodies out of obstacles: IF a unit ends up inside one in its lane THEN push it out the near side
   obClamp(u,isHero){if(!this.obst||!this.obst.length||u.fly||u.boss)return;const gy=u.gy;if(gy==null)return;
     for(const o of this.obst){const l=o.lanes.find(l=>Math.abs(LANES[l]-gy)<3.5);if(l==null)continue;const pad=isHero?3:2;const [a,b]=this.obSpan(o,l);if(u.x>a-pad&&u.x<b+pad)u.x=(u.x-(a+b)/2)>=0?b+pad:a-pad;}}   // where a hero actually stands right now
@@ -2067,12 +2106,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793886661';const BGI=new Image();BGI.src='crawl_bg.png?v=1793886661';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793886661';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793887352';const BGI=new Image();BGI.src='crawl_bg.png?v=1793887352';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793887352';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793886661';XIMG.wave.src='crawl_wave.png?v=1793886661';XIMG.chibi.src='crawl_chibi.png?v=1793886661';XIMG.flannel.src='crawl_flannel.png?v=1793886661';XIMG.rain.src='crawl_rain.png?v=1793886661';XIMG.druid.src='crawl_druid.png?v=1793886661';XIMG.camp.src='crawl_campfire.png?v=1793886661';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793886661';XIMG.tornado.src='crawl_fx_tornado.png?v=1793886661';XIMG.vine.src='crawl_fx_vine.png?v=1793886661';XIMG.thorn.src='crawl_fx_thorn.png?v=1793886661';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793887352';XIMG.wave.src='crawl_wave.png?v=1793887352';XIMG.chibi.src='crawl_chibi.png?v=1793887352';XIMG.flannel.src='crawl_flannel.png?v=1793887352';XIMG.rain.src='crawl_rain.png?v=1793887352';XIMG.druid.src='crawl_druid.png?v=1793887352';XIMG.camp.src='crawl_campfire.png?v=1793887352';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793887352';XIMG.tornado.src='crawl_fx_tornado.png?v=1793887352';XIMG.vine.src='crawl_fx_vine.png?v=1793887352';XIMG.thorn.src='crawl_fx_thorn.png?v=1793887352';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793886661';XIMG.obst.src='crawl_obst.png?v=1793886661';XIMG.robot.src='crawl_robot.png?v=1793886661';XIMG.cultist.src='crawl_cultist.png?v=1793886661';XIMG.tentacle.src='crawl_tentacle.png?v=1793886661';XIMG.boom.src='crawl_boom.png?v=1793886661';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793887352';XIMG.obst.src='crawl_obst.png?v=1793887352';XIMG.cars.src='crawl_cars.png?v=1793887352';XIMG.robot.src='crawl_robot.png?v=1793887352';XIMG.cultist.src='crawl_cultist.png?v=1793887352';XIMG.tentacle.src='crawl_tentacle.png?v=1793887352';XIMG.boom.src='crawl_boom.png?v=1793887352';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2257,10 +2296,11 @@ function drawGame(ctx,g,W,oy){
       if(e.hexT>0){ctx.save();ctx.globalCompositeOperation='lighter';for(let i=0;i<3;i++){const a=g.t*4+i*2.1;ctx.fillStyle='rgba(150,60,255,.75)';ctx.fillRect(e.x+Math.cos(a)*5,y-4+Math.sin(a*1.3)*6,1.2,1.2);}glow(ctx,e.x,y,6,'#6a20c0',.12);ctx.restore();}
       if(e.fearT>0){ctx.fillStyle='#c080ff';ctx.fillRect(Math.round(e.x)-.5,Math.round(y-18),1,3);ctx.fillRect(Math.round(e.x)-.5,Math.round(y-14),1,1);}}
     for(const h of g.alive())if(h.key==='cultist'&&!(h.riseT>0)){const d=h.face||1,ey=(h.gy||g.G)-14.6;ctx.save();ctx.globalCompositeOperation='lighter';for(const ox of[-.1,1.7])glow(ctx,g.heroX(h)+d*(1.2+ox),ey,1.3,'#ff2a20',.32+.12*Math.sin(g.t*3+ox));ctx.restore();}   // his eyes glow red in the dark
-    for(const h of g.alive()){if(h.herbs>0){const y=(h.gy||g.G)-30;for(let i=0;i<h.herbs;i++){const x=g.heroX(h)-3+i*3;ctx.fillStyle='#2e7a2a';ctx.fillRect(x,y,2,1.5);ctx.fillStyle='#8fe36a';ctx.fillRect(x,y-.6,1.2,1);}}   // Scavenger: herbs carried
+    for(const h of g.alive()){if(h.kit&&h.kit.length){const y=(h.gy||g.G)-30;h.kit.forEach((it,i)=>{const x=g.heroX(h)-3+i*3;if(it==='med'){ctx.fillStyle='#f0f0f0';ctx.fillRect(x,y-1,2,2);ctx.fillStyle='#e02020';ctx.fillRect(x+.5,y-.5,1,1);}else{ctx.fillStyle='#ffd23f';ctx.fillRect(x,y-1.5,1.5,2.5);ctx.fillStyle='#404040';ctx.fillRect(x+.2,y-2,1,.6);}});}
+      if(h.herbs>0){const y=(h.gy||g.G)-30;for(let i=0;i<h.herbs;i++){const x=g.heroX(h)-3+i*3;ctx.fillStyle='#2e7a2a';ctx.fillRect(x,y,2,1.5);ctx.fillStyle='#8fe36a';ctx.fillRect(x,y-.6,1.2,1);}}   // Scavenger: herbs carried
       if(h.herbT>0&&Math.random()<.4){ctx.fillStyle='rgba(140,230,110,.8)';ctx.fillRect(g.heroX(h)-5+Math.random()*10,(h.gy||g.G)-6-Math.random()*16,1,1);}}
     for(const f of g.fx)if(f.k==='herbget'){const k=f.t/f.life;ctx.save();ctx.globalAlpha=1-k;ctx.fillStyle='#8fe36a';ctx.fillRect(f.x-1,f.y-k*6,3,2);ctx.fillStyle='#2e7a2a';ctx.fillRect(f.x,f.y-k*6+1,1,2);ctx.restore();}
-    for(const h of g.alive())if(h.search){const k=Math.min(1,h.search.t/1.5),y=(h.gy||g.G)-34,x=g.heroX(h);ctx.fillStyle='#000a';ctx.fillRect(Math.round(x-6),y,12,2);ctx.fillStyle='#8fe36a';ctx.fillRect(Math.round(x-6),y,Math.round(12*k),2);}   // Herbalist searching
+    for(const h of g.alive())if(h.search){const k=Math.min(1,h.search.t/(h.search.T||1.5)),x=Math.round(g.heroX(h)+8),y0=Math.round((h.gy||g.G)-14),H=12;ctx.fillStyle='#000b';ctx.fillRect(x-1,y0-H-1,4,H+2);const f=Math.round(H*k);const gr=ctx.createLinearGradient(x,0,x+2,0);gr.addColorStop(0,'#e8ecf2');gr.addColorStop(1,'#8a92a0');ctx.fillStyle=gr;ctx.fillRect(x,y0-f,2,f);}   // searching: a silver bar rising beside him
     for(const h of g.alive())if(h.shellT>0){ctx.save();ctx.globalAlpha=.55;ctx.fillStyle='#3e7a3a';ctx.beginPath();ctx.ellipse(g.heroX(h),(h.gy||g.G)-9,10,10,0,Math.PI,0);ctx.fill();ctx.strokeStyle='#9be07a';ctx.lineWidth=1;ctx.stroke();ctx.restore();}   // Shell Up
     for(const e of g.enemies)if(!e.dead&&e.webT>0){e.webT-=1/60;const y=(e.gy!=null?e.gy:g.G)-10;ctx.save();ctx.strokeStyle='rgba(235,240,255,.7)';ctx.lineWidth=.6;for(let i=0;i<4;i++){const a=i*.8;ctx.beginPath();ctx.moveTo(e.x-6*Math.cos(a),y-6*Math.sin(a));ctx.lineTo(e.x+6*Math.cos(a),y+6*Math.sin(a));ctx.stroke();}ctx.restore();}   // webbed
     for(const h of g.alive())if(h.pactT>0){const gy=h.gy||g.G,p=.5+.5*Math.sin(g.t*8);ctx.save();ctx.globalAlpha=Math.min(1,h.pactT)*(.45+.3*p);ctx.strokeStyle='#d0202a';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(g.heroX(h),gy,9,2.4,0,0,7);ctx.stroke();ctx.restore();}};
@@ -2369,7 +2409,8 @@ function drawGame(ctx,g,W,oy){
     if(e.burnT>0){ctx.fillStyle=Math.random()<.5?'#ffb040':'#ff5a1a';ctx.fillRect(Math.round(e.x-3+Math.random()*6),Math.round(y+10+Math.random()*12),1,2);}
     if(e.hp<e.max||e.bleedT>0||e.burnT>0||e.slow>0||e.stun>0)plate(ctx,e,e.x,y-2,e.elite?20:14,false,e.elite?'#ffb020':'#e8303a');};
   // draw heroes and enemies back-to-front by lane so units in the far lane sit behind the near ones
-  const drawOb=o=>{const D=OBST[o.k];const gy=LANES[Math.max(...o.lanes)];ctx.save();shadow(ctx,o.x,gy,Math.max(5,D.fw*.22));drawUnit(ctx,{fw:D.fw,fh:D.fh,n:1,ax:D.fw/2,ay:D.fh-1,x:D.x,y:D.y,img:'obst'},0,o.x,gy+1,.5,null,0,0,false);ctx.restore();};
+  const drawOb=o=>{const D=OBST[o.k];const gy=LANES[Math.max(...o.lanes)];ctx.save();shadow(ctx,o.x,gy,Math.max(5,D.fw*.22));drawUnit(ctx,{fw:D.fw,fh:D.fh,n:1,ax:D.fw/2,ay:D.fh-1,x:D.x,y:D.y,img:D.img||'obst'},0,o.x,gy+1,.5,null,0,0,!!o.flip);
+    if(o.alarmT>0&&Math.floor(o.alarmT*6)%2===0){const [a0,b0]=[o.x-D.fw*.22,o.x+D.fw*.22];ctx.globalCompositeOperation='lighter';for(const lx of [a0,b0]){glow(ctx,lx,gy-D.fh*.18,5,'#ffa020',.55);glow(ctx,lx,gy-D.fh*.18,2,'#fff0b0',.9);}ctx.globalCompositeOperation='source-over';}/* car alarm: flashing lights */ctx.restore();};
   const drawTent=T=>{const U=UNITS.tentacle;if(!U)return;const A=U[T.anim]||U.idle;let fr;const n=A.n;
     if(T.anim==='idle')fr=Math.floor(g.t*9+T.x)%n;else if(T.anim==='emerge')fr=Math.min(n-1,Math.floor(T.aT/.5*n));else if(T.anim==='attack')fr=Math.min(n-1,Math.floor(T.aT/.6*n));else if(T.anim==='hit')fr=Math.min(n-1,Math.floor(T.aT/.25*n));else fr=Math.min(n-1,Math.floor(T.aT/.8*n));
     ctx.save();shrinkAt(ctx,T.x,T.gy,HS);shadow(ctx,T.x,T.gy,9);drawUnit(ctx,A,fr,T.x,T.gy+1,1,null,T.hitT>0?(T.hitT-=1/60):0,0,T.face>0);ctx.restore();
@@ -2570,7 +2611,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.28</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.30</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
