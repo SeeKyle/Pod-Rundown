@@ -359,7 +359,7 @@ const ABIL_DESC={
   pact:'Blood_Pact · 25 energy · 20s. He cuts his own palm: pays 15% of his health (never below 40%) to give every ally +20% damage for 6s.',
   hex:'Spreading_Hex · 30 energy · 12s. Curses an enemy: it rots for 2.5% of its max HP every second for 6s. If it dies cursed, the hex jumps to the nearest enemy (up to 3 jumps).',
   dread:'Dread_Chant · 35 energy · 16s. A 0.6s chant: every (non-boss) enemy within 180px is gripped by terror and backs away for 2.5s.',
-  herald:'Herald_of_Life_and_Death · Passive. While he\'s on his feet, downed allies take 1 second less to help up (4s instead of 5). Every critical hit he lands gives him +1 energy and +1 HP every 0.5s for 5s, and gives every tentacle in play +1 HP every 0.5s for 5s (tentacle crits don\'t count).',
+  herald:'Herald_of_Life_and_Death · Passive. When he\'s the one helping a downed ally up, it takes 4s instead of 5. Every critical hit he lands gives him +1 energy and +1 HP every 0.5s for 5s, and gives every tentacle in play +1 HP every 0.5s for 5s (tentacle crits don\'t count).',
   clone:'Shadow_Clone · 35 energy · 18s. A see-through copy of him steps out for 5s: it mirrors every sword hit he lands (+40% on the same target) and soaks 35% of the blows aimed at him.',
   momentum:'Momentum · Passive. Every sword hit within 2s of the last one gives +6% attack speed, stacking up to +30%. Stop swinging for 2s and it resets.',
   pin:'Pinning_Shot · 30 energy · 12s. An arrow that nails the biggest threat to the ground for 2.5s and marks it for 6s: marked enemies take 25% more damage from everyone.',
@@ -381,7 +381,7 @@ const ABIL_DESC={
   rapid:'One Nocked, Two in Hand · 35 energy · 14s. He nocks one arrow and holds two more, then rapid-fires all 3 as basic shots within 1.5 seconds, each at the same or a different target, with slightly lower accuracy (-5).',
   blowgun:'Blow_Gun · 30 energy · 9s. A poison dart: 1 stack of poison is guaranteed, with a 75% chance of a 2nd and 50% of a 3rd. Each stack: 3% max HP every 1.5s for 7.5s. Undead are immune.',
   poultice:'Poultice · 25 energy · 15s. When he\'s under 60% health he slaps a herbal poultice on: heals himself 4% of max HP every second for 6s.',
-  whirl:'Whirl_Wind · 45 energy · 14s. Spins with his axe for 2.4s, drifting forward: every 0.4s it hits everything around him for 1d6.',
+  whirl:'Whirl_Wind · 45 energy · 14s. Spins with his axe for up to 5s at half speed, trailing a slashing wave: every second it hits everything within about 70px for 1d4 and makes it bleed (6 over 3s). He can break it off early to escape, but usually spins it out.',
   chop:'Ground_Chop · 30 energy · 9s. A huge overhead chop into the ground: a shockwave 120px ahead for 2d6 that shoves and stuns for 0.8s.',
   leap:'Hatchet_Leap · 40 energy · 16s. Double-jumps onto an enemy up to 180px away and slams down for 1d10 to everything around the landing.',
   rage:'Timber_Rage · 35 energy · 20s. Under half health: +30% damage, +20% attack speed and 25% less damage taken for 6s.',
@@ -491,7 +491,9 @@ CHAR.lumberjack={name:'Lumber_Jack',role:'Axe + Bow',combo:0,flatHp:0,stamina:11
   acc:14,walkPenalty:10,crit:.10,critMul:1.9,luck:16,xp:0,run:2,turn:.25,enMax:100,enRegen:5,
   abilities:[
     // Whirl_Wind: spins with his axe for 2.4s, drifting forward; every 0.4s it hits everything around him (1d6 +flat, ~18px, 1 lane each way). 40 energy, 14s.
-    {id:'whirl',name:'Whirl_Wind',en:45,cd:14,dur:2.4,every:.4,r:18,depth:6,dice:[1,6],drift:16,want:'close',range:30},
+    // 0.12.26 (Kyle): up to 5s, 1d4 every second to everything in a wider 24px circle, each hit refreshes a bleed (6 over 3s), he moves at half speed while
+    //   spinning, and he can break off early (IF he's badly hurt and wants out, OR nothing has been in reach for 1.5s) but usually spins it out.
+    {id:'whirl',name:'Whirl_Wind',en:45,cd:14,dur:5,every:1,r:24,depth:7,dice:[1,4],bleed:{dmg:6,dur:3},want:'close',range:30},
     // Ground_Chop: a huge overhead chop into the ground: a shockwave 40px ahead (2d6 +flat), shoves and stuns 0.8s. 25 energy, 9s.
     {id:'chop',name:'Ground_Chop',en:30,cd:9,cast:.5,dist:40,depth:6,dice:[2,6],stun:.8,kb:35,want:'close',range:40},
     // Hatchet_Leap: double-jumps onto an enemy up to 60px away and slams down (1d10 +flat to everything within 16px). 35 energy, 16s.
@@ -1125,7 +1127,7 @@ class Game{
     al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;let tx=this.exiting?this.W+60:(h.plan&&h.plan.reviveD&&!h.plan.reviveD.alive?h.plan.reviveD.x:this.home(h)+drift+(h.plan?h.plan.xoff:0));tx=Math.max(8,Math.min(this.W-8,tx));
       if(!this.exiting&&trait(h,'range')>.55&&!(h.plan&&(h.plan.intent==='retreat'||h.plan.reviveD))){const foe=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&e.gy!=null&&Math.abs(e.gy-(h.gy||190))<4&&e.x>h.x&&e.x-h.x<90).reduce((b,e)=>!b||e.x<b.x?e:b,null);if(foe)tx=Math.max(tx,Math.min(this.home(h)+28,foe.x-12));}   // push forward into the fight
       const x0=h.x;const C=h.base.char;const rm=C?((h.plan&&/retreat|charge|kite|cover|regroup|gather|revive/.test(h.plan.intent))||this.exiting?C.run:1):(h.plan?h.plan.runMul:1);h.running=C?rm>1:false;
-      const d=tx-h.x,st=mv*(h.mvMul||1)*(this.exiting&&!C?2.6:1.6)*rm*(rm>1?.75:.85)*dt;/* 0.12.13 (Kyle): walking 15% slower, running 25% slower */if(!(h.pauseT>0)||this.exiting)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;});
+      const d=tx-h.x,st=mv*(h.mvMul||1)*(h.whirl?.5:1)*(this.exiting&&!C?2.6:1.6)*rm*(rm>1?.75:.85)*dt;/* 0.12.13 (Kyle): walking 15% slower, running 25% slower */if(!(h.pauseT>0)||this.exiting)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;});
     const f=this.front();if(!f)return;
     // blocking: walk unless something is close
     const near=this.enemies.filter(e=>!e.dead&&!e.fly).reduce((m,e)=>Math.min(m,e.x-(e.boss?e.w:0)-(e.ranged?40:0)),1e9);
@@ -1529,8 +1531,10 @@ class Game{
       if(h.rageT>0)h.rageT-=dt;
       const mul=(h.atk/h.base.atk)*h.meleeDmg*(h.cryDmg||1)*(h.rageT>0?1+RG.dmg:1);const flat=(C.melee.flat||0)+(h.flatMelee||0);
       // in-progress moves
-      if(h.whirl){const W=h.whirl;W.t+=dt;W.tick+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.x=Math.min(this.W-12,h.x+WH.drift*dt);
-        if(W.tick>=WH.every){W.tick-=WH.every;for(const e of this.enemies){if(e.dead||e.fly)continue;if(Math.abs(e.x-h.x)<=WH.r+(e.boss?e.w:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=WH.depth))this.hitEnemy(e,(this.rollDice(WH.dice)+flat)*mul,h,{kb:.6});}this.ev('whoosh',{});}
+      if(h.whirl){const W=h.whirl;W.t+=dt;W.tick+=dt;
+        const inReach=this.enemies.some(e=>!e.dead&&!e.fly&&Math.abs(e.x-h.x)<=WH.r+(e.boss?e.w:0));W.idle=inReach?0:(W.idle||0)+dt;
+        if((h.plan&&h.plan.intent==='retreat'&&h.hp/h.max<.3)||W.idle>1.5){h.whirl=null;return;}   /* breaks off early */
+        if(W.tick>=WH.every){W.tick-=WH.every;for(const e of this.enemies){if(e.dead||e.fly)continue;if(Math.abs(e.x-h.x)<=WH.r+(e.boss?e.w:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=WH.depth)){this.hitEnemy(e,(this.rollDice(WH.dice)+flat)*mul,h,{kb:.6});if(!e.dead&&WH.bleed){e.bleedT=WH.bleed.dur;e.bleedDps=WH.bleed.dmg/WH.bleed.dur;}}}this.ev('whoosh',{});}
         if(W.t>=WH.dur)h.whirl=null;return;}
       if(h.leap){const P=h.leap;P.t+=dt;const k=Math.min(1,P.t/LP.dur);h.x=P.x0+(P.x1-P.x0)*k;h.leapH=Math.sin(Math.PI*k)*22;h.pauseT=Math.max(h.pauseT||0,.05);
         if(k>=1){h.leap=null;h.leapH=0;this.shake=Math.max(this.shake||0,.35);this.fx.push({k:'ring',x:h.x,y:this.G-4,r:LP.r*1.6,t:0,c:'#c8a060'});this.ev('thorns',{});
@@ -1548,7 +1552,7 @@ class Game{
       // IF under half health AND Timber_Rage is ready THEN get angry
       if(RG&&h.rgT<=0&&hp<RG.under&&en>=RG.en&&this.enemies.some(e=>!e.dead&&Math.abs(e.x-h.x)<120)&&spendEnergy(h,RG.en)){h.rgT=RG.cd;h.rageT=RG.dur;h.rageAnim=.7;this.ev('shout',{});}
       // IF 2+ enemies are around me AND Whirl_Wind is ready THEN spin
-      if(WH&&h.whT<=0&&close.length>=2&&en>=WH.en&&spendEnergy(h,WH.en)){h.whT=WH.cd;h.whirl={t:0,tick:WH.every*.5};this.ev('whoosh',{});return;}
+      if(WH&&h.whT<=0&&close.length>=2&&en>=WH.en&&spendEnergy(h,WH.en)){h.whT=WH.cd;h.whirl={t:0,tick:WH.every*.7};this.ev('whoosh',{});return;}
       // IF an enemy is in my lane a little ahead (inside the shockwave) AND Ground_Chop is ready THEN chop
       const ahead=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x-h.x>0&&e.x-h.x<=CP.dist&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=CP.depth);
       if(CP&&h.cpT<=0&&ahead.length&&en>=CP.en&&spendEnergy(h,CP.en)){h.cpT=CP.cd;h.chopping=CP.cast;h.chopT0=CP.cast;h.face=1;return;}
@@ -1799,8 +1803,8 @@ class Game{
     this.tentacles=this.tentacles.filter(T=>!T.done);}
   // 0.12.22 Revive (Kyle): a living hero standing on a downed ally for 5s (4s with a Herald up) helps them back to their feet with 25% HP and 0 energy.
   stepRevive(dt){const downs=this.heroes.filter(h=>!h.alive&&h.downed);if(!downs.length)return;
-    const al=this.alive().filter(o=>!o.pet);const need=5-(al.some(o=>(o.base.char&&o.base.char.abilities||[]).some(a=>a.id==='herald'))?1:0);
-    for(const d of downs){d.revNeed=need;const helpers=al.filter(o=>Math.abs(o.x-d.x)<9&&Math.abs((o.gy||this.G)-(d.gy||this.G))<4.5&&!(o.riseT>0));
+    const al=this.alive().filter(o=>!o.pet);const herald=o=>(o.base.char&&o.base.char.abilities||[]).some(a=>a.id==='herald');
+    for(const d of downs){const helpers=al.filter(o=>Math.abs(o.x-d.x)<9&&Math.abs((o.gy||this.G)-(d.gy||this.G))<4.5&&!(o.riseT>0));const need=helpers.some(herald)?4:5;d.revNeed=need;   /* 4s when the Herald is the one helping, 5s for everyone else */
       if(helpers.length){d.revT=(d.revT||0)+dt;if(!d.revCall){d.revCall=1;Comms.say(this,helpers[0],'reviving',{ally:d});}}
       else{d.revT=Math.max(0,(d.revT||0)-dt*.5);if(d.revT<=0)d.revCall=0;}
       if(d.revT>=need)this.revive(d);}}
@@ -2001,12 +2005,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793885538';const BGI=new Image();BGI.src='crawl_bg.png?v=1793885538';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793885538';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793885694';const BGI=new Image();BGI.src='crawl_bg.png?v=1793885694';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793885694';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793885538';XIMG.wave.src='crawl_wave.png?v=1793885538';XIMG.chibi.src='crawl_chibi.png?v=1793885538';XIMG.flannel.src='crawl_flannel.png?v=1793885538';XIMG.rain.src='crawl_rain.png?v=1793885538';XIMG.druid.src='crawl_druid.png?v=1793885538';XIMG.camp.src='crawl_campfire.png?v=1793885538';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793885538';XIMG.tornado.src='crawl_fx_tornado.png?v=1793885538';XIMG.vine.src='crawl_fx_vine.png?v=1793885538';XIMG.thorn.src='crawl_fx_thorn.png?v=1793885538';
+const XIMG={cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793885694';XIMG.wave.src='crawl_wave.png?v=1793885694';XIMG.chibi.src='crawl_chibi.png?v=1793885694';XIMG.flannel.src='crawl_flannel.png?v=1793885694';XIMG.rain.src='crawl_rain.png?v=1793885694';XIMG.druid.src='crawl_druid.png?v=1793885694';XIMG.camp.src='crawl_campfire.png?v=1793885694';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793885694';XIMG.tornado.src='crawl_fx_tornado.png?v=1793885694';XIMG.vine.src='crawl_fx_vine.png?v=1793885694';XIMG.thorn.src='crawl_fx_thorn.png?v=1793885694';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793885538';XIMG.obst.src='crawl_obst.png?v=1793885538';XIMG.robot.src='crawl_robot.png?v=1793885538';XIMG.cultist.src='crawl_cultist.png?v=1793885538';XIMG.tentacle.src='crawl_tentacle.png?v=1793885538';XIMG.boom.src='crawl_boom.png?v=1793885538';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793885694';XIMG.obst.src='crawl_obst.png?v=1793885694';XIMG.robot.src='crawl_robot.png?v=1793885694';XIMG.cultist.src='crawl_cultist.png?v=1793885694';XIMG.tentacle.src='crawl_tentacle.png?v=1793885694';XIMG.boom.src='crawl_boom.png?v=1793885694';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2260,7 +2264,12 @@ function drawGame(ctx,g,W,oy){
       else if(C&&C.ranged&&U.reload&&h.ammo<=0&&!mov){A=U.reload;f=Math.min(A.n-1,Math.floor((h.reloadT||0)/C.ranged.reload*A.n));}
       else if(mov){A=(h.running&&U.run)||U.walk;f=Math.floor(g.t*(h.running?12:h.key==='lumberjack'?9:8))%A.n;}
       const bob=mov&&A.n===1?-Math.abs(Math.sin(g.t*11))*1.6:0;   // one-frame walk (companion art has no walk row): a little hop
-      if(h.whirl){ctx.save();ctx.globalAlpha=.5;ctx.strokeStyle='#e8f0ff';ctx.lineWidth=1.2;for(let i=0;i<2;i++){ctx.beginPath();ctx.ellipse(h.x+lx,G-10,16-i*3,5-i,0,g.t*18+i*2,g.t*18+i*2+2.2);ctx.stroke();}ctx.restore();}   // spin trail
+      if(h.whirl){ctx.save();const sp=g.t*16;   // 0.12.26: a wider slashing wave whips round him while he spins, so the reach reads
+        ctx.globalCompositeOperation='lighter';
+        for(let i=0;i<3;i++){const a0=sp+i*2.09;ctx.lineCap='round';
+          ctx.strokeStyle='rgba(200,220,255,.30)';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(h.x+lx,G-11,26-i*2,7-i*.5,0,a0,a0+1.3);ctx.stroke();
+          ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(h.x+lx,G-11,27-i*2,7.5-i*.5,0,a0+.2,a0+1.15);ctx.stroke();}
+        ctx.strokeStyle='rgba(232,240,255,.45)';ctx.lineWidth=1.2;for(let i=0;i<2;i++){ctx.beginPath();ctx.ellipse(h.x+lx,G-10,16-i*3,5-i,0,sp*1.1+i*2,sp*1.1+i*2+2.2);ctx.stroke();}ctx.restore();}   // inner spin trail
       if(h.cloneT>0){const cx=h.x+lx-(h.face||1)*10;ctx.save();ctx.globalCompositeOperation='lighter';glow(ctx,cx,G-22,14,'#4aa8ff',.12);ctx.restore();   // Shadow_Clone: a see-through copy just behind him
         drawUnit(ctx,A,f,cx,G+bob,A.pre?ART_SCALE/A.pre/HS:A.art?ART_SCALE/HS:(A.sc||1),.38*Math.min(1,h.cloneT/.4),0,0,(h.face||1)>0);}
       drawUnit(ctx,A,f,h.x+lx,G+bob-(h.leapH||0)*1.2-(A.fall&&riseRot?2*Math.abs(riseRot)/1.45:0),A.pre?ART_SCALE/A.pre/HS:A.art?ART_SCALE/HS:(A.sc||1),null,h.hitFlash,riseRot,(h.face||1)>0);}
@@ -2493,7 +2502,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.25</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.26</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
