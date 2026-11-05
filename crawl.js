@@ -209,7 +209,7 @@ function rollLaneOffset(acc,rng){const m=accTighten(acc);const off2=10*(1-m),off
 // hitboxes, ruler units: w = width, h = height above the feet
 const HITBOX={zombie:{w:16,h:46},werewolf:{w:30,h:36}};   // werewolf h is before his 0.77 draw scale (~28 tall walking)
 // 0.11: heroes have bodies too. Every non-boss unit has a hitbox about its own size (ruler units). Per-hero overrides go in HERO_HB.
-const HERO_HITBOX={w:20,h:46},HERO_HB={flannel:{w:44,h:100}};   // Flannel_Man is drawn at his art's full size (~50px tall on screen-world)
+const HERO_HITBOX={w:20,h:46},HERO_HB={flannel:{w:20,h:46}};   // Flannel_Man: full-detail art drawn at normal humanoid size
 function hbOf(u){return u&&u.key?(HERO_HB[u.key]||HERO_HITBOX):(u&&HITBOX[u.type])||{w:16,h:44};}
 function depthHalf(hb){return Math.max(1.5,hb.w*.12);}   // how much lane depth (px, top view) a body fills either side of its feet
 // ---- 0.11 Aiming reticle (Kyle): when a ranged unit picks a target, a 'shoot box' is laid over the target where it stands.
@@ -1063,7 +1063,7 @@ class Game{
 function setTimeoutSafe(g,t,fn){(g.timers=g.timers||[]).push({t,fn});}
 const BIGP={};
 // where shots leave each hero (px ahead of the hero's x, px above the ground), matched to the strike frame
-const MUZZLE={flannel:[26,34],vile:[3,30],thing:[14,30],kykar:[15,46],dragons:[18,38],mathas:[17,33],marina:[11,25],thranduil:[12,34],joel:[11,33],robots:[18,33],blood:[13,46],mech:[20,30],weather:[14,47]};
+const MUZZLE={flannel:[11,14],vile:[3,30],thing:[14,30],kykar:[15,46],dragons:[18,38],mathas:[17,33],marina:[11,25],thranduil:[12,34],joel:[11,33],robots:[18,33],blood:[13,46],mech:[20,30],weather:[14,47]};
 const PSPD={bullet:420,arrow:200,quarrel:215,bolt:150,orb:135,fire:150,shard:160,zap:170,wisp:120,plasma:180,blood:140,shell:160,frost:145,brick:190};   // px/s   // ranged shots don't shove, except the thrown brick (a little)
 const PCOL={skull:'#7dff9a',hex:'#c050ff',bolt:'#ffb040',orb:'#c050ff',arrow:'#e8e0c8',quarrel:'#e8e0c8',fire:'#ff8a1f',shard:'#6ff0ff',zap:'#bfefff',wisp:'#7dff9a',plasma:'#3ff0ff',blood:'#ff2a3a',shell:'#ffd23f',frost:'#9ae6ff',brick:'#c0603a'};
 
@@ -1200,9 +1200,10 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793855941';const BGI=new Image();BGI.src='crawl_bg.png?v=1793855941';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793855941';const XIMG={flannel:new Image()};XIMG.flannel.src='crawl_flannel.png?v=1793855941';
-const ART_SCALE=1/3;   // full-size character art: 1 art pixel = 1/3 world pixel = 1 screen pixel on the normal 1152px-wide game
+const IMG=new Image();IMG.src='crawl.png?v=1793856565';const BGI=new Image();BGI.src='crawl_bg.png?v=1793856565';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793856565';const XIMG={flannel:new Image()};XIMG.flannel.src='crawl_flannel.png?v=1793856565';
+const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
+const GQ=2;   // the game canvas renders at 2x its old pixel density so full-detail art stays clean (pixel art still draws crisp)
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('en-US');
@@ -1283,7 +1284,7 @@ function plate(ctx,u,x,y,w,hero,col){x=Math.round(x-w/2);y=Math.round(y);const p
   if(hero){const e=u.enMax?Math.max(0,(u.en||0)/u.enMax):1;ctx.fillStyle='#2a2410';ctx.fillRect(x,y+3,w,1);ctx.fillStyle='#ffd23f';ctx.fillRect(x,y+3,Math.round(w*e),1);}
   let px=x;for(const [k,c,sh] of PIPS)if(u[k]>0){pip(ctx,px+1,y-6,c,sh);px+=5;}}
 function drawGame(ctx,g,W,oy){
-  ctx.setTransform(RES,0,0,RES,0,0);ctx.imageSmoothingEnabled=false;ctx.save();
+  const RR=ctx.canvas.width/W;ctx.setTransform(RR,0,0,RR,0,0);ctx.imageSmoothingEnabled=false;ctx.save();
   if(g.shake>0)ctx.translate(Math.round((Math.random()-.5)*4*g.shake),Math.round((Math.random()-.5)*3*g.shake));
   drawBG(ctx,g,W,oy);ctx.translate(0,-oy);const G=g.G;
   for(const l of g.loot||[]){const x=Math.round(l.x),y=(l.gy||G)-1;ctx.save();shrinkAt(ctx,x,y+1,HS);
@@ -1515,7 +1516,7 @@ function build(){
   root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.4</span></span>
     <button class="cc-ibx" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ibx" data-a="pause" title="Pause">⏸</button><button class="cc-ibx" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ibx" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ibx" data-a="mute" title="Sound">${muted?'🔇':'🔊'}</button><button class="cc-ibx" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ibx" data-a="fs" title="Full screen">⛶</button><button class="cc-ibx" data-a="close" title="Close">✕</button></div>
-    <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES}" height="${216*RES}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
+    <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
   document.body.appendChild(root);
   cv=$('#cc-cv',root);ctx=cv.getContext('2d');panel=$('.cc-panel',root);hud=$('.cc-hud',root);info=$('.cc-info',root);bossEl=$('.cc-boss',root);banner=$('.cc-banner',root);
   root.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
