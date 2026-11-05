@@ -794,7 +794,7 @@ const Brain={
     why=showoff?'waits till the last second':mul<1?'steps out (short)':'steps clear';
     return {react:1,delay,mul,spd,why};},
   showoff(g,u,what){const fl=trait(u,'flair');if(fl<.05||Math.random()>Math.pow(fl,1.3))return;const L=SHOW_LINES[u.key?'hero':u.type]||SHOW_LINES.hero;
-    const x=u.key?g.heroX(u):u.x;g.text(x,(u.key?g.G:u.y)-62,L[Math.floor(Math.random()*L.length)],'#ffd23f');u.pauseT=.1+1.1*fl*fl;}   // showing off costs a moment
+    const x=u.key?g.heroX(u):u.x;g.text(x,(u.key?g.G:u.y)-62,L[Math.floor(Math.random()*L.length)],'#ffd23f',false,.5);u.pauseT=.1+1.1*fl*fl;}   // showing off costs a moment
 };
 // ---- 0.12.13 Callouts: heroes shout short, colour-coded callouts to each other, and the callouts can change what allies do.
 //   Two sliders run it (both part of the if/then behavior system like every other slider):
@@ -1006,7 +1006,7 @@ class Game{
     if(!opt.sure&&e.E&&e.E.dodge&&this.rng()<e.E.dodge){this.text(e.x,e.y-30,'miss','#9aa');return 0;}
     let crit=false;if(src&&!opt.nocrit&&this.rng()<src.crit+(opt.critAdd||0)){amt*=(opt.critMul||src.critMul||1.75);crit=true;
       const HR=!opt.fromTent&&src.base&&src.base.char&&(src.base.char.abilities||[]).find(a=>a.id==='herald');if(HR){src.critRegenT=HR.critT;for(const T of this.tentacles||[])T.heraldT=HR.critT;}}   // Herald: his crits (not his tentacles') feed him and every tentacle he has out   // Herald: crits feed energy
-    if(opt.head){amt*=HEADSHOT.mul;this.text(e.x,e.y-(e.fly?24:54),'HEADSHOT!','#ff6040',true);}
+    if(opt.head){amt*=HEADSHOT.mul;this.text(e.x,e.y-(e.fly?24:54),'HEADSHOT!','#ff6040',false);   /* 0.12.36 (Kyle): half the old size */}
     {const ip=insP(src);   // inspiration passives that trigger on his hits
      if(ip==='onslaught'&&(src.moveT||0)>1){amt*=2;src.moveT=0;}
      if(ip==='bounty'&&!e.bounty&&!e.dead){const big=this.enemies.filter(o=>!o.dead).reduce((b,o)=>!b||o.max>b.max?o:b,null);if(big===e){e.bounty=src;e.markT=8;e.markAmp=.25;}}
@@ -1130,7 +1130,7 @@ class Game{
     else if(tg.boss){p.aimH=rollAimHeight((h.acc||0)+(h._accBonus||0),this.rng);p.tgy=tg.gy!=null?tg.gy:this.G;}
     else{const R=h._forceBox?reticleBox(tg,h._forceBox,this.rng):reticle((h.acc||0)+(h._accBonus||0),tg,dist,this.rng);p.aimH=R.h;p.tgy=(tg.gy!=null?tg.gy:this.G)+R.off;}
     p.arc=ARC[p.kind]||0;p.h0=p.h;p.x0=p.x;p.dist=Math.max(14,dist);p.gy0=p.gy;p.tx=null;p.foes=h.key?'enemies':'heroes';}
-  text(x,y,s,c,big){if(this.demo&&typeof s==='number'&&this.rng()<.6)return;this.texts.push({x,y,s:String(s),c,t:0,big:!!big});}
+  text(x,y,s,c,big,sc){if(this.demo&&typeof s==='number'&&this.rng()<.6)return;this.texts.push({x,y,s:String(s),c,t:0,big:!!big,sc});}
   // ---------------------------------------------------------------- spells
   cast(h,s){
     const S=SPELL[s.arch];if(S.passive)return;
@@ -2118,12 +2118,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793890108';const BGI=new Image();BGI.src='crawl_bg.png?v=1793890108';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793890108';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793890367';const BGI=new Image();BGI.src='crawl_bg.png?v=1793890367';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793890367';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793890108';XIMG.wave.src='crawl_wave.png?v=1793890108';XIMG.chibi.src='crawl_chibi.png?v=1793890108';XIMG.flannel.src='crawl_flannel.png?v=1793890108';XIMG.rain.src='crawl_rain.png?v=1793890108';XIMG.druid.src='crawl_druid.png?v=1793890108';XIMG.camp.src='crawl_campfire.png?v=1793890108';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793890108';XIMG.tornado.src='crawl_fx_tornado.png?v=1793890108';XIMG.vine.src='crawl_fx_vine.png?v=1793890108';XIMG.thorn.src='crawl_fx_thorn.png?v=1793890108';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793890367';XIMG.wave.src='crawl_wave.png?v=1793890367';XIMG.chibi.src='crawl_chibi.png?v=1793890367';XIMG.flannel.src='crawl_flannel.png?v=1793890367';XIMG.rain.src='crawl_rain.png?v=1793890367';XIMG.druid.src='crawl_druid.png?v=1793890367';XIMG.camp.src='crawl_campfire.png?v=1793890367';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793890367';XIMG.tornado.src='crawl_fx_tornado.png?v=1793890367';XIMG.vine.src='crawl_fx_vine.png?v=1793890367';XIMG.thorn.src='crawl_fx_thorn.png?v=1793890367';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793890108';XIMG.obst.src='crawl_obst.png?v=1793890108';XIMG.cars.src='crawl_cars.png?v=1793890108';XIMG.robot.src='crawl_robot.png?v=1793890108';XIMG.cultist.src='crawl_cultist.png?v=1793890108';XIMG.tentacle.src='crawl_tentacle.png?v=1793890108';XIMG.boom.src='crawl_boom.png?v=1793890108';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793890367';XIMG.obst.src='crawl_obst.png?v=1793890367';XIMG.cars.src='crawl_cars.png?v=1793890367';XIMG.robot.src='crawl_robot.png?v=1793890367';XIMG.cultist.src='crawl_cultist.png?v=1793890367';XIMG.tentacle.src='crawl_tentacle.png?v=1793890367';XIMG.boom.src='crawl_boom.png?v=1793890367';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2507,7 +2507,7 @@ function drawGame(ctx,g,W,oy){
       ctx.fillStyle='rgba(8,6,14,.78)';ctx.fillRect(Math.round(x-w/2),Math.round(y-5.5),Math.round(w),6);ctx.fillStyle=c.c;ctx.fillRect(Math.round(x-w/2),Math.round(y),Math.round(w),1);
       ctx.beginPath();ctx.moveTo(x-2,y+1);ctx.lineTo(x+2,y+1);ctx.lineTo(x,y+3);ctx.fill();ctx.fillText(c.s,Math.round(x),Math.round(y));}
     ctx.restore();ctx.globalAlpha=1;}
-  for(const t of g.texts){const a=1-t.t/.9;ctx.globalAlpha=Math.max(0,a);ptext(ctx,t.s,t.x,Math.round(G+(t.y-G)*HS),t.c,t.big?2:1);ctx.globalAlpha=1;}
+  for(const t of g.texts){const a=1-t.t/.9;ctx.globalAlpha=Math.max(0,a);ptext(ctx,t.s,t.x,Math.round(G+(t.y-G)*HS),t.c,t.sc||(t.big?2:1));ctx.globalAlpha=1;}
   ctx.restore();
   // boss bar / stage progress
   if(!g.demo){const p=g.boss&&!g.boss.dead?null:Math.min(1,g.dist/g.st.len);
@@ -2634,7 +2634,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.35</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.36</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
