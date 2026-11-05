@@ -1362,8 +1362,8 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793866695';const BGI=new Image();BGI.src='crawl_bg.png?v=1793866695';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793866695';const XIMG={flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793866695';XIMG.wave.src='crawl_wave.png?v=1793866695';XIMG.chibi.src='crawl_chibi.png?v=1793866695';XIMG.flannel.src='crawl_flannel.png?v=1793866695';XIMG.pal.src='crawl_pal.png?v=1793866695';XIMG.boom.src='crawl_boom.png?v=1793866695';
+const IMG=new Image();IMG.src='crawl.png?v=1793866795';const BGI=new Image();BGI.src='crawl_bg.png?v=1793866795';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793866795';const XIMG={flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793866795';XIMG.wave.src='crawl_wave.png?v=1793866795';XIMG.chibi.src='crawl_chibi.png?v=1793866795';XIMG.flannel.src='crawl_flannel.png?v=1793866795';XIMG.pal.src='crawl_pal.png?v=1793866795';XIMG.boom.src='crawl_boom.png?v=1793866795';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -1373,6 +1373,14 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const fmt=n=>Math.round(n).toLocaleString('en-US');
 // ---------------------------------------------------------------- sound (tiny WebAudio blips)
 let AC=null,muted=false;try{muted=localStorage.getItem('podrundown-crawl-mute')==='1';}catch(e){}
+// ---- 0.12.8 music: "Synthwave House Loop" by Fupi (OpenGameArt, CC0 - free for games, no credit needed), played a touch slow
+//   and low (tape-drag grime). Its own mute + volume, saved per browser.
+const MUSIC={src:['https://opengameart.org/sites/default/files/synthwavehouse.ogg','https://opengameart.org/sites/default/files/synthwavehouse.wav'],rate:.94};
+let BGM=null,musicMuted=false,musicVol=.45;try{musicMuted=localStorage.getItem('podrundown-crawl-music-mute')==='1';const v=localStorage.getItem('podrundown-crawl-music-vol');if(v!=null)musicVol=+v;}catch(e){}
+function musicStart(){try{if(!BGM){BGM=new Audio();BGM.loop=true;BGM.preload='auto';BGM.preservesPitch=false;BGM.mozPreservesPitch=false;BGM.webkitPreservesPitch=false;
+    const ok=MUSIC.src.find(s=>BGM.canPlayType(s.endsWith('.ogg')?'audio/ogg':'audio/wav'))||MUSIC.src[1];BGM.src=ok;}
+  BGM.volume=musicVol;BGM.playbackRate=MUSIC.rate;if(!musicMuted&&musicVol>0)BGM.play().catch(()=>{});else BGM.pause();}catch(e){}}
+function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 function sfx(k){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
   const tone=(f,d,type,v,f2)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
     g.gain.setValueAtTime(v||.05,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d);};
@@ -1621,8 +1629,9 @@ const CSS=`
 #cc button{font:inherit;color:inherit;cursor:pointer}
 .cc-top{display:flex;align-items:center;gap:6px;padding:6px 8px;background:#120a18;border-bottom:2px solid #2a1838;flex:0 0 auto}
 .cc-top .t{font-family:var(--px,monospace);font-size:11px;color:#a6ff2e;margin-right:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cc-ibx{background:#1e1228;border:2px solid #3a2450;border-radius:6px;min-width:34px;height:32px;padding:0 8px;font-size:13px}
-.cc-ibx[aria-pressed=true]{border-color:#a6ff2e;color:#a6ff2e}
+.cc-ib{background:#1e1228;border:2px solid #3a2450;border-radius:6px;min-width:34px;height:32px;padding:0 8px;font-size:13px}
+.cc-vol{width:80px;accent-color:#a6ff2e;vertical-align:middle;margin:0 4px}
+.cc-ib[aria-pressed=true]{border-color:#a6ff2e;color:#a6ff2e}
 .cc-main{position:relative;flex:1;display:flex;flex-direction:column;min-height:0;align-items:center}
 .cc-info{display:flex;gap:10px;align-items:center;width:100%;padding:4px 10px;font-size:12px;flex-wrap:wrap;box-sizing:border-box}
 .cc-info b{color:#ffd23f;font-weight:600}.cc-xp{flex:1;min-width:90px;height:6px;background:#1e1228;border:1px solid #3a2450;border-radius:3px;overflow:hidden}.cc-xp i{display:block;height:100%;background:#a6ff2e}
@@ -1654,7 +1663,7 @@ const CSS=`
 .cc-dots.bad{animation:ccshake .3s}@keyframes ccshake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .cc-heroes{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
 .cc-hero{background:#120a18;border:2px solid #2a1838;border-radius:10px;padding:8px;text-align:left;position:relative}
-.cc-hw{display:flex;flex-direction:column}.cc-hw .cc-hero{flex:1}.cc-insp{background:#0d0712;border:1px solid #2a1838;border-top:0;border-radius:0 0 10px 10px;padding:4px 8px 8px}.cc-insp select{width:100%;margin-top:3px;background:#120a18;color:#e8dff5;border:1px solid #3a2850;border-radius:6px;font-size:11px;padding:3px}.cc-insp select:disabled{opacity:.45}.cc-ibx{border:0!important;height:auto!important;background:none!important;padding:0!important;font-size:10.5px;color:#b8aecb;margin-top:4px;line-height:1.35}
+.cc-hw{display:flex;flex-direction:column}.cc-hw .cc-hero{flex:1}.cc-insp{background:#0d0712;border:1px solid #2a1838;border-top:0;border-radius:0 0 10px 10px;padding:4px 8px 8px}.cc-insp select{width:100%;margin-top:3px;background:#120a18;color:#e8dff5;border:1px solid #3a2850;border-radius:6px;font-size:11px;padding:3px}.cc-insp select:disabled{opacity:.45}.cc-ibx{font-size:10.5px;color:#b8aecb;margin-top:4px;line-height:1.35}
 .cc-hero[aria-pressed=true]{border-color:#a6ff2e;box-shadow:0 0 0 2px #a6ff2e44}
 .cc-hero .cc-por{width:64px;height:64px;float:left;margin-right:6px}
 .cc-hero .nm{font-weight:700;font-size:13px}.cc-hero .dk{font-size:11px;color:#b8aecb}.cc-hero .lv{font-family:var(--px,monospace);font-size:9px;color:#ffd23f;margin-top:4px}
@@ -1707,8 +1716,8 @@ function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
   root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.8</span></span>
-    <button class="cc-ibx" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ibx" data-a="pause" title="Pause">⏸</button><button class="cc-ibx" data-a="speed" title="Game speed">1×</button>
-    <button class="cc-ibx" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ibx" data-a="mute" title="Sound">${muted?'🔇':'🔊'}</button><button class="cc-ibx" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ibx" data-a="fs" title="Full screen">⛶</button><button class="cc-ibx" data-a="close" title="Close">✕</button></div>
+    <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
+    <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
   document.body.appendChild(root);
   cv=$('#cc-cv',root);ctx=cv.getContext('2d');panel=$('.cc-panel',root);hud=$('.cc-hud',root);info=$('.cc-info',root);bossEl=$('.cc-boss',root);banner=$('.cc-banner',root);
@@ -1718,9 +1727,11 @@ function build(){
     if(a==='pause'){CC.paused=!CC.paused;b.textContent=CC.paused?'▶':'⏸';}
     if(a==='speed'){CC.speed=CC.speed%3+1;b.textContent=CC.speed+'×';}
     if(a==='brain'){CC.brain=!CC.brain;b.classList.toggle('on',CC.brain);b.style.outline=CC.brain?'2px solid #b6ff00':'';}
+    if(a==='music'){musicMuted=!musicMuted;b.textContent=musicMuted?'🎵̸':'🎵';b.style.opacity=musicMuted?.5:1;try{localStorage.setItem('podrundown-crawl-music-mute',musicMuted?'1':'0');}catch(_){}musicStart();}
     if(a==='mute'){muted=!muted;b.textContent=muted?'🔇':'🔊';try{localStorage.setItem('podrundown-crawl-mute',muted?'1':'0');}catch(_){}}
     if(a==='fs'){if(window.PodSideways)PodSideways.goBig(root);setTimeout(layout,120);}
     if(a==='side'){if(window.PodSideways){PodSideways.sidewaysPref(!root.classList.contains('rot-side'));PodSideways.fitSideways(root);}setTimeout(layout,60);}});
+  {const vs=root.querySelector('[data-vol]');if(vs)vs.oninput=()=>{musicVol=vs.value/100;try{localStorage.setItem('podrundown-crawl-music-vol',musicVol);}catch(_){}if(BGM)BGM.volume=musicVol;if(musicVol>0&&!musicMuted)musicStart();else if(BGM)BGM.pause();};}
   document.addEventListener('keydown',e=>{if(root.hidden)return;if(e.key==='Escape'&&!document.fullscreenElement)closeCrawl();if(e.key===' '&&CC.game){e.preventDefault();CC.paused=!CC.paused;}});
   window.addEventListener('resize',()=>{if(window.PodSideways&&root&&!root.hidden)PodSideways.fitSideways(root);layout();});document.addEventListener('fullscreenchange',()=>setTimeout(layout,60));
 }
@@ -1730,8 +1741,8 @@ function layout(){if(!root||root.hidden)return;const main=$('.cc-main',root);con
   const reserved=land?0:(info.offsetHeight+hud.offsetHeight+4);let w=Math.min(W,(H-reserved)*16/9);
   const k=Math.floor(w/384);if(k>=2&&k*384>=w*.82)w=k*384;cv.style.width=Math.floor(w)+'px';cv.style.height=Math.floor(w*9/16)+'px';
   bossEl.style.top=(cv.offsetTop+Math.floor(w*9/16)*.06)+'px';banner.style.top=(cv.offsetTop+Math.floor(w*9/16)*.38)+'px';}
-function openCrawl(){build();root.hidden=false;document.body.style.overflow='hidden';stopStrip();if(window.PodSideways)PodSideways.fitSideways(root);CC.data=Save.load();for(const p in CC.data.players)for(const s of CC.data.players[p].slots||[])if(s)migrateSlot(s,p);Save.write(CC.data);showWho();layout();}
-function closeCrawl(){if(CC.game&&!CC.game.over)quitToCamp(true);CC.game=null;cancelAnimationFrame(CC.raf);root.hidden=true;document.body.style.overflow='';try{if(document.fullscreenElement)document.exitFullscreen();}catch(e){}startStrip();}
+function openCrawl(){build();root.hidden=false;musicStart();document.body.style.overflow='hidden';stopStrip();if(window.PodSideways)PodSideways.fitSideways(root);CC.data=Save.load();for(const p in CC.data.players)for(const s of CC.data.players[p].slots||[])if(s)migrateSlot(s,p);Save.write(CC.data);showWho();layout();}
+function closeCrawl(){musicStop();if(CC.game&&!CC.game.over)quitToCamp(true);CC.game=null;cancelAnimationFrame(CC.raf);root.hidden=true;document.body.style.overflow='';try{if(document.fullscreenElement)document.exitFullscreen();}catch(e){}startStrip();}
 function showPanel(html){panel.hidden=false;const rb=root.querySelector('[data-a=restart]');if(rb)rb.hidden=true;panel.innerHTML=`<div class="cc-wrap">${html}</div>`;panel.scrollTop=0;hud.innerHTML='';info.innerHTML='';bossEl.textContent='';drawIdle();return panel;}
 function drawIdle(){const g=CC.idle||(CC.idle=demoGame(384));ctx.imageSmoothingEnabled=false;if(IMG.complete&&BGI.complete)drawGame(ctx,g,384,0);}
 // ---------------------------------------------------------------- screens
