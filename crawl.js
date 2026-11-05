@@ -4,7 +4,7 @@
 (function(){
 'use strict';
 const DATA={"heroes":[{"key":"flannel","char":1,"deck":"","icon":"🌲","owner":"Kyle","cmdr":"","name":"Flannel_Man","cls":"duo","duo":false,"blurb":"A bearded drifter in green flannel with a bolt-action rifle and a crowbar.","stats":{},"spells":[],"items":[]}],"arch":{"bolt":{"label":"Bolt","titles":["Starfall","Hellfire Lance","the Pyre Eternal"]},"nova":{"label":"Nova","titles":["Cataclysm","the Last Sunrise","Worldbreaker"]},"smite":{"label":"Smite","titles":["Executioner","Final Verdict","the Godslayer"]},"drain":{"label":"Drain","titles":["Soul Harvest","the Bleeding Moon","Crimson Tithe"]},"summon":{"label":"Summon","titles":["Legion Eternal","the Endless Horde","Army of the Damned"]},"regen":{"label":"Regen","titles":["Undying Grace","the Phoenix Psalm","Everbloom"]},"aegis":{"label":"Aegis","titles":["Bastion Unbroken","the Last Wall","Adamant Dawn"]},"pump":{"label":"Pump","titles":["Titan Rising","the Warlord Ascendant","Giantblood"]},"devour":{"label":"Devour","titles":["the Gluttonous Abyss","Bone Feast","Maw of Ages"]},"haste":{"label":"Haste","titles":["Overdrive","the Thousand Hands","Quickening Storm"]},"insight":{"label":"Insight","titles":["the Open Eye","Omniscient","Library of Ash"]},"freeze":{"label":"Freeze","titles":["Absolute Zero","the Long Winter","Glacial Tomb"]},"counter":{"label":"Counter","titles":["Null Mirror","the Silent Ward","Spellbreaker"]},"blade":{"label":"Weapon","titles":["Kingsbane","the Red Edge","Doomforged"]},"armor":{"label":"Armor","titles":["Aegis of Ages","the Unbreakable","Ironsoul"]},"relic":{"label":"Relic","titles":["Clockwork Heart","the Ever-Turning","Infinity Engine"]},"charm":{"label":"Charm","titles":["Lucky Bones","Fate's Favorite","the Gilded Skull"]}}};      // heroes from the decks (built by battler_data.py)
-const ATLAS={"sprites":{"h_grim":[0,0,128,128,12],"h_vile":[1536,0,160,128,12],"h_vile_a":[0,128,128,128,12],"h_vile_b":[1536,128,128,128,12],"h_felothar":[0,256,128,128,12],"h_thing":[1536,256,128,128,12],"h_kykar":[0,384,128,128,12],"h_depala":[1536,384,128,128,12],"h_kotis":[0,512,128,128,12],"h_dragons":[1536,512,128,128,12],"h_mathas":[0,640,128,128,12],"h_turtle":[1536,640,160,128,12],"h_turtle_a":[0,768,128,128,12],"h_turtle_b":[1536,768,128,128,12],"h_marina":[0,896,128,128,12],"h_korvold":[1536,896,128,128,12],"h_thranduil":[0,1024,128,128,12],"h_joel":[1536,1024,160,128,12],"h_joel_a":[0,1152,128,128,12],"h_joel_b":[1536,1152,128,128,12],"h_robots":[0,1280,128,128,12],"h_blood":[1536,1280,128,128,12],"h_mech":[0,1408,128,128,12],"h_weather":[1536,1408,128,128,12],"e_ghoul":[0,1536,128,128,12],"e_cultist":[1536,1536,128,128,12],"e_knight":[0,1664,128,128,12],"e_wolfman":[1536,1664,128,128,12],"e_hag":[0,1792,128,128,12],"e_zombie":[1536,1792,128,128,12],"e_drowned":[0,1920,128,128,12],"e_skeleton":[1536,1920,128,128,12],"e_archer":[0,2048,128,128,12],"e_thrall":[1536,2048,128,128,12],"e_wraith":[0,2176,128,128,12],"e_leech":[1536,2176,96,96,12],"e_bat":[2688,2176,96,96,12],"e_ghost":[0,2304,96,96,12],"e_gargoyle":[1152,2304,96,96,12],"e_hound":[2304,2304,96,96,12],"e_spawn":[0,2400,96,96,12],"e_eye":[1152,2400,96,96,12],"e_spider":[2304,2400,96,96,12],"b_gravelord":[0,2496,256,256,3],"b_countess":[768,2496,256,256,3],"b_maw":[1536,2496,256,256,3]},"bg":{"grave":{"fill":"#001b27","top":"#000a12","artTop":97,"layers":[{"r":[776,0,48,160],"y":97.0,"sp":0.04,"w":36.0,"h":120.0,"tile":36.0},{"r":[822,409,128,48],"y":97.0,"sp":0.0,"w":96.0,"h":36.0,"once":{"x":230,"period":0}},{"r":[0,247,544,160],"y":97.0,"sp":0.35,"w":408.0,"h":120.0,"tile":408.0},{"r":[0,571,272,48],"y":181.0,"sp":1.0,"w":204.0,"h":36.0,"tile":204.0}]},"manor":{"fill":"#1a4652","top":"#06141c","artTop":69,"layers":[{"r":[546,247,272,160],"y":69.0,"sp":0.04,"w":204.0,"h":120.0,"tile":204.0},{"r":[820,247,272,160],"y":69.0,"sp":0.12,"w":204.0,"h":120.0,"tile":204.0},{"r":[0,409,272,160],"y":69.0,"sp":0.28,"w":204.0,"h":120.0,"tile":204.0},{"r":[274,409,272,81],"y":128.25,"sp":0.5,"w":204.0,"h":60.75,"tile":204.0},{"r":[548,409,272,49],"y":152.25,"sp":0.75,"w":204.0,"h":36.75,"tile":204.0},{"r":[274,571,272,44],"y":183.0,"sp":1.0,"w":204.0,"h":33.0,"tile":204.0}]},"bog":{"fill":"#5a2236","top":"#1e0a16","artTop":44,"layers":[{"r":[322,0,160,224],"y":44.0,"sp":0.04,"w":120.0,"h":168.0,"tile":120.0},{"r":[484,0,160,224],"y":44.0,"sp":0.12,"w":120.0,"h":168.0,"tile":120.0},{"r":[646,0,128,224],"y":44.0,"sp":0.3,"w":96.0,"h":168.0,"once":{"x":130,"period":420}},{"r":[0,0,320,245],"y":44.0,"sp":1.0,"w":240.0,"h":183.75,"tile":240.0}]}},"res":2,"units":{"zombie":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":0,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":192,"y":0}},"zombie_f":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":512,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":704,"y":0}},"zombie_b":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":1024,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":1216,"y":0}},"flannel":{"idle":{"fw":66,"fh":59,"n":6,"ax":40,"ay":55,"x":1536,"y":0},"walk":{"fw":66,"fh":59,"n":8,"ax":40,"ay":55,"x":1932,"y":0},"run":{"fw":66,"fh":59,"n":8,"ax":40,"ay":55,"x":2460,"y":0},"melee":{"fw":66,"fh":59,"n":6,"ax":40,"ay":55,"x":2988,"y":0},"ranged":{"fw":66,"fh":59,"n":5,"ax":40,"ay":55,"x":3384,"y":0},"reload":{"fw":66,"fh":59,"n":8,"ax":40,"ay":55,"x":3714,"y":0},"hurt":{"fw":66,"fh":59,"n":4,"ax":40,"ay":55,"x":4242,"y":0},"death":{"fw":66,"fh":59,"n":3,"ax":40,"ay":55,"x":4506,"y":0},"walkfire":{"fw":66,"fh":59,"n":8,"ax":40,"ay":55,"x":4704,"y":0}},"werewolf":{"walk":{"fw":112,"fh":76,"n":6,"ax":65,"ay":75,"x":5232,"y":0},"atk":{"fw":112,"fh":76,"n":8,"ax":60,"ay":75,"x":5904,"y":0},"die":{"fw":112,"fh":76,"n":10,"ax":58,"ay":75,"x":6800,"y":0},"jump":{"fw":112,"fh":76,"n":2,"ax":72,"ay":71,"x":7920,"y":0},"fall":{"fw":112,"fh":76,"n":2,"ax":56,"ay":63,"x":8144,"y":0}}}};    // sprite + backdrop atlas (built by make_crawl_art.py)
+const ATLAS={"sprites":{"h_grim":[0,0,128,128,12],"h_vile":[1536,0,160,128,12],"h_vile_a":[0,128,128,128,12],"h_vile_b":[1536,128,128,128,12],"h_felothar":[0,256,128,128,12],"h_thing":[1536,256,128,128,12],"h_kykar":[0,384,128,128,12],"h_depala":[1536,384,128,128,12],"h_kotis":[0,512,128,128,12],"h_dragons":[1536,512,128,128,12],"h_mathas":[0,640,128,128,12],"h_turtle":[1536,640,160,128,12],"h_turtle_a":[0,768,128,128,12],"h_turtle_b":[1536,768,128,128,12],"h_marina":[0,896,128,128,12],"h_korvold":[1536,896,128,128,12],"h_thranduil":[0,1024,128,128,12],"h_joel":[1536,1024,160,128,12],"h_joel_a":[0,1152,128,128,12],"h_joel_b":[1536,1152,128,128,12],"h_robots":[0,1280,128,128,12],"h_blood":[1536,1280,128,128,12],"h_mech":[0,1408,128,128,12],"h_weather":[1536,1408,128,128,12],"e_ghoul":[0,1536,128,128,12],"e_cultist":[1536,1536,128,128,12],"e_knight":[0,1664,128,128,12],"e_wolfman":[1536,1664,128,128,12],"e_hag":[0,1792,128,128,12],"e_zombie":[1536,1792,128,128,12],"e_drowned":[0,1920,128,128,12],"e_skeleton":[1536,1920,128,128,12],"e_archer":[0,2048,128,128,12],"e_thrall":[1536,2048,128,128,12],"e_wraith":[0,2176,128,128,12],"e_leech":[1536,2176,96,96,12],"e_bat":[2688,2176,96,96,12],"e_ghost":[0,2304,96,96,12],"e_gargoyle":[1152,2304,96,96,12],"e_hound":[2304,2304,96,96,12],"e_spawn":[0,2400,96,96,12],"e_eye":[1152,2400,96,96,12],"e_spider":[2304,2400,96,96,12],"b_gravelord":[0,2496,256,256,3],"b_countess":[768,2496,256,256,3],"b_maw":[1536,2496,256,256,3]},"bg":{"grave":{"fill":"#001b27","top":"#000a12","artTop":97,"layers":[{"r":[776,0,48,160],"y":97.0,"sp":0.04,"w":36.0,"h":120.0,"tile":36.0},{"r":[822,409,128,48],"y":97.0,"sp":0.0,"w":96.0,"h":36.0,"once":{"x":230,"period":0}},{"r":[0,247,544,160],"y":97.0,"sp":0.35,"w":408.0,"h":120.0,"tile":408.0},{"r":[0,571,272,48],"y":181.0,"sp":1.0,"w":204.0,"h":36.0,"tile":204.0}]},"manor":{"fill":"#1a4652","top":"#06141c","artTop":69,"layers":[{"r":[546,247,272,160],"y":69.0,"sp":0.04,"w":204.0,"h":120.0,"tile":204.0},{"r":[820,247,272,160],"y":69.0,"sp":0.12,"w":204.0,"h":120.0,"tile":204.0},{"r":[0,409,272,160],"y":69.0,"sp":0.28,"w":204.0,"h":120.0,"tile":204.0},{"r":[274,409,272,81],"y":128.25,"sp":0.5,"w":204.0,"h":60.75,"tile":204.0},{"r":[548,409,272,49],"y":152.25,"sp":0.75,"w":204.0,"h":36.75,"tile":204.0},{"r":[274,571,272,44],"y":183.0,"sp":1.0,"w":204.0,"h":33.0,"tile":204.0}]},"bog":{"fill":"#5a2236","top":"#1e0a16","artTop":44,"layers":[{"r":[322,0,160,224],"y":44.0,"sp":0.04,"w":120.0,"h":168.0,"tile":120.0},{"r":[484,0,160,224],"y":44.0,"sp":0.12,"w":120.0,"h":168.0,"tile":120.0},{"r":[646,0,128,224],"y":44.0,"sp":0.3,"w":96.0,"h":168.0,"once":{"x":130,"period":420}},{"r":[0,0,320,245],"y":44.0,"sp":1.0,"w":240.0,"h":183.75,"tile":240.0}]}},"res":2,"units":{"zombie":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":0,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":192,"y":0}},"zombie_f":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":512,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":704,"y":0}},"zombie_b":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":1024,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":1216,"y":0}},"werewolf":{"walk":{"fw":112,"fh":76,"n":6,"ax":65,"ay":75,"x":1536,"y":0},"atk":{"fw":112,"fh":76,"n":8,"ax":60,"ay":75,"x":2208,"y":0},"die":{"fw":112,"fh":76,"n":10,"ax":58,"ay":75,"x":3104,"y":0},"jump":{"fw":112,"fh":76,"n":2,"ax":72,"ay":71,"x":4224,"y":0},"fall":{"fw":112,"fh":76,"n":2,"ax":56,"ay":63,"x":4448,"y":0}},"flannel":{"idle":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":0,"img":"flannel","art":1},"walk":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":208,"img":"flannel","art":1},"run":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":416,"img":"flannel","art":1},"melee":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":624,"img":"flannel","art":1},"ranged":{"fw":230,"fh":208,"n":5,"ax":140,"ay":200,"x":0,"y":832,"img":"flannel","art":1},"reload":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":1040,"img":"flannel","art":1},"hurt":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":1248,"img":"flannel","art":1},"death":{"fw":230,"fh":208,"n":3,"ax":140,"ay":200,"x":0,"y":1456,"img":"flannel","art":1},"walkfire":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":1664,"img":"flannel","art":1},"bullet":{"fw":24,"fh":16,"n":1,"ax":22,"ay":8,"x":0,"y":1872,"img":"flannel","art":1}}}};    // sprite + backdrop atlas (built by make_crawl_art.py)
 const OWNERS={Kyle:'🎩'};   // 0.12.1: only Kyle's tab while the game is rebuilt (Cheez and Leon come back later)
 
 // ======================================================================= CONFIG TABLES
@@ -69,7 +69,7 @@ const STYLE={
   marina:{atk:'caster',proj:'wisp',hp:.85,dmg:1},
   korvold:{atk:'melee',reach:28,hp:1.35,dmg:1.05,devour:1},
   thranduil:{atk:'ranged',proj:'arrow',range:230,hp:.85,dmg:1.05,aspd:1.1},
-  flannel:{atk:'gunner',proj:'quarrel',reach:20,range:250,hp:1,dmg:1},   // 0.12.3 Flannel_Man: rifle + crowbar, one body
+  flannel:{atk:'gunner',proj:'bullet',reach:20,range:250,hp:1,dmg:1},   // 0.12.3 Flannel_Man: rifle + crowbar, one body
   joel:{atk:'duo',a:'arrow',b:'melee',reach:28,range:210,hp:1.05,dmg:.9,companion:1},
   robots:{atk:'ranged',proj:'plasma',range:190,hp:1.35,dmg:1.0,tank:1},
   blood:{atk:'caster',proj:'blood',hp:.95,dmg:.9,leech:.25},
@@ -209,7 +209,7 @@ function rollLaneOffset(acc,rng){const m=accTighten(acc);const off2=10*(1-m),off
 // hitboxes, ruler units: w = width, h = height above the feet
 const HITBOX={zombie:{w:16,h:46},werewolf:{w:30,h:36}};   // werewolf h is before his 0.77 draw scale (~28 tall walking)
 // 0.11: heroes have bodies too. Every non-boss unit has a hitbox about its own size (ruler units). Per-hero overrides go in HERO_HB.
-const HERO_HITBOX={w:20,h:46},HERO_HB={};
+const HERO_HITBOX={w:20,h:46},HERO_HB={flannel:{w:44,h:100}};   // Flannel_Man is drawn at his art's full size (~50px tall on screen-world)
 function hbOf(u){return u&&u.key?(HERO_HB[u.key]||HERO_HITBOX):(u&&HITBOX[u.type])||{w:16,h:44};}
 function depthHalf(hb){return Math.max(1.5,hb.w*.12);}   // how much lane depth (px, top view) a body fills either side of its feet
 // ---- 0.11 Aiming reticle (Kyle): when a ranged unit picks a target, a 'shoot box' is laid over the target where it stands.
@@ -230,7 +230,11 @@ const AIM_BOXES={
   werewolf:{top:[24,44,40],mid:[13,24,40],bot:[0,13,20],             // walking: low and long
             tall:{top:[35,54,30],mid:[15,35,40],bot:[0,15,30]}},     // reared up mid-attack
 };
-const AIM_STEP=.25;   // % moved per accuracy point
+const AIM_STEP=.25;
+// ---- 0.12.4 Headshots (Kyle): a shot that hits a body inside its MIDDLE box (the head box from the aim boxes, current pose) is a
+//   headshot: extra damage that stacks with crits (both multiply). Melee can't headshot.
+const HEADSHOT={mul:1.5};
+function isHead(tg,h){const B=aimBoxesOf(tg);return h>=B.mid[0]&&h<=B.mid[1];}   // % moved per accuracy point
 function aimPose(tg){const B=AIM_BOXES[tg&&tg.type];if(!B)return null;
   if(B.tall&&tg.anim===1&&tg.animT>0&&tg.E){const f=1-tg.animT/(tg.E.animAtk||.3);if(f>.12&&f<.62)return B.tall;}return B;}
 function aimBoxesOf(tg){const B=aimPose(tg);if(B)return B;
@@ -275,35 +279,35 @@ const CHAR={
 
 // ---- 0.12.3 Inspiration Decks (Kyle): pick a player, then one of their decks. Each deck gives one small, unique bonus tied to
 //   what that deck is best at. sl = slider moves (a move that would go below 0 or above 10 doesn't happen). Easy to retune here.
-const INSP={
+const INSP={   // 0.12.4 (Kyle): every bonus doubled
  // Kyle
- 'The Grim Throne':{o:'Kyle',why:'Kenrith\'s royal court: the most consistent big threats in the pod',mod:{crit:2},sl:{plan:-1}},
- 'Felothar':{o:'Kyle',why:'Walls everywhere: the pod\'s top Survival',mod:{armor:2,kbRes:5}},
- 'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up: the pod\'s biggest Finish',mod:{meleeDmg:10}},
- 'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen',mod:{xp:6},sl:{energy:-1}},
- 'Truly Fantastic':{o:'Kyle',why:'The Thing\'s deep mana pool',mod:{enMax:12}},
- 'Dice Boys Casino':{o:'Kyle',why:'Mr. House: the biggest ramp deck in the pod, and dice',mod:{enRegen:.75,luck:3}},
- 'Tame Depala':{o:'Kyle',why:'Dwarves crewing heavy vehicles',mod:{kbRes:10}},
- "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat',mod:{crit:3},sl:{size:1}},
- 'The Last of Us':{o:'Kyle',why:'Survivors who know when to duck',mod:{dodge:2}},
- 'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming',mod:{luck:2},sl:{aware:-1}},
- 'Mothman Cometh!':{o:'Kyle',why:'Flying, hard to pin down',mod:{dodge:1},sl:{lane:1}},
- 'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back',mod:{kb:15}},
- 'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger',mod:{stamina:1}},
- "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward',mod:{meleeDmg:5},sl:{aggr:1}},
+ 'The Grim Throne':{o:'Kyle',why:'Kenrith\'s royal court: the most consistent big threats in the pod',mod:{crit:4},sl:{plan:-2}},
+ 'Felothar':{o:'Kyle',why:'Walls everywhere: the pod\'s top Survival',mod:{armor:4,kbRes:10}},
+ 'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up: the pod\'s biggest Finish',mod:{meleeDmg:20}},
+ 'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen',mod:{xp:12},sl:{energy:-2}},
+ 'Truly Fantastic':{o:'Kyle',why:'The Thing\'s deep mana pool',mod:{enMax:24}},
+ 'Dice Boys Casino':{o:'Kyle',why:'Mr. House: the biggest ramp deck in the pod, and dice',mod:{enRegen:1.5,luck:6}},
+ 'Tame Depala':{o:'Kyle',why:'Dwarves crewing heavy vehicles',mod:{kbRes:20}},
+ "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat',mod:{crit:6},sl:{size:2}},
+ 'The Last of Us':{o:'Kyle',why:'Survivors who know when to duck',mod:{dodge:4}},
+ 'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming',mod:{luck:4},sl:{aware:-2}},
+ 'Mothman Cometh!':{o:'Kyle',why:'Flying, hard to pin down',mod:{dodge:2},sl:{lane:2}},
+ 'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back',mod:{kb:30}},
+ 'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger',mod:{stamina:2}},
+ "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward',mod:{meleeDmg:10},sl:{aggr:2}},
  // Cheez
- 'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: fast flyers',mod:{move:6}},
- 'Double Dragons':{o:'Cheez',why:'Dragon fire: the pod\'s biggest Threats',mod:{rangedDmg:5,crit:1}},
- 'Turtle Power':{o:'Cheez',why:'Shells and teamwork',mod:{armor:2},sl:{self:-1}},
- 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills (and ramps doing it)',mod:{lifesteal:2,enRegen:.25}},
- 'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone',mod:{luck:5}},
- 'Blood Suckers':{o:'Cheez',why:'Lifelinking bats with long memories',mod:{lifesteal:2},sl:{grudge:1}},
- 'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman overclocks the machines',mod:{rangedSpd:8}},
+ 'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: fast flyers',mod:{move:12}},
+ 'Double Dragons':{o:'Cheez',why:'Dragon fire: the pod\'s biggest Threats',mod:{rangedDmg:10,crit:2}},
+ 'Turtle Power':{o:'Cheez',why:'Shells and teamwork',mod:{armor:4},sl:{self:-2}},
+ 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills (and ramps doing it)',mod:{lifesteal:4,enRegen:0.5}},
+ 'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone',mod:{luck:10}},
+ 'Blood Suckers':{o:'Cheez',why:'Lifelinking bats with long memories',mod:{lifesteal:4},sl:{grudge:2}},
+ 'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman overclocks the machines',mod:{rangedSpd:16}},
  // Leon
- 'Family Matters':{o:'Leon',why:'Zinnia\'s copies look out for each other',sl:{aware:1,pack:-1}},
- 'Thranduil':{o:'Leon',why:'Elven eyes and elf mana',mod:{acc:4,enRegen:.25}},
- 'Primary Directive':{o:'Leon',why:'Optimus transforms and swings fast',mod:{meleeSpd:10}},
- 'Cosmic Spider':{o:'Leon',why:'Spider-Sense',mod:{dodge:1},sl:{exec:1}},
+ 'Family Matters':{o:'Leon',why:'Zinnia\'s copies look out for each other',sl:{aware:2,pack:-2}},
+ 'Thranduil':{o:'Leon',why:'Elven eyes and elf mana',mod:{acc:8,enRegen:0.5}},
+ 'Primary Directive':{o:'Leon',why:'Optimus transforms and swings fast',mod:{meleeSpd:20}},
+ 'Cosmic Spider':{o:'Leon',why:'Spider-Sense',mod:{dodge:2},sl:{exec:2}},
 };
 const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼'};
 // what each character is like in a fight (shown when you hover them on the party screen)
@@ -315,6 +319,17 @@ const BEHAVIOR={
 const INSP_LABEL={acc:['Accuracy',''],crit:['Crit chance','%'],critMul:['Crit damage','x'],dodge:['Dodge','%'],armor:['Armor',' pts'],stamina:['Stamina',''],luck:['Luck',''],xp:['XP gain','%'],
   kbRes:['Knockback resistance','%'],enMax:['Max energy',''],enRegen:['Energy regen','/s'],lifesteal:['Life steal','%'],move:['Move speed','%'],meleeDmg:['Melee damage','%'],rangedDmg:['Ranged damage','%'],
   meleeSpd:['Melee speed','%'],rangedSpd:['Ranged speed','%'],kb:['Melee knockback','']};
+const INSP_HELP={acc:'More shots land on the body and head instead of flying over (each point moves 0.25% of shots down a box).',
+  crit:'Higher chance for any hit to be a critical hit.',critMul:'Critical hits deal more damage.',dodge:'Chance for an enemy hit to miss him completely.',
+  armor:'Takes less damage from every hit (each point = 2% less, up to 20 points).',stamina:'More max health (each Stamina = 5 HP).',luck:'Better odds of rare items and gold.',
+  xp:'Levels up faster.',kbRes:'Gets shoved around less by heavy hits.',enMax:'Can store more energy for abilities.',enRegen:'Energy refills faster, so abilities come back sooner.',
+  lifesteal:'Heals for part of the damage he deals.',move:'Walks and runs faster.',meleeDmg:'Melee hits deal more damage.',rangedDmg:'Ranged hits deal more damage.',
+  meleeSpd:'Swings his melee weapon more often.',rangedSpd:'Shoots and reloads faster.',kb:'Melee hits shove enemies back further.'};
+function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];
+  for(const [k,v] of Object.entries(I.mod||{})){const [l,u]=INSP_LABEL[k]||[k,''];out.push(`${v>0?'+':''}${v}${u} ${l}: ${INSP_HELP[k]||''}`);}
+  for(const [k,v] of Object.entries(I.sl||{})){const S=SLIDERS.find(s=>s[0]===k);if(!S)continue;const side=v>0?S[2]:S[1];
+    out.push(`${side} +${Math.abs(v)}: slides his personality ${Math.abs(v)} step${Math.abs(v)>1?'s':''} toward "${side}" (the ${S[1]} ↔ ${S[2]} slider: ${S[3].toLowerCase()}). If that would go past 0 or 10, it doesn't move.`);}
+  return out;}
 function inspText(name){const I=INSP[name];if(!I)return '';const out=[];
   for(const [k,v] of Object.entries(I.mod||{})){const [l,u]=INSP_LABEL[k]||[k,''];out.push(`${v>0?'+':''}${v}${u} ${l}`);}
   for(const [k,v] of Object.entries(I.sl||{})){const S=SLIDERS.find(s=>s[0]===k);if(S)out.push(`${v>0?S[2]:S[1]} +${Math.abs(v)}`);}
@@ -541,6 +556,7 @@ class Game{
     if(e.dead||amt<=0)return 0;opt=opt||{};if(src&&src.key){e.lastHitBy=src;e.grudgeT=6;}
     if(!opt.sure&&e.E&&e.E.dodge&&this.rng()<e.E.dodge){this.text(e.x,e.y-30,'miss','#9aa');return 0;}
     let crit=false;if(src&&!opt.nocrit&&this.rng()<src.crit+(opt.critAdd||0)){amt*=(opt.critMul||src.critMul||1.75);crit=true;}
+    if(opt.head){amt*=HEADSHOT.mul;this.text(e.x,e.y-(e.fly?24:54),'HEADSHOT!','#ff6040',true);}
     amt=mitigate(e,amt,opt.type); if(e.shred>0)amt*=1.2;
     if(opt.execute&&e.hp<e.max*.3)amt*=2;
     amt=Math.max(1,amt);e.hp-=amt;e.hitFlash=.12;this.lastHit=this.t;
@@ -635,7 +651,7 @@ class Game{
     this.proj.push(p);return p;
   }
   aim(p,h,tg){   // turn a shot into a free-flying projectile aimed with the reticle (0.11): either direction, heroes or enemies
-    p.aimed=true;p.gy=h.gy!=null?h.gy:this.G;p.h=h.fly?(this.G-h.y)/UNIT_SCALE:28;const air=tg.fly&&!tg.boss;const flyH=air?(this.G-tg.y)/UNIT_SCALE:0;
+    p.aimed=true;p.gy=h.gy!=null?h.gy:this.G;p.h=h.fly?(this.G-h.y)/UNIT_SCALE:(h.key&&HERO_HB[h.key]?(MUZZLE[h.key]||[0,14])[1]/UNIT_SCALE:28);const air=tg.fly&&!tg.boss;const flyH=air?(this.G-tg.y)/UNIT_SCALE:0;
     const tx=tg.boss?tg.x-tg.w*.5:(tg.key?this.heroX(tg):tg.x);p.dir=tx>=p.x?1:-1;const dist=Math.abs(tx-p.x);
     if(air){p.aimH=rollAirAim((h.acc||0)+(h._accBonus||0),this.rng,flyH);p.tgy=p.gy;}
     else if(tg.boss){p.aimH=rollAimHeight((h.acc||0)+(h._accBonus||0),this.rng);p.tgy=tg.gy!=null?tg.gy:this.G;}
@@ -878,7 +894,7 @@ class Game{
         if(p.h<=0||p.x>this.W+20||p.x<-20||p.t>4){p.dead=true;if(p.h<=0)this.fx.push({k:'spark',x:p.x,y:p.gy,t:0,c:'#8a6a4a'});continue;}
         if(p.foes==='heroes'){   // an enemy's aimed shot: any hero body it passes through takes it
           for(const o of this.alive()){if(p.hit.has(o))continue;const hb=hbOf(o);
-            if(Math.abs((o.gy||this.G)-p.gy)<=depthHalf(hb)&&Math.abs(p.x-this.heroX(o))<=hb.w*UNIT_SCALE/2&&p.h>=0&&p.h<=hb.h){p.hit.add(o);this.hurtHero(o,p.dmg,p.src);
+            if(Math.abs((o.gy||this.G)-p.gy)<=depthHalf(hb)&&Math.abs(p.x-this.heroX(o))<=hb.w*UNIT_SCALE/2&&p.h>=0&&p.h<=hb.h){p.hit.add(o);this.hurtHero(o,p.dmg*(isHead(o,p.h)?HEADSHOT.mul:1),p.src);
               this.fx.push({k:'spark',x:p.x,y:p.y,t:0,c:PCOL[p.kind]||'#fff'});if(p.pierce>0)p.pierce--;else{p.dead=true;break;}}}
           continue;}
         for(const e of this.enemies){if(e.dead||p.hit.has(e))continue;
@@ -886,9 +902,9 @@ class Game{
           if(e.boss)ok=Math.abs(p.x-(e.x-e.w*.4))<e.w*.6&&p.h<220;
           else if(e.fly){const hb=HITBOX[e.type]||{w:16,h:16};const fh=(this.G-e.y)/UNIT_SCALE;ok=Math.abs(p.x-e.x)<=hb.w*UNIT_SCALE/2&&Math.abs(p.h-fh)<=hb.h/2;}   // fliers: any lane, height window around the body
           else{const hb=HITBOX[e.type]||{w:16,h:44};const hbT=(e.type==='werewolf'&&aimPose(e)===AIM_BOXES.werewolf.tall)?{w:hb.w,h:66}:hb;const lift=e.leapA?Math.sin(Math.PI*Math.min(1,e.leapA.t/e.leapA.dur))*28:0;const sc=(e.E.scale||1)*(e.elite?1.1:1);
-            ok=Math.abs((e.gy!=null?e.gy:this.G)-p.gy)<=depthHalf(hb)*sc&&Math.abs(p.x-e.x)<=hb.w*sc*UNIT_SCALE/2&&p.h>=lift&&p.h<=lift+hbT.h*sc;}
+            ok=Math.abs((e.gy!=null?e.gy:this.G)-p.gy)<=depthHalf(hb)*sc&&Math.abs(p.x-e.x)<=hb.w*sc*UNIT_SCALE/2&&p.h>=lift&&p.h<=lift+hbT.h*sc;if(ok)p.headNow=isHead(e,p.h-lift);}
           if(!ok)continue;
-          p.hit.add(e);const big=BIGP[p.kind]||0;p.opt.onHit?p.opt.onHit(e,p.dmg,0):this.hitEnemy(e,p.dmg,p.src,{kb:big,critAdd:p.critAdd,critMul:p.critMul});
+          p.hit.add(e);const big=BIGP[p.kind]||0;p.opt.onHit?p.opt.onHit(e,p.dmg,0):this.hitEnemy(e,p.dmg,p.src,{kb:big,critAdd:p.critAdd,critMul:p.critMul,head:!!p.headNow&&!e.fly&&!e.boss});p.headNow=false;
           this.fx.push({k:'spark',x:p.x,y:p.y,t:0,c:PCOL[p.kind]||'#fff'});
           if(p.pierce>0)p.pierce--;else{p.dead=true;break;}}
         continue;}
@@ -1047,8 +1063,8 @@ class Game{
 function setTimeoutSafe(g,t,fn){(g.timers=g.timers||[]).push({t,fn});}
 const BIGP={};
 // where shots leave each hero (px ahead of the hero's x, px above the ground), matched to the strike frame
-const MUZZLE={flannel:[12,30],vile:[3,30],thing:[14,30],kykar:[15,46],dragons:[18,38],mathas:[17,33],marina:[11,25],thranduil:[12,34],joel:[11,33],robots:[18,33],blood:[13,46],mech:[20,30],weather:[14,47]};
-const PSPD={arrow:200,quarrel:215,bolt:150,orb:135,fire:150,shard:160,zap:170,wisp:120,plasma:180,blood:140,shell:160,frost:145,brick:190};   // px/s   // ranged shots don't shove, except the thrown brick (a little)
+const MUZZLE={flannel:[26,34],vile:[3,30],thing:[14,30],kykar:[15,46],dragons:[18,38],mathas:[17,33],marina:[11,25],thranduil:[12,34],joel:[11,33],robots:[18,33],blood:[13,46],mech:[20,30],weather:[14,47]};
+const PSPD={bullet:420,arrow:200,quarrel:215,bolt:150,orb:135,fire:150,shard:160,zap:170,wisp:120,plasma:180,blood:140,shell:160,frost:145,brick:190};   // px/s   // ranged shots don't shove, except the thrown brick (a little)
 const PCOL={skull:'#7dff9a',hex:'#c050ff',bolt:'#ffb040',orb:'#c050ff',arrow:'#e8e0c8',quarrel:'#e8e0c8',fire:'#ff8a1f',shard:'#6ff0ff',zap:'#bfefff',wisp:'#7dff9a',plasma:'#3ff0ff',blood:'#ff2a3a',shell:'#ffd23f',frost:'#9ae6ff',brick:'#c0603a'};
 
 // ======================================================================= RUN / PICKS (pure)
@@ -1179,13 +1195,14 @@ function migrateSlot(slot,player){
 function newSlot(player){const heroes={};for(const h of DATA.heroes)if(h.owner===player)heroes[h.key]={lvl:1,xp:0};return {epoch:SAVE_EPOCH,partySize:2,gold:0,heroes,best:{score:0,stage:0,prestige:0},runs:0,run:null,created:Date.now()};}
 
 // ======================================================================= exports for node sims
-const API={reticle,PLAYER_ICON,BEHAVIOR,INSP,inspText,CHAR,AIM_BOXES,aimOdds,aimBoxesOf,hbOf,HERO_HITBOX,ENERGY,spendEnergy,faceToward,AIM_RANGE,accTighten,LANES,UNIT_SCALE,HITBOX,aimBands,airBands,rollAirAim,rollAimHeight,rollLaneOffset,ABILITIES_OFF,armorReduction,HP_PER_STAMINA,gearScore,heroGear,giveItem,rollItem,stockShop,itemPrice,honePrice,slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
+const API={reticle,HEADSHOT,isHead,inspHelp,PLAYER_ICON,BEHAVIOR,INSP,inspText,CHAR,AIM_BOXES,aimOdds,aimBoxesOf,hbOf,HERO_HITBOX,ENERGY,spendEnergy,faceToward,AIM_RANGE,accTighten,LANES,UNIT_SCALE,HITBOX,aimBands,airBands,rollAirAim,rollAimHeight,rollLaneOffset,ABILITIES_OFF,armorReduction,HP_PER_STAMINA,gearScore,heroGear,giveItem,rollItem,stockShop,itemPrice,honePrice,slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
 if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793829747';const BGI=new Image();BGI.src='crawl_bg.png?v=1793829747';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793829747';
+const IMG=new Image();IMG.src='crawl.png?v=1793855941';const BGI=new Image();BGI.src='crawl_bg.png?v=1793855941';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793855941';const XIMG={flannel:new Image()};XIMG.flannel.src='crawl_flannel.png?v=1793855941';
+const ART_SCALE=1/3;   // full-size character art: 1 art pixel = 1/3 world pixel = 1 screen pixel on the normal 1152px-wide game
 const $=(s,r)=>(r||document).querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('en-US');
@@ -1224,9 +1241,9 @@ function unitFrame(e,U){const A=e.animT>0&&U.atk?U.atk:U.walk;let fr;
   if(A===U.atk){const dur=e.E.animAtk||.3;fr=Math.min(A.n-1,Math.floor((1-e.animT/dur)*A.n));return [A,fr];}
   if(U.idle&&e.moving===false)return [U.idle,Math.floor(e.walkT*6)%U.idle.n];
   return [A,Math.floor(e.walkT*(e.E.fps||7))%A.n];}
-function drawUnit(ctx,A,fr,x,gy,sc,alpha,flash,rot,flip){if(!UIMG.complete)return;ctx.save();ctx.translate(Math.round(x*RES)/RES,Math.round(gy*RES)/RES);if(rot)ctx.rotate(rot);ctx.scale(flip?-sc:sc,sc);if(alpha!=null)ctx.globalAlpha=alpha;
-  const sx=A.x+fr*A.fw;ctx.drawImage(UIMG,sx,A.y,A.fw,A.fh,-A.ax,-A.ay-1,A.fw,A.fh);
-  if(flash>0){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.min(1,flash*6)*.7;ctx.drawImage(UIMG,sx,A.y,A.fw,A.fh,-A.ax,-A.ay-1,A.fw,A.fh);}ctx.restore();}
+function drawUnit(ctx,A,fr,x,gy,sc,alpha,flash,rot,flip){const IM=A.img?XIMG[A.img]:UIMG;if(!IM||!IM.complete)return;ctx.save();ctx.translate(Math.round(x*RES)/RES,Math.round(gy*RES)/RES);if(rot)ctx.rotate(rot);ctx.scale(flip?-sc:sc,sc);if(alpha!=null)ctx.globalAlpha=alpha;
+  if(A.art){ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';}const sx=A.x+fr*A.fw;ctx.drawImage(IM,sx,A.y,A.fw,A.fh,-A.ax,-A.ay-1,A.fw,A.fh);
+  if(flash>0){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.min(1,flash*6)*.7;ctx.drawImage(IM,sx,A.y,A.fw,A.fh,-A.ax,-A.ay-1,A.fw,A.fh);}ctx.restore();}
 function drawBG(ctx,g,W,oy){
   // layered parallax backdrops (Ansimuz packs): each layer scrolls at its own speed, the walking path at full speed
   const b=BGA[g.st.biome.id]||BGA.grave;const d=g.dist+(g.demo?g.t*8:0);
@@ -1283,14 +1300,14 @@ function drawGame(ctx,g,W,oy){
     const mw=12,mp=Math.max(0,m.hp/m.max);ctx.fillStyle='#120a14';ctx.fillRect(Math.round(m.x-mw/2)-1,Math.round(G-(n==='e_skeleton'?60:44)*sc)-3,mw+2,3);ctx.fillStyle='#7dff9a';ctx.fillRect(Math.round(m.x-mw/2),Math.round(G-(n==='e_skeleton'?60:44)*sc)-2,Math.round(mw*mp),1);ctx.restore();}
   // heroes (back to front)
   const hs=g.heroes.slice().sort((a,b)=>a.x-b.x);
-  for(const h of hs)if(!h.alive){const gy=h.gy||G;ctx.save();shrinkAt(ctx,h.x,gy,HS);const U=UNITS[h.key];if(U&&U.death)drawUnit(ctx,U.death,U.death.n-1,h.x,gy,1,.9,0,0,(h.face||1)>0);else spr(ctx,'h_'+h.key,10,h.x-32,gy-60,false,.85);ctx.restore();}
+  for(const h of hs)if(!h.alive){const gy=h.gy||G;ctx.save();shrinkAt(ctx,h.x,gy,HS);const U=UNITS[h.key];if(U&&U.death)drawUnit(ctx,U.death,U.death.n-1,h.x,gy,U.death.art?ART_SCALE/HS:1,.9,0,0,(h.face||1)>0);else spr(ctx,'h_'+h.key,10,h.x-32,gy-60,false,.85);ctx.restore();}
   for(const f of g.fx)if(f.k==='corpse'&&UNITS[f.skin||f.type]){ctx.save();shrinkAt(ctx,f.x,f.gy!=null?f.gy:G,HS);ctx.restore();const U=UNITS[f.skin||f.type],k=f.t/f.life;const fall=Math.min(1,k*3.2);
     if(U.die){const fr=Math.min(U.die.n-1,Math.floor(k/.7*U.die.n));const E2=CFG.enemies[f.type]||{};drawUnit(ctx,U.die,fr,f.x,f.gy!=null?f.gy:G,HS*(E2.scale||1)*(f.elite?1.1:1),k>.75?(1-k)*4:1,0,0);continue;}
     drawUnit(ctx,U.walk,0,f.x+fall*3,f.gy!=null?f.gy:G+(f.lane||0),HS*(f.elite?1.1:1),Math.min(1,2.2*(1-k)),0,-fall*Math.PI/2*.96);}
   for(const f of g.fx)if(f.k==='corpse'){const n='e_'+f.type,a=SP[n];if(!a||UNITS[f.type])continue;const k=f.t/f.life;const big=FH(a)===64;
     const y=f.fly?Math.min(G-44,f.y-FH(a)/2+f.t*160):G-(big?60:44)+(f.lane||0);ctx.save();if(f.elite){ctx.translate(f.x,y+FH(a));ctx.scale(1.22,1.22);spr(ctx,n,10,-FW(a)/2,-FH(a),false,Math.min(1,2.2*(1-k)));}else spr(ctx,n,10,f.x-FW(a)/2,y,false,Math.min(1,2.2*(1-k)));ctx.restore();}
   const laser=()=>{for(const h of g.heroes){const K=h.cast;if(!h.alive||!K||!K.tgt||K.tgt.dead)continue;const T=K.tgt,mz=MUZZLE[h.key]||[10,30];
-      const x0=g.heroX(h)+(h.face<0?-1:1)*7,y0=(h.gy||g.G)-15,tx=T.x,ty=(T.gy!=null&&!T.fly?T.gy:g.G)-(T.type==='werewolf'?18:38)*HS*((T.E&&T.E.scale)||1);
+      const x0=g.heroX(h)+(h.face<0?-1:1)*mz[0],y0=(h.gy||g.G)-mz[1],tx=T.x,ty=(T.gy!=null&&!T.fly?T.gy:g.G)-(T.type==='werewolf'?18:38)*HS*((T.E&&T.E.scale)||1);
       const k=K.t/K.T;ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(255,40,40,${.35+.45*k})`;ctx.lineWidth=.6+k*.6;ctx.setLineDash(k>.75?[]:[3,2]);
       ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(tx,ty);ctx.stroke();ctx.setLineDash([]);glow(ctx,tx,ty,3+3*k,'#ff2828',.35+.3*Math.sin(g.t*30));ctx.restore();}};
   const drawHero=(h)=>{const G0=h.gy||g.G;ctx.save();shrinkAt(ctx,h.x,G0,HS);drawHero0(h);ctx.restore();};
@@ -1315,14 +1332,15 @@ function drawGame(ctx,g,W,oy){
       const mov=h.moving||g.scroll;
       if(h.animM>0){A=U.melee;f=Math.min(A.n-1,Math.floor((1-h.animM/.45)*A.n));}
       else if(h.animR>0){A=h.firedMoving?U.walkfire:U.ranged;f=Math.min(A.n-1,Math.floor((1-h.animR/.5)*A.n));}
+      else if(h.cast){A=U.ranged;f=0;}   // holding the aim during Aimed Shot's cast
       else if(h.hitFlash>0){A=U.hurt;f=Math.min(A.n-1,Math.floor((1-h.hitFlash/.12)*A.n));}
       else if(C&&h.ammo<=0&&!mov){A=U.reload;f=Math.min(A.n-1,Math.floor((h.reloadT||0)/C.ranged.reload*A.n));}
       else if(mov){A=h.running?U.run:U.walk;f=Math.floor(g.t*(h.running?12:8))%A.n;}
-      drawUnit(ctx,A,f,h.x+lx,G,1,null,h.hitFlash,0,(h.face||1)>0);}
+      drawUnit(ctx,A,f,h.x+lx,G,A.art?ART_SCALE/HS:1,null,h.hitFlash,0,(h.face||1)>0);}
     else{shadow(ctx,h.x+lx,G,9);spr(ctx,'h_'+h.key,fr,h.x+lx-32,G-60,h.face<0,null,h.hitFlash);}
     ctx.restore();
     if(h.shield>0){ctx.strokeStyle='rgba(154,230,255,.7)';ctx.beginPath();ctx.ellipse(Math.round(h.x+lx),G-24,15,27,0,0,7);ctx.stroke();}
-    const bx=h.x+(h.dodgeX||0)+(h.wanderX||0);plate(ctx,h,bx,G-63,22,true);};
+    const bx=h.x+(h.dodgeX||0)+(h.wanderX||0);plate(ctx,h,bx,G-(hbOf(h).h+17),22,true);};
   // enemies
   // depth lanes: each enemy stands a few px nearer/farther; small creatures take the front lanes; back lanes draw first
   for(const e of g.enemies)if(e.lane==null){const a=SP['e_'+e.type];e.lane=e.boss||e.fly?0:UNITS[e.type]?Math.floor(Math.random()*6):(a&&FH(a)<64?5+Math.floor(Math.random()*4):Math.floor(Math.random()*5));}
@@ -1350,7 +1368,8 @@ function drawGame(ctx,g,W,oy){
   laser();
   // projectiles
   for(const p of g.proj){const x=Math.round(p.x),y=p.aimed?Math.round(p.y):Math.round(G+(p.y-G)*HS);const c=PCOL[p.kind]||'#ff3a3a';ctx.save();shrinkAt(ctx,x,y,HS);
-    if(p.kind==='arrow'||p.kind==='quarrel'){const d=p.enemy?-1:1;ctx.fillStyle='#8a6a4a';ctx.fillRect(d>0?x-8:x-1,y,9,1);
+    if(p.kind==='bullet'&&UNITS.flannel&&UNITS.flannel.bullet){const B=UNITS.flannel.bullet;drawUnit(ctx,B,0,x,y+B.ay*ART_SCALE/HS,ART_SCALE/HS,null,0,0,(p.dir||1)<0);}   // sprite bullet from the character's own sheet
+    else if(p.kind==='arrow'||p.kind==='quarrel'){const d=p.enemy?-1:1;ctx.fillStyle='#8a6a4a';ctx.fillRect(d>0?x-8:x-1,y,9,1);
       ctx.fillStyle='#d8d0c0';ctx.fillRect(x-d*9,y-1,2,1);ctx.fillRect(x-d*9,y+1,2,1);ctx.fillStyle='#c8ccd6';ctx.fillRect(x+(d>0?1:-3),y-1,2,3);ctx.fillRect(x+(d>0?3:-4),y,1,1);}
     else if(p.kind==='brick'){ctx.save();ctx.translate(x,y);ctx.rotate(p.rot||0);ctx.fillStyle='#9a3a24';ctx.fillRect(-3,-2,6,4);ctx.fillStyle='#c8603a';ctx.fillRect(-3,-2,6,1);ctx.restore();}
     else if(p.kind==='beam'){ctx.fillStyle='#ff2a3a';ctx.fillRect(x,y,8,1);}
@@ -1382,7 +1401,7 @@ function drawGame(ctx,g,W,oy){
     const tag=(u,x,y,lines,c)=>{lines=lines.filter(Boolean);const w=Math.max(...lines.map(l=>ctx.measureText(l).width))+4;ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(Math.round(x-w/2),Math.round(y-6*lines.length-1),Math.round(w),6*lines.length+2);
       ctx.fillStyle=c;lines.forEach((l,i)=>ctx.fillText(l,Math.round(x),Math.round(y-6*(lines.length-1-i))));};
     const nm=t=>!t?'nobody':t.key?(heroDef(t.key)||{name:t.key}).name.split(' ').slice(-1)[0]:(t.type||'foe');
-    for(const h of g.alive()){const P=h.plan;if(!P)continue;tag(h,g.heroX(h),(h.gy||G)-60,[personaTitle(h),`${P.intent.toUpperCase()} → ${nm(P.tgt)}`,P.why,...(h.dangerT>g.t?[h.dangerWhy]:[]),h.pauseT>0?'(thinking...)':h.burst>0?'BURST!':''],'#b6ff00');}
+    for(const h of g.alive()){const P=h.plan;if(!P)continue;tag(h,g.heroX(h),(h.gy||G)-Math.max(60,hbOf(h).h*UNIT_SCALE+14),[personaTitle(h),`${P.intent.toUpperCase()} → ${nm(P.tgt)}`,P.why,...(h.dangerT>g.t?[h.dangerWhy]:[]),h.pauseT>0?'(thinking...)':h.burst>0?'BURST!':''],'#b6ff00');}
     for(const e of g.enemies){if(e.dead||!e.plan)continue;tag(e,e.x,(e.gy||G)-(e.type==='werewolf'?40:52),[`${e.retreatT>0?'BACK OFF':'HUNT'} → ${nm(e.plan.tgt)}`,e.plan.why,e.pauseT>0?'(shambling...)':''],'#ff9a9a');}
     ctx.restore();}
   for(const t of g.texts){const a=1-t.t/.9;ctx.globalAlpha=Math.max(0,a);ptext(ctx,t.s,t.x,Math.round(G+(t.y-G)*HS),t.c,t.big?2:1);ctx.globalAlpha=1;}
@@ -1394,8 +1413,8 @@ function drawGame(ctx,g,W,oy){
 }
 // ---------------------------------------------------------------- portraits
 function portrait(key,size){const U=UNITS[key];if(U&&U.idle&&!SP['h_'+key]){const c=document.createElement('canvas');const A=U.idle;c.width=A.fw;c.height=A.fh;c.className='cc-por';
-    const go=()=>{const x=c.getContext('2d');x.imageSmoothingEnabled=false;const w=30,hh=46,sx=A.x+A.ax-w/2,sy=A.y+A.ay-hh;c.width=w*2;c.height=hh*2;x.imageSmoothingEnabled=false;x.translate(c.width,0);x.scale(-2,2);x.drawImage(UIMG,sx,sy,w,hh,0,0,w,hh);};
-    if(UIMG.complete)go();else UIMG.addEventListener('load',go,{once:true});if(size)c.style.width=size+'px';return c;}
+    const go=()=>{const x=c.getContext('2d');x.imageSmoothingEnabled=false;const k=A.art?3.4:1,w=30*k,hh=46*k,z=A.art?1:2,sx=A.x+A.ax-w/2,sy=A.y+A.ay-hh;c.width=w*z;c.height=hh*z;x.imageSmoothingEnabled=!!A.art;x.translate(c.width,0);x.scale(-z,z);x.drawImage(A.img?XIMG[A.img]:UIMG,sx,sy,w,hh,0,0,w,hh);};
+    const IM0=A.img?XIMG[A.img]:UIMG;if(IM0.complete)go();else IM0.addEventListener('load',go,{once:true});if(size)c.style.width=size+'px';return c;}
   const c=document.createElement('canvas');const a=SP['h_'+key];c.width=a[2];c.height=a[3];c.className='cc-por';
   const go=()=>{const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,c.width,c.height);x.drawImage(IMG,a[0],a[1],a[2],a[3],0,0,a[2],a[3]);};
   if(IMG.complete)go();else IMG.addEventListener('load',go,{once:true});if(size)c.style.width=size+'px';return c;}
@@ -1493,7 +1512,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.3</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.4</span></span>
     <button class="cc-ibx" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ibx" data-a="pause" title="Pause">⏸</button><button class="cc-ibx" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ibx" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ibx" data-a="mute" title="Sound">${muted?'🔇':'🔊'}</button><button class="cc-ibx" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ibx" data-a="fs" title="Full screen">⛶</button><button class="cc-ibx" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES}" height="${216*RES}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -1583,7 +1602,7 @@ function showTeam(){
   // Inspiration: player first, then that player's decks (each option shows its bonus). Saved per hero on this save slot.
   P.querySelectorAll('.cc-insp').forEach(box=>{const k=box.dataset.ik,H=s.heroes[k];const ip=box.querySelector('[data-ip]'),id=box.querySelector('[data-id]'),ib=box.querySelector('.cc-ibx');
     const fill=()=>{const p=ip.value;id.disabled=!p;id.innerHTML=p?`<option value="">Pick a deck…</option>`+Object.keys(INSP).filter(d=>INSP[d].o===p).map(d=>`<option value="${esc(d)}"${H.insp===d?' selected':''}>${esc(d)}: ${esc(inspText(d))}</option>`).join(''):'<option>Pick a player first</option>';show();};
-    const show=()=>{const d=H.insp;ib.innerHTML=d&&INSP[d]?`<b>${esc(d)}</b>: ${esc(inspText(d))}<br><span style="opacity:.7">${esc(INSP[d].why)}</span>`:'<span style="opacity:.6">No inspiration yet</span>';
+    const show=()=>{const d=H.insp;ib.innerHTML=d&&INSP[d]?`<b>${esc(d)}</b>: ${esc(inspText(d))}<br><span style="opacity:.7">${esc(INSP[d].why)}</span><ul style="margin:4px 0 0;padding-left:14px">${inspHelp(d).map(t=>`<li style="margin-top:2px">${esc(t)}</li>`).join('')}</ul>`:'<span style="opacity:.6">No inspiration yet</span>';
       const b=box.parentNode.querySelector('.cc-hero');if(b){b.title=[heroDef(k).name,'',BEHAVIOR[k]||'','',...personaLines({key:k,insp:H.insp})].join('\n');const t=b.querySelector('.dk b');}};
     ip.onchange=()=>{if(!ip.value||(H.insp&&INSP[H.insp]&&INSP[H.insp].o!==ip.value)){H.insp=null;persist();}fill();};
     id.onchange=()=>{H.insp=id.value||null;persist();show();};fill();});
