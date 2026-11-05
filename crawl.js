@@ -524,7 +524,7 @@ CHAR.robot={name:'Warhound',role:'Arc Blade + Gatling',combo:0,flatHp:0,stamina:
 //   team buff, a curse that jumps on death, a fear chant, and a passive that feeds on nearby deaths.
 CHAR.cultist={name:'Void_Cultist',role:'Dagger + Void Bolts',combo:0,flatHp:0,stamina:8,hpPerStamina:5,armorPts:3,dodge:.06,kbRes:.15,
   melee:{dice:[1,6],every:1.4,reach:18,kb:8,hitAt:.2},
-  ranged:{dice:[1,3],flat:0,every:.95,range:210,clip:0,reload:0,pellets:1,anim:.34,releaseAt:.18},   // 0.12.22 (Kyle): weak void bolts, fired about twice as fast as other ranged heroes
+  ranged:{dice:[1,4],flat:0,every:.95,range:210,clip:0,reload:0,pellets:1,anim:.34,releaseAt:.18},   // 0.12.22 (Kyle): weak void bolts, fired about twice as fast as other ranged heroes
   acc:14,walkPenalty:8,crit:.1,critMul:1.8,luck:18,xp:0,run:1.8,turn:.22,enMax:100,enRegen:5,
   abilities:[
     // Call_of_the_Deep: IF 2+ enemies are within 150px (or anything big) THEN summon a tentacle beside the nearest group for 10s.
@@ -2001,12 +2001,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793884731';const BGI=new Image();BGI.src='crawl_bg.png?v=1793884731';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793884731';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793884793';const BGI=new Image();BGI.src='crawl_bg.png?v=1793884793';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793884793';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793884731';XIMG.wave.src='crawl_wave.png?v=1793884731';XIMG.chibi.src='crawl_chibi.png?v=1793884731';XIMG.flannel.src='crawl_flannel.png?v=1793884731';XIMG.rain.src='crawl_rain.png?v=1793884731';XIMG.druid.src='crawl_druid.png?v=1793884731';XIMG.camp.src='crawl_campfire.png?v=1793884731';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793884731';XIMG.tornado.src='crawl_fx_tornado.png?v=1793884731';XIMG.vine.src='crawl_fx_vine.png?v=1793884731';XIMG.thorn.src='crawl_fx_thorn.png?v=1793884731';
+const XIMG={cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793884793';XIMG.wave.src='crawl_wave.png?v=1793884793';XIMG.chibi.src='crawl_chibi.png?v=1793884793';XIMG.flannel.src='crawl_flannel.png?v=1793884793';XIMG.rain.src='crawl_rain.png?v=1793884793';XIMG.druid.src='crawl_druid.png?v=1793884793';XIMG.camp.src='crawl_campfire.png?v=1793884793';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793884793';XIMG.tornado.src='crawl_fx_tornado.png?v=1793884793';XIMG.vine.src='crawl_fx_vine.png?v=1793884793';XIMG.thorn.src='crawl_fx_thorn.png?v=1793884793';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793884731';XIMG.obst.src='crawl_obst.png?v=1793884731';XIMG.robot.src='crawl_robot.png?v=1793884731';XIMG.cultist.src='crawl_cultist.png?v=1793884731';XIMG.tentacle.src='crawl_tentacle.png?v=1793884731';XIMG.boom.src='crawl_boom.png?v=1793884731';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793884793';XIMG.obst.src='crawl_obst.png?v=1793884793';XIMG.robot.src='crawl_robot.png?v=1793884793';XIMG.cultist.src='crawl_cultist.png?v=1793884793';XIMG.tentacle.src='crawl_tentacle.png?v=1793884793';XIMG.boom.src='crawl_boom.png?v=1793884793';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
