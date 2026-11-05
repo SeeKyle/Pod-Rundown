@@ -2419,12 +2419,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793901810';const BGI=new Image();BGI.src='crawl_bg.png?v=1793901810';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793901810';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793902145';const BGI=new Image();BGI.src='crawl_bg.png?v=1793902145';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793902145';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793901810';XIMG.wave.src='crawl_wave.png?v=1793901810';XIMG.chibi.src='crawl_chibi.png?v=1793901810';XIMG.flannel.src='crawl_flannel.png?v=1793901810';XIMG.rain.src='crawl_rain.png?v=1793901810';XIMG.druid.src='crawl_druid.png?v=1793901810';XIMG.camp.src='crawl_campfire.png?v=1793901810';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793901810';XIMG.tornado.src='crawl_fx_tornado.png?v=1793901810';XIMG.vine.src='crawl_fx_vine.png?v=1793901810';XIMG.thorn.src='crawl_fx_thorn.png?v=1793901810';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793902145';XIMG.wave.src='crawl_wave.png?v=1793902145';XIMG.chibi.src='crawl_chibi.png?v=1793902145';XIMG.flannel.src='crawl_flannel.png?v=1793902145';XIMG.rain.src='crawl_rain.png?v=1793902145';XIMG.druid.src='crawl_druid.png?v=1793902145';XIMG.camp.src='crawl_campfire.png?v=1793902145';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793902145';XIMG.tornado.src='crawl_fx_tornado.png?v=1793902145';XIMG.vine.src='crawl_fx_vine.png?v=1793902145';XIMG.thorn.src='crawl_fx_thorn.png?v=1793902145';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793901810';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793901810';XIMG.obst.src='crawl_obst.png?v=1793901810';XIMG.cars.src='crawl_cars.png?v=1793901810';XIMG.robot.src='crawl_robot.png?v=1793901810';XIMG.cultist.src='crawl_cultist.png?v=1793901810';XIMG.tentacle.src='crawl_tentacle.png?v=1793901810';XIMG.boom.src='crawl_boom.png?v=1793901810';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793902145';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793902145';XIMG.obst.src='crawl_obst.png?v=1793902145';XIMG.cars.src='crawl_cars.png?v=1793902145';XIMG.robot.src='crawl_robot.png?v=1793902145';XIMG.cultist.src='crawl_cultist.png?v=1793902145';XIMG.tentacle.src='crawl_tentacle.png?v=1793902145';XIMG.boom.src='crawl_boom.png?v=1793902145';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2532,7 +2532,8 @@ function pip(ctx,x,y,c,k){ctx.fillStyle='#120a14';ctx.fillRect(x-1,y-1,5,5);ctx.
   if(k==='drop'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,2);}else if(k==='flame'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,1);ctx.fillRect(x+1,y+2,1,1);}
   else if(k==='snow'){ctx.fillRect(x+1,y,1,3);ctx.fillRect(x,y+1,3,1);}else if(k==='star'){ctx.fillRect(x,y,1,1);ctx.fillRect(x+2,y,1,1);ctx.fillRect(x+1,y+1,1,1);ctx.fillRect(x,y+2,1,1);ctx.fillRect(x+2,y+2,1,1);}
   else if(k==='shield'){ctx.fillRect(x,y,3,2);ctx.fillRect(x+1,y+2,1,1);}else{ctx.fillRect(x+1,y,1,3);ctx.fillRect(x,y+1,3,1);}}
-function plate(ctx,u,x,y,w,hero,col){x=Math.round(x-w/2);y=Math.round(y);const pct=Math.max(0,Math.min(1,u.hp/u.max));
+let PLATE_OFF=false;   /* the camp scene draws its heroes without health plates */
+function plate(ctx,u,x,y,w,hero,col){if(PLATE_OFF)return;x=Math.round(x-w/2);y=Math.round(y);const pct=Math.max(0,Math.min(1,u.hp/u.max));
   ctx.fillStyle='#120a14';ctx.fillRect(x-1,y-1,w+2,hero?6:4);ctx.fillStyle='#3a1a24';ctx.fillRect(x,y,w,2);
   ctx.fillStyle=col||(pct>.5?'#4fd46a':pct>.25?'#ffb020':'#e8303a');ctx.fillRect(x,y,Math.round(w*pct),2);
   if(u.max>=20){ctx.fillStyle='rgba(18,10,20,.55)';const n=Math.floor(u.max/10);for(let i=1;i<n;i++){const tx=x+Math.round(w*i*10/u.max);if(tx<x+w)ctx.fillRect(tx,y,1,1);}}
@@ -2882,6 +2883,7 @@ const CSS=`
 .cc-main{position:relative;flex:1;display:flex;flex-direction:column;min-height:0;align-items:center}
 .cc-info{display:flex;gap:10px;align-items:center;width:100%;padding:4px 10px;font-size:12px;flex-wrap:wrap;box-sizing:border-box}
 .cc-info b{color:#ffd23f;font-weight:600}.cc-xp{flex:1;min-width:90px;height:6px;background:#1e1228;border:1px solid #3a2450;border-radius:3px;overflow:hidden}.cc-xp i{display:block;height:100%;background:#a6ff2e}
+canvas.cc-fire{display:block;width:100%;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:10px;border:1px solid #3a2a1a;box-shadow:0 0 30px rgba(255,120,40,.18);margin:6px 0 10px}
 #cc-cv{image-rendering:pixelated;image-rendering:crisp-edges;background:#000;display:block;flex:0 0 auto}
 .cc-cvw{position:relative;overflow:hidden;flex:0 0 auto;max-width:100%}
 .cc-cvw.cam #cc-cv{position:absolute;left:0;top:0}
@@ -2965,7 +2967,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.56</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.57</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -3060,8 +3062,17 @@ function showSlots(){
   P.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(!confirmInline(b,'Delete forever?'))return;p.slots[+b.dataset.del]=null;persist();showSlots();});
 }
 function confirmInline(b,msg){if(b.dataset.armed)return true;b.dataset.armed=1;const t=b.textContent;b.textContent=msg+' Tap again';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent=t;}},2600);return false;}
-function statBars(k,lvl){const b=heroBase(k,lvl,3);const mx={hp:80,atk:40,aspd:1.4};
-  return `<div class="cc-stat"><span title="${b.stamina} Stamina × 5 = ${b.hp} HP">HP ${b.hp}</span><i><b style="width:${Math.min(100,b.hp/mx.hp*100)}%"></b></i><span title="Basic attack ${b.dice[0]}d${b.dice[1]}, crit ${Math.round(b.crit*100)}%, accuracy ${b.acc||0}; bar = ability power">PWR</span><i><b style="width:${Math.min(100,b.atk/mx.atk*100)}%"></b></i><span>SPD</span><i><b style="width:${Math.min(100,b.aspd/mx.aspd*100)}%"></b></i></div>`;}
+/* 0.12.57 (Kyle): PWR and SPD used the old flat atk/aspd numbers, which are the same for every hero now that damage comes from dice.
+   PWR is now his best basic attack's damage per second (dice, flat bonus, pellets, crit), SPD how many basic attacks he gets off per second.
+   Both are scaled against the best in the roster so the bars spread out. */
+function atkProfile(k){const C=CHAR[k]||{};let best={dps:0,rate:0};
+  for(const [nm,A] of Object.entries(C)){if(!A||typeof A!=='object'||!Array.isArray(A.dice)||!(A.every>0))continue;
+    const avg=(A.dice[0]*(A.dice[1]+1)/2+(A.flat||0))*(1+((A.pellets||1)-1)*.5);/* pellets spread wide: count about half of the extras as landing */const clip=A.clip||1,cyc=clip>1?((clip-1)*A.every+(A.reload||A.every))/clip:A.every;
+    const dps=avg/cyc*(1+(C.crit||0)*((C.critMul||1.75)-1));const r=best.rate;if(dps>best.dps)best={dps,rate:r,nm,avg};best.rate=Math.max(best.rate,1/cyc);}
+  return best;}
+function statBars(k,lvl){const b=heroBase(k,lvl,3);const mx={hp:80};const HE=Object.keys(CHAR).filter(x=>x!=='dog');const P=atkProfile(k);
+  const mxD=Math.max(...HE.map(x=>atkProfile(x).dps)),mxR=Math.max(...HE.map(x=>atkProfile(x).rate));
+  return `<div class="cc-stat"><span title="${b.stamina} Stamina × 5 = ${b.hp} HP">HP ${b.hp}</span><i><b style="width:${Math.min(100,b.hp/mx.hp*100)}%"></b></i><span title="Basic attack damage per second: about ${P.dps.toFixed(1)} (${P.nm||'basic'}: ${(P.avg||0).toFixed(1)} a hit, crit ${Math.round(b.crit*100)}%, accuracy ${b.acc||0}). Abilities not counted.">PWR</span><i><b style="width:${Math.max(8,P.dps/mxD*100).toFixed(0)}%"></b></i><span title="About ${P.rate.toFixed(2)} basic attacks a second">SPD</span><i><b style="width:${Math.max(8,P.rate/mxR*100).toFixed(0)}%"></b></i></div>`;}
 const ROLE={melee:'Melee',ranged:'Ranged',caster:'Caster',duo:'Duo',gunner:'Rifle + Melee',blade:'Sword'};
 function showTeam(){
   setRunModes(null);  const s=SLOT();migrate(s,CC.player);s.partySize=3;const pick=[];   /* 0.12.33: back to a 3-hero party */
@@ -3110,11 +3121,35 @@ function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=r
   const stl=upgT(run,'still');const still=stl?`<div class="cc-card"><b>🫙 Moonshine Still ${['','I','II'][stl]}</b> <span class="cc-sub" style="font-size:11px">${run.brewN||0}/${stl===1?1:2} brewed this camp · Liquid Courage costs 🥫 ${stl===1?2:1} food · +20% damage, -10 accuracy, steadier nerves for the next stage</span>
     <div class="cc-chips" style="align-items:center;margin-top:4px">${run.team.map(k=>btn(`data-brew="${k}" ${(run.food||0)<(stl===1?2:1)||(run.brewN||0)>=(stl===1?1:2)||(run.heroes[k].carry&&run.heroes[k].carry.courage)?'disabled':''}`,'🫙 → '+esc(heroDef(k).name.split(/[ _]/)[0]),'Pour '+heroDef(k).name+' a jar')).join(' ')}</div></div>`:'';
   return sup+up+tri+tower+still;}
+/* 0.12.57 (Kyle): the camp screen opens on the party resting around a roaring fire at night (Diablo-style),
+   idling with their normal animations, the fire flickering light over them. Everything else on the camp screen stays below it. */
+function campScene(host,run){const W=200,H=96;const c=document.createElement('canvas');c.className='cc-fire';c.width=W*RES;c.height=H*RES;host.appendChild(c);
+  const x=c.getContext('2d');let g;try{const r2=newRun(run.team.slice(),null);r2.stage=run.stage;r2.prestige=run.prestige||0;g=new Game({run:r2,slot:null,demo:true,W});}catch(e){c.remove();return;}
+  g.enemies=[];g.obst=[];g.mines=[];g.loot=[];g.minions=[];g.proj=[];g.fx=[];g.texts=[];
+  const fx=W/2,fgy=LANES[2];g.camp={x:fx,gy:fgy,t:1,life:99,state:'burn',A:{}};
+  const spots=[[fx-26,LANES[3],1],[fx+27,LANES[3],-1],[fx-9,LANES[0],1]];
+  g.heroes.forEach((h,i)=>{const s=spots[i]||spots[0];h.x=s[0];h.gy=s[1];h.face=s[2];h.alive=true;h.moving=false;h.hp=h.max;h.en=h.enMax||100;h.wanderX=0;h.dodgeX=0;h.plan=null;});
+  const stars=[...Array(26)].map(()=>[Math.random()*W,Math.random()*H*.45,Math.random()]);
+  let last=performance.now();
+  const frame=now=>{if(!c.isConnected)return;requestAnimationFrame(frame);const dt=Math.min(.05,(now-last)/1000);if(dt<1/31)return;last=now;
+    g.t+=dt;g.camp.t+=dt;for(const h of g.heroes){h.walkT=(h.walkT||0);h.animT=0;h.hitFlash=0;}
+    if(!(IMG.complete&&BGI.complete))return;PLATE_OFF=true;try{drawGame(x,g,W,CFG.H-H);}catch(e){PLATE_OFF=false;return;}PLATE_OFF=false;
+    const RR=c.width/W;x.setTransform(RR,0,0,RR,0,0);
+    x.globalCompositeOperation='source-over';x.fillStyle='rgba(4,2,14,.5)';x.fillRect(0,0,W,H);   // night
+    for(const [sx,sy,tw] of stars){x.globalAlpha=.35+.35*Math.sin(g.t*1.5+tw*9);x.fillStyle='#cfd8ff';x.fillRect(sx,sy,.6,.6);}x.globalAlpha=1;
+    const fy=fgy-(CFG.H-H)-6,fl=1+.07*Math.sin(g.t*11)+.05*Math.sin(g.t*17.3);
+    x.globalCompositeOperation='lighter';
+    let gr=x.createRadialGradient(fx,fy,1,fx,fy,62*fl);gr.addColorStop(0,'rgba(255,160,60,.55)');gr.addColorStop(.35,'rgba(255,110,30,.22)');gr.addColorStop(1,'rgba(255,80,20,0)');x.fillStyle=gr;x.fillRect(0,0,W,H);
+    gr=x.createRadialGradient(fx,fy+2,0,fx,fy+2,14*fl);gr.addColorStop(0,'rgba(255,230,150,.7)');gr.addColorStop(1,'rgba(255,140,40,0)');x.fillStyle=gr;x.fillRect(fx-20,fy-20,40,40);
+    x.globalCompositeOperation='source-over';
+    gr=x.createLinearGradient(0,0,W,0);gr.addColorStop(0,'rgba(4,2,10,.75)');gr.addColorStop(.25,'rgba(4,2,10,0)');gr.addColorStop(.75,'rgba(4,2,10,0)');gr.addColorStop(1,'rgba(4,2,10,.75)');x.fillStyle=gr;x.fillRect(0,0,W,H);   // vignette
+  };requestAnimationFrame(frame);}
 function showCamp(){
   const s=SLOT();const run=s.run;migrate(s,CC.player);run.bag=run.bag||[];if(ABILITIES_OFF){run.pending=0;run.bag=run.bag.filter(e=>e.kind==='item');}const st=CFG.stage(run.stage,run.prestige);
   setRunModes(run);{const lg=campArrive(s,run);if(lg.length)run.campLog=lg;else if(run.campAt!==run.stage)run.campLog=[];}const hungry=new Set(run.needFeed||[]);
   const btn=(attrs,label,title)=>`<button class="cc-mini" ${attrs} ${title?`title="${esc(title)}"`:''}>${label}</button>`;
   const P=showPanel(`<div class="cc-h">STAGE ${run.stage}${run.prestige?' · ★'+run.prestige:''}${run.hardcore?' <span style="color:#ff5a5a;font-size:12px">☠ HARDCORE</span>':''}${run.dnd?' <span style="color:#c8a0ff;font-size:12px">🎲 D&amp;D</span>':''}</div><div class="cc-h2">${esc(st.biome.name)}${st.boss?` — ${esc(CFG.bosses[st.boss].name)} awaits`:''}</div>
+    <div class="cc-firehost"></div>
     <p class="cc-sub">Score ${fmt(run.score)} · save point. ${run.pending?`<b style="color:#a6ff2e">⬆ ${run.pending} upgrade${run.pending>1?'s':''} waiting</b>`:'No upgrades waiting.'}</p>
     <div class="cc-load">${run.team.map(k=>{const d=heroDef(k),hv=run.heroes[k],L=s.heroes[k],cap=slotCaps(L.lvl);
       const act=hv.spells.map((e,i)=>[e,i]).filter(([e])=>!SPELL[e.arch].passive),pas=hv.spells.map((e,i)=>[e,i]).filter(([e])=>SPELL[e.arch].passive);
@@ -3144,7 +3179,7 @@ function showCamp(){
             ${who.filter(k=>run.team.includes(k)).map(k=>btn(`data-eq="${bi}|${k}"`,'↑ '+esc(heroDef(k).name.split(' ').slice(-1)[0]),'Equip on '+heroDef(k).name)).join('')}${isItem?btn(`data-dis="${bi}"`,'Sell +'+(12*(e.r||1))+'g','Sell'):btn(`data-dis="${bi}"`,'✕','Discard')}</div>`;}).join(''):'<span class="cc-sub" style="font-size:12px;margin:0">Empty. New picks that don\'t fit a slot land here.</span>'}</div></div></div></div>
     <div class="cc-row" style="margin-top:14px">${run.pending?`<button class="cc-btn go" data-pick>CHOOSE UPGRADES (${run.pending})</button>`:`<button class="cc-btn go" data-begin>BEGIN STAGE ${run.stage} ▶</button>`}
       <button class="cc-btn" data-quit>Save & exit</button></div><p class="cc-sub" id="cc-campmsg" style="margin-top:8px"></p>`);
-  P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por,56)));
+  P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por,56)));{const fh=P.querySelector('.cc-firehost');if(fh)campScene(fh,run);}
   const msg=t=>{const m=P.querySelector('#cc-campmsg');if(m)m.textContent=t;};
   P.querySelectorAll('[data-un]').forEach(b=>b.onclick=()=>{const [k,sl,i]=b.dataset.un.split('|');if(unequip(run,k,sl,+i)){persist();showCamp();}else msg(run.bag.length>=BAG_SIZE?'Backpack is full.':'Each hero keeps at least one skill equipped.');});
   P.querySelectorAll('[data-eq]').forEach(b=>b.onclick=()=>{const [bi,k]=b.dataset.eq.split('|');if(equip(run,s,+bi,k)){persist();showCamp();}else msg('No free slot of that kind on '+heroDef(k).name+'. Move something to the backpack first.');});
