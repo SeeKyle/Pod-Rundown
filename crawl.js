@@ -323,35 +323,35 @@ const CHAR={
 
 // ---- 0.12.3 Inspiration Decks (Kyle): pick a player, then one of their decks. Each deck gives one small, unique bonus tied to
 //   what that deck is best at. sl = slider moves (a move that would go below 0 or above 10 doesn't happen). Easy to retune here.
-const INSP={   // 0.12.4 (Kyle): every bonus doubled
+const INSP={   /* 0.12.4 (Kyle): every bonus doubled. 0.12.34: Herbalist x3 and Scavenger x3, each with one distinct stat and no slider nudge; every other deck has its own stat or passive and its own slider nudge */
  // Kyle
  'The Grim Throne':{o:'Kyle',why:'Kenrith\'s royal court: the most consistent big threats in the pod',mod:{crit:4},sl:{plan:-2}},
- 'Felothar':{o:'Kyle',why:'Walls everywhere: the pod\'s top Survival',mod:{armor:6},sl:{aggr:-2}},
+ 'Felothar':{o:'Kyle',why:'Walls of root and bark: the pod\'s top Survival, and the forest feeds whoever holds behind them',passive:'herbalist',mod:{armor:6}},
  'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up: the pod\'s biggest Finish',mod:{meleeDmg:20},sl:{range:2}},
  'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen',mod:{xp:12},sl:{energy:-2}},
  'Truly Fantastic':{o:'Kyle',why:'The Thing\'s deep mana pool',mod:{enMax:24},sl:{plan:2}},
  'Dice Boys Casino':{o:'Kyle',why:'Mr. House: the biggest ramp deck in the pod',mod:{enRegen:2},sl:{flair:2}},
- 'Tame Depala':{o:'Kyle',why:'Dwarf mechanics who can salvage anything with wheels',passive:'scavenger',mod:{kbRes:8},sl:{pace:-2}},
+ 'Tame Depala':{o:'Kyle',why:'Dwarf mechanics who salvage anything with wheels and stand like an anvil',passive:'scavenger',mod:{kbRes:20}},
  "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat',passive:'bounty',sl:{size:2}},
- 'The Last of Us':{o:'Kyle',why:'Survivors who live off what they can scrounge from the wrecks',passive:'scavenger',mod:{dodge:2},sl:{aware:2}},
+ 'The Last of Us':{o:'Kyle',why:'Survivors who live off what they scrounge from the wrecks and slip every grab',passive:'scavenger',mod:{dodge:4}},
  'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming',passive:'haunt',sl:{aware:-2}},
  'Mothman Cometh!':{o:'Kyle',why:'A dark omen that is never quite where you hit',passive:'omen',sl:{lane:2}},
  'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back',mod:{kb:30},sl:{pace:-2}},
- 'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger',mod:{stamina:2},sl:{flair:2}},
+ 'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger, and it doesn\'t talk',mod:{stamina:2},sl:{talk:-2}},
  "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward',passive:'onslaught',sl:{aggr:2}},
  // Cheez
  'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: fast flyers',mod:{move:12},sl:{pace:2}},
- 'Double Dragons':{o:'Cheez',why:'Dragon fire: the pod\'s biggest Threats',mod:{rangedDmg:16},sl:{aggr:2}},
+ 'Double Dragons':{o:'Cheez',why:'Dragon fire: the pod\'s biggest Threats',mod:{rangedDmg:16},sl:{energy:2}},
  'Turtle Power':{o:'Cheez',why:'Shells and teamwork',passive:'shell',sl:{self:-2}},
- 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills',passive:'devour',sl:{size:2}},
+ 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills',passive:'devour',sl:{exec:2}},
  'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone',passive:'pickpocket',sl:{self:2}},
- 'Blood Suckers':{o:'Cheez',why:'Lifelinking bats with long memories, always scrounging for something to keep the flock alive',passive:'herbalist',mod:{lifesteal:2},sl:{grudge:2}},   // 0.12.27 (Kyle): the lifegain deck gives the Scavenger passive instead of a stat
- 'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman strips wrecks for parts to overclock his machines',passive:'scavenger',mod:{rangedSpd:6},sl:{exec:2}},
+ 'Blood Suckers':{o:'Cheez',why:'Lifelinking bats that drink deep and forage for anything that keeps the flock alive',passive:'herbalist',mod:{lifesteal:5}},
+ 'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman strips wrecks for parts to overclock his guns',passive:'scavenger',mod:{rangedSpd:15}},
  // Leon
- 'Family Matters':{o:'Leon',why:'Zinnia\'s copies look out for each other',passive:'bodyguard',sl:{aware:2,pack:-2}},
- 'Thranduil':{o:'Leon',why:'Elven eyes and forest lore',passive:'herbalist',mod:{acc:4},sl:{lane:-2}},
- 'Primary Directive':{o:'Leon',why:'Optimus transforms and swings fast',mod:{meleeSpd:20},sl:{self:-2}},
- 'Cosmic Spider':{o:'Leon',why:'Spider-Sense and web shooters',passive:'webs',sl:{exec:2}},
+ 'Family Matters':{o:'Leon',why:'Zinnia\'s copies look out for each other',passive:'bodyguard',sl:{aware:2}},
+ 'Thranduil':{o:'Leon',why:'Elven eyes and forest lore: knows every herb in the woods and never misses a shot',passive:'herbalist',mod:{acc:8}},
+ 'Primary Directive':{o:'Leon',why:'Optimus transforms, swings fast and rolls out with the team',mod:{meleeSpd:20},sl:{pack:-2}},
+ 'Cosmic Spider':{o:'Leon',why:'Spider-Sense and web shooters',passive:'webs',sl:{perc:2}},
 };
 const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼'};
 // what each character is like in a fight (shown when you hover them on the party screen)
@@ -420,7 +420,7 @@ function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.pas
 // 0.12.27 (Kyle): more decks give one unique passive instead of a small stat; fewer give two things at once
 const INSP_PASSIVE={
  herbalist:['Herbalist','he searches nearby foliage, rocks, stumps and fallen logs for healing herbs (1.5s each; the chance is good and goes up with his Luck and with how Perceptive he is) and carries up to 3. When he or an ally within about 50px is under 80% health, he uses one: it heals 20% of their max HP over 5s, but any damage stops it. He searches whatever is close by without going far out of his way, and goes to hurt allies with herbs.'],
- scavenger:['Scavenger','he searches broken-down cars (2s each; the chance goes up with his Luck and how Perceptive he is). He can turn up a Medkit (heals an ally under 60% for 25% at once), a Battery (+30 energy for an ally running low) or loose scrap worth gold, and carries up to 3 Medkits and Batteries. He searches wrecks close by without going far out of his way, and brings supplies to whoever needs them.'],
+ scavenger:['Scavenger','he searches broken-down cars (2s each; the chance goes up with his Luck and how Perceptive he is). He can turn up a Medkit (heals an ally under 60% for 25% at once), a Battery (+30 energy for an ally running low) or loose scrap worth gold, and carries 2 Medkits and Batteries at most, in any mix. He searches wrecks close by without going far out of his way, and brings supplies to whoever needs them.'],
  bounty:['Bounty Hunter','his first hit on the biggest enemy on the field puts a bounty on it: it is marked (takes 25% more damage from everyone for 8s), and when it dies the party gets +10 gold.'],
  haunt:['Haunted','anything that hits him has a 20% chance to be spooked and back away for 1.5s.'],
  omen:['Dark Omen','once every 12s, the first hit that would land on him passes straight through.'],
@@ -739,7 +739,7 @@ const Brain={
     // 0.12.28 Herbalist: IF I have room for herbs AND there's unsearched debris close by AND it isn't swarmed THEN go search it
     {const sp=insP(h);if(sp==='scavenger'&&(h.kit||[]).includes('med')){const H=g.alive().filter(o=>o!==h&&!o.pet&&o.hp/o.max<.6).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
       if(H&&Math.random()<.55+.35*(1-selfish)){const runMul=.45+1.4*pace;return {xoff:0,intent:'herb',runMul,goTo:H,reviveLane:H.laneI};}}}
-    if(((insP(h)==='herbalist'&&(h.herbs||0)<3)||(insP(h)==='scavenger'&&(h.kit||[]).length<3))&&!(h.search)){const RE=SEARCH_RE[insP(h)];const look=30+45*trait(h,'perc')+(insP(h)==='scavenger'?20:0);const o=(g.obst||[]).filter(o=>RE.test(o.k)&&!(o.searched&&o.searched[h.key])&&Math.abs(o.x-g.heroX(h))<look).sort((p,q)=>Math.abs(p.x-g.heroX(h))-Math.abs(q.x-g.heroX(h)))[0];
+    if(((insP(h)==='herbalist'&&(h.herbs||0)<3)||(insP(h)==='scavenger'&&(h.kit||[]).length<2))&&!(h.search)){const RE=SEARCH_RE[insP(h)];const look=30+45*trait(h,'perc')+(insP(h)==='scavenger'?20:0);const o=(g.obst||[]).filter(o=>RE.test(o.k)&&!(o.searched&&o.searched[h.key])&&Math.abs(o.x-g.heroX(h))<look).sort((p,q)=>Math.abs(p.x-g.heroX(h))-Math.abs(q.x-g.heroX(h)))[0];
       if(o){const danger=bb.E.filter(e=>Math.abs(e.x-o.x)<35).length;if(!h.srDecide||h.srDecide.o!==o||g.t>h.srDecide.until)h.srDecide={o,until:g.t+1.5+Math.random(),go:Math.random()<(danger?(.15+.5*aggr):.8+.15*trait(h,'perc'))*(/^car_/.test(o.k)&&bb.E.some(e=>Math.abs(e.x-o.x)<80)?.45+.55*aggr:1)};   /* IF it's a car AND enemies are around THEN Calculated units hold off (an alarm would bring more) */
         if(h.srDecide.go){const runMul=.45+1.4*pace;return {xoff:0,intent:'search',runMul,goTo:{ob:o},reviveLane:o.lanes[0]};}}}
     if(h.search)return {xoff:0,intent:'search',runMul:1,goTo:{ob:h.search.o},reviveLane:h.laneI};
@@ -1870,7 +1870,7 @@ class Game{
   obNear(h,o){const l=o.lanes.reduce((b,l)=>Math.abs(LANES[l]-(h.gy||this.G))<Math.abs(LANES[b]-(h.gy||this.G))?l:b,o.lanes[0]);if(Math.abs(LANES[l]-(h.gy||this.G))>7)return false;const [a,b]=this.obSpan(o,l);return h.x>a-9&&h.x<b+9;}
   stepHerbs(dt,scroll){const al=this.alive().filter(o=>!o.pet||true);
     for(const o of al){if(o.herbT>0){o.herbT-=dt;o.hp=Math.min(o.max,o.hp+o.herbHps*dt);}}
-    for(const h of al){const sp=insP(h);if(h.pet)continue;const RE=SEARCH_RE[sp]||/^$/,ST=SEARCH_T[sp]||2,full=sp==='herbalist'?(h.herbs||0)>=3:sp==='scavenger'?(h.kit||[]).length>=3:true;
+    for(const h of al){const sp=insP(h);if(h.pet)continue;const RE=SEARCH_RE[sp]||/^$/,ST=SEARCH_T[sp]||2,full=sp==='herbalist'?(h.herbs||0)>=3:sp==='scavenger'?(h.kit||[]).length>=2:true   /* 0.12.34 (Kyle): Scavenger holds 2 items total */;
       const canAmb=o=>o.k==='car_ambulance'&&!h.medkit;   // 0.12.33: anyone can search an ambulance for a Medkit
       // searching debris: stand next to an unsearched rock/stump/log for 1.5s; chance 45% + 1.2% per Luck (max 95%)
       if(h.search&&h.search.disarm)continue;
@@ -2118,12 +2118,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793888377';const BGI=new Image();BGI.src='crawl_bg.png?v=1793888377';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793888377';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793888951';const BGI=new Image();BGI.src='crawl_bg.png?v=1793888951';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793888951';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793888377';XIMG.wave.src='crawl_wave.png?v=1793888377';XIMG.chibi.src='crawl_chibi.png?v=1793888377';XIMG.flannel.src='crawl_flannel.png?v=1793888377';XIMG.rain.src='crawl_rain.png?v=1793888377';XIMG.druid.src='crawl_druid.png?v=1793888377';XIMG.camp.src='crawl_campfire.png?v=1793888377';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793888377';XIMG.tornado.src='crawl_fx_tornado.png?v=1793888377';XIMG.vine.src='crawl_fx_vine.png?v=1793888377';XIMG.thorn.src='crawl_fx_thorn.png?v=1793888377';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793888951';XIMG.wave.src='crawl_wave.png?v=1793888951';XIMG.chibi.src='crawl_chibi.png?v=1793888951';XIMG.flannel.src='crawl_flannel.png?v=1793888951';XIMG.rain.src='crawl_rain.png?v=1793888951';XIMG.druid.src='crawl_druid.png?v=1793888951';XIMG.camp.src='crawl_campfire.png?v=1793888951';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793888951';XIMG.tornado.src='crawl_fx_tornado.png?v=1793888951';XIMG.vine.src='crawl_fx_vine.png?v=1793888951';XIMG.thorn.src='crawl_fx_thorn.png?v=1793888951';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793888377';XIMG.obst.src='crawl_obst.png?v=1793888377';XIMG.cars.src='crawl_cars.png?v=1793888377';XIMG.robot.src='crawl_robot.png?v=1793888377';XIMG.cultist.src='crawl_cultist.png?v=1793888377';XIMG.tentacle.src='crawl_tentacle.png?v=1793888377';XIMG.boom.src='crawl_boom.png?v=1793888377';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793888951';XIMG.obst.src='crawl_obst.png?v=1793888951';XIMG.cars.src='crawl_cars.png?v=1793888951';XIMG.robot.src='crawl_robot.png?v=1793888951';XIMG.cultist.src='crawl_cultist.png?v=1793888951';XIMG.tentacle.src='crawl_tentacle.png?v=1793888951';XIMG.boom.src='crawl_boom.png?v=1793888951';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2624,7 +2624,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.33</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.34</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
