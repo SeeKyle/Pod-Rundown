@@ -998,7 +998,7 @@ class Game{
     if(h.dash){const D=h.dash;D.t+=dt;const k=Math.min(1,D.t/D.T);const nx=D.x0+(D.x1-D.x0)*(1-(1-k)*(1-k));const px=h.x;h.x=nx;h.pauseT=Math.max(h.pauseT||0,.05);
       D.trail.push(nx);if(D.trail.length>7)D.trail.shift();
       for(const e of this.enemies){if(e.dead||e.fly||D.hit.has(e))continue;const dz=Math.abs((e.gy!=null?e.gy:this.G)-h.gy);
-        if(dz<=D.A.depth&&e.x>=Math.min(px,D.x0)-4&&e.x<=nx+14){D.hit.add(e);const dd=this.hitEnemy(e,D.dmg,h,{});
+        if(dz<=D.A.depth&&e.x>=px+6&&e.x<=nx+25){/* hit zone = the wave's front crescent, sweeping along with him */D.hit.add(e);const dd=this.hitEnemy(e,D.dmg,h,{});
           if(dd&&!e.dead){e.kbv=Math.max(e.kbv||0,D.A.kb/100*40*8*(1-((e.E&&e.E.kbRes)||0)));e.kbDir=1;}this.fx.push({k:'slash',x:e.x-6,y:e.y-24,t:0});}}
       if(k>=1)h.dash=null;return;}
     const DA=(C.abilities||[]).find(a=>a.id==='dash'),SA=(C.abilities||[]).find(a=>a.id==='shout');
@@ -1314,8 +1314,9 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793864116';const BGI=new Image();BGI.src='crawl_bg.png?v=1793864116';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793864116';const XIMG={flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image()};XIMG.chibi.src='crawl_chibi.png?v=1793864116';XIMG.flannel.src='crawl_flannel.png?v=1793864116';XIMG.pal.src='crawl_pal.png?v=1793864116';XIMG.boom.src='crawl_boom.png?v=1793864116';
+const IMG=new Image();IMG.src='crawl.png?v=1793864624';const BGI=new Image();BGI.src='crawl_bg.png?v=1793864624';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793864624';const XIMG={flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image()};XIMG.wave.src='crawl_wave.png?v=1793864624';XIMG.chibi.src='crawl_chibi.png?v=1793864624';XIMG.flannel.src='crawl_flannel.png?v=1793864624';XIMG.pal.src='crawl_pal.png?v=1793864624';XIMG.boom.src='crawl_boom.png?v=1793864624';
+const WAVE={fw:110,fh:68,n:1,ax:48,ay:66,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
 const GQ=2;   // the game canvas renders at 2x its old pixel density so full-detail art stays clean (pixel art still draws crisp)
@@ -1434,11 +1435,17 @@ function drawGame(ctx,g,W,oy){
   const traps=()=>{const T0=UNITS.flannel&&UNITS.flannel.tripbomb;if(!T0)return;for(const T of g.traps||[]){ctx.save();shrinkAt(ctx,T.x,T.gy,HS);
       drawUnit(ctx,T0,0,T.x,T.gy,.5,T.t<T.A.arm?.55+.45*Math.sin(g.t*20)**2:1,0,0,false);ctx.restore();}};
   // Wave Dash: a blue crescent of energy (about 1.5x his height) riding his sword, with fading afterimages
-  const waves=()=>{for(const h of g.alive()){const D=h.dash;if(!D)continue;const G0=h.gy||g.G,H=hbOf(h).h*UNIT_SCALE*1.5;ctx.save();ctx.globalCompositeOperation='lighter';
-      const pts=D.trail.concat([h.x]);pts.forEach((x,i)=>{const a=(i+1)/pts.length;const cx=x+8;
-        for(let L=0;L<3;L++){ctx.strokeStyle=L===0?`rgba(60,140,255,${.35*a})`:L===1?`rgba(120,200,255,${.55*a})`:`rgba(230,248,255,${.8*a})`;ctx.lineWidth=[4,2.2,1][L];
-          ctx.beginPath();ctx.ellipse(cx-4,G0-H/2,7-L*1.5,H/2,0,-Math.PI/2,Math.PI/2);ctx.stroke();}});
-      glow(ctx,h.x+10,G0-H/2,10,'#4aa8ff',.25);ctx.restore();}};
+  // Wave Dash: Kyle's wave shape (tall front crescent he rides in, jagged tail along the ground), pixel art, with afterimages
+  // Wave Dash: Kyle's wave (his pick of the three), riding ahead of the warrior, with afterimages and lightning crackling around it
+  const zap=(x0,y0,len,ang)=>{ctx.beginPath();ctx.moveTo(x0,y0);let x=x0,y=y0;const n=4;for(let i=0;i<n;i++){x+=Math.cos(ang)*len/n+(Math.random()-.5)*3;y+=Math.sin(ang)*len/n+(Math.random()-.5)*3;ctx.lineTo(x,y);}ctx.stroke();};
+  const waves=()=>{for(const h of g.alive()){const D=h.dash;if(!D)continue;const G0=h.gy||g.G,fl=(h.face||1)<0,s=fl?-1:1;
+      D.trail.forEach((x,i)=>drawUnit(ctx,WAVE,0,x,G0,.5,.12+.1*i/D.trail.length,0,0,fl));
+      ctx.save();ctx.globalCompositeOperation='lighter';drawUnit(ctx,WAVE,0,h.x,G0,.5,.5,0,0,fl);ctx.restore();drawUnit(ctx,WAVE,0,h.x,G0,.5,.88,0,0,fl);
+      ctx.save();ctx.globalCompositeOperation='lighter';
+      for(let k=0;k<4;k++){const t=Math.random();const cx=h.x+s*(9+14*Math.sin(t*Math.PI)+Math.random()*4),cy=G0-1-t*32;   // along the front crescent
+        ctx.strokeStyle=k%2?'rgba(170,230,255,.9)':'rgba(255,255,255,.95)';ctx.lineWidth=.5;zap(cx,cy,4+Math.random()*6,Math.random()*6.28);}
+      for(let k=0;k<2;k++){const tx=h.x-s*(4+Math.random()*24);ctx.strokeStyle='rgba(140,210,255,.8)';ctx.lineWidth=.5;zap(tx,G0-2-Math.random()*6,3+Math.random()*4,-Math.PI/2+(Math.random()-.5));}   // along the tail
+      if(Math.random()<.5)glow(ctx,h.x+s*(14+Math.random()*8),G0-6-Math.random()*24,2.5,'#e8fbff',.6);ctx.restore();}};
   const booms=()=>{for(const f of g.fx){if(f.k!=='boom')continue;const k=f.t/f.life,fr=Math.min(BOOM.n-1,Math.floor(k*BOOM.n));drawUnit(ctx,BOOM,fr,f.x,f.gy+2,.32,k>.85?(1-k)/.15:1,0,0,false);}};
   const drawHero=(h)=>{const G0=h.gy||g.G;ctx.save();shrinkAt(ctx,h.x,G0,HS);drawHero0(h);ctx.restore();};
   const drawHero0=(h)=>{const G=h.gy||g.G;if(!h.alive){return;}
