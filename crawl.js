@@ -331,9 +331,9 @@ const INSP={   // 0.12.4 (Kyle): every bonus doubled
  'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen',mod:{xp:12},sl:{energy:-2}},
  'Truly Fantastic':{o:'Kyle',why:'The Thing\'s deep mana pool',mod:{enMax:24},sl:{plan:2}},
  'Dice Boys Casino':{o:'Kyle',why:'Mr. House: the biggest ramp deck in the pod',mod:{enRegen:2},sl:{flair:2}},
- 'Tame Depala':{o:'Kyle',why:'Dwarves crewing heavy vehicles',mod:{kbRes:20},sl:{pace:-2}},
+ 'Tame Depala':{o:'Kyle',why:'Dwarf mechanics who can salvage anything with wheels',passive:'scavenger',mod:{kbRes:8},sl:{pace:-2}},
  "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat',passive:'bounty',sl:{size:2}},
- 'The Last of Us':{o:'Kyle',why:'Survivors who live off what they can scrounge from the wrecks',passive:'scavenger',sl:{aware:2}},
+ 'The Last of Us':{o:'Kyle',why:'Survivors who live off what they can scrounge from the wrecks',passive:'scavenger',mod:{dodge:2},sl:{aware:2}},
  'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming',passive:'haunt',sl:{aware:-2}},
  'Mothman Cometh!':{o:'Kyle',why:'A dark omen that is never quite where you hit',passive:'omen',sl:{lane:2}},
  'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back',mod:{kb:30},sl:{pace:-2}},
@@ -345,11 +345,11 @@ const INSP={   // 0.12.4 (Kyle): every bonus doubled
  'Turtle Power':{o:'Cheez',why:'Shells and teamwork',passive:'shell',sl:{self:-2}},
  'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills',passive:'devour',sl:{size:2}},
  'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone',passive:'pickpocket',sl:{self:2}},
- 'Blood Suckers':{o:'Cheez',why:'Lifelinking bats with long memories, always scrounging for something to keep the flock alive',passive:'herbalist',sl:{grudge:2}},   // 0.12.27 (Kyle): the lifegain deck gives the Scavenger passive instead of a stat
- 'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman overclocks the machines',mod:{rangedSpd:16},sl:{exec:2}},
+ 'Blood Suckers':{o:'Cheez',why:'Lifelinking bats with long memories, always scrounging for something to keep the flock alive',passive:'herbalist',mod:{lifesteal:2},sl:{grudge:2}},   // 0.12.27 (Kyle): the lifegain deck gives the Scavenger passive instead of a stat
+ 'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman strips wrecks for parts to overclock his machines',passive:'scavenger',mod:{rangedSpd:6},sl:{exec:2}},
  // Leon
  'Family Matters':{o:'Leon',why:'Zinnia\'s copies look out for each other',passive:'bodyguard',sl:{aware:2,pack:-2}},
- 'Thranduil':{o:'Leon',why:'Elven eyes',mod:{acc:12},sl:{lane:-2}},
+ 'Thranduil':{o:'Leon',why:'Elven eyes and forest lore',passive:'herbalist',mod:{acc:4},sl:{lane:-2}},
  'Primary Directive':{o:'Leon',why:'Optimus transforms and swings fast',mod:{meleeSpd:20},sl:{self:-2}},
  'Cosmic Spider':{o:'Leon',why:'Spider-Sense and web shooters',passive:'webs',sl:{exec:2}},
 };
@@ -1934,7 +1934,7 @@ class Game{
       o.alarmed=this.rng()<chance;if(o.alarmed)this.carAlarm(o);}}
   // 0.12.31 tuning: the alarm blares for 10s and pulls in one zombie every ~1.25s (a little faster on later stages), up to 8 (+1 per
   //   3 stages). Ignoring it adds about one medium cluster - survivable - but shutting it off in the first few seconds saves most of them.
-  carAlarm(o){o.alarmT=10;o.alarmN=8+Math.floor((this.st.n-1)/3);o.alarmEvery=1.25/(1+.05*(this.st.n-1));o.alarmTick=.6;this.ev('shout',{});this.shake=Math.max(this.shake||0,.2);
+  carAlarm(o){const other=(this.obst||[]).some(q=>q!==o&&q.alarmT>0&&q.alarmN>0);o.alarmT=10;o.alarmN=other?1:8+Math.floor((this.st.n-1)/3);   /* a second alarm at the same time only adds 1 extra zombie */o.alarmEvery=1.25/(1+.05*(this.st.n-1));o.alarmTick=.6;this.ev('shout',{});this.shake=Math.max(this.shake||0,.2);
     const sp=this.alive().filter(h=>h.key).sort((p,q)=>Math.abs(p.x-o.x)-Math.abs(q.x-o.x))[0];if(sp){Comms.bubble(this,sp,Comms.pick(['Car alarm!','Shut it off!','Great, now they heard us!','Here they come!','Who touched the car?!']));
       for(const o2 of this.alive())if(o2!==sp&&Math.random()<.4+.5*trait(o2,'listen'))o2.alDecide=null,o2.thinkT=Math.min(o2.thinkT||1,.1);}   // everyone rethinks right away
     if(this.demo)o.alarmN=0;}
@@ -2108,12 +2108,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793887555';const BGI=new Image();BGI.src='crawl_bg.png?v=1793887555';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793887555';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793887707';const BGI=new Image();BGI.src='crawl_bg.png?v=1793887707';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793887707';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793887555';XIMG.wave.src='crawl_wave.png?v=1793887555';XIMG.chibi.src='crawl_chibi.png?v=1793887555';XIMG.flannel.src='crawl_flannel.png?v=1793887555';XIMG.rain.src='crawl_rain.png?v=1793887555';XIMG.druid.src='crawl_druid.png?v=1793887555';XIMG.camp.src='crawl_campfire.png?v=1793887555';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793887555';XIMG.tornado.src='crawl_fx_tornado.png?v=1793887555';XIMG.vine.src='crawl_fx_vine.png?v=1793887555';XIMG.thorn.src='crawl_fx_thorn.png?v=1793887555';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793887707';XIMG.wave.src='crawl_wave.png?v=1793887707';XIMG.chibi.src='crawl_chibi.png?v=1793887707';XIMG.flannel.src='crawl_flannel.png?v=1793887707';XIMG.rain.src='crawl_rain.png?v=1793887707';XIMG.druid.src='crawl_druid.png?v=1793887707';XIMG.camp.src='crawl_campfire.png?v=1793887707';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793887707';XIMG.tornado.src='crawl_fx_tornado.png?v=1793887707';XIMG.vine.src='crawl_fx_vine.png?v=1793887707';XIMG.thorn.src='crawl_fx_thorn.png?v=1793887707';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793887555';XIMG.obst.src='crawl_obst.png?v=1793887555';XIMG.cars.src='crawl_cars.png?v=1793887555';XIMG.robot.src='crawl_robot.png?v=1793887555';XIMG.cultist.src='crawl_cultist.png?v=1793887555';XIMG.tentacle.src='crawl_tentacle.png?v=1793887555';XIMG.boom.src='crawl_boom.png?v=1793887555';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793887707';XIMG.obst.src='crawl_obst.png?v=1793887707';XIMG.cars.src='crawl_cars.png?v=1793887707';XIMG.robot.src='crawl_robot.png?v=1793887707';XIMG.cultist.src='crawl_cultist.png?v=1793887707';XIMG.tentacle.src='crawl_tentacle.png?v=1793887707';XIMG.boom.src='crawl_boom.png?v=1793887707';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2613,7 +2613,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.31</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.32</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
