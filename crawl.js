@@ -328,7 +328,7 @@ const INSP={   /* 0.12.4 (Kyle): every bonus doubled. 0.12.34: Herbalist x3 and 
  // Kyle
  'The Grim Throne':{o:'Kyle',why:'Kenrith\'s royal court: consistent big threats, and nobody haggles like royalty',passive:'haggler',mod:{crit:4}},
  'Felothar':{o:'Kyle',why:'Walls of root and bark: the pod\'s top Survival, and the forest feeds whoever holds behind them',passive:'herbalist',mod:{armor:6}},
- 'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up: the pod\'s biggest Finish, built from a pile of spare parts',mod:{meleeDmg:20},sl:{range:2},stash:{parts:6}},
+ 'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up: the pod\'s biggest Finish, built from a pile of spare parts',passive:'resourceful',mod:{meleeDmg:20},stash:{parts:6}},
  'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen, and everyone else\'s hand ends up in yours',passive:'pickpocket',mod:{xp:12}},
  'Truly Fantastic':{o:'Kyle',why:'The Thing\'s deep mana pool, and a genius who builds things on the cheap',passive:'haggler',mod:{enMax:24}},
  'Dice Boys Casino':{o:'Kyle',why:'Mr. House runs the casino: the house always has money',passive:'bankroll',sl:{flair:2}},   /* 0.12.42 (Kyle): starting gold instead of energy regen */
@@ -338,7 +338,7 @@ const INSP={   /* 0.12.4 (Kyle): every bonus doubled. 0.12.34: Herbalist x3 and 
  'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming',passive:'haunt',sl:{aware:-2}},
  'Mothman Cometh!':{o:'Kyle',why:'A dark omen that is never quite where you hit',passive:'omen',sl:{lane:2}},
  'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back',mod:{kb:30},sl:{pace:-2}},
- 'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger, and it doesn\'t talk',mod:{stamina:2},sl:{talk:-2}},
+ 'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger, stitched together from whatever is lying around',passive:'resourceful',mod:{stamina:2}},
  "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward',passive:'onslaught',sl:{aggr:2}},
  // Cheez
  'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: fast flyers, and Zada the goblin can talk anyone down',passive:'haggler',mod:{move:12}},
@@ -351,7 +351,7 @@ const INSP={   /* 0.12.4 (Kyle): every bonus doubled. 0.12.34: Herbalist x3 and 
  // Leon
  'Family Matters':{o:'Leon',why:'Zinnia\'s copies look out for each other',passive:'bodyguard',sl:{aware:2}},
  'Thranduil':{o:'Leon',why:'Elven eyes and forest lore: knows every herb in the woods and never misses a shot',passive:'herbalist',mod:{acc:8}},
- 'Primary Directive':{o:'Leon',why:'Optimus transforms, swings fast and rolls out with the team',mod:{meleeSpd:20},sl:{pack:-2}},
+ 'Primary Directive':{o:'Leon',why:'Optimus transforms and swings fast; Autobots patch themselves up from salvage',passive:'resourceful',mod:{meleeSpd:20}},
  'Cosmic Spider':{o:'Leon',why:'Spider-Sense and web shooters',passive:'webs',sl:{perc:2}},
 };
 const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼'};
@@ -423,6 +423,7 @@ function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.sta
 const INSP_PASSIVE={
  herbalist:['Herbalist','he searches nearby foliage, rocks, stumps and fallen logs for healing herbs (1.5s each; the chance is good and goes up with his Luck and with how Perceptive he is) and carries up to 3. When he or an ally within about 50px is under 80% health, he uses one: it heals 20% of their max HP over 5s, but any damage stops it. He searches whatever is close by without going far out of his way, and goes to hurt allies with herbs.'],
  scavenger:['Scavenger','he searches broken-down cars (2s each; the chance goes up with his Luck and how Perceptive he is). He can turn up a Medkit (heals an ally under 60% for 25% at once), a Battery (+30 energy for an ally running low) or loose scrap worth gold, and carries 2 Medkits and Batteries at most, in any mix. He searches wrecks close by without going far out of his way, and brings supplies to whoever needs them.'],
+ resourceful:['Resourceful','he makes do with what he finds: the team can pay for camp upgrades in spare parts instead of gold (1 part per 4 gold of the price, so a 100g upgrade is 25 parts). Once per team.'],
  haggler:['Haggler','he talks every builder down: camp upgrades cost 20% less. Once per team: more Hagglers still means 20%.'],
  bankroll:['House Money','the house fronts you: the run starts with +50 gold for every hero carrying this deck. Spend it at camp.'],
  bounty:['Bounty Hunter','his first hit on the biggest enemy on the field puts a bounty on it: it is marked (takes 25% more damage from everyone for 8s), and when it dies the party gets +10 gold.'],
@@ -2304,6 +2305,8 @@ function lvPtsFree(H){const used=Object.values(H.pts||{}).reduce((a,b)=>a+b,0);r
 function campOffers(run){const n=3+upgT(run,'radio');const pool=Object.keys(CAMP_UPG).filter(id=>{const t=upgT(run,id),U=CAMP_UPG[id];if(t>=U.tiers.length)return false;const nd=U.needs&&U.needs[t+1];return !nd||upgT(run,nd)>0;});
   const out=[];const bag=pool.slice();while(out.length<n&&bag.length){const i=Math.floor(Math.random()*bag.length);out.push(bag.splice(i,1)[0]);}return out;}
 function upgPrice(run,id){const t=upgT(run,id);const h=run.haggle||0;return Math.round(CAMP_UPG[id].tiers[t]*(1-h));}
+function resourcefulOf(s,run){return run.team.some(k=>{const H=s.heroes[k];return H&&H.insp&&INSP[H.insp]&&INSP[H.insp].passive==='resourceful';});}
+function upgParts(run,id){return Math.ceil(upgPrice(run,id)/4);}
 function haggleOf(s,run){const n=run.team.filter(k=>{const H=s.heroes[k];return H&&H.insp&&INSP[H.insp]&&INSP[H.insp].passive==='haggler';}).length;return n?.2:0;}   /* 0.12.46 (Kyle): 20% off, doesn't stack */
 /* back at camp after a cleared stage: the camp's own systems run once, then the player feeds whoever is still hungry */
 function campArrive(s,run){if(run.campAt===run.stage)return [];run.campAt=run.stage;const log=[];
@@ -2331,12 +2334,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793899513';const BGI=new Image();BGI.src='crawl_bg.png?v=1793899513';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793899513';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793899551';const BGI=new Image();BGI.src='crawl_bg.png?v=1793899551';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793899551';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793899513';XIMG.wave.src='crawl_wave.png?v=1793899513';XIMG.chibi.src='crawl_chibi.png?v=1793899513';XIMG.flannel.src='crawl_flannel.png?v=1793899513';XIMG.rain.src='crawl_rain.png?v=1793899513';XIMG.druid.src='crawl_druid.png?v=1793899513';XIMG.camp.src='crawl_campfire.png?v=1793899513';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793899513';XIMG.tornado.src='crawl_fx_tornado.png?v=1793899513';XIMG.vine.src='crawl_fx_vine.png?v=1793899513';XIMG.thorn.src='crawl_fx_thorn.png?v=1793899513';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793899551';XIMG.wave.src='crawl_wave.png?v=1793899551';XIMG.chibi.src='crawl_chibi.png?v=1793899551';XIMG.flannel.src='crawl_flannel.png?v=1793899551';XIMG.rain.src='crawl_rain.png?v=1793899551';XIMG.druid.src='crawl_druid.png?v=1793899551';XIMG.camp.src='crawl_campfire.png?v=1793899551';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793899551';XIMG.tornado.src='crawl_fx_tornado.png?v=1793899551';XIMG.vine.src='crawl_fx_vine.png?v=1793899551';XIMG.thorn.src='crawl_fx_thorn.png?v=1793899551';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793899513';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793899513';XIMG.obst.src='crawl_obst.png?v=1793899513';XIMG.cars.src='crawl_cars.png?v=1793899513';XIMG.robot.src='crawl_robot.png?v=1793899513';XIMG.cultist.src='crawl_cultist.png?v=1793899513';XIMG.tentacle.src='crawl_tentacle.png?v=1793899513';XIMG.boom.src='crawl_boom.png?v=1793899513';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793899551';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793899551';XIMG.obst.src='crawl_obst.png?v=1793899551';XIMG.cars.src='crawl_cars.png?v=1793899551';XIMG.robot.src='crawl_robot.png?v=1793899551';XIMG.cultist.src='crawl_cultist.png?v=1793899551';XIMG.tentacle.src='crawl_tentacle.png?v=1793899551';XIMG.boom.src='crawl_boom.png?v=1793899551';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2866,7 +2869,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.48</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.49</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -2973,16 +2976,16 @@ function rankStars(r){return r>=CFG.maxRank?'<span class="cc-asc">✦ MAX ✦</s
 function chipFor(e,item,hk){const base=item?shortCard(e.card):sname(hk,e.card);const name=e.r>=CFG.maxRank?`✦ ${esc(maxTitle(e.card,e.arch))}`:esc(base);
   return `<span class="cc-chip ${item?'it':''}" title="${item?esc(e.card):'Inspired by '+esc(e.card)}"><b>${name}</b> · ${item?ITEM[e.arch].label:SPELL[e.arch].label} r${e.r}${(e.augs||[]).map(g=>' +'+AUG[g].name).join('')}${item?' · GS '+gearScore(e):''}${item&&e.proc?' · ✦ '+({onhit:'on hit',oncrit:'on crit',onkill:'on kill',whenhit:'when hit',near:'when close',allylow:'ally low',oncast:'on cast'}[PROCS[e.proc].t]||''):''}</span>`;}
 /* camp panel: supplies, what the camp did on arrival, upgrades (pick 1 of the offers per camp), Triage builds */
-function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=run.food||0;run.haggle=haggleOf(s,run);
+function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=run.food||0;run.haggle=haggleOf(s,run);run.resource=resourcefulOf(s,run);
   const owned=Object.keys(run.upg||{}).filter(id=>run.upg[id]);
-  const tent=`<span class="cc-tent" style="cursor:help;font-size:18px;margin-left:6px" data-tiph="${esc('<b>⛺ Every camp upgrade</b><br>'+Object.keys(CAMP_UPG).map(id=>{const U=CAMP_UPG[id],t=upgT(run,id);const mx=U.needs?(Object.keys(U.needs).every(k=>upgT(run,U.needs[k])>0)?U.tiers.length:U.tiers.length-1):U.tiers.length;return `${U.icon} ${U.name}: <b style="color:${t?'#a6ff2e':'#9a90a8'}">${t}/${mx}</b>${U.needs&&mx<U.tiers.length?' <span style="opacity:.6">(+1 with a Radio Tower)</span>':''}`;}).join('<br>')+(run.haggle?`<br><br>🤝 Haggler: upgrades ${Math.round(run.haggle*100)}% off`:''))}">⛺</span>`;
+  const tent=`<span class="cc-tent" style="cursor:help;font-size:18px;margin-left:6px" data-tiph="${esc('<b>⛺ Every camp upgrade</b><br>'+Object.keys(CAMP_UPG).map(id=>{const U=CAMP_UPG[id],t=upgT(run,id);const mx=U.needs?(Object.keys(U.needs).every(k=>upgT(run,U.needs[k])>0)?U.tiers.length:U.tiers.length-1):U.tiers.length;return `${U.icon} ${U.name}: <b style="color:${t?'#a6ff2e':'#9a90a8'}">${t}/${mx}</b>${U.needs&&mx<U.tiers.length?' <span style="opacity:.6">(+1 with a Radio Tower)</span>':''}`;}).join('<br>')+(run.haggle?`<br><br>🤝 Haggler: upgrades ${Math.round(run.haggle*100)}% off`:'')+(run.resource?`<br>🧰 Resourceful: you can pay in spare parts`:''))}">⛺</span>`;
   const sup=`<div class="cc-card"><b>🏕️ Camp</b>${tent} <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · ⚙️ <b>${parts}</b> spare parts · 🥫 <b>${Number.isInteger(food)?food:Math.floor(food)+'½'}</b> food · 💧 <b>${run.water||0}</b> water</span>
     ${(run.campLog||[]).length?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${run.campLog.map(esc).join(' · ')}</div>`:''}
     ${owned.length?`<div class="cc-chips" style="margin-top:6px">${owned.map(id=>{const U=CAMP_UPG[id],t=run.upg[id];return `<span class="cc-chip" title="${esc(U.txt(t))}">${U.icon} ${esc(U.name)} ${['','I','II','III','IV'][t]}</span>`;}).join('')}</div>`:''}</div>`;
   const offers=(run.offers||[]).filter(id=>upgT(run,id)<CAMP_UPG[id].tiers.length);
   const up=`<div class="cc-card"><b>🔨 Camp upgrades</b> <span class="cc-sub" style="font-size:11px">${run.upgBought?'Built one this camp. More offers next time.':'Pick one to build this camp.'} They last for this run.</span>
     <div class="cc-offers" style="margin-top:8px">${offers.map(id=>{const U=CAMP_UPG[id],t=upgT(run,id)+1,pr=upgPrice(run,id);return `<div class="cc-offer" style="--rc:${t>1?'#7fd0ff':'#a6ff2e'}"><span class="rar">${t>1?'TIER '+t:'NEW'}</span><span class="cn">${U.icon} ${esc(U.name)}${U.tiers.length>1?' '+['','I','II','III','IV'][t]:''}</span><span class="tx">${esc(U.txt(t))}</span>
-      <button class="cc-btn" data-upg="${id}" ${run.upgBought||gold<pr?'disabled':''}>Build · ${fmt(pr)}g</button></div>`;}).join('')||'<span class="cc-sub">Everything is fully built!</span>'}</div></div>`;
+      <button class="cc-btn" data-upg="${id}" ${run.upgBought||gold<pr?'disabled':''}>Build · ${fmt(pr)}g</button>${run.resource?`<button class="cc-btn" data-upgp="${id}" style="margin-top:4px" ${run.upgBought||parts<upgParts(run,id)?'disabled':''}>Build · ⚙️ ${upgParts(run,id)} parts</button>`:''}</div>`;}).join('')||'<span class="cc-sub">Everything is fully built!</span>'}</div></div>`;
   const tt=upgT(run,'triage');const tri=tt?`<div class="cc-card"><b>🩺 Triage Station ${['','I','II','III','IV'][tt]}</b> <span class="cc-sub" style="font-size:11px">${(run.triageN||0)}/${TRIAGE.max[tt-1]} built this camp · whoever you pick carries it into the next stage</span>
     ${[['med','Medkit','heals an ally under 50% for 35%'],['bat','Battery','+30 energy for an ally running low'],['defib','Defibrillator','instantly revives a downed ally']].map(([w,n,d])=>`<div class="cc-chips" style="align-items:center;margin-top:4px"><span class="cc-sub" style="font-size:11px;margin:0;min-width:180px"><b>${n}</b> · ⚙️ ${TRIAGE[w][tt-1]} · ${d}</span>${run.team.map(k=>btn(`data-tri="${w}|${k}" ${parts<TRIAGE[w][tt-1]||(run.triageN||0)>=TRIAGE.max[tt-1]?'disabled':''}`,'→ '+esc(heroDef(k).name.split(/[ _]/)[0]),'Build it for '+heroDef(k).name)).join(' ')}</div>`).join('')}</div>`:'';
   const tw=upgT(run,'tower');if(tw&&!run.scoutOffers)run.scoutOffers=scoutRoll(run);
@@ -3037,6 +3040,7 @@ function showCamp(){
     if(left.length&&!bg.dataset.sure){bg.dataset.sure=1;bg.textContent='Go hungry? '+left.map(k=>heroDef(k).name).join(', ')+' lose 10% HP ▶';return;}campDepart(run);persist();beginStage();};
   P.querySelectorAll('[data-feed]').forEach(b=>b.onclick=()=>{const [k,w]=b.dataset.feed.split('|');if(feedUnit(run,k,w)){sfx('level');persist();showCamp();}});
   P.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>{const [k,x]=b.dataset.pt.split('|');const H=s.heroes[k];if(lvPtsFree(H)<1)return;H.pts=H.pts||{};H.pts[x]=(H.pts[x]||0)+1;sfx('level');persist();showCamp();});
+  P.querySelectorAll('[data-upgp]').forEach(b=>b.onclick=()=>{const id=b.dataset.upgp,pp=upgParts(run,id);if(run.upgBought||(s.parts||0)<pp)return;s.parts-=pp;run.upg=run.upg||{};run.upg[id]=(run.upg[id]||0)+1;run.upgBought=1;sfx('level');persist();showCamp();});
   P.querySelectorAll('[data-upg]').forEach(b=>b.onclick=()=>{const id=b.dataset.upg,pr=upgPrice(run,id);if(run.upgBought||(s.gold||0)<pr)return;s.gold-=pr;run.upg=run.upg||{};run.upg[id]=(run.upg[id]||0)+1;run.upgBought=1;sfx('level');persist();showCamp();});
   P.querySelectorAll('[data-scout]').forEach(b=>b.onclick=()=>{run.scoutPick=b.dataset.scout;persist();showCamp();});
   P.querySelectorAll('[data-brew]').forEach(b=>b.onclick=()=>{const k=b.dataset.brew;const r=brewCourage(run,k);if(r==='ok'){sfx('level');persist();showCamp();}else msg({max:'No more brewing this camp.',food:'Not enough food.',has:heroDef(k).name+' already has a jar.'}[r]||'Can\'t brew that.');});
