@@ -1,5 +1,23 @@
       <h2>What's new</h2>
-      <h3>🔍 0.12.37: searching is a choice, companion circles</h3>
+      <h3>🏕️ 0.12.38: the camp update</h3>
+      <ul><li><b>Food & water:</b> after every cleared stage each unit needs 🥫 food or 💧 water at camp. Anyone you don't feed starts the next stage with 10% less of their current HP (max HP untouched). Food and water come from searching (Scavengers find them often, ambulances sometimes) and now and then off zombies. They do nothing during a stage.</li>
+      <li><b>⚙️ Spare parts:</b> a new pickup like gold, 1-2 per find. They come from searching (Scavengers, ambulances) and occasionally off enemies. Parts stay with your save, like gold.</li>
+      <li><b>🔨 Camp upgrades:</b> each camp offers 3 (pick one to build). They have tiers, last the whole run and mostly start at 100g:
+        Water Filtration (25/50/75% chance to water a hungry unit for you), Triage Station, Garden Plot, Rain Barrels, Smokehouse (one food feeds two), Med Cots (+10/20/30% HP on return), Weapon Bench (+1/2/3 basic attack damage), Generator (+1/2/3 energy per second), Training Dummy (+XP), Lucky Shrine (+Luck), Bounty Board (gold piles worth more), Scrap Yard (free parts), Wire Cutters (shorter, faster-to-kill car alarms), Scavenger's Lamp (faster searching) and Radio Tower (more offers).</li>
+      <li><b>🩺 Triage Station:</b> spend spare parts to build a Medkit (15/13/11 parts by tier), a Battery (12/10/8) or a Defibrillator (25/22/19), and choose which unit carries it into the next stage. 1 build per camp at tiers I-II, 2 at tier III. Triage-built items don't count toward a unit's healing stat.</li>
+      <li><b>⬆ Stat points:</b> every level gained gives a point to spend on the camp card: Toughness +4% HP, Power +3% damage, Aim +2 accuracy, Edge +1% crit, Fortune +3 Luck or Hide +1 armor. The old "abilities being rebuilt" line and the Items row are gone.</li>
+      <li><b>📊 Stage stats</b> after every cleared stage: damage, DPS, healing, kills, crits, headshots, damage taken, downs, revives and searches for each unit, plus awards.</li>
+      <li><b>Looting:</b> every rock, log, car and ambulance can be looted <b>once</b> in total, and units don't pile onto one someone else is already searching. Ambulances can now also hold a <b>Defibrillator</b>: one use, it revives a downed ally instantly. Units carrying one rush to downed allies.</li>
+      <li><b>Car alarms</b> blare up to 30s, pulling in a zombie from off-screen every 2s until someone shuts them off. A shot that hits a car has a 25% chance to set its alarm off. Cars only spawn in the middle three lanes.</li>
+      <li><b>Obstacle hit shapes:</b> every obstacle now stops shots by its own outline, traced from its art (low hood, tall cab, rounded rocks), not one flat box.</li>
+      <li><b>Projectile fix:</b> aimed shots were being drawn at their launch height while they really flew to where they were aimed (one line of code was hidden in a comment). Now what you see is where the shot is.</li>
+      <li><b>Warhound:</b> his basic shot is one buckshot blast (a cluster of pellets, 3d4 as one hit). Gatling_Arm is 10 shots in 2s at -10 accuracy, each from a slightly different height and each picking its own target. He only walks now.</li>
+      <li><b>Traveling_Companion:</b> 1d4 pistol, a shot every 0.5s, 7 shots then a 5s reload, slightly lower accuracy. <b>Flannel_Man</b> fires 0.25s faster (1.75s).</li>
+      <li><b>Trip Bomb</b> adds a wider shockwave: half damage and a harder shove on anything the cross misses.</li>
+      <li><b>Druid:</b> a proper run (her walk, sped up and leaning into it). Mend 10% every 5s (was 12% / 4s), Bloom 4%/s every 14s (was 5% / 12s). Cyclone forms about 450px ahead of her.</li>
+      <li><b>Tentacles</b> heal 20% of the damage they deal (was 40%). The cultist's bolt leaves about 6px lower, Yumi's arrow about 6px higher.</li>
+      <li>Zombies are 12% smaller (smoothly resampled) and their hit and aim boxes shrink with them. Gold piles are 2-6 gold each. About 22% less chatter.</li></ul>
+    <h3>🔍 0.12.37: searching is a choice, companion circles</h3>
       <ul><li><b>Searching is a decision now, not automatic.</b> A unit only searches a rock, log, car or ambulance when its brain chooses to. That choice weighs danger nearby, how bold and how Perceptive it is, and whether something is attacking it right now (then it usually fights first).</li>
       <li><b>Searchers stand right at it:</b> in the lane directly in front of or behind the thing (whichever is closer), beside a car's door or practically on top of a rock or stump. The same goes for shutting off car alarms.</li>
       <li><b>Searchers stand still:</b> they stay at the wreck while the world scrolls and only make progress while stopped. Every unit has a <b>rummage animation</b> built from its idle frames: it bends over and digs, bits fly out, then it pops back up.</li>

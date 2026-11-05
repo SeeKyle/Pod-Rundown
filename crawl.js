@@ -4,7 +4,7 @@
 (function(){
 'use strict';
 const DATA={"heroes":[{"key":"flannel","char":1,"deck":"","icon":"🌲","owner":"Kyle","cmdr":"","name":"Flannel_Man","cls":"duo","duo":false,"blurb":"A bearded drifter in green flannel with a bolt-action rifle and a crowbar.","stats":{},"spells":[],"items":[]},{"key":"chibi","char":1,"deck":"","icon":"⚔️","owner":"Kyle","cmdr":"","name":"Chibi_Warrior","cls":"melee","duo":false,"blurb":"A small, fearless swordsman in a long brown coat.","stats":{},"spells":[],"items":[]},{"key":"archer","char":1,"deck":"","icon":"🏹","owner":"Kyle","cmdr":"","name":"Yumi_Archer","cls":"ranged","duo":false,"blurb":"A red-armored longbow archer.","stats":{},"spells":[],"items":[]},{"key":"druid","char":1,"deck":"","icon":"🌿","owner":"Kyle","cmdr":"","name":"Druid","cls":"caster","duo":false,"blurb":"A sea-green druid with a gnarled staff.","stats":{},"spells":[],"items":[]},{"key":"lumberjack","char":1,"deck":"","icon":"🪓","owner":"Kyle","cmdr":"","name":"Lumber_Jack","cls":"melee","duo":false,"blurb":"A red-bearded lumberjack with an axe and a hunting bow.","stats":{},"spells":[],"items":[]},{"key":"robot","char":1,"deck":"","icon":"🤖","owner":"Kyle","cmdr":"","name":"Warhound","cls":"melee","duo":false,"blurb":"A hunched olive war-walker with brass trim, a blue arc blade and a rotary cannon.","stats":{},"spells":[],"items":[]},{"key":"cultist","char":1,"deck":"","icon":"🕯️","owner":"Kyle","cmdr":"","name":"Void_Cultist","cls":"caster","duo":false,"blurb":"A hooded void cultist with a bone mask and a ritual dagger.","stats":{},"spells":[],"items":[]}],"arch":{"bolt":{"label":"Bolt","titles":["Starfall","Hellfire Lance","the Pyre Eternal"]},"nova":{"label":"Nova","titles":["Cataclysm","the Last Sunrise","Worldbreaker"]},"smite":{"label":"Smite","titles":["Executioner","Final Verdict","the Godslayer"]},"drain":{"label":"Drain","titles":["Soul Harvest","the Bleeding Moon","Crimson Tithe"]},"summon":{"label":"Summon","titles":["Legion Eternal","the Endless Horde","Army of the Damned"]},"regen":{"label":"Regen","titles":["Undying Grace","the Phoenix Psalm","Everbloom"]},"aegis":{"label":"Aegis","titles":["Bastion Unbroken","the Last Wall","Adamant Dawn"]},"pump":{"label":"Pump","titles":["Titan Rising","the Warlord Ascendant","Giantblood"]},"devour":{"label":"Devour","titles":["the Gluttonous Abyss","Bone Feast","Maw of Ages"]},"haste":{"label":"Haste","titles":["Overdrive","the Thousand Hands","Quickening Storm"]},"insight":{"label":"Insight","titles":["the Open Eye","Omniscient","Library of Ash"]},"freeze":{"label":"Freeze","titles":["Absolute Zero","the Long Winter","Glacial Tomb"]},"counter":{"label":"Counter","titles":["Null Mirror","the Silent Ward","Spellbreaker"]},"blade":{"label":"Weapon","titles":["Kingsbane","the Red Edge","Doomforged"]},"armor":{"label":"Armor","titles":["Aegis of Ages","the Unbreakable","Ironsoul"]},"relic":{"label":"Relic","titles":["Clockwork Heart","the Ever-Turning","Infinity Engine"]},"charm":{"label":"Charm","titles":["Lucky Bones","Fate's Favorite","the Gilded Skull"]}}};      // heroes from the decks (built by battler_data.py)
-const ATLAS={"sprites":{"h_grim":[0,0,128,128,12],"h_vile":[1536,0,160,128,12],"h_vile_a":[0,128,128,128,12],"h_vile_b":[1536,128,128,128,12],"h_felothar":[0,256,128,128,12],"h_thing":[1536,256,128,128,12],"h_kykar":[0,384,128,128,12],"h_depala":[1536,384,128,128,12],"h_kotis":[0,512,128,128,12],"h_dragons":[1536,512,128,128,12],"h_mathas":[0,640,128,128,12],"h_turtle":[1536,640,160,128,12],"h_turtle_a":[0,768,128,128,12],"h_turtle_b":[1536,768,128,128,12],"h_marina":[0,896,128,128,12],"h_korvold":[1536,896,128,128,12],"h_thranduil":[0,1024,128,128,12],"h_joel":[1536,1024,160,128,12],"h_joel_a":[0,1152,128,128,12],"h_joel_b":[1536,1152,128,128,12],"h_robots":[0,1280,128,128,12],"h_blood":[1536,1280,128,128,12],"h_mech":[0,1408,128,128,12],"h_weather":[1536,1408,128,128,12],"e_ghoul":[0,1536,128,128,12],"e_cultist":[1536,1536,128,128,12],"e_knight":[0,1664,128,128,12],"e_wolfman":[1536,1664,128,128,12],"e_hag":[0,1792,128,128,12],"e_zombie":[1536,1792,128,128,12],"e_drowned":[0,1920,128,128,12],"e_skeleton":[1536,1920,128,128,12],"e_archer":[0,2048,128,128,12],"e_thrall":[1536,2048,128,128,12],"e_wraith":[0,2176,128,128,12],"e_leech":[1536,2176,96,96,12],"e_bat":[2688,2176,96,96,12],"e_ghost":[0,2304,96,96,12],"e_gargoyle":[1152,2304,96,96,12],"e_hound":[2304,2304,96,96,12],"e_spawn":[0,2400,96,96,12],"e_eye":[1152,2400,96,96,12],"e_spider":[2304,2400,96,96,12],"b_gravelord":[0,2496,256,256,3],"b_countess":[768,2496,256,256,3],"b_maw":[1536,2496,256,256,3]},"bg":{"grave":{"fill":"#001b27","top":"#000a12","artTop":97,"layers":[{"r":[776,0,48,160],"y":97.0,"sp":0.04,"w":36.0,"h":120.0,"tile":36.0},{"r":[822,409,128,48],"y":97.0,"sp":0.0,"w":96.0,"h":36.0,"once":{"x":230,"period":0}},{"r":[0,247,544,160],"y":97.0,"sp":0.35,"w":408.0,"h":120.0,"tile":408.0},{"r":[0,571,272,48],"y":181.0,"sp":1.0,"w":204.0,"h":36.0,"tile":204.0}]},"manor":{"fill":"#1a4652","top":"#06141c","artTop":69,"layers":[{"r":[546,247,272,160],"y":69.0,"sp":0.04,"w":204.0,"h":120.0,"tile":204.0},{"r":[820,247,272,160],"y":69.0,"sp":0.12,"w":204.0,"h":120.0,"tile":204.0},{"r":[0,409,272,160],"y":69.0,"sp":0.28,"w":204.0,"h":120.0,"tile":204.0},{"r":[274,409,272,81],"y":128.25,"sp":0.5,"w":204.0,"h":60.75,"tile":204.0},{"r":[548,409,272,49],"y":152.25,"sp":0.75,"w":204.0,"h":36.75,"tile":204.0},{"r":[274,571,272,44],"y":183.0,"sp":1.0,"w":204.0,"h":33.0,"tile":204.0}]},"bog":{"fill":"#5a2236","top":"#1e0a16","artTop":44,"layers":[{"r":[322,0,160,224],"y":44.0,"sp":0.04,"w":120.0,"h":168.0,"tile":120.0},{"r":[484,0,160,224],"y":44.0,"sp":0.12,"w":120.0,"h":168.0,"tile":120.0},{"r":[646,0,128,224],"y":44.0,"sp":0.3,"w":96.0,"h":168.0,"once":{"x":130,"period":420}},{"r":[0,0,320,245],"y":44.0,"sp":1.0,"w":240.0,"h":183.75,"tile":240.0}]}},"res":2,"units":{"zombie":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":0,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":192,"y":0}},"zombie_f":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":512,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":704,"y":0}},"zombie_b":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":1024,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":1216,"y":0}},"werewolf":{"walk":{"fw":112,"fh":76,"n":6,"ax":65,"ay":75,"x":1536,"y":0},"atk":{"fw":112,"fh":76,"n":8,"ax":60,"ay":75,"x":2208,"y":0},"die":{"fw":112,"fh":76,"n":10,"ax":58,"ay":75,"x":3104,"y":0},"jump":{"fw":112,"fh":76,"n":2,"ax":72,"ay":71,"x":4224,"y":0},"fall":{"fw":112,"fh":76,"n":2,"ax":56,"ay":63,"x":4448,"y":0}},"flannel":{"idle":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":0,"img":"flannel","art":1},"walk":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":208,"img":"flannel","art":1},"run":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":416,"img":"flannel","art":1},"melee":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":624,"img":"flannel","art":1},"ranged":{"fw":230,"fh":208,"n":5,"ax":140,"ay":200,"x":0,"y":832,"img":"flannel","art":1},"reload":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":1040,"img":"flannel","art":1},"hurt":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":1248,"img":"flannel","art":1},"death":{"fw":230,"fh":208,"n":3,"ax":140,"ay":200,"x":0,"y":1456,"img":"flannel","art":1},"walkfire":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":1664,"img":"flannel","art":1},"kneel":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":1872,"img":"flannel","art":1},"bullet":{"fw":24,"fh":16,"n":1,"ax":22,"ay":8,"x":0,"y":2080,"img":"flannel","art":1},"tripbomb":{"fw":45,"fh":36,"n":1,"ax":9,"ay":14,"x":40,"y":2080,"img":"flannel"}},"flannel_pal":{"idle":{"fw":230,"fh":208,"n":1,"ax":140,"ay":200,"x":0,"y":0,"img":"pal","art":1},"walk":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":208,"img":"pal","art":1},"melee":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":416,"img":"pal","art":1},"ranged":{"fw":230,"fh":208,"n":5,"ax":140,"ay":200,"x":0,"y":624,"img":"pal","art":1},"reload":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":832,"img":"pal","art":1},"hurt":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":1040,"img":"pal","art":1},"death":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":1248,"img":"pal","art":1}},"chibi":{"idle":{"fw":177,"fh":115,"n":6,"ax":94,"ay":111,"x":0,"y":0,"img":"chibi","pre":0.5526},"walk":{"fw":177,"fh":115,"n":8,"ax":94,"ay":111,"x":0,"y":115,"img":"chibi","pre":0.5526},"run":{"fw":177,"fh":115,"n":8,"ax":94,"ay":111,"x":0,"y":230,"img":"chibi","pre":0.5526},"attack1":{"fw":177,"fh":115,"n":5,"ax":94,"ay":111,"x":0,"y":345,"img":"chibi","pre":0.5526},"attack2":{"fw":177,"fh":115,"n":3,"ax":94,"ay":111,"x":0,"y":460,"img":"chibi","pre":0.5526},"runatk":{"fw":177,"fh":115,"n":5,"ax":94,"ay":111,"x":0,"y":575,"img":"chibi","pre":0.5526},"hurt":{"fw":177,"fh":115,"n":3,"ax":94,"ay":111,"x":0,"y":690,"img":"chibi","pre":0.5526},"death":{"fw":177,"fh":115,"n":5,"ax":94,"ay":111,"x":0,"y":805,"img":"chibi","pre":0.5526},"ranged":{"fw":177,"fh":115,"n":4,"ax":94,"ay":111,"x":0,"y":920,"img":"chibi","pre":0.5526}},"archer":{"idle":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":0,"img":"archer","pre":0.5526},"walk":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":143,"img":"archer","pre":0.5526},"run":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":285,"img":"archer","pre":0.5526},"melee":{"fw":204,"fh":143,"n":5,"ax":111,"ay":138,"x":0,"y":428,"img":"archer","pre":0.5526},"ranged":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":570,"img":"archer","pre":0.5526},"hurt":{"fw":204,"fh":143,"n":3,"ax":111,"ay":138,"x":0,"y":713,"img":"archer","pre":0.5526},"death":{"fw":204,"fh":143,"n":5,"ax":111,"ay":138,"x":0,"y":855,"img":"archer","pre":0.5526},"blowgun":{"fw":204,"fh":143,"n":4,"ax":111,"ay":138,"x":0,"y":998,"img":"archer","pre":0.5526},"arrow":{"fw":36,"fh":7,"n":1,"ax":35,"ay":3,"x":0,"y":1141,"img":"archer","pre":0.5526}},"druid":{"walk":{"fw":64,"fh":56,"n":8,"ax":33,"ay":53,"x":0,"y":0,"img":"druid"},"idle":{"fw":64,"fh":56,"n":6,"ax":33,"ay":53,"x":0,"y":56,"img":"druid"},"melee":{"fw":64,"fh":56,"n":3,"ax":33,"ay":53,"x":0,"y":112,"img":"druid"},"ranged":{"fw":64,"fh":56,"n":3,"ax":33,"ay":53,"x":0,"y":168,"img":"druid"},"hurt":{"fw":64,"fh":56,"n":2,"ax":33,"ay":53,"x":0,"y":224,"img":"druid"},"death":{"fw":64,"fh":56,"n":1,"ax":33,"ay":53,"x":0,"y":280,"img":"druid","fall":1}},"robot":{"walk":{"fw":82,"fh":71,"n":8,"ax":39,"ay":68,"x":0,"y":0,"img":"robot","sc":1,"pk":1.3},"idle":{"fw":82,"fh":71,"n":4,"ax":39,"ay":68,"x":0,"y":71,"img":"robot","sc":1,"pk":1.3},"melee":{"fw":82,"fh":71,"n":4,"ax":39,"ay":68,"x":0,"y":142,"img":"robot","sc":1,"pk":1.3},"ranged":{"fw":82,"fh":71,"n":4,"ax":39,"ay":68,"x":0,"y":213,"img":"robot","sc":1,"pk":1.3},"missile":{"fw":82,"fh":71,"n":4,"ax":39,"ay":68,"x":0,"y":284,"img":"robot","sc":1,"pk":1.3},"throw":{"fw":82,"fh":71,"n":3,"ax":39,"ay":68,"x":0,"y":355,"img":"robot","sc":1,"pk":1.3},"hurt":{"fw":82,"fh":71,"n":2,"ax":39,"ay":68,"x":0,"y":426,"img":"robot","sc":1,"pk":1.3},"death":{"fw":82,"fh":71,"n":5,"ax":39,"ay":68,"x":0,"y":497,"img":"robot","sc":1,"pk":1.3,"fall":0}},"cultist":{"walk":{"fw":38,"fh":40,"n":8,"ax":19,"ay":38,"x":0,"y":0,"img":"cultist","pk":1.0},"idle":{"fw":38,"fh":40,"n":4,"ax":19,"ay":38,"x":0,"y":40,"img":"cultist","pk":1.0},"melee":{"fw":38,"fh":40,"n":4,"ax":19,"ay":38,"x":0,"y":80,"img":"cultist","pk":1.0},"ranged":{"fw":38,"fh":40,"n":4,"ax":19,"ay":38,"x":0,"y":120,"img":"cultist","pk":1.0},"summon":{"fw":38,"fh":40,"n":4,"ax":19,"ay":38,"x":0,"y":160,"img":"cultist","pk":1.0},"hurt":{"fw":38,"fh":40,"n":2,"ax":19,"ay":38,"x":0,"y":200,"img":"cultist","pk":1.0},"death":{"fw":38,"fh":40,"n":5,"ax":19,"ay":38,"x":0,"y":240,"img":"cultist","pk":1.0}},"tentacle":{"emerge":{"fw":112,"fh":88,"n":5,"ax":78,"ay":84,"x":0,"y":0,"img":"tentacle"},"idle":{"fw":112,"fh":88,"n":8,"ax":78,"ay":84,"x":0,"y":88,"img":"tentacle"},"attack":{"fw":112,"fh":88,"n":6,"ax":78,"ay":84,"x":0,"y":176,"img":"tentacle"},"hit":{"fw":112,"fh":88,"n":2,"ax":78,"ay":84,"x":0,"y":264,"img":"tentacle"},"death":{"fw":112,"fh":88,"n":6,"ax":78,"ay":84,"x":0,"y":352,"img":"tentacle"}},"lumberjack":{"idle":{"fw":154,"fh":129,"n":1,"ax":82,"ay":121,"x":0,"y":0,"img":"lumberjack","pre":0.5526},"walk":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":129,"img":"lumberjack","pre":0.5526},"run":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":258,"img":"lumberjack","pre":0.5526},"melee":{"fw":154,"fh":129,"n":3,"ax":82,"ay":121,"x":0,"y":388,"img":"lumberjack","pre":0.5526},"ranged":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":517,"img":"lumberjack","pre":0.5526},"hurt":{"fw":154,"fh":129,"n":2,"ax":82,"ay":121,"x":0,"y":646,"img":"lumberjack","pre":0.5526},"death":{"fw":154,"fh":129,"n":3,"ax":82,"ay":121,"x":0,"y":776,"img":"lumberjack","fall":1,"pre":0.5526},"spin":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":905,"img":"lumberjack","pre":0.5526},"chop":{"fw":154,"fh":129,"n":4,"ax":82,"ay":121,"x":0,"y":1034,"img":"lumberjack","pre":0.5526},"leap":{"fw":154,"fh":129,"n":4,"ax":82,"ay":121,"x":0,"y":1163,"img":"lumberjack","pre":0.5526},"rage":{"fw":154,"fh":129,"n":4,"ax":82,"ay":121,"x":0,"y":1292,"img":"lumberjack","pre":0.5526},"roll":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":1422,"img":"lumberjack","pre":0.5526}}}};    // sprite + backdrop atlas (built by make_crawl_art.py)
+const ATLAS={"sprites":{"h_grim":[0,0,128,128,12],"h_vile":[1536,0,160,128,12],"h_vile_a":[0,128,128,128,12],"h_vile_b":[1536,128,128,128,12],"h_felothar":[0,256,128,128,12],"h_thing":[1536,256,128,128,12],"h_kykar":[0,384,128,128,12],"h_depala":[1536,384,128,128,12],"h_kotis":[0,512,128,128,12],"h_dragons":[1536,512,128,128,12],"h_mathas":[0,640,128,128,12],"h_turtle":[1536,640,160,128,12],"h_turtle_a":[0,768,128,128,12],"h_turtle_b":[1536,768,128,128,12],"h_marina":[0,896,128,128,12],"h_korvold":[1536,896,128,128,12],"h_thranduil":[0,1024,128,128,12],"h_joel":[1536,1024,160,128,12],"h_joel_a":[0,1152,128,128,12],"h_joel_b":[1536,1152,128,128,12],"h_robots":[0,1280,128,128,12],"h_blood":[1536,1280,128,128,12],"h_mech":[0,1408,128,128,12],"h_weather":[1536,1408,128,128,12],"e_ghoul":[0,1536,128,128,12],"e_cultist":[1536,1536,128,128,12],"e_knight":[0,1664,128,128,12],"e_wolfman":[1536,1664,128,128,12],"e_hag":[0,1792,128,128,12],"e_zombie":[1536,1792,128,128,12],"e_drowned":[0,1920,128,128,12],"e_skeleton":[1536,1920,128,128,12],"e_archer":[0,2048,128,128,12],"e_thrall":[1536,2048,128,128,12],"e_wraith":[0,2176,128,128,12],"e_leech":[1536,2176,96,96,12],"e_bat":[2688,2176,96,96,12],"e_ghost":[0,2304,96,96,12],"e_gargoyle":[1152,2304,96,96,12],"e_hound":[2304,2304,96,96,12],"e_spawn":[0,2400,96,96,12],"e_eye":[1152,2400,96,96,12],"e_spider":[2304,2400,96,96,12],"b_gravelord":[0,2496,256,256,3],"b_countess":[768,2496,256,256,3],"b_maw":[1536,2496,256,256,3]},"bg":{"grave":{"fill":"#001b27","top":"#000a12","artTop":97,"layers":[{"r":[776,0,48,160],"y":97.0,"sp":0.04,"w":36.0,"h":120.0,"tile":36.0},{"r":[822,409,128,48],"y":97.0,"sp":0.0,"w":96.0,"h":36.0,"once":{"x":230,"period":0}},{"r":[0,247,544,160],"y":97.0,"sp":0.35,"w":408.0,"h":120.0,"tile":408.0},{"r":[0,571,272,48],"y":181.0,"sp":1.0,"w":204.0,"h":36.0,"tile":204.0}]},"manor":{"fill":"#1a4652","top":"#06141c","artTop":69,"layers":[{"r":[546,247,272,160],"y":69.0,"sp":0.04,"w":204.0,"h":120.0,"tile":204.0},{"r":[820,247,272,160],"y":69.0,"sp":0.12,"w":204.0,"h":120.0,"tile":204.0},{"r":[0,409,272,160],"y":69.0,"sp":0.28,"w":204.0,"h":120.0,"tile":204.0},{"r":[274,409,272,81],"y":128.25,"sp":0.5,"w":204.0,"h":60.75,"tile":204.0},{"r":[548,409,272,49],"y":152.25,"sp":0.75,"w":204.0,"h":36.75,"tile":204.0},{"r":[274,571,272,44],"y":183.0,"sp":1.0,"w":204.0,"h":33.0,"tile":204.0}]},"bog":{"fill":"#5a2236","top":"#1e0a16","artTop":44,"layers":[{"r":[322,0,160,224],"y":44.0,"sp":0.04,"w":120.0,"h":168.0,"tile":120.0},{"r":[484,0,160,224],"y":44.0,"sp":0.12,"w":120.0,"h":168.0,"tile":120.0},{"r":[646,0,128,224],"y":44.0,"sp":0.3,"w":96.0,"h":168.0,"once":{"x":130,"period":420}},{"r":[0,0,320,245],"y":44.0,"sp":1.0,"w":240.0,"h":183.75,"tile":240.0}]}},"res":2,"units":{"zombie":{"walk":{"fw":28,"fh":42,"n":6,"ax":15,"ay":41,"art":1,"pre":0.88,"x":0,"y":0},"atk":{"fw":56,"fh":50,"n":5,"ax":35,"ay":49,"art":1,"pre":0.88,"x":168,"y":0}},"zombie_f":{"walk":{"fw":28,"fh":42,"n":6,"ax":15,"ay":41,"art":1,"pre":0.88,"x":448,"y":0},"atk":{"fw":56,"fh":50,"n":5,"ax":35,"ay":49,"art":1,"pre":0.88,"x":616,"y":0}},"zombie_b":{"walk":{"fw":28,"fh":42,"n":6,"ax":15,"ay":41,"art":1,"pre":0.88,"x":896,"y":0},"atk":{"fw":56,"fh":50,"n":5,"ax":35,"ay":49,"art":1,"pre":0.88,"x":1064,"y":0}},"werewolf":{"walk":{"fw":112,"fh":76,"n":6,"ax":65,"ay":75,"x":1344,"y":0},"atk":{"fw":112,"fh":76,"n":8,"ax":60,"ay":75,"x":2016,"y":0},"die":{"fw":112,"fh":76,"n":10,"ax":58,"ay":75,"x":2912,"y":0},"jump":{"fw":112,"fh":76,"n":2,"ax":72,"ay":71,"x":4032,"y":0},"fall":{"fw":112,"fh":76,"n":2,"ax":56,"ay":63,"x":4256,"y":0}},"flannel":{"idle":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":0,"img":"flannel","art":1},"walk":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":208,"img":"flannel","art":1},"run":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":416,"img":"flannel","art":1},"melee":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":624,"img":"flannel","art":1},"ranged":{"fw":230,"fh":208,"n":5,"ax":140,"ay":200,"x":0,"y":832,"img":"flannel","art":1},"reload":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":1040,"img":"flannel","art":1},"hurt":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":1248,"img":"flannel","art":1},"death":{"fw":230,"fh":208,"n":3,"ax":140,"ay":200,"x":0,"y":1456,"img":"flannel","art":1},"walkfire":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":1664,"img":"flannel","art":1},"kneel":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":1872,"img":"flannel","art":1},"bullet":{"fw":24,"fh":16,"n":1,"ax":22,"ay":8,"x":0,"y":2080,"img":"flannel","art":1},"tripbomb":{"fw":45,"fh":36,"n":1,"ax":9,"ay":14,"x":40,"y":2080,"img":"flannel"}},"flannel_pal":{"idle":{"fw":230,"fh":208,"n":1,"ax":140,"ay":200,"x":0,"y":0,"img":"pal","art":1},"walk":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":208,"img":"pal","art":1},"melee":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":416,"img":"pal","art":1},"ranged":{"fw":230,"fh":208,"n":5,"ax":140,"ay":200,"x":0,"y":624,"img":"pal","art":1},"reload":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":832,"img":"pal","art":1},"hurt":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":1040,"img":"pal","art":1},"death":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":1248,"img":"pal","art":1}},"chibi":{"idle":{"fw":177,"fh":115,"n":6,"ax":94,"ay":111,"x":0,"y":0,"img":"chibi","pre":0.5526},"walk":{"fw":177,"fh":115,"n":8,"ax":94,"ay":111,"x":0,"y":115,"img":"chibi","pre":0.5526},"run":{"fw":177,"fh":115,"n":8,"ax":94,"ay":111,"x":0,"y":230,"img":"chibi","pre":0.5526},"attack1":{"fw":177,"fh":115,"n":5,"ax":94,"ay":111,"x":0,"y":345,"img":"chibi","pre":0.5526},"attack2":{"fw":177,"fh":115,"n":3,"ax":94,"ay":111,"x":0,"y":460,"img":"chibi","pre":0.5526},"runatk":{"fw":177,"fh":115,"n":5,"ax":94,"ay":111,"x":0,"y":575,"img":"chibi","pre":0.5526},"hurt":{"fw":177,"fh":115,"n":3,"ax":94,"ay":111,"x":0,"y":690,"img":"chibi","pre":0.5526},"death":{"fw":177,"fh":115,"n":5,"ax":94,"ay":111,"x":0,"y":805,"img":"chibi","pre":0.5526},"ranged":{"fw":177,"fh":115,"n":4,"ax":94,"ay":111,"x":0,"y":920,"img":"chibi","pre":0.5526}},"archer":{"idle":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":0,"img":"archer","pre":0.5526},"walk":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":143,"img":"archer","pre":0.5526},"run":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":285,"img":"archer","pre":0.5526},"melee":{"fw":204,"fh":143,"n":5,"ax":111,"ay":138,"x":0,"y":428,"img":"archer","pre":0.5526},"ranged":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":570,"img":"archer","pre":0.5526},"hurt":{"fw":204,"fh":143,"n":3,"ax":111,"ay":138,"x":0,"y":713,"img":"archer","pre":0.5526},"death":{"fw":204,"fh":143,"n":5,"ax":111,"ay":138,"x":0,"y":855,"img":"archer","pre":0.5526},"blowgun":{"fw":204,"fh":143,"n":4,"ax":111,"ay":138,"x":0,"y":998,"img":"archer","pre":0.5526},"arrow":{"fw":36,"fh":7,"n":1,"ax":35,"ay":3,"x":0,"y":1141,"img":"archer","pre":0.5526}},"druid":{"walk":{"fw":64,"fh":56,"n":8,"ax":33,"ay":53,"x":0,"y":0,"img":"druid"},"idle":{"fw":64,"fh":56,"n":6,"ax":33,"ay":53,"x":0,"y":56,"img":"druid"},"melee":{"fw":64,"fh":56,"n":3,"ax":33,"ay":53,"x":0,"y":112,"img":"druid"},"ranged":{"fw":64,"fh":56,"n":3,"ax":33,"ay":53,"x":0,"y":168,"img":"druid"},"hurt":{"fw":64,"fh":56,"n":2,"ax":33,"ay":53,"x":0,"y":224,"img":"druid"},"death":{"fw":64,"fh":56,"n":1,"ax":33,"ay":53,"x":0,"y":280,"img":"druid","fall":1}},"robot":{"walk":{"fw":82,"fh":71,"n":8,"ax":39,"ay":68,"x":0,"y":0,"img":"robot","sc":1,"pk":1.3},"idle":{"fw":82,"fh":71,"n":4,"ax":39,"ay":68,"x":0,"y":71,"img":"robot","sc":1,"pk":1.3},"melee":{"fw":82,"fh":71,"n":4,"ax":39,"ay":68,"x":0,"y":142,"img":"robot","sc":1,"pk":1.3},"ranged":{"fw":82,"fh":71,"n":4,"ax":39,"ay":68,"x":0,"y":213,"img":"robot","sc":1,"pk":1.3},"missile":{"fw":82,"fh":71,"n":4,"ax":39,"ay":68,"x":0,"y":284,"img":"robot","sc":1,"pk":1.3},"throw":{"fw":82,"fh":71,"n":3,"ax":39,"ay":68,"x":0,"y":355,"img":"robot","sc":1,"pk":1.3},"hurt":{"fw":82,"fh":71,"n":2,"ax":39,"ay":68,"x":0,"y":426,"img":"robot","sc":1,"pk":1.3},"death":{"fw":82,"fh":71,"n":5,"ax":39,"ay":68,"x":0,"y":497,"img":"robot","sc":1,"pk":1.3,"fall":0}},"cultist":{"walk":{"fw":38,"fh":40,"n":8,"ax":19,"ay":38,"x":0,"y":0,"img":"cultist","pk":1.0},"idle":{"fw":38,"fh":40,"n":4,"ax":19,"ay":38,"x":0,"y":40,"img":"cultist","pk":1.0},"melee":{"fw":38,"fh":40,"n":4,"ax":19,"ay":38,"x":0,"y":80,"img":"cultist","pk":1.0},"ranged":{"fw":38,"fh":40,"n":4,"ax":19,"ay":38,"x":0,"y":120,"img":"cultist","pk":1.0},"summon":{"fw":38,"fh":40,"n":4,"ax":19,"ay":38,"x":0,"y":160,"img":"cultist","pk":1.0},"hurt":{"fw":38,"fh":40,"n":2,"ax":19,"ay":38,"x":0,"y":200,"img":"cultist","pk":1.0},"death":{"fw":38,"fh":40,"n":5,"ax":19,"ay":38,"x":0,"y":240,"img":"cultist","pk":1.0}},"tentacle":{"emerge":{"fw":112,"fh":88,"n":5,"ax":78,"ay":84,"x":0,"y":0,"img":"tentacle"},"idle":{"fw":112,"fh":88,"n":8,"ax":78,"ay":84,"x":0,"y":88,"img":"tentacle"},"attack":{"fw":112,"fh":88,"n":6,"ax":78,"ay":84,"x":0,"y":176,"img":"tentacle"},"hit":{"fw":112,"fh":88,"n":2,"ax":78,"ay":84,"x":0,"y":264,"img":"tentacle"},"death":{"fw":112,"fh":88,"n":6,"ax":78,"ay":84,"x":0,"y":352,"img":"tentacle"}},"lumberjack":{"idle":{"fw":154,"fh":129,"n":1,"ax":82,"ay":121,"x":0,"y":0,"img":"lumberjack","pre":0.5526},"walk":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":129,"img":"lumberjack","pre":0.5526},"run":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":258,"img":"lumberjack","pre":0.5526},"melee":{"fw":154,"fh":129,"n":3,"ax":82,"ay":121,"x":0,"y":388,"img":"lumberjack","pre":0.5526},"ranged":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":517,"img":"lumberjack","pre":0.5526},"hurt":{"fw":154,"fh":129,"n":2,"ax":82,"ay":121,"x":0,"y":646,"img":"lumberjack","pre":0.5526},"death":{"fw":154,"fh":129,"n":3,"ax":82,"ay":121,"x":0,"y":776,"img":"lumberjack","fall":1,"pre":0.5526},"spin":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":905,"img":"lumberjack","pre":0.5526},"chop":{"fw":154,"fh":129,"n":4,"ax":82,"ay":121,"x":0,"y":1034,"img":"lumberjack","pre":0.5526},"leap":{"fw":154,"fh":129,"n":4,"ax":82,"ay":121,"x":0,"y":1163,"img":"lumberjack","pre":0.5526},"rage":{"fw":154,"fh":129,"n":4,"ax":82,"ay":121,"x":0,"y":1292,"img":"lumberjack","pre":0.5526},"roll":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":1422,"img":"lumberjack","pre":0.5526}}}};    // sprite + backdrop atlas (built by make_crawl_art.py)
 const OWNERS={Kyle:'🎩'};   // 0.12.1: only Kyle's tab while the game is rebuilt (Cheez and Leon come back later)
 
 // ======================================================================= CONFIG TABLES
@@ -31,11 +31,11 @@ const CFG={
     // rebuilt roster: only the zombie so far. animAtk = attack animation length (s), hitAt = when in it the blow lands (s)
     // Kyle's zombie: 25 HP (0.12.3, was 15), 1d6 per hit, swings every 1.25s, 12px reach, very slow, 3 armor (=6% less damage), small-medium knockback resistance,
     // 25% on hit to Bleed (20 dmg over 5s), item 4% / small gold 17.5%. Three looks (skins), identical stats.
-    zombie:  {undead:1,hp:25,dmgDie:6,spd:8.8,atk:1.25,reach:12,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
-              itemChance:.04,goldChance:.175,goldAmt:[2,5],stack:true,xp:2,pts:10,cost:1.2,animAtk:.6,hitAt:.38,skins:['zombie','zombie_f','zombie_b']},
+    zombie:  {undead:1,scale:.88,aimScale:.88,hp:25,dmgDie:6,spd:8.8,   /* 0.12.38 (Kyle): 12% smaller, about the size of our humanoids */atk:1.25,reach:12,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
+              itemChance:.04,goldChance:.175,goldAmt:[2,6],stack:true,xp:2,pts:10,cost:1.2,animAtk:.6,hitAt:.38,skins:['zombie','zombie_f','zombie_b']},
     // Kyle's werewolf, the first fast enemy: zombie stats except 30 HP (0.12.3, was 40) and fast; hunts the back-line heroes first
     werewolf:{hp:30,dmgDie:6,spd:44,atk:1.25,reach:12,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
-              itemChance:.04,goldChance:.175,goldAmt:[2,5],xp:3,pts:16,cost:2.2,animAtk:.7,hitAt:.45,backline:true,fps:12,scale:.77,
+              itemChance:.04,goldChance:.175,goldAmt:[2,6],xp:3,pts:16,cost:2.2,animAtk:.7,hitAt:.45,backline:true,fps:12,scale:.77,
               leap:{dmg:10,gap:20,dur:.5,cd:8}},   // jumping attack: bounds over a 20px gap and lands for 10 damage
   },
   bosses:{
@@ -114,7 +114,7 @@ const SIG={
   cultist:{name:'Call_of_the_Deep · Blood_Pact · Spreading_Hex · Dread_Chant · Herald_of_Life_and_Death',cd:12,txt:'A hooded void cultist with a ritual dagger.',fn:()=>false},
   robot:{name:'Arc_Surge · Gatling_Arm · Missile_Barrage · Smoke_Screen',cd:12,txt:'A hunched olive war-walker with an arc blade and a rotary cannon.',fn:()=>false},
   lumberjack:{name:'Whirl_Wind · Ground_Chop · Hatchet_Leap · Timber_Rage · Log_Roll',cd:14,txt:'An axeman with a hunting bow.',fn:()=>false},
-  druid:{name:'Mend · Rejuvenating Bloom · Thorn Wave · Cyclone',cd:4,txt:'Mend (12 energy, 4s): instantly heals the most-hurt ally 12%. Rejuvenating Bloom (30 energy, 12s): heals an ally 5% of max HP every second for 8s. Thorn Wave (35 energy, 14s): a wave of thorns erupts along the ground down her lane; everything it bursts under takes 2d6 and bleeds. Cyclone (40 energy, 18s): a tornado wanders in front of her for 5s, pulling nearby enemies in and grinding down everything inside it.',fn:()=>false},
+  druid:{name:'Mend · Rejuvenating Bloom · Thorn Wave · Cyclone',cd:4,txt:'Mend (17 energy, 5s): instantly heals the most-hurt ally 10%. Rejuvenating Bloom (35 energy, 14s): heals an ally 4% of max HP every second for 8s. Thorn Wave (35 energy, 14s): a wave of thorns erupts along the ground down her lane; everything it bursts under takes 2d6 and bleeds. Cyclone (40 energy, 18s): a tornado wanders in front of her for 5s, pulling nearby enemies in and grinding down everything inside it.',fn:()=>false},
   archer:{name:'Arrow_Rain · One Nocked, Two in Hand · Blow_Gun',cd:14,txt:'Arrow_Rain (40 energy, 18s cooldown): looses a volley into the air and 16 arrows rain down on the thickest group of enemies (1d6 each, about 70px wide and 2 lanes up and down). Blow_Gun (25 energy, 9s cooldown): puffs a poison dart that always adds 1 poison stack to a living target (75% chance of a 2nd, 50% of a 3rd); each stack deals 3% of max HP every 1.5s for 7.5s, and any new stack resets the timer. Undead are immune. One Nocked, Two in Hand (30 energy, 14s cooldown): he nocks one arrow and holds two more ready, his next 3 arrows fly much faster (a third of the usual wait, quicker draw). Longbow shots (1d10) and a close-range bow strike (1d8).',fn:()=>false},
   chibi:{name:'Wave Dash · War Cry · Poultice',cd:10,txt:'Wave Dash (45 energy, 16s cooldown): rides a blue energy wave up to 400px forward, hitting everything it passes through (2 lanes up and down) for 1.4x a sword hit. War Cry (20 energy, 7s cooldown): every ally within 800px gets +25% damage and attack speed for 7s. Sword combo: Attack 1, Attack 2, and a running slash, plus a kunai throw (1d4) at enemies he can\'t reach yet.',fn:()=>false},
   flannel:{name:'Aimed Shot · Trip Bomb · Traveling_Companion',cd:14,txt:'Call Traveling_Companion (25 energy, 24s cooldown, 0.8s whistle): calls his Traveling_Companion, a timid partner who circles around him, with a third of his stats and her own Brick Throw (never misses, 75% stun). If she is already out, she heals 7% of her max HP instead. Trip Bomb (30 energy, 20s cooldown, 1s to set): a nail bomb on a tripwire that blows up the first enemy to walk into it, hurting everything around it (area damage, knockback, 50% bleed). Aimed Shot (40 energy, 14s cooldown, 2s cast with a laser sight): a carefully aimed rifle shot that always goes to the middle (head) box, with +5% crit chance and 2.5x crit damage. Pierces through one enemy.',fn:()=>false},   // runs from Game.gunner (CHAR abilities), shown here
@@ -210,8 +210,8 @@ const LANES=[188,194,200,206,212],LANE_SPD=26;
 // 0.12.14 (Kyle) obstacles: rocks, stumps, bushes, a dead tree and a big log lying diagonally across two lanes. Not many, a bit random.
 //   Units walk around them (lane change). Tall ones (blk > 0, in hitbox units like body heights) stop shots that fly low enough.
 //   Never more than 2 lanes blocked near each other at once, so there's always a way around.
-const OBST={"rock_moss": {"x": 0, "y": 33, "fw": 44, "fh": 36, "lanes": 1, "blk": 34, "foot": [[-7.98, 7.98]]}, "rock_pile": {"x": 46, "y": 39, "fw": 32, "fh": 30, "lanes": 1, "blk": 26, "foot": [[-5.7, 5.7]]}, "rock_crack": {"x": 80, "y": 35, "fw": 32, "fh": 34, "lanes": 1, "blk": 32, "foot": [[-5.7, 5.7]]}, "rock_swirl": {"x": 114, "y": 37, "fw": 30, "fh": 32, "lanes": 1, "blk": 30, "foot": [[-5.32, 5.32]]}, "rock_dirt": {"x": 146, "y": 37, "fw": 30, "fh": 32, "lanes": 1, "blk": 30, "foot": [[-5.38, 4.88]]}, "rock_crumble": {"x": 178, "y": 41, "fw": 30, "fh": 28, "lanes": 1, "blk": 24, "foot": [[-5.32, 5.32]]}, "log_big": {"x": 210, "y": 35, "fw": 80, "fh": 34, "lanes": 2, "blk": 14, "foot": [[-19.5, 6.5], [-10.0, 20.0]]}, "trunk": {"x": 292, "y": 29, "fw": 29, "fh": 40, "lanes": 1, "blk": 40, "foot": [[-5.528, 2.5279999999999996]]}, "stump": {"x": 323, "y": 37, "fw": 18, "fh": 32, "lanes": 1, "blk": 30, "foot": [[-3.16, 2.16]]}, "bush_a": {"x": 343, "y": 49, "fw": 22, "fh": 20, "lanes": 1, "blk": 0, "foot": [[-3.04, 3.04]]}, "bush_b": {"x": 367, "y": 47, "fw": 23, "fh": 22, "lanes": 1, "blk": 0, "foot": [[-3.7199999999999998, 3.12]]}, "deadtree": {"x": 392, "y": 0, "fw": 43, "fh": 69, "lanes": 1, "blk": 52, "foot": [[-9.12, -2.2800000000000002]]}};
-const CARS={"car_hatch": {"x": 0, "y": 8, "fw": 110, "fh": 40, "lanes": 2, "blk": 32, "foot": [[-25.3, 25.3], [-25.3, 25.3]], "img": "cars"}, "car_van": {"x": 112, "y": 0, "fw": 141, "fh": 48, "lanes": 2, "blk": 38, "foot": [[-32.4, 32.4], [-32.4, 32.4]], "img": "cars"}, "car_sedan": {"x": 255, "y": 6, "fw": 94, "fh": 42, "lanes": 2, "blk": 34, "foot": [[-21.6, 21.6], [-21.6, 21.6]], "img": "cars"}, "car_coupe": {"x": 351, "y": 12, "fw": 129, "fh": 36, "lanes": 2, "blk": 29, "foot": [[-29.7, 29.7], [-29.7, 29.7]], "img": "cars"}, "car_muscle": {"x": 482, "y": 10, "fw": 129, "fh": 38, "lanes": 2, "blk": 30, "foot": [[-29.7, 29.7], [-29.7, 29.7]], "img": "cars"}, "car_ambulance": {"x": 613, "y": 0, "fw": 141, "fh": 48, "lanes": 2, "blk": 38, "foot": [[-32.4, 32.4], [-32.4, 32.4]], "img": "cars"}};Object.assign(OBST,CARS);   // 0.12.29 broken-down cars (Kyle's art), real-car sized, smooth edges, 2 lanes, tall
+const OBST={"rock_moss":{"x":0,"y":33,"fw":44,"fh":36,"lanes":1,"blk":34,"foot":[[-7.98,7.98]],"prof":[10,12,13,20,23,24,25,27,29,31,33,34,34,34,33,33,31,26,20,13,12,12]},"rock_pile":{"x":46,"y":39,"fw":32,"fh":30,"lanes":1,"blk":26,"foot":[[-5.7,5.7]],"prof":[5,15,19,22,23,25,27,28,28,28,27,25,22,18,8,7]},"rock_crack":{"x":80,"y":35,"fw":32,"fh":34,"lanes":1,"blk":32,"foot":[[-5.7,5.7]],"prof":[13,17,21,24,26,28,30,31,32,32,32,31,29,26,23,18]},"rock_swirl":{"x":114,"y":37,"fw":30,"fh":32,"lanes":1,"blk":30,"foot":[[-5.32,5.32]],"prof":[12,16,19,22,25,27,29,30,30,30,30,28,25,23,17]},"rock_dirt":{"x":146,"y":37,"fw":30,"fh":32,"lanes":1,"blk":30,"foot":[[-5.38,4.88]],"prof":[12,16,20,23,25,27,29,30,30,30,30,28,25,23,17]},"rock_crumble":{"x":178,"y":41,"fw":30,"fh":28,"lanes":1,"blk":24,"foot":[[-5.32,5.32]],"prof":[12,15,19,22,24,26,26,26,24,23,24,23,21,18,7]},"log_big":{"x":210,"y":35,"fw":80,"fh":34,"lanes":2,"blk":14,"foot":[[-19.5,6.5],[-10.0,20.0]],"prof":[11,16,20,21,21,21,22,22,22,22,23,22,23,24,24,25,24,25,27,26,27,27,27,28,28,29,29,30,30,30,31,31,32,32,32,33,33,32,32,28]},"trunk":{"x":292,"y":29,"fw":29,"fh":40,"lanes":1,"blk":40,"foot":[[-5.528,2.5279999999999996]],"prof":[9,10,14,19,34,35,37,38,37,38,38,38,35,35,0]},"stump":{"x":323,"y":37,"fw":18,"fh":32,"lanes":1,"blk":30,"foot":[[-3.16,2.16]],"prof":[20,27,30,30,30,30,30,29,28]},"bush_a":{"x":343,"y":49,"fw":22,"fh":20,"lanes":1,"blk":0,"foot":[[-3.04,3.04]],"prof":[13,15,15,17,18,18,17,15,17,18,18]},"bush_b":{"x":367,"y":47,"fw":23,"fh":22,"lanes":1,"blk":0,"foot":[[-3.7199999999999998,3.12]],"prof":[11,16,20,20,20,20,20,18,19,19,17,0]},"deadtree":{"x":392,"y":0,"fw":43,"fh":69,"lanes":1,"blk":52,"foot":[[-9.12,-2.2800000000000002]],"prof":[10,11,11,12,16,23,24,45,48,51,64,65,62,67,67,64,60,62,65,66,67,0]}};
+const CARS={"car_hatch":{"x":0,"y":8,"fw":110,"fh":40,"lanes":2,"blk":32,"foot":[[-25.3,25.3],[-25.3,25.3]],"img":"cars","prof":[0,0,1,1,12,20,20,21,21,22,22,22,23,23,23,24,27,28,30,33,34,35,35,36,37,37,37,37,37,38,38,39,39,38,38,38,38,37,37,36,36,36,35,34,32,30,28,26,23,13,3,2,1,0,0]},"car_van":{"x":112,"y":0,"fw":141,"fh":48,"lanes":2,"blk":38,"foot":[[-32.4,32.4],[-32.4,32.4]],"img":"cars","prof":[2,3,5,5,6,7,10,25,26,27,27,28,29,30,35,41,43,43,43,44,44,44,44,45,46,46,47,47,46,46,45,45,44,45,45,45,45,46,46,46,46,46,45,45,45,45,45,45,45,44,44,45,45,45,45,45,44,43,35,33,12,6,6,6,4,4,1,0,0,0,0]},"car_sedan":{"x":255,"y":6,"fw":94,"fh":42,"lanes":2,"blk":34,"foot":[[-21.6,21.6],[-21.6,21.6]],"img":"cars","prof":[20,22,23,24,25,25,26,26,26,27,27,29,32,34,38,39,39,40,40,40,41,41,41,41,41,41,41,41,41,41,41,41,41,40,40,40,40,39,34,31,29,29,28,28,28,28,22]},"car_coupe":{"x":351,"y":12,"fw":129,"fh":36,"lanes":2,"blk":29,"foot":[[-29.7,29.7],[-29.7,29.7]],"img":"cars","prof":[1,1,2,2,3,3,1,3,3,14,21,22,22,20,21,23,24,23,24,25,25,27,27,29,30,32,33,33,33,34,35,35,33,33,33,33,33,32,33,33,33,32,31,30,29,28,27,26,25,25,25,25,20,3,3,4,3,2,2,1,1,1,1,1,1]},"car_muscle":{"x":482,"y":10,"fw":129,"fh":38,"lanes":2,"blk":30,"foot":[[-29.7,29.7],[-29.7,29.7]],"img":"cars","prof":[3,3,3,1,2,2,4,4,8,17,21,22,23,23,24,24,25,26,26,26,26,25,29,30,30,32,32,34,35,35,37,35,36,37,35,35,35,36,37,36,35,35,35,35,35,35,35,33,33,31,30,30,30,29,28,27,26,23,19,3,2,2,1,1,1]},"car_ambulance":{"x":613,"y":0,"fw":141,"fh":48,"lanes":2,"blk":38,"foot":[[-32.4,32.4],[-32.4,32.4]],"img":"cars","prof":[2,3,5,5,6,7,10,25,26,27,27,28,29,30,35,41,43,45,45,45,45,45,45,45,46,46,47,47,46,46,45,45,44,45,45,45,45,46,46,46,46,46,45,45,45,45,45,45,45,44,44,45,45,45,45,45,44,43,35,33,12,6,6,6,4,4,1,0,0,0,0]}};Object.assign(OBST,CARS);   // 0.12.29 broken-down cars (Kyle's art), real-car sized, smooth edges, 2 lanes, tall
 const OBST_POOL=[['car_ambulance',.5],['car_muscle',1.4],['car_hatch',1.5],['car_van',1.2],['car_sedan',1.5],['car_coupe',1.4],['rock_moss',3],['rock_pile',3],['rock_crack',3],['rock_swirl',2],['rock_dirt',3],['rock_crumble',3],['log_big',2],['trunk',2],['stump',3],['bush_a',2],['bush_b',2],['deadtree',1]];
 const SEARCHABLE=/^rock_|^log_|^stump|^trunk|^bush|^deadtree/;const SEARCH_RE={herbalist:SEARCHABLE,scavenger:/^car_/},SEARCH_T={herbalist:1.5,scavenger:2};   // 0.12.28 Herbalist searches these (foliage too)
 const GROUND_FX=new Set(['corpse','stuck','thorn','poof','boom','quake','mend','spark','blood','splat','scorch','ring']);
@@ -265,7 +265,7 @@ const HEADSHOT={mul:1.5};
 function isHead(tg,h){const B=aimBoxesOf(tg);return h>=B.mid[0]&&h<=B.mid[1];}   // % moved per accuracy point
 function aimPose(tg){const B=AIM_BOXES[tg&&tg.type];if(!B)return null;
   if(B.tall&&tg.anim===1&&tg.animT>0&&tg.E){const f=1-tg.animT/(tg.E.animAtk||.3);if(f>.12&&f<.62)return B.tall;}return B;}
-function aimBoxesOf(tg){const B=aimPose(tg);if(B)return B;
+function aimBoxesOf(tg){const B=aimPose(tg);if(B){const s=tg&&tg.E&&tg.E.aimScale;if(!s)return B;const S=a=>[a[0]*s,a[1]*s,a[2]];return {top:S(B.top),mid:S(B.mid),bot:S(B.bot)};}
   const h=hbOf(tg).h*((tg&&tg.E&&tg.E.scale)||1);   // anyone without their own boxes (heroes too) uses the zombie's shape scaled to their height
   return {top:[1.065*h,1.85*h,40],mid:[.61*h,1.065*h,10],bot:[0,.61*h,50]};}
 function aimOdds(B,acc){let t=B.top[2],b=B.bot[2],m=B.mid[2];const k=AIM_STEP*(acc||0);
@@ -299,7 +299,7 @@ const HERO_FLAT_HP=0,HP_PER_STAMINA=5,HERO_DICE=[2,4],HERO_BASE_CRIT=.1;   // ba
 const CHAR={
   flannel:{name:'Flannel_Man',role:'Rifle + Melee',flatHp:0,stamina:8,hpPerStamina:5,armorPts:5,dodge:.05,kbRes:.40,
     melee:{dice:[1,12],every:1.5,reach:20,kb:23,hitAt:.15},                 // crowbar: d12, swing every 1.5s, 20px reach, knockback 23/100
-    ranged:{dice:[1,8],flat:0,every:2,range:250,clip:1,reload:2,pellets:1},   // bolt-action rifle: d8, 2s between shots, reloads after every shot
+    ranged:{dice:[1,8],flat:0,every:1.75,range:250,clip:1,reload:1.75,pellets:1},   /* bolt-action rifle: d8, 1.75s between shots (0.12.38: -0.25s), reloads after every shot */
     acc:18,walkPenalty:12,crit:.12,critMul:2,luck:21,xp:0,run:2,turn:.22,enMax:100,enRegen:5,
     // abilities (Kyle). Aimed Shot: skips the accuracy roll and lands in the MIDDLE box, +5% crit chance, crits hit 2.5x.
     //   Damage = the rifle's dice + every flat damage bonus, so it grows with future flat-damage items/effects.
@@ -318,7 +318,7 @@ const CHAR={
       //   shouts for the squishier allies to get behind him. IF hurt (under 60%) with something on him, OR 3+ enemies close, THEN use it. 30 energy, 22s cooldown.
       {id:'grit',name:'Grit_Teeth',en:35,cd:22,dur:7,dr:.6,under:.6},
       {id:'pal',name:'Call Traveling_Companion',en:30,cd:24,cast:.8,heal:.07},
-      {id:'trip',name:'Trip Bomb',en:35,cd:20,cast:1,arm:.6,dice:[3,6],flat:0,depth:12,cross:{long:36,thin:4,across:14,wide:12},kb:45,bleed:{chance:.5,dmg:12,dur:4},life:40}]},
+      {id:'trip',name:'Trip Bomb',en:35,cd:20,cast:1,arm:.6,dice:[3,6],flat:0,depth:12,cross:{long:36,thin:4,across:14,wide:12},shock:{r:56,depth:20,kbMul:1.6},kb:45,bleed:{chance:.5,dmg:12,dur:4},life:40}]},
 };
 
 // ---- 0.12.3 Inspiration Decks (Kyle): pick a player, then one of their decks. Each deck gives one small, unique bonus tied to
@@ -357,7 +357,7 @@ const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼'};
 // what each character is like in a fight (shown when you hover them on the party screen)
 // one line per ability for the party-screen hover boxes
 const ABIL_DESC={
-  tentacle:'Call_of_the_Deep · 45 energy · 7s. Cast up to 250px away. He tears open the ground and a huge dark tentacle wriggles up near the enemies. Any number can be out at once (one per cast). It can\'t move, but it lashes out a long way (about 105px) every 1.4s for 2d6, knocking things back. It has 15 HP and withers 5% of that every second; enemies standing on it swat at it, and only the 40% life steal on its hits keeps it alive.',
+  tentacle:'Call_of_the_Deep · 45 energy · 7s. Cast up to 250px away. He tears open the ground and a huge dark tentacle wriggles up near the enemies. Any number can be out at once (one per cast). It can\'t move, but it lashes out a long way (about 105px) every 1.4s for 2d6, knocking things back. It has 15 HP and withers 5% of that every second; enemies standing on it swat at it, and only the life steal on its hits (it heals 20% of the damage it deals) keeps it alive.',
   pact:'Blood_Pact · 25 energy · 20s. He cuts his own palm: pays 15% of his health (never below 40%) to give every ally +20% damage for 6s.',
   hex:'Spreading_Hex · 30 energy · 12s. Curses an enemy: it rots for 2.5% of its max HP every second for 6s. If it dies cursed, the hex jumps to the nearest enemy (up to 3 jumps).',
   dread:'Dread_Chant · 35 energy · 16s. A 0.6s chant: every (non-boss) enemy within 180px is gripped by terror and backs away for 2.5s.',
@@ -369,14 +369,14 @@ const ABIL_DESC={
   resurge:'Verdant_Resurgence · Passive · 25s cooldown. When an ally would die, vines catch them: they stay up, can\'t be hurt for 2s and heal 30% of their max HP.',
   plating:'Reactive_Plating · Passive. Every 5 hits he takes, his plating vents: a shockwave shoves nearby enemies away and he gets a 12% max-HP shield for 4s.',
   surge:'Arc_Surge · 30 energy · 10s. Overcharges the arc blade for 5s: every blade hit also chains lightning to up to 3 more enemies within 40px (1d8 each) and stuns each one for 0.4s.',
-  gatling:'Gatling_Arm · 40 energy · 14s. Spins up the gatling on his far arm and hoses the field for 3s: 12 shots a second, 1d3 each, with terrible accuracy (-40) and wild spread, so most of them miss.',
+  gatling:'Gatling_Arm · 40 energy · 14s. Spins up the gatling on his far arm and hoses the field for 3s: 10 shots in 2 seconds, 1d3 each, at -10 accuracy with a wild spread. Every shot leaves from a slightly different height and picks its own target.',
   missiles:'Missile_Barrage · 50 energy · 18s. The pod on his back pops open and lobs 6 little missiles high over the field onto the thickest group of enemies: 2d4 each to everything within 9px of where each one lands.',
   smoke:'Smoke_Screen · 35 energy · 16s. Lobs a smoke grenade between a hurt ally and the enemies on them: a thick cloud for 6s (about 180px wide). Enemies inside move 30% slower and miss half their attacks; allies inside dodge 25% of hits.',
   aimed:'Aimed Shot · 45 energy · 14s · 2s cast with a laser sight. Never misses the head box, +5% crit, 2.5x crit damage, pierces one enemy.',
-  trip:'Trip Bomb · 35 energy · 20s · 1s to set. A nail bomb on a tripwire: cross-shaped blast (3d6), knockback, 50% bleed.',
+  trip:'Trip Bomb · 35 energy · 20s · 1s to set. A nail bomb on a tripwire: cross-shaped blast (3d6), knockback, 50% bleed, then a wider shockwave that hits anything the cross missed for half damage and shoves it harder.',
   grit:'Grit_Teeth · 35 energy · 22s. He grits his teeth and digs in: takes 60% less damage for 7s, and leans hard into melee for that time (his sliders slide toward Slasher and Aggressive), wading in with the crowbar while he tells the others to get behind him.',
   camp:'Set_Camp · 40 energy · 30s · 1.8s to kneel and light it right in front of him. A campfire that blocks nothing: every ally within 250px gets Cozy (+1% max HP and +2 energy per second). It has 5 life; each hit Flannel_Man or his Traveling_Companion takes costs it 1, and at 0 it dies out.',
-  pal:'Call Traveling_Companion · 30 energy · 24s. Calls his timid partner (a third of his stats, Brick Throw with 75% stun). If she\'s already out, heals her 7%.',
+  pal:'Call Traveling_Companion · 30 energy · 24s. Calls his timid partner: a third of his toughness, a 1d4 pistol that fires every 0.5s with 7 shots before a 5s reload, and a Brick Throw with 75% stun. She circles around him. If she\'s already out, heals her 7%.',
   dash:'Wave Dash · 50 energy · 16s. Rides a blue energy wave about 300px forward; everything it passes through (2 lanes each way) takes 1.4x a sword hit.',
   shout:'War Cry · 25 energy · 7s. Every ally within 600px gets +25% damage and attack speed for 7s.',
   rain:'Arrow_Rain · 45 energy · 18s. 16 arrows rain down on the thickest group of enemies (1d6 each).',
@@ -388,10 +388,10 @@ const ABIL_DESC={
   leap:'Hatchet_Leap · 40 energy · 16s. Double-jumps onto an enemy up to 180px away and slams down for 1d10 to everything around the landing.',
   rage:'Timber_Rage · 35 energy · 20s. Under half health: +30% damage, +20% attack speed and 25% less damage taken for 6s.',
   roll:'Log_Roll · 20 energy · 8s. When he\'s hurt and cornered, rolls back about 90px and can\'t be hit during the roll.',
-  mend:'Mend · 17 energy · 4s. Instantly heals the most-hurt ally for 12% of their max HP.',
-  bloom:'Rejuvenating Bloom · 35 energy · 12s. Wraps an ally in a healing vine heart: 5% of max HP every second for 8s.',
+  mend:'Mend · 17 energy · 5s. Instantly heals the most-hurt ally for 10% of their max HP.',
+  bloom:'Rejuvenating Bloom · 35 energy · 14s. Wraps an ally in a healing vine heart: 4% of max HP every second for 8s.',
   thorns:'Thorn Wave · 40 energy · 14s. A wave of earth thorns erupts along the ground 400px down her lane: 2d6 to everything it bursts under, plus bleed (12 over 4s) and a 50% chance of a poison stack (undead are immune).',
-  cyclone:'Cyclone · 45 energy · 18s. A slow tornado wanders close in front of her for 5s, slowly pulling nearby enemies toward it and dealing small steady damage (1d3 every 0.5s) to everything inside.'};
+  cyclone:'Cyclone · 45 energy · 18s. A slow tornado forms well ahead of her (about 450px out) and wanders there for 5s, slowly pulling nearby enemies toward it and dealing small steady damage (1d3 every 0.5s) to everything inside.'};
 const BEHAVIOR={
   cultist:'Theatrical, self-serving zealot. Hangs back behind the front line, flinging void bolts and stabbing with a ritual dagger anything that gets close. Calls tentacles up out of the ground where the enemies bunch, curses the biggest threat, bleeds himself to empower his allies when a fight turns hard, and chants enemies into a panic when they swarm him. Holds grudges and loves to show off.',
   robot:'Heavy, patient war machine. Walks slowly, holds a line in front of the squishies and trusts its plating. Slashes with its blue arc blade up close and fires short bursts from the gatling on its far arm. When a crowd lines up it spins the gatling up and sprays; when they bunch it sends a missile barrage; when a friend is hurt and swarmed it smokes them out. Listens to callouts.',
@@ -488,10 +488,10 @@ CHAR.druid={name:'Druid',role:'Staff + Nature Bolts',flatHp:0,stamina:7,hpPerSta
   acc:16,walkPenalty:8,crit:.08,critMul:1.75,luck:20,xp:0,run:2,turn:.22,enMax:100,enRegen:5,
   abilities:[
     // Mend: small instant heal, low cooldown. 12% of the target's max HP on the most-hurt ally (under 85%). 12 energy, 4s cooldown.
-    {id:'mend',name:'Mend',en:17,cd:4,heal:.12,under:.85},
+    {id:'mend',name:'Mend',en:17,cd:5,heal:.10,under:.85},   /* 0.12.38 (Kyle): 12% -> 10%, 4s -> 5s */
     // Rejuvenating Bloom: heal over time on any ally (most hurt, under 90%, not already blooming): 5% of their max HP every 1s
     //   for 8s (40% total) inside a glowing vine heart. 30 energy, 12s cooldown.
-    {id:'bloom',name:'Rejuvenating Bloom',en:35,cd:12,pct:.05,tick:1,dur:8,under:.9},
+    {id:'bloom',name:'Rejuvenating Bloom',en:35,cd:14,pct:.04,tick:1,dur:8,under:.9},   /* 0.12.38 (Kyle): 5%/s -> 4%/s, 12s -> 14s */
     // Thorn Wave (Kyle): a wave of earth thorns erupts along the ground down her lane, one after another for 200px over 1.2s.
     //   Every enemy a thorn bursts under takes 2d6 (+flat) and bleeds (12 over 4s). 35 energy, 14s cooldown.
     {id:'thorns',name:'Thorn Wave',en:40,cd:14,dice:[2,6],dist:133,dur:.8,poisonCh:.5,step:12,depth:6,bleed:{dmg:12,dur:4},cast:.5},
@@ -500,7 +500,7 @@ CHAR.druid={name:'Druid',role:'Staff + Nature Bolts',flatHp:0,stamina:7,hpPerSta
     // 0.12.20 Verdant_Resurgence (passive, new): once per stage, when an ally would die, vines catch them instead: they stay up at 1 HP,
     //   can't be hurt for 2s and heal 30% of max HP over those 2s.
     {id:'resurge',name:'Verdant_Resurgence',passive:1,heal:.3,dur:2,icd:25},   // 0.12.24 (Kyle): no longer once per stage, 25s internal cooldown
-    {id:'cyclone',name:'Cyclone',en:45,cd:18,dist:140,dur:5,dice:[1,3],every:.5,pullR:40,pull:16,inR:12,depth:6,spd:20,wander:28,cast:.5}]};
+    {id:'cyclone',name:'Cyclone',en:45,cd:18,ahead:150,near:100,dist:215,dur:5,dice:[1,3],every:.5,pullR:40,pull:16,inR:12,depth:6,spd:20,wander:28,cast:.5}]};
 // 0.12.11 Lumber_Jack (Claude's starting numbers): a burly axeman with a hunting bow. Sturdy, hits hard up close.
 CHAR.lumberjack={name:'Lumber_Jack',role:'Axe + Bow',combo:0,flatHp:0,stamina:11,hpPerStamina:5,armorPts:7,dodge:.03,kbRes:.45,
   melee:{dice:[1,10],every:1.3,reach:22,kb:25,hitAt:.2},
@@ -524,13 +524,13 @@ CHAR.lumberjack={name:'Lumber_Jack',role:'Axe + Bow',combo:0,flatHp:0,stamina:11
 //   the far arm, plus a missile pod on its back. Heavy and slow, lots of armor. Basic ranged: a short 3-round burst from the gatling.
 CHAR.robot={name:'Warhound',role:'Arc Blade + Gatling',combo:0,flatHp:0,stamina:12,hpPerStamina:5,armorPts:12,dodge:.02,kbRes:.6,
   melee:{dice:[1,8],every:1.3,reach:22,kb:20,hitAt:.2,arc:1},
-  ranged:{dice:[1,4],flat:0,every:2.4,range:200,clip:0,reload:0,pellets:1,anim:.45,burst:3,burstGap:.08},
-  acc:10,walkPenalty:8,crit:.08,critMul:1.8,luck:10,xp:0,run:1.6,turn:.3,enMax:100,enRegen:5,
+  ranged:{dice:[3,4],flat:0,every:2.4,range:200,clip:0,reload:0,pellets:1,anim:.45,proj:'buck'},   /* 0.12.38 (Kyle): one buckshot blast (a tight cluster of pellets, 3d4 as one hit) instead of a 3-round burst */
+  acc:10,walkPenalty:8,crit:.08,critMul:1.8,luck:10,xp:0,run:1/* 0.12.38 (Kyle): the Warhound only walks */,turn:.3,enMax:100,enRegen:5,
   abilities:[
     // Arc_Surge: IF 2+ enemies are within 40px THEN overcharge the blade for 5s: each blade hit chains to 3 more (1d8, 0.4s stun). 25 energy, 10s.
     {id:'surge',name:'Arc_Surge',en:30,cd:10,dur:5,chains:3,r:40,dice:[1,8],stun:.4},
     // Gatling_Arm: IF 3+ enemies are in front within range AND nothing is in blade reach THEN spray for 3s at 12/s, 1d3, accuracy -40. 35 energy, 14s.
-    {id:'gatling',name:'Gatling_Arm',en:40,cd:14,dur:3,rate:12,dice:[1,3],range:210,accPen:-40,spreadH:10,spreadGy:4,min:3},
+    {id:'gatling',name:'Gatling_Arm',en:40,cd:14,dur:2,rate:5,dice:[1,3],range:210,accPen:-10,spreadH:10,spreadGy:4,startH:7,min:3},   /* 0.12.38 (Kyle): 10 shots in 2s at -10 accuracy, each from a slightly different height, each picks its own target */
     // Missile_Barrage: IF 3+ enemies are bunched (or a boss is up) 40-260px out THEN 6 missiles arc onto them, 2d4 within 9px each. 45 energy, 18s.
     {id:'missiles',name:'Missile_Barrage',en:50,cd:18,n:6,gap:.14,fly:.95,range:260,min:40,r:9,dice:[2,4],spread:14},
     // Smoke_Screen: IF an ally under 50% has enemies on them (or I'm swarmed by 3+) THEN smoke the spot for 6s. 30 energy, 16s.
@@ -548,7 +548,7 @@ CHAR.cultist={name:'Void_Cultist',role:'Dagger + Void Bolts',combo:0,flatHp:0,st
   abilities:[
     // Call_of_the_Deep: IF 2+ enemies are within 150px (or anything big) THEN summon a tentacle beside the nearest group for 10s.
     // 0.12.22 (Kyle): 15 HP, 25% life steal, hits for 2d6; reach 35 world px = how far the lash in its attack frames actually lands.
-    {id:'tentacle',name:'Call_of_the_Deep',en:45,cd:7,cast:.8,life:999,decay:.05,hp:15,steal:.4,reach:35,depth:10,every:1.4,dice:[2,6],kb:20,range:83},   // cast up to 250 screen px away (83 world)
+    {id:'tentacle',name:'Call_of_the_Deep',en:45,cd:7,cast:.8,life:999,decay:.05,hp:15,steal:.2,reach:35,depth:10,every:1.4,dice:[2,6],kb:20,range:83},   // cast up to 250 screen px away (83 world)
     // Blood_Pact: IF an ally is under 50% OR 4+ enemies are on screen, AND I'm above 55%, THEN pay 15% HP for +20% team damage, 6s.
     {id:'pact',name:'Blood_Pact',en:25,cd:20,hpCost:.15,min:.4,dur:6,dmg:.2,cast:.5},
     // Spreading_Hex: IF the biggest enemy in range isn't cursed THEN curse it: 2.5% max HP/s for 6s; jumps on death (3 times).
@@ -569,8 +569,8 @@ function abilityPlan(h){const C=h.base&&h.base.char;if(!C||!C.abilities||!C.abil
   return {close,far,farRange,allDown:ready===0};}
 CHAR.flannel_pal=(()=>{const C=CHAR.flannel,f=PAL_FRAC;return {name:'Traveling_Companion',flatHp:C.flatHp*f,stamina:C.stamina*f,hpPerStamina:C.hpPerStamina,armorPts:Math.round(C.armorPts*f),
   dodge:C.dodge*f,kbRes:C.kbRes*f,melee:{dice:C.melee.dice,dmgMul:f,every:C.melee.every,reach:16,kb:Math.round(C.melee.kb*f),hitAt:.12},
-  ranged:{dice:C.ranged.dice,dmgMul:f,flat:0,every:C.ranged.every,range:C.ranged.range,clip:1,reload:C.ranged.reload,pellets:1},
-  acc:Math.round(C.acc*f),walkPenalty:Math.round(C.walkPenalty*f),crit:C.crit*f,critMul:C.critMul,luck:0,xp:0,run:C.run,turn:C.turn,enMax:100,enRegen:5,pet:1,
+  ranged:{dice:[1,4],dmgMul:1,flat:0,every:.5,range:C.ranged.range,clip:7,reload:5,pellets:1},   /* 0.12.38 (Kyle): pistol 1d4, a shot every 0.5s, 7 in the clip, 5s reload */
+  acc:Math.round(C.acc*f)-3,   /* a touch less accurate to make up for the faster fire */walkPenalty:Math.round(C.walkPenalty*f),crit:C.crit*f,critMul:C.critMul,luck:0,xp:0,run:C.run,turn:C.turn,enMax:100,enRegen:5,pet:1,
   // Brick Throw: never misses and always deals damage (1.5x her pistol roll + flat bonuses), 75% chance to stun for 1.2s. 20 energy, 9s cooldown.
   abilities:[{id:'brick',name:'Brick Throw',en:25,cd:9,range:170,dmgMul:1.5,stunCh:.75,stunT:1.2}]};})();
 function heroBase(key,lvl,teamSize){
@@ -642,6 +642,8 @@ function personaTitle(u){const p=personaOf(u);const ex=Object.keys(p).filter(k=>
   const w=ex.slice(0,2).map(([k,,v])=>TRAIT_WORDS[k][v>=5?1:0]);return w.join(' ');}
 function personaLines(u){const p=personaOf(u);return SLIDERS.map(([k,l,r])=>`${l} ${'▮'.repeat(p[k])}${'▯'.repeat(10-p[k])} ${r}`);}
 const SHOW_LINES={hero:['HA!','Too easy!','Next!','Boom!','Did you see that?'],zombie:['Brainsss','Grrah!','*moans*'],werewolf:['AWOOO!','*snarl*','Grrr!']};
+/* 0.12.38 (Kyle): every rock, log, car and ambulance can be looted ONCE in total; nobody picks one another unit is already searching */
+function g_free(o,h){return !o.looted&&!(o.searchBy&&o.searchBy!==h&&o.searchBy.alive&&o.searchBy.search&&o.searchBy.search.o===o);}
 const Brain={
   // one shared picture of the battlefield per tick: every unit can see every other unit
   snapshot(g){const H=g.alive(),E=g.enemies.filter(e=>!e.dead&&e.x<g.W+10);const onTarget=new Map();
@@ -726,7 +728,7 @@ const Brain={
     {const D=g.heroes.filter(o=>!o.alive&&o.downed&&o!==h).sort((p,q)=>Math.abs(p.x-g.heroX(h))-Math.abs(q.x-g.heroX(h)))[0];
      if(D&&!h.pet){if(!h.revDecide||h.revDecide.D!==D||g.t>h.revDecide.until){const danger=bb.E.filter(e=>Math.abs(e.x-D.x)<40).length;const lone=trait(h,'pack');
          let w=.62+.3*(1-selfish)+.18*(1-lone)+.12*A-.12*(hp<.35?1:0);if(danger)w*=.35+.85*aggr;w=Math.max(.05,Math.min(.97,w));
-         h.revDecide={D,until:g.t+1.6+Math.random()*.8,go:Math.random()<w};}
+         h.revDecide={D,until:g.t+1.6+Math.random()*.8,go:Math.random()<(h.defib?Math.min(.97,w+.45):w)};}   /* IF I carry a Defibrillator THEN I go for the downed ally far more readily (it is instant) */
        if(h.revDecide.go){const runMul=.45+1.4*pace;return {xoff:0,intent:'revive',runMul,reviveD:D,reviveLane:D.laneI};}}}
     // 0.12.30 car alarm: IF an alarm is blaring nearby THEN units go shut it off. Techy units (and Perceptive ones) are much keener;
     //   IF zombies are already around the car THEN only the bold go. Primitive units mostly leave it to someone else.
@@ -738,7 +740,7 @@ const Brain={
     // 0.12.33 Medkit: IF I carry one AND an ally is under 50% THEN take it to them (selfless units most of all)
     if(h.medkit){const H=g.alive().filter(o=>o!==h&&!o.pet&&o.hp/o.max<.5).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];if(H&&Math.random()<.6+.35*(1-selfish)){const runMul=.45+1.4*pace;return {xoff:0,intent:'herb',runMul,goTo:H,reviveLane:H.laneI};}}
     // ambulance: IF I have no Medkit AND an unsearched ambulance is close (closer for Tunnel Vision) AND it's safe enough THEN search it
-    if(!h.medkit&&!h.search&&!h.pet){const look=35+45*trait(h,'perc');const o=(g.obst||[]).find(o=>o.k==='car_ambulance'&&!(o.searched&&o.searched[h.key])&&Math.abs(o.x-g.heroX(h))<look);
+    if(!h.medkit&&!h.search&&!h.pet){const look=35+45*trait(h,'perc');const o=(g.obst||[]).find(o=>o.k==='car_ambulance'&&g_free(o,h)&&Math.abs(o.x-g.heroX(h))<look);
       if(o){if(!h.amDecide||h.amDecide.o!==o||g.t>h.amDecide.until){const danger=bb.E.filter(e=>Math.abs(e.x-o.x)<60).length;h.amDecide={o,until:g.t+1.5+Math.random(),go:Math.random()<(danger?.2+.5*aggr:.6+.3*trait(h,'perc'))};}
         if(h.amDecide.go){const runMul=.45+1.4*pace;return {xoff:0,intent:'search',runMul,goTo:{ob:o},reviveLane:g.searchSpot(o,h).lane};}}}
     // 0.12.27 Bodyguard (Family Matters, a deck-scripted behavior): IF an ally is hurt (under 90%) THEN stand beside the most hurt one
@@ -746,7 +748,7 @@ const Brain={
     // 0.12.28 Herbalist: IF I have room for herbs AND there's unsearched debris close by AND it isn't swarmed THEN go search it
     {const sp=insP(h);if(sp==='scavenger'&&(h.kit||[]).includes('med')){const H=g.alive().filter(o=>o!==h&&!o.pet&&o.hp/o.max<.6).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
       if(H&&Math.random()<.55+.35*(1-selfish)){const runMul=.45+1.4*pace;return {xoff:0,intent:'herb',runMul,goTo:H,reviveLane:H.laneI};}}}
-    if(((insP(h)==='herbalist'&&(h.herbs||0)<3)||(insP(h)==='scavenger'&&(h.kit||[]).length<2))&&!(h.search)){const RE=SEARCH_RE[insP(h)];const look=30+45*trait(h,'perc')+(insP(h)==='scavenger'?20:0);const o=(g.obst||[]).filter(o=>RE.test(o.k)&&!(o.searched&&o.searched[h.key])&&Math.abs(o.x-g.heroX(h))<look).sort((p,q)=>Math.abs(p.x-g.heroX(h))-Math.abs(q.x-g.heroX(h)))[0];
+    if(((insP(h)==='herbalist'&&(h.herbs||0)<3)||(insP(h)==='scavenger'&&(h.kit||[]).length<2))&&!(h.search)){const RE=SEARCH_RE[insP(h)];const look=30+45*trait(h,'perc')+(insP(h)==='scavenger'?20:0);const o=(g.obst||[]).filter(o=>RE.test(o.k)&&g_free(o,h)&&Math.abs(o.x-g.heroX(h))<look).sort((p,q)=>Math.abs(p.x-g.heroX(h))-Math.abs(q.x-g.heroX(h)))[0];
       if(o){const danger=bb.E.filter(e=>Math.abs(e.x-o.x)<35).length;if(!h.srDecide||h.srDecide.o!==o||g.t>h.srDecide.until)h.srDecide={o,until:g.t+1.5+Math.random(),go:Math.random()<(danger?(.15+.5*aggr):.8+.15*trait(h,'perc'))*((bb.heat.get(h)||0)?.25:1)*   /* IF something is on me right now THEN I usually fight first */(/^car_/.test(o.k)&&bb.E.some(e=>Math.abs(e.x-o.x)<80)?.45+.55*aggr:1)};   /* IF it's a car AND enemies are around THEN Calculated units hold off (an alarm would bring more) */
         if(h.srDecide.go){const runMul=.45+1.4*pace;return {xoff:0,intent:'search',runMul,goTo:{ob:o},reviveLane:g.searchSpot(o,h).lane};}}}
     if(h.search)return {xoff:0,intent:'search',runMul:1,goTo:{ob:h.search.o},reviveLane:g.searchSpot(h.search.o,h).lane};
@@ -878,16 +880,16 @@ const Comms={
   foe(e){if(!e)return 'that one';if(e.boss)return 'the boss';const L=FOE_NICK[e.type];return L?L[Math.floor(Math.random()*L.length)]:'that one';},
   fill(s,ctx){return s.replace('{foe}',this.foe(ctx.tgt)).replace('{ally}',ctx.ally?this.name(ctx.ally):'you').replace('{lane}',ctx.lane!=null?LANE_NAME[Math.min(4,ctx.lane)]||'that lane':'that lane');},
   pick(a){return a[Math.floor(Math.random()*a.length)];},
-  bubble(g,u,s){s=s.charAt(0).toUpperCase()+s.slice(1);(g.calls=g.calls||[]).push({u,s,c:CALL_COLOR[u.key]||'#e8e8e8',t:0,life:1.6+Math.min(1.4,s.length*.045)});
+  bubble(g,u,s,keep){if(!keep&&Math.random()<.22)return;   /* 0.12.38 (Kyle): about 22% less chatter on screen */s=s.charAt(0).toUpperCase()+s.slice(1);(g.calls=g.calls||[]).push({u,s,c:CALL_COLOR[u.key]||'#e8e8e8',t:0,life:1.6+Math.min(1.4,s.length*.045)});
     if(g.calls.length>8)g.calls.shift();},
   // IF a unit decides to speak (Quiet<->Chatty, a personal cooldown, and the team not having just said the same thing) THEN shout it
   say(g,u,type,ctx,force){if(!u||!u.alive||g.demo)return false;const C=CALLS[type];if(!C)return false;ctx=ctx||{};
     const talk=trait(u,'talk');g.callGap=g.callGap||0;g.callType=g.callType||{};
     if(!force){if((u.callT||0)>g.t)return false;if(g.t<g.callGap)return false;if((g.callType[type]||-99)>g.t-3.5)return false;
       // 0 = nearly never (2% for something urgent), 10 = practically every time it sees something
-      const urgent=type==='help'||type==='heal'||type==='danger'||type==='down';let p=Math.pow(talk,1.6)*.95+(urgent?.03:.004);if(/flank|lane|danger|boss/.test(type))p*=.4+1.2*trait(u,'perc');if(Math.random()>p)return false;}
+      const urgent=type==='help'||type==='heal'||type==='danger'||type==='down';let p=Math.pow(talk,1.6)*.95+(urgent?.03:.004);if(/flank|lane|danger|boss/.test(type))p*=.4+1.2*trait(u,'perc');p*=.78;if(Math.random()>p)return false;}
     u.callT=g.t+.8+9*(1-talk);g.callGap=g.t+.45;g.callType[type]=g.t;
-    const pool=ctx.variant&&C[ctx.variant]?C[ctx.variant]:C.lines;this.bubble(g,u,this.fill(this.pick(pool),ctx));
+    const pool=ctx.variant&&C[ctx.variant]?C[ctx.variant]:C.lines;this.bubble(g,u,this.fill(this.pick(pool),ctx),true);
     if(C.dur)this.broadcast(g,u,type,ctx,C);return true;},
   // every ally hears it: IF it's relevant to them AND they roll under Follows Callouts THEN they take the order
   broadcast(g,u,type,ctx,C){for(const o of g.alive()){if(o===u||!o.key)continue;const rel=callRelevance(type,o,ctx);if(rel<=0)continue;
@@ -945,11 +947,13 @@ class Game{
     this.st=CFG.stage(this.run.stage,this.run.prestige);
     this.dist=0;this.t=0;this.events=[];this.enemies=[];this.proj=[];this.fx=[];this.minions=[];this.texts=[];
     this.budget=2;this.bossSpawned=false;this.over=null;this.kills=0;this.shake=0;this.devourStacks=0;
-    this.stageXp=0;this.stageScore=0;this.loot=[];this.stageGold=0;this.stageItems=[];
+    this.stageXp=0;this.stageScore=0;this.loot=[];this.stageGold=0;this.stageItems=[];this.stageFood=0;this.stageWater=0;this.stageParts=0;this.stats={};
     this.heroes=this.run.team.map((k,i)=>this.makeHero(k));
     this.heroes.sort((a,b)=>(STYLE[a.key].tank?-1:0)-(STYLE[b.key].tank?-1:0)||ORDER[a.style.atk]-ORDER[b.style.atk]);
     this.recalc();
     this.heroes.forEach((h,i)=>{h.x=this.home(h);const saved=this.run.heroes[h.key];h.hp=saved.dead?h.max*.25:Math.max(1,h.max*(saved.hpf==null?1:saved.hpf));});
+    {for(const h of this.heroes){const sv=this.run.heroes[h.key];const cr=sv.carry;   /* Triage builds ride along into the stage */
+      if(cr&&!this.demo){if(cr.medkit){h.medkit=1;h.medkitCamp=1;}if(cr.defib)h.defib=1;if(cr.kit&&cr.kit.length)h.kit=(h.kit||[]).concat(cr.kit).slice(0,2);sv.carry=null;}}}
     this.spawnTimer=0;
   }
   makeHero(key){
@@ -985,6 +989,9 @@ class Game{
         if(m.stamina){const add=m.stamina*((b.char&&b.char.hpPerStamina)||HP_PER_STAMINA);h.max+=add;}if(m.luck)h.luck+=m.luck;if(m.xp)h.xpBonus+=m.xp/100;
         if(m.kbRes)h.kbRes+=m.kbRes/100;if(m.enMax)h.enMaxB+=m.enMax;if(m.enRegen)h.enRegenB+=m.enRegen;if(m.lifesteal)h.lifesteal+=m.lifesteal/100;if(m.move)h.mvMul+=m.move/100;
         if(m.meleeDmg)h.meleeDmg+=m.meleeDmg/100;if(m.rangedDmg)h.rangedDmg+=m.rangedDmg/100;if(m.meleeSpd)h.meleeSpd+=m.meleeSpd/100;if(m.rangedSpd)h.rangedSpd+=m.rangedSpd/100;if(m.kb)h.kbAdd+=m.kb;}
+      {const H=this.slot&&this.slot.heroes&&this.slot.heroes[h.key];const P=(H&&H.pts)||{};   /* level-up stat points (chosen at camp) */
+        if(P.hp)h.max*=1+.04*P.hp;if(P.dmg)h.atk*=1+.03*P.dmg;if(P.acc)h.acc+=2*P.acc;if(P.crit)h.crit+=.01*P.crit;if(P.luck)h.luck+=3*P.luck;if(P.armor)h.armorPts+=P.armor;
+        const gt=upgT(this.run,'gen');if(gt)h.enRegenB+=gt;const bt=upgT(this.run,'bench');if(bt){h.flatRanged=(h.flatRanged||0)+bt;h.flatMelee=(h.flatMelee||0)+bt;}const sh=upgT(this.run,'shrine');if(sh)h.luck+=[5,10][sh-1];}
       if(h.hp!=null)h.hp=Math.min(h.max,pct*h.max);}
   }
   alive(){return this.heroes.filter(h=>h.alive).concat((this.pets||[]).filter(p=>p.alive));}
@@ -1008,6 +1015,8 @@ class Game{
   }
   pickType(){const pool=this.st.biome.pool;let tot=0;for(const k in pool)tot+=pool[k];let r=this.rng()*tot;for(const k in pool){r-=pool[k];if(r<=0)return k;}return Object.keys(pool)[0];}
   // ---------------------------------------------------------------- damage
+  /* 0.12.38 stage stats per unit (shown after a stage clears) */
+  st8(h){const k=(h&&h.key)||'?';this.stats=this.stats||{};return this.stats[k]||(this.stats[k]={dmg:0,heal:0,kills:0,downs:0,revives:0,searches:0,crits:0,heads:0,taken:0,biggest:0});}
   hitEnemy(e,amt,src,opt){
     if(e.dead||amt<=0)return 0;opt=opt||{};if(src&&src.key){e.lastHitBy=src;e.grudgeT=1+14*trait(e,'grudge');}
     if(!opt.sure&&e.E&&e.E.dodge&&this.rng()<e.E.dodge){this.text(e.x,e.y-30,'miss','#9aa');return 0;}
@@ -1022,11 +1031,12 @@ class Game{
     amt=mitigate(e,amt,opt.type); if(e.shred>0)amt*=1.2;if(e.markT>0)amt*=1+(e.markAmp||.25);   // Pinning_Shot mark
     if(opt.execute&&e.hp<e.max*.3)amt*=2;
     amt=Math.max(1,amt);e.hp-=amt;e.hitFlash=.12;this.lastHit=this.t;
+    if(src&&src.key&&!this.demo){const S=this.st8(src);S.dmg+=amt;if(crit)S.crits++;if(opt.head)S.heads++;if(amt>S.biggest)S.biggest=amt;}   /* stage stats */
     this.splatter(e,amt,1,crit);
     if(opt.kb>0){const ratio=Math.min(1,amt/Math.max(1,e.max));let kb=ratio<.08?ratio*12:ratio<.25?2+ratio*14:5+ratio*12;   // chip ~0, medium small, big decent
       if(crit)kb*=1.6;if(e.boss)kb*=.12;kb*=opt.kb;if(e.fly)kb*=.7;if(e.E&&e.E.kbRes)kb*=1-e.E.kbRes;e.kbv=Math.max(e.kbv||0,Math.min(18,kb)*7);e.kbDir=src&&src.x!=null&&!e.boss?(e.x>=src.x?1:-1):1;}
     this.text(e.x+(this.rng()*8-4),e.y-(e.boss?100:e.fly?16:44),Math.round(amt),crit?'#ffd23f':'#ffffff',crit);
-    if(src&&src.lifesteal>0&&src.alive)src.hp=Math.min(src.max,src.hp+amt*src.lifesteal);
+    if(src&&src.lifesteal>0&&src.alive){const b0=src.hp;src.hp=Math.min(src.max,src.hp+amt*src.lifesteal);if(src.key)this.st8(src).heal+=src.hp-b0;}
     if(!ABILITIES_OFF&&src&&src.style&&src.style.leech)this.healHero(this.weakest(),amt*src.style.leech*.5,true);
     if(src&&src.items&&src.items.length)this.procs(src,crit?'oncrit':'onhit',e);
     if(e.hp<=0)this.kill(e,src);
@@ -1035,7 +1045,7 @@ class Game{
   kill(e,src){
     if(e.bounty&&!this.demo){this.stageGold+=10;this.text(e.x,e.y-40,'+10','#ffd23f');}
     if(insP(src)==='devour'&&src.alive){this.healHero(src,src.max*.03,true);src.en=Math.min(src.enMax||100,(src.en||0)+4);}
-    e.dead=true;this.kills++;this.onKillDark(e);if(src&&src.key&&!this.demo)Brain.showoff(this,src,'kill');if(src&&src.key)Comms.onKill(this,src);
+    e.dead=true;this.kills++;if(src&&src.key&&!this.demo)this.st8(src).kills++;this.onKillDark(e);if(src&&src.key&&!this.demo)Brain.showoff(this,src,'kill');if(src&&src.key)Comms.onKill(this,src);
     const xp=(e.boss?e.B.xp:e.E.xp*(e.elite?2.5:1)*.33)*this.st.xpMul;   // regular enemies give about half the XP they used to (stages are twice as long)
     const pts=Math.round((e.boss?e.B.pts:e.E.pts*(e.elite?3:1))*(1+.4*(this.st.n-1))*(1+this.run.prestige)*(src?src.scoreM:1));
     this.stageScore+=pts;this.gainXp(xp);
@@ -1044,8 +1054,11 @@ class Game{
     if(this.team.devour){this.devourStacks=Math.min(60,this.devourStacks+1);for(const h of this.alive())if(h.spells.some(s=>s.arch==='devour'))this.healHero(h,h.max*(.006+.0025*this.spellRank(h,'devour')),true);}
     if(src&&src.items)this.procs(src,'onkill',e);
     if(!this.demo){const st=this.st;const r=this.rng();
-      const gChance=e.boss?1:e.elite?1:(e.E.goldChance!=null?e.E.goldChance:.12);if(r<gChance){const amt=!e.boss&&!e.elite&&e.E.goldAmt?e.E.goldAmt[0]+Math.floor(this.rng()*(e.E.goldAmt[1]-e.E.goldAmt[0]+1)):Math.max(1,Math.round((2+(e.boss?e.B.xp*.6:e.E.xp*2))*(1+.3*(st.n-1))*(1+this.run.prestige)*(e.elite?3:1)*(.7+this.rng()*.6)));
-        this.loot.push({kind:'gold',x:e.x+(this.rng()*10-5),gy:e.gy,amt,t:0,big:e.boss||e.elite});}
+      const gChance=e.boss?1:e.elite?1:(e.E.goldChance!=null?e.E.goldChance:.12);if(r<gChance){const piles=e.boss?5:e.elite?2:1;   /* 0.12.38 (Kyle): every gold pile is small, 2-6 gold (bosses drop 5 piles, elites 2) */
+        for(let i=0;i<piles;i++)this.loot.push({kind:'gold',x:e.x+(this.rng()*14-7),gy:e.gy,amt:2+Math.floor(this.rng()*5),t:0,big:false});}
+      {const m=e.boss?6:e.elite?2:1;   /* 0.12.38 camp supplies off enemies (low odds): food or water 3%, spare parts 4% */
+        if(this.rng()<.03*m)this.loot.push({kind:this.rng()<.5?'water':'food',x:e.x+(this.rng()*10-5),gy:e.gy,amt:1,t:0});
+        if(this.rng()<.04*m)this.loot.push({kind:'parts',x:e.x+(this.rng()*10-5),gy:e.gy,amt:1+(this.rng()<.5?1:0),t:0});}
       const iChance=e.boss?1:e.elite?.1+.01*st.n:(e.E.itemChance!=null?e.E.itemChance:.004+.0012*st.n);if(this.rng()<iChance){const it=rollItem(this.run,this.rng,e.boss?'U':null,e.boss?'boss':e.elite?'elite':'mob');if(it)this.loot.push({kind:'item',x:e.x+6,item:it,t:0});}}
     if(e.boss){this.ev('bossdown',{name:e.B.name});this.shake=1;for(const o of this.enemies)if(!o.dead){o.dead=true;this.fx.push({k:'poof',x:o.x,y:o.y-20,t:0});}}
   }
@@ -1058,10 +1071,10 @@ class Game{
     // persistent hero XP with catch-up for heroes behind the team / the stage
     const al=this.aliveHeroes();if(!al.length||!this.slot)return;
     const lv=this.heroes.map(h=>this.slot.heroes[h.key].lvl);const ref=Math.max(Math.max(...lv),1+(this.st.n-1)*1.3+this.run.prestige*12);
-    for(const h of al){const H=this.slot.heroes[h.key];const cu=Math.min(5,1+.4*Math.max(0,ref-H.lvl));H.xp+=xp*1.5*h.base.xpm*(1+(h.xpBonus||0))*cu/al.length;
+    for(const h of al){const H=this.slot.heroes[h.key];const cu=Math.min(5,1+.4*Math.max(0,ref-H.lvl));H.xp+=xp*1.5*h.base.xpm*(1+(h.xpBonus||0)+[0,.1,.2,.3][upgT(this.run,'dummy')])*cu/al.length;
       while(H.xp>=needHeroXp(H.lvl)){H.xp-=needHeroXp(H.lvl);H.lvl++;this.ev('herolevel',{key:h.key,lvl:H.lvl});this.text(h.x,this.G-70,'LV '+H.lvl,'#7dff9a',true);}}
   }
-  healHero(h,amt,quiet){if(!h||!h.alive||amt<=0)return;const before=h.hp;h.hp=Math.min(h.max,h.hp+amt);if(!quiet&&h.hp-before>=1)this.text(h.x,this.G-56,'+'+Math.round(h.hp-before),'#7dff9a');}
+  healHero(h,amt,quiet,by){if(!h||!h.alive||amt<=0)return;const before=h.hp;h.hp=Math.min(h.max,h.hp+amt);{const B=by||this._healBy||h;if(B&&B.key&&!this.demo)this.st8(B).heal+=h.hp-before;}if(!quiet&&h.hp-before>=1)this.text(h.x,this.G-56,'+'+Math.round(h.hp-before),'#7dff9a');}
   weakest(){const a=this.alive();return a.length?a.reduce((m,h)=>h.hp/h.max<m.hp/m.max?h:m,a[0]):null;}
   // hit visual: a spray of blood thrown away from the blow, drops falling to the ground and leaving a fading spatter
   splatter(u,amt,dir,crit){if(this.demo&&this.rng()<.5)return;const boss=!!u.boss;const gy=u.gy!=null&&!u.fly?u.gy:this.G;
@@ -1085,7 +1098,7 @@ class Game{
     amt=mitigate(h,amt,'physical');if(h.rageT>0)amt*=.75;if(h.shellT>0)amt*=.3;if(amt>0&&h.herbT>0)h.herbT=0;   // a hit stops a herb healif(h.gritT>0)amt*=1-(h.gritDR||0);   // Grit_Teeth
     if(h.shield>0){const s=Math.min(h.shield,amt);h.shield-=s;amt-=s;if(h.thorns&&from&&!from.dead)this.hitEnemy(from,s*.3,null,{nocrit:1,sure:1});}
     if(amt<=0)return false;
-    h.hp-=amt;h.hitFlash=.12;this.text(h.x+4,this.G-52,Math.round(amt),'#ff5a5a');
+    h.hp-=amt;h.hitFlash=.12;this.text(h.x+4,this.G-52,Math.round(amt),'#ff5a5a');if(h.key&&!this.demo)this.st8(h).taken+=amt;
     {const PL=h.base&&h.base.char&&(h.base.char.abilities||[]).find(a=>a.id==='plating');if(PL){h.plStacks=(h.plStacks||0)+1;   // Reactive_Plating
       if(h.plStacks>=PL.stacks&&!(h.plCd>this.t)){h.plStacks=0;h.plCd=this.t+PL.cd;h.shield=Math.max(h.shield||0,h.max*PL.shield);h.shieldT=PL.shieldT;this.shake=Math.max(this.shake||0,.3);
         this.fx.push({k:'ring',x:h.x,y:this.G-10,r:PL.r,t:0,c:'#7fd8ff'});this.fx.push({k:'quake',x:h.x,gy:h.gy||this.G,t:0,life:.5,raw:1});this.ev('boom',{});
@@ -1097,7 +1110,7 @@ class Game{
     if(h.hp<=0)this.heroDown(h);
     return true;
   }
-  heroDown(h){if(this.tryResurge(h))return;if(!h.pet){h.downed=1;h.revT=0;h.downT=this.t;}/* 0.12.22: downed, not dead: an ally can help them up */if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
+  heroDown(h){if(this.tryResurge(h))return;if(h.key&&!this.demo)this.st8(h).downs++;if(!h.pet){h.downed=1;h.revT=0;h.downT=this.t;}/* 0.12.22: downed, not dead: an ally can help them up */if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
     if(!h.pet){for(const p of this.pets||[])if(p.owner===h&&p.alive){p.alive=false;this.fx.push({k:'poof',x:p.x,y:this.G-20,t:0});}}   // she leaves when he goes down
     if(!this.aliveHeroes().length){this.over='defeat';this.ev('defeat');}}
   procs(h,trig,e,amt,ally){
@@ -1243,7 +1256,7 @@ class Game{
       if(h.shellT>0){h.shellT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);}
       if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}
       if(h.invulnT>0)h.invulnT-=dt;
-      if(h.hotT>0){h.hotT-=dt;h.hotTick=(h.hotTick||0)+dt;if(h.hotTick>=h.hotEvery){h.hotTick-=h.hotEvery;this.healHero(h,h.hotAmt);}}   // Rejuvenating Bloom
+      if(h.hotT>0){h.hotT-=dt;h.hotTick=(h.hotTick||0)+dt;if(h.hotTick>=h.hotEvery){h.hotTick-=h.hotEvery;this.healHero(h,h.hotAmt,false,h.hotSrc);}}   // Rejuvenating Bloom
       if(h.bleedT>0){h.bleedT-=dt;h.bleedTick+=dt;if(h.bleedTick>=1||h.bleedT<=0){const d=h.bleedDps*Math.min(1,h.bleedTick);h.bleedTick=0;h.hp-=d;this.text(h.x+6,this.G-58,Math.round(d),'#c0102a');if(h.hp<=0){this.heroDown(h);continue;}}}
       for(const it of h.items)if(it.cd>0)it.cd-=dt;
       if(this.enemies.some(e=>!e.dead&&e.x-h.x<36))this.procs(h,'near');
@@ -1281,7 +1294,7 @@ class Game{
         if(h.atkT>1&&!h.moving)h.atkT=1;}
     }
     this.stepZones(dt);
-    for(const l of this.loot){l.t+=dt;l.x-=scroll*dt;if(l.x<=f.x+14||this.over){l.got=1;if(l.kind==='gold'){this.stageGold+=l.amt;this.text(l.x,this.G-30,'+'+l.amt,'#ffd23f');}else{this.stageItems.push(l.item);this.ev('itemdrop',{item:l.item});}}}
+    for(const l of this.loot){l.t+=dt;l.x-=scroll*dt;if(l.x<=f.x+14||this.over){l.got=1;if(l.kind==='gold'){const bb=upgT(this.run,'board');const a=Math.round(l.amt*(1+[0,.25,.5,.75][bb]));this.stageGold+=a;this.text(l.x,this.G-30,'+'+a,'#ffd23f');}else if(l.kind==='food'||l.kind==='water'){if(l.kind==='food')this.stageFood=(this.stageFood||0)+1;else this.stageWater=(this.stageWater||0)+1;this.text(l.x,this.G-30,'+1 '+l.kind.toUpperCase(),l.kind==='food'?'#e8b060':'#7fd0ff');}else if(l.kind==='parts'){this.stageParts=(this.stageParts||0)+l.amt;this.text(l.x,this.G-30,'+'+l.amt+' PARTS','#c8d0d8');}else{this.stageItems.push(l.item);this.ev('itemdrop',{item:l.item});}}}
     this.loot=this.loot.filter(l=>!l.got);
     // minions
     for(const m of this.minions){m.life-=dt;m.atkT+=dt;if(m.animT>0)m.animT-=dt;if(m.hitFlash>0)m.hitFlash-=dt;const mi=this.minions.indexOf(m);
@@ -1393,7 +1406,7 @@ class Game{
     // ---- Campfire: grows, burns (cozy aura), breaks after 5 hits on Flannel_Man / his companion, then dies out
     if(this.camp){const F=this.camp;F.t+=dt;F.x-=scroll*dt;
       if(F.state==='start'&&F.t>=.9){F.state='burn';}
-      if(F.state==='burn'){for(const o of this.alive())if(Math.abs(this.heroX(o)-F.x)<=F.A.radius){o.cozyT=.6;this.healHero(o,o.max*F.A.hp*dt,true);o.en=Math.min(o.enMax||100,(o.en||0)+F.A.en2*dt);}}
+      if(F.state==='burn'){for(const o of this.alive())if(Math.abs(this.heroX(o)-F.x)<=F.A.radius){o.cozyT=.6;this.healHero(o,o.max*F.A.hp*dt,true,F.owner);o.en=Math.min(o.enMax||100,(o.en||0)+F.A.en2*dt);}}
       if(F.state==='dying'){F.dT=(F.dT||0)+dt;if(F.dT>=1.2)F.state='dead';}
       if(F.state==='dead'){F.deadT=(F.deadT||0)+dt;if(F.deadT>5)this.camp=null;}
       if(this.camp&&F.x<-30)this.camp=null;}
@@ -1406,7 +1419,7 @@ class Game{
       this.thornWaves=this.thornWaves.filter(W=>!W.done);}
     // ---- Cyclones: wander sporadically, pull nearby enemies in, and grind down whatever is inside them
     if(this.cyclones&&this.cyclones.length){for(const T of this.cyclones){T.t+=dt;const A=T.A;T.x-=scroll*dt;
-        T.wT=(T.wT||0)-dt;if(T.wT<=0){const o=T.src&&T.src.alive?T.src.x:T.x0;T.tx=Math.max(o+30,Math.min(Math.min(this.W-14,o+A.dist),T.x+(this.rng()*2-1)*(A.wander||70)));
+        T.wT=(T.wT||0)-dt;if(T.wT<=0){const o=T.src&&T.src.alive?T.src.x:T.x0;T.tx=Math.max(o+(A.near||30),Math.min(Math.min(this.W-14,o+A.dist),T.x+(this.rng()*2-1)*(A.wander||70)));
           T.tgy=Math.max(LANES[0],Math.min(LANES[LANES.length-1],T.gy+(this.rng()*2-1)*7));T.wT=.4+this.rng()*.6;}   // a new random heading every 0.4-1s
         const dx=T.tx-T.x;T.x+=Math.sign(dx)*Math.min(Math.abs(dx),A.spd*dt*(.6+this.rng()*.8));T.gy+=Math.sign(T.tgy-T.gy)*Math.min(Math.abs(T.tgy-T.gy),10*dt);
         T.tick=(T.tick||0)+dt;const ticking=T.tick>=A.every;if(ticking)T.tick-=A.every;
@@ -1430,10 +1443,12 @@ class Game{
     for(const p of this.proj){p.t+=dt;
       if(p.aimed){
         p.x+=(p.dir||1)*p.spd*dt;const u=Math.min(1.6,Math.abs(p.x-p.x0)/p.dist);const h0=p.h0==null?28:p.h0;
-        p.gy=p.gy0+(p.tgy-p.gy0)*u;p.h=h0+(p.aimH-h0)*u+(p.arc||0)*4*u*(1-u);   // lobbed things (kunai, darts) rise then drop onto the targetp.y=p.gy-p.h*UNIT_SCALE;
+        p.gy=p.gy0+(p.tgy-p.gy0)*u;p.h=h0+(p.aimH-h0)*u+(p.arc||0)*4*u*(1-u);p.y=p.gy-p.h*UNIT_SCALE;   /* lobbed things (kunai, darts) rise then drop onto the target. 0.12.38: this p.y update had been swallowed by a // comment, so shots were DRAWN at their launch height while they actually flew to their aim point */
         if(p.h<=0||p.x>this.W+20||p.x<-20||p.t>4){p.dead=true;if(p.h<=0)this.fx.push({k:'spark',x:p.x,y:p.gy,t:0,c:'#8a6a4a'});continue;}
-        {const ob=(this.obst||[]).find(o=>{if(!(o.blk>0&&p.h<=o.blk))return false;const l=o.lanes.find(l=>Math.abs(LANES[l]-p.gy)<=3.5);if(l==null)return false;const [a,b]=this.obSpan(o,l);return p.x>=a&&p.x<=b;});   // tall obstacles stop low shots
-         if(ob){p.dead=true;this.fx.push({k:'spark',x:p.x,y:p.gy-p.h*UNIT_SCALE,t:0,c:'#b0a090'});continue;}}
+        {const ob=(this.obst||[]).find(o=>this.obHitsShot(o,p));   /* 0.12.38: each obstacle stops shots by its own traced shape */
+         if(ob){p.dead=true;this.fx.push({k:'spark',x:p.x,y:p.gy-p.h*UNIT_SCALE,t:0,c:'#b0a090'});
+           if(/^car_/.test(ob.k)&&ob.alarmed==null&&!this.demo){ob.alarmed=this.rng()<.25;if(ob.alarmed)this.carAlarm(ob);}   /* a shot into a wreck: 25% to set its alarm off (once per car) */
+           continue;}}
         if(p.foes==='heroes'){   // an enemy's aimed shot: any hero body it passes through takes it
           for(const o of this.alive()){if(p.hit.has(o))continue;const hb=hbOf(o);
             if(Math.abs((o.gy||this.G)-p.gy)<=depthHalf(hb)&&Math.abs(p.x-this.heroX(o))<=hb.w*UNIT_SCALE/2&&p.h>=0&&p.h<=hb.h){p.hit.add(o);this.hurtHero(o,p.dmg*(isHead(o,p.h)?HEADSHOT.mul:1),p.src);
@@ -1593,7 +1608,7 @@ class Game{
       if(h.clT<=0&&!(h.cloneT>0)&&(close>=2||(h.hp/h.max<.6&&onMe>=1))&&(h.en||0)>=CL.en&&spendEnergy(h,CL.en)){h.clT=CL.cd*(1-(h.cdr||0));h.cloneT=CL.dur;h.cloneMirror=CL.mirror;h.cloneDecoy=CL.decoy;
         this.fx.push({k:'poof',x:h.x-(h.face||1)*10,y:this.G-20,t:0});this.ev('whoosh',{});Comms.say(this,h,'clone',{});}}
     const PO=AB_x(C,'poultice');if(PO){if(h.poT==null)h.poT=PO.cd*.2;if(h.poT>0)h.poT-=dt;
-      if(h.poT<=0&&h.hp/h.max<PO.under&&!(h.hotT>0)&&(h.en||0)>=PO.en&&spendEnergy(h,PO.en)){h.poT=PO.cd*(1-(h.cdr||0));h.hotT=PO.dur;h.hotTick=0;h.hotAmt=h.max*PO.pct;h.hotEvery=PO.tick;h.poulticeT=PO.dur;
+      if(h.poT<=0&&h.hp/h.max<PO.under&&!(h.hotT>0)&&(h.en||0)>=PO.en&&spendEnergy(h,PO.en)){h.poT=PO.cd*(1-(h.cdr||0));h.hotT=PO.dur;h.hotTick=0;h.hotSrc=h;h.hotAmt=h.max*PO.pct;h.hotEvery=PO.tick;h.poulticeT=PO.dur;
         this.ev('heal',{});}}
     if(h.poulticeT>0)h.poulticeT-=dt;
     // ---- Lumber_Jack abilities
@@ -1684,20 +1699,20 @@ class Game{
       const allies=this.alive();let hurt=allies.slice().sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];const mul=(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
       {const O=Comms.ord(h,this,['heal']);if(O&&O.from&&O.from.alive&&O.from.hp/O.from.max<.9)hurt=O.from;}   // IF someone shouted for a heal AND I listened THEN them first
       // IF an ally is low (under 85%) AND Mend is ready THEN heal them now
-      if(MD&&h.mdT<=0&&hurt&&hurt.hp/hurt.max<MD.under&&(h.en||0)>=MD.en&&spendEnergy(h,MD.en)){h.mdT=MD.cd*(1-(h.cdr||0));this.healHero(hurt,hurt.max*MD.heal);
+      if(MD&&h.mdT<=0&&hurt&&hurt.hp/hurt.max<MD.under&&(h.en||0)>=MD.en&&spendEnergy(h,MD.en)){h.mdT=MD.cd*(1-(h.cdr||0));this.healHero(hurt,hurt.max*MD.heal,false,h);
         this.fx.push({k:'mend',x:this.heroX(hurt),gy:hurt.gy||this.G,t:0,life:.9,raw:1});this.ev('heal',{});h.animC=.35;}
       // IF an ally is under 90% AND not already blooming AND Bloom is ready THEN wrap them in a healing vine heart
       const bt=allies.filter(o=>!(o.hotT>0)&&o.hp/o.max<BL.under).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
-      if(BL&&h.blT<=0&&bt&&(h.en||0)>=BL.en&&spendEnergy(h,BL.en)){h.blT=BL.cd*(1-(h.cdr||0));bt.hotT=BL.dur;bt.hotTick=0;bt.hotAmt=bt.max*BL.pct;bt.hotEvery=BL.tick;bt.hotFx=0;
+      if(BL&&h.blT<=0&&bt&&(h.en||0)>=BL.en&&spendEnergy(h,BL.en)){h.blT=BL.cd*(1-(h.cdr||0));bt.hotT=BL.dur;bt.hotTick=0;bt.hotSrc=h;bt.hotAmt=bt.max*BL.pct;bt.hotEvery=BL.tick;bt.hotFx=0;
         this.ev('heal',{});h.animC=.35;}
       // IF 2+ enemies are down my lane (or something big) AND Thorn Wave is ready THEN send thorns rolling along the ground
       if(TH&&h.thT<=0&&!mt&&(h.en||0)>=TH.en){const lane=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>h.x&&e.x-h.x<=TH.dist&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=TH.depth);
         if((lane.length>=2||lane.some(e=>e.boss))&&spendEnergy(h,TH.en)){h.thT=TH.cd*(1-(h.cdr||0));h.casting=TH.cast;h.castT0=TH.cast;
           setTimeoutSafe(this,TH.cast,()=>{this.ev('thorns',{});(this.thornWaves=this.thornWaves||[]).push({x0:h.x+8,gy:h.gy,t:0,n:0,A:TH,src:h,mul,hit:new Set(),flat:(C.ranged.flat||0)+(h.flatRanged||0)});});return;}}
       // IF Cyclone is ready AND 2+ enemies are down my lane (or something big) THEN send a tornado along it
-      if(CY&&h.cyT<=0&&!mt&&(h.en||0)>=CY.en){const lane=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>h.x&&e.x-h.x<=CY.dist&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=CY.depth);
+      if(CY&&h.cyT<=0&&!mt&&(h.en||0)>=CY.en){const lane=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x-h.x>=CY.near-20&&e.x-h.x<=CY.dist&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=CY.depth);   /* 0.12.38 (Kyle): it forms ~450 screen px (150 world) ahead of her, so it wants enemies out there */
         if((lane.length>=2||lane.some(e=>e.boss))&&spendEnergy(h,CY.en)){h.cyT=CY.cd*(1-(h.cdr||0));h.casting=CY.cast;h.castT0=CY.cast;
-          setTimeoutSafe(this,CY.cast,()=>{this.ev('wind',{});(this.cyclones=this.cyclones||[]).push({x:h.x+24,x0:h.x,gy:h.gy,t:0,A:CY,src:h,mul});});return;}}}
+          setTimeoutSafe(this,CY.cast,()=>{this.ev('wind',{});(this.cyclones=this.cyclones||[]).push({x:Math.min(this.W-14,h.x+CY.ahead),x0:h.x,gy:h.gy,t:0,A:CY,src:h,mul});});return;}}}
     const PN=(C.abilities||[]).find(a=>a.id==='pin');if(PN){if(h.piT==null)h.piT=PN.cd*.3;if(h.piT>0)h.piT-=dt;
       // IF the biggest (or fastest) enemy in range isn't marked yet THEN pin it
       const pt=!mt&&this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-h.x)<=PN.range&&!(e.markT>0)).sort((p,q)=>((q.max+(q.E&&q.E.spd||0))-(p.max+(p.E&&p.E.spd||0))))[0];
@@ -1737,7 +1752,7 @@ class Game{
       const fire=()=>{if(!h.alive)return;const tg=tgt.dead?this.liveE().sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x))[0]:tgt;if(!tg)return;if(C.ranged.releaseAt)this.ev('bow',{});
         const WR=(C.abilities||[]).find(a=>a.id==='wind');const far=WR&&Math.abs(tg.x-h.x)>WR.far;   // Wind_Reading
         for(let i=0;i<C.ranged.pellets;i++){const acc=h.moving?Math.max(1,h.acc-C.walkPenalty):h.acc;h._accBonus=acc-h.acc+(far?WR.acc:0);
-          const p=this.shoot(h,tg,st.proj,dmg/C.ranged.pellets,{});this.aim(p,h,tg);h._accBonus=0;if(far)p.critMul=(h.critMul||1.75)+WR.critMul;}};
+          const p=this.shoot(h,tg,C.ranged.proj||st.proj,dmg/C.ranged.pellets,{});this.aim(p,h,tg);h._accBonus=0;if(far)p.critMul=(h.critMul||1.75)+WR.critMul;}};
       const nb=C.ranged.burst||1;for(let b=0;b<nb;b++){const tt=rel+b*(C.ranged.burstGap||.08);if(tt>0)setTimeoutSafe(this,tt,fire);else fire();}}}
   callPal(h,PB){this.pets=this.pets||[];let pal=this.pets.find(p=>p.owner===h&&p.alive);
     if(pal){const amt=pal.max*PB.heal;pal.hp=Math.min(pal.max,pal.hp+amt);this.text(pal.x,this.G-50,'+'+Math.round(amt),'#7dff9a');return;}
@@ -1754,7 +1769,13 @@ class Game{
       const C2=A.cross;const inRow=dx<=C2.long&&dz<=C2.thin,inCol=dz<=C2.across&&dx<=C2.wide;if(!inRow&&!inCol)continue;
       const fall=1-.5*Math.min(1,Math.min(inRow?dx/C2.long:9,inCol?dz/C2.across:9));const dealt=this.hitEnemy(e,base*mul*fall,h&&h.alive?h:null,{});   // AoE: full damage in the middle, half at the edge
       if(dealt&&!e.dead){const res=e.boss?.9:((e.E&&e.E.kbRes)||0);e.kbv=Math.max(e.kbv||0,A.kb/100*40*8*(1-res)*fall);e.kbDir=e.x>=T.x?1:-1;
-        if(this.rng()<A.bleed.chance){e.bleedT=A.bleed.dur;e.bleedDps=A.bleed.dmg/A.bleed.dur;}}}}
+        if(this.rng()<A.bleed.chance){e.bleedT=A.bleed.dur;e.bleedDps=A.bleed.dmg/A.bleed.dur;}}
+      e._tripHit=T;}
+    /* 0.12.38 (Kyle): shockwave. A wider ring around the cross: anything it reaches that the cross missed takes half damage and a heavier shove (no bleed) */
+    const SW=A.shock;if(SW){this.fx.push({k:'ring',x:T.x+6,y:T.gy-4,t:0,r:SW.r,c:'#ffd9a0'});
+      for(const e of this.enemies){if(e.dead||e.fly||e._tripHit===T)continue;const dx=Math.abs(e.x-(T.x+6)),dz=Math.abs((e.gy!=null?e.gy:this.G)-T.gy);
+        if((dx/SW.r)**2+(dz/SW.depth)**2>1)continue;const dealt=this.hitEnemy(e,base*mul*.5,h&&h.alive?h:null,{});
+        if(dealt&&!e.dead){const res=e.boss?.9:((e.E&&e.E.kbRes)||0);e.kbv=Math.max(e.kbv||0,A.kb*SW.kbMul/100*40*8*(1-res));e.kbDir=e.x>=T.x?1:-1;}}}}
   addPoison(e,n){if(!e||e.dead||n<=0)return 0;if(isUndead(e)){this.text(e.x,e.y-(e.boss?100:44),'IMMUNE','#9aa');return 0;}
     e.poison=(e.poison||0)+n;e.poisonT=POISON.dur;if(e.poisonTick==null)e.poisonTick=0;this.text(e.x,e.y-(e.boss?100:46),'POISON x'+e.poison,'#7dff6a');return n;}
   rollDice([n,d]){let r=0;for(let i=0;i<n;i++)r+=1+Math.floor(this.rng()*d);return r;}
@@ -1842,6 +1863,10 @@ class Game{
   obHw(o){return Math.max(3,OBST[o.k].fw*.5*.5*.8);}   // half-width in world px (sheet is 2 px per world px)
   // each obstacle's footprint follows its picture: a rock blocks only under its base; the diagonal log blocks its left end in the near lane and its right end in the far lane
   obSpan(o,l){const F=OBST[o.k].foot;const i=o.lanes.length===2?(l===Math.max(...o.lanes)?0:1):0;const f=F[i]||F[0];return o.flip?[o.x-f[1],o.x-f[0]]:[o.x+f[0],o.x+f[1]];}
+  /* shot vs obstacle: the shot has to be in one of its lanes and below the sprite's own outline at that spot (per-column heights baked from the art) */
+  obHitsShot(o,p){if(!(o.blk>0))return false;const D=OBST[o.k];if(!o.lanes.some(l=>Math.abs(LANES[l]-p.gy)<=3.5))return false;
+    if(!D.prof){const l=o.lanes[0];const [a,b]=this.obSpan(o,l);return p.h<=o.blk&&p.x>=a&&p.x<=b;}
+    const col=Math.floor((p.x-o.x)*(o.flip?-1:1)+D.fw/4);if(col<0||col>=D.prof.length)return false;return p.h<=D.prof[col]-1;}
   laneBlocked(l,x0,x1){for(const o of this.obst||[]){if(!o.lanes.includes(l))continue;const [a,b]=this.obSpan(o,l);if(b>x0&&a<x1)return o;}return null;}
   // IF the lane I want is blocked just ahead THEN take the nearest open lane (ties go to whichever way I was already heading)
   freeLane(want,cur,x0,x1){if(!this.laneBlocked(want,x0,x1))return want;let best=null,bd=99;for(let l=0;l<LANES.length;l++){if(this.laneBlocked(l,x0,x1))continue;const d=Math.abs(l-want)+Math.abs(l-cur)*.3;if(d<bd){bd=d;best=l;}}return best==null?want:best;}
@@ -1869,7 +1894,7 @@ class Game{
         if(tg){T.atkT=A.every;T.anim='attack';T.aT=0;T.face=tg.x>=T.x?1:-1;const dir=T.face;
           setTimeoutSafe(this,.32,()=>{if(T.done)return;this.ev('hit',{});this.shake=Math.max(this.shake||0,.15);
             for(const e of this.enemies){if(e.dead||e.fly)continue;const dx=(e.x-T.x)*dir;if(dx>=-4&&dx<=A.reach+(e.boss?e.w*.5:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-T.gy)<=A.depth)){
-              const d=this.hitEnemy(e,(this.rollDice(A.dice)+(T.src.flatRanged||0)*.5)*T.mul,T.src&&T.src.alive?T.src:null,{fromTent:1});if(d)T.hp=Math.min(T.max,T.hp+d*A.steal);/* 25% life steal */if(d&&!e.dead&&!e.boss){const res=(e.E&&e.E.kbRes)||0;e.kbv=Math.max(e.kbv||0,A.kb/100*40*8*(1-res));e.kbDir=dir;}}}
+              const d=this.hitEnemy(e,(this.rollDice(A.dice)+(T.src.flatRanged||0)*.5)*T.mul,T.src&&T.src.alive?T.src:null,{fromTent:1});if(d)T.hp=Math.min(T.max,T.hp+d*A.steal);/* 0.12.38 (Kyle): heals 20% of the damage it deals */if(d&&!e.dead&&!e.boss){const res=(e.E&&e.E.kbRes)||0;e.kbv=Math.max(e.kbv||0,A.kb/100*40*8*(1-res));e.kbDir=dir;}}}
             this.fx.push({k:'quake',x:T.x+dir*A.reach*.8,gy:T.gy,t:0,life:.4,raw:1});});}}}
     this.tentacles=this.tentacles.filter(T=>!T.done);}
   // 0.12.22 Revive (Kyle): a living hero standing on a downed ally for 5s (4s with a Herald up) helps them back to their feet with 25% HP and 0 energy.
@@ -1882,55 +1907,73 @@ class Game{
   atSpot(h,o){const S=this.searchSpot(o,h);return Math.abs(h.x-S.x)<=(/^car_/.test(o.k)?5:4)&&Math.abs((h.gy||this.G)-LANES[S.lane])<3;}
   obNear(h,o){const l=o.lanes.reduce((b,l)=>Math.abs(LANES[l]-(h.gy||this.G))<Math.abs(LANES[b]-(h.gy||this.G))?l:b,o.lanes[0]);if(Math.abs(LANES[l]-(h.gy||this.G))>7)return false;const [a,b]=this.obSpan(o,l);return h.x>a-9&&h.x<b+9;}
   stepHerbs(dt,scroll){const al=this.alive().filter(o=>!o.pet||true);
-    for(const o of al){if(o.herbT>0){o.herbT-=dt;o.hp=Math.min(o.max,o.hp+o.herbHps*dt);}}
-    for(const h of al){const sp=insP(h);if(h.pet)continue;const RE=SEARCH_RE[sp]||/^$/,ST=SEARCH_T[sp]||2,full=sp==='herbalist'?(h.herbs||0)>=3:sp==='scavenger'?(h.kit||[]).length>=2:true   /* 0.12.34 (Kyle): Scavenger holds 2 items total */;
+    for(const o of al){if(o.herbT>0){o.herbT-=dt;const b0=o.hp;o.hp=Math.min(o.max,o.hp+o.herbHps*dt);if(o.herbSrc&&o.herbSrc.key)this.st8(o.herbSrc).heal+=o.hp-b0;}}
+    for(const h of al){const sp=insP(h);if(h.pet)continue;const RE=SEARCH_RE[sp]||/^$/,ST=(SEARCH_T[sp]||2)*[1,.75,.6][upgT(this.run,'lamp')],full=sp==='herbalist'?(h.herbs||0)>=3:sp==='scavenger'?(h.kit||[]).length>=2:true   /* 0.12.34 (Kyle): Scavenger holds 2 items total */;
       const canAmb=o=>o.k==='car_ambulance'&&!h.medkit;   // 0.12.33: anyone can search an ambulance for a Medkit
       // searching debris: stand next to an unsearched rock/stump/log for 1.5s; chance 45% + 1.2% per Luck (max 95%)
       if(h.search&&h.search.disarm)continue;
       if(h.search){const S=h.search,o=S.o;const near=o&&this.obst&&this.obst.includes(o)&&this.atSpot(h,o);
-        if(!near||this.exiting){h.search=null;}else{S.T=ST;h.pauseT=Math.max(h.pauseT||0,.05);h.x-=(this.scroll||0)*dt;   /* 0.12.37 (Kyle): searching means standing still at it: he stays with the wreck while the world scrolls */
+        if(!near||this.exiting||o.looted){h.search=null;}else{S.T=ST;h.pauseT=Math.max(h.pauseT||0,.05);h.x-=(this.scroll||0)*dt;   /* 0.12.37 (Kyle): searching means standing still at it: he stays with the wreck while the world scrolls */
           if(h.moving){continue;}S.t+=dt;   /* no progress while still moving */
-          if(S.t>=(S.T||ST)){o.searched=o.searched||{};o.searched[h.key]=1;h.search=null;
-            if(o.k==='car_ambulance'&&!h.medkit){const mc=Math.min(.95,.6+.01*(h.luck||0)+.2*trait(h,'perc'));if(this.rng()<mc){h.medkit=1;this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.9,raw:1,kit:'med'});Comms.bubble(this,h,Comms.pick(['A medkit!','Jackpot, first aid!','Still sealed!']));}}const ch=Math.min(.95,.35+.012*(h.luck||0)+.3*trait(h,'perc')+(sp==='scavenger'?.15*(trait(h,'tech')-.5)*2:.15*(.5-trait(h,'tech'))*2));   /* luck AND perception both help */
-            if(sp==='scavenger'&&this.rng()<ch){   /* a Scavenger searching an ambulance rolls for the Medkit AND his own finds */const r=this.rng();
-              if(r<.3||full){const gd=6+Math.floor(this.rng()*7);this.stageGold+=gd;this.text(o.x,LANES[o.lanes[0]]-30,'+'+gd,'#ffd23f');if(Math.random()<.4)Comms.bubble(this,h,Comms.pick(['Scrap!','Spare change!','Something shiny!']));}
-              else{const it=r<.7?'med':'bat';(h.kit=h.kit||[]).push(it);this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.9,raw:1,kit:it});if(Math.random()<.5)Comms.bubble(this,h,it==='med'?Comms.pick(['Medkit!','Bandages!','First aid!']):Comms.pick(['A battery!','Still has juice!','Power cell!']));}}
-            else if(sp==='herbalist'&&o.k!=='car_ambulance'&&this.rng()<ch&&(h.herbs||0)<3){h.herbs=(h.herbs||0)+1;this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.9,raw:1});if(Math.random()<.5)Comms.bubble(this,h,Comms.pick(['Found one!','An herb!','Aha!','Lucky!']));}
-            else if(o.k!=='car_ambulance'||sp){this.fx.push({k:'poof',x:o.x,y:(LANES[o.lanes[0]])-10,t:0});if(Math.random()<.3)Comms.bubble(this,h,Comms.pick(['Nothing.','Empty.','Just dirt.']));}}}}
-      else if(!full||!h.medkit){const o=(this.obst||[]).find(o=>((!full&&RE.test(o.k))||canAmb(o))&&!(o.searched&&o.searched[h.key])&&this.atSpot(h,o)&&h.plan&&h.plan.intent==='search'&&h.plan.goTo&&h.plan.goTo.ob===o);   /* 0.12.37 (Kyle): searching is a decision (the Brain picked THIS object), never automatic for being in range */if(o){h.search={o,t:0,T:ST};if(/^car_/.test(o.k))this.disturb(o.x,LANES[o.lanes[0]],2,Math.max(.05,.25-.006*(h.luck||0)));   /* careful searching: 25% minus luck (about 13% at 20 Luck), blasts are 50% */}}
+          if(S.t>=(S.T||ST)){o.looted=1;o.searched=o.searched||{};o.searched[h.key]=1;h.search=null;this.searchLoot(h,o,sp,full,RE);}}}
+      else if(!full||!h.medkit){const o=(this.obst||[]).find(o=>((!full&&RE.test(o.k))||canAmb(o))&&g_free(o,h)&&this.atSpot(h,o)&&h.plan&&h.plan.intent==='search'&&h.plan.goTo&&h.plan.goTo.ob===o);   /* 0.12.37 (Kyle): searching is a decision (the Brain picked THIS object), never automatic for being in range */if(o){o.searchBy=h;h.search={o,t:0,T:ST};if(/^car_/.test(o.k))this.disturb(o.x,LANES[o.lanes[0]],2,Math.max(.05,.25-.006*(h.luck||0)));   /* careful searching: 25% minus luck (about 13% at 20 Luck), blasts are 50% */}}
       if(h.medkit&&!((h.herbCd||0)>this.t)){const tg=al.filter(o=>o.hp/o.max<.5&&Math.abs(this.heroX(o)-this.heroX(h))<=17&&Math.abs((o.gy||this.G)-(h.gy||this.G))<6).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
-        if(tg){h.medkit=0;h.herbCd=this.t+.6;this.healHero(tg,tg.max*.35);this.fx.push({k:'mend',x:this.heroX(tg),gy:tg.gy||this.G,t:0,life:.8,raw:1});this.ev('heal',{});if(tg!==h)Comms.bubble(this,h,Comms.pick(['Medkit, hold still!','Patching you up!','Here, take this!']));}}
+        if(tg){h.medkit=0;h.herbCd=this.t+.6;this.healHero(tg,tg.max*.35,false,h.medkitCamp?{}:h);h.medkitCamp=0;   /* a Triage-built medkit is the player's doing, not the unit's: it doesn't count toward his healing stat */this.fx.push({k:'mend',x:this.heroX(tg),gy:tg.gy||this.G,t:0,life:.8,raw:1});this.ev('heal',{});if(tg!==h)Comms.bubble(this,h,Comms.pick(['Medkit, hold still!','Patching you up!','Here, take this!']));}}
       // Scavenger: use a Medkit on anyone close under 60%, a Battery on anyone close under 30 energy who has abilities
       if(sp==='scavenger'&&(h.kit||[]).length&&!((h.herbCd||0)>this.t)){const near=al.filter(o=>Math.abs(this.heroX(o)-this.heroX(h))<=17&&Math.abs((o.gy||this.G)-(h.gy||this.G))<6);
         const mi=h.kit.indexOf('med'),bi=h.kit.indexOf('bat');const mt=mi>=0&&near.filter(o=>o.hp/o.max<.6).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
         const bt=bi>=0&&near.filter(o=>(o.en||0)<30&&((CHAR[o.key]||{}).abilities||[]).some(a=>!a.passive)).sort((p,q)=>(p.en||0)-(q.en||0))[0];
-        if(mt){h.kit.splice(mi,1);h.herbCd=this.t+.6;this.healHero(mt,mt.max*.25);this.fx.push({k:'mend',x:this.heroX(mt),gy:mt.gy||this.G,t:0,life:.7,raw:1});this.ev('heal',{});if(mt!==h&&Math.random()<.5)Comms.bubble(this,h,Comms.pick(['Patch up!','Here, a medkit!','Hold still.']));}
+        if(mt){h.kit.splice(mi,1);h.herbCd=this.t+.6;this.healHero(mt,mt.max*.25,false,h);this.fx.push({k:'mend',x:this.heroX(mt),gy:mt.gy||this.G,t:0,life:.7,raw:1});this.ev('heal',{});if(mt!==h&&Math.random()<.5)Comms.bubble(this,h,Comms.pick(['Patch up!','Here, a medkit!','Hold still.']));}
         else if(bt){h.kit.splice(bi,1);h.herbCd=this.t+.6;bt.en=Math.min(bt.enMax||100,(bt.en||0)+30);this.fx.push({k:'ring',x:this.heroX(bt),y:this.G-14,r:10,t:0,c:'#ffe060'});if(bt!==h&&Math.random()<.5)Comms.bubble(this,h,'Catch, fresh battery!');}}
       if(!(h.herbs>0)||(h.herbCd||0)>this.t)continue;
       const tg=al.filter(o=>o.hp/o.max<.8&&!(o.herbT>0)&&Math.abs(this.heroX(o)-this.heroX(h))<=17&&Math.abs((o.gy||this.G)-(h.gy||this.G))<6).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
-      if(tg){h.herbs--;h.herbCd=this.t+.6;tg.herbT=5;tg.herbHps=tg.max*.2/5;this.fx.push({k:'mend',x:this.heroX(tg),gy:tg.gy||this.G,t:0,life:.7,raw:1});this.ev('heal',{});
+      if(tg){h.herbs--;h.herbCd=this.t+.6;tg.herbT=5;tg.herbSrc=h;tg.herbHps=tg.max*.2/5;this.fx.push({k:'mend',x:this.heroX(tg),gy:tg.gy||this.G,t:0,life:.7,raw:1});this.ev('heal',{});
         if(tg!==h&&Math.random()<.5)Comms.bubble(this,h,Comms.pick(['Here, chew this.','Herb for you!','Hold still.','This\'ll help.','Eat up!']));}}}
   stepDisarm(dt){for(const h of this.alive()){const P=h.plan;if(!P||P.intent!=='disarm'||!P.goTo||!P.goTo.ob)continue;const o=P.goTo.ob;
       if(!(o.alarmT>0)||!this.atSpot(h,o)){if(h.search&&h.search.disarm)h.search=null;continue;}
-      const need=2.6-1.9*trait(h,'tech');if(!h.search||!h.search.disarm)h.search={o,t:0,T:need,disarm:1};const S=h.search;h.x-=(this.scroll||0)*dt;if(!h.moving)S.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);
+      const need=(2.6-1.9*trait(h,'tech'))*[1,.7,.4][upgT(this.run,'cutters')];if(!h.search||!h.search.disarm)h.search={o,t:0,T:need,disarm:1};const S=h.search;h.x-=(this.scroll||0)*dt;if(!h.moving)S.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);
       if(S.t>=need){o.alarmT=0;o.alarmN=0;h.search=null;h.plan=null;h.thinkT=0;this.fx.push({k:'ring',x:o.x,y:LANES[o.lanes[0]]-10,t:0,r:10,c:'#c8d0d8'});Comms.bubble(this,h,Comms.pick(['Alarm\'s off!','Got it!','Quiet, you.','Wires cut!','Silenced!']));}}}
+  /* 0.12.38 what a finished search turns up (each thing is looted once in total).
+     Ambulance (anyone): a Medkit (60% + Luck/Perception, if he has none), a Defibrillator (30%, if he has none), spare parts (55%), food or water (30%).
+     Scavenger, on any wreck incl. the ambulance (on top of the ambulance table): medkit/battery (max 2), food/water (good odds), spare parts or a little gold.
+     Herbalist, on rocks/logs/stumps: an herb (max 3). Food, water and spare parts are camp supplies: they do nothing during the stage. */
+  searchLoot(h,o,sp,full,RE){const luck=h.luck||0,perc=trait(h,'perc'),tech=trait(h,'tech');const pick=a=>Comms.pick(a);let got=0;
+    const pop=kit=>this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.9,raw:1,kit});
+    const ch=Math.min(.95,.35+.012*luck+.3*perc+(sp==='scavenger'?.15*(tech-.5)*2:.15*(.5-tech)*2));
+    this.st8(h).searches++;
+    if(o.k==='car_ambulance'){
+      if(!h.medkit&&this.rng()<Math.min(.95,.6+.01*luck+.2*perc)){h.medkit=1;h.medkitCamp=0;pop('med');got=1;Comms.bubble(this,h,pick(['A medkit!','Jackpot, first aid!','Still sealed!']));}
+      if(!h.defib&&this.rng()<.3+.004*luck){h.defib=1;pop('defib');got=1;Comms.bubble(this,h,pick(['A defibrillator!','Paddles! Still charged!','Clear!']));}
+      if(this.rng()<.55){this.gainParts(h,o);got=1;}
+      if(this.rng()<.3){this.gainSupply(h,o);got=1;}}
+    if(sp==='scavenger'&&RE.test(o.k)&&this.rng()<ch){const r=this.rng();got=1;
+      if(r<.35){this.gainSupply(h,o);}
+      else if(r<.6){this.gainParts(h,o);}
+      else if(r<.85&&!full){const it=this.rng()<.6?'med':'bat';(h.kit=h.kit||[]).push(it);pop(it);Comms.bubble(this,h,it==='med'?pick(['Medkit!','Bandages!','First aid!']):pick(['A battery!','Still has juice!','Power cell!']));}
+      else{const gd=2+Math.floor(this.rng()*5);this.stageGold+=gd;this.text(o.x,LANES[o.lanes[0]]-30,'+'+gd,'#ffd23f');Comms.bubble(this,h,pick(['Scrap!','Spare change!','Something shiny!']));}}
+    else if(sp==='herbalist'&&o.k!=='car_ambulance'&&RE.test(o.k)&&this.rng()<ch&&(h.herbs||0)<3){h.herbs=(h.herbs||0)+1;pop();got=1;Comms.bubble(this,h,pick(['Found one!','An herb!','Aha!','Lucky!']));}
+    if(!got){this.fx.push({k:'poof',x:o.x,y:(LANES[o.lanes[0]])-10,t:0});Comms.bubble(this,h,pick(['Nothing.','Empty.','Just dirt.','Picked clean.']));}}
+  gainParts(h,o){const n=1+(this.rng()<.5?1:0);this.stageParts=(this.stageParts||0)+n;this.text(o?o.x:h.x,(o?LANES[o.lanes[0]]:this.G)-30,'+'+n+' PARTS','#c8d0d8');if(h)Comms.bubble(this,h,Comms.pick(['Spare parts!','Useful bits.','Gears and wire!']));}
+  gainSupply(h,o){const w=this.rng()<.5;if(w)this.stageWater=(this.stageWater||0)+1;else this.stageFood=(this.stageFood||0)+1;this.text(o?o.x:h.x,(o?LANES[o.lanes[0]]:this.G)-36,w?'+1 WATER':'+1 FOOD',w?'#7fd0ff':'#e8b060');
+    if(h)Comms.bubble(this,h,w?Comms.pick(['Clean water!','A bottle!','Water!']):Comms.pick(['Canned food!','Rations!','Still sealed!']));}
   stepRevive(dt){const downs=this.heroes.filter(h=>!h.alive&&h.downed);if(!downs.length)return;
     const al=this.alive().filter(o=>!o.pet);const herald=o=>(o.base.char&&o.base.char.abilities||[]).some(a=>a.id==='herald');
     for(const d of downs){const helpers=al.filter(o=>Math.abs(o.x-d.x)<9&&Math.abs((o.gy||this.G)-(d.gy||this.G))<4.5&&!(o.riseT>0));const need=helpers.some(herald)?4:5;d.revNeed=need;   /* 4s when the Herald is the one helping, 5s for everyone else */
+      {const df=helpers.find(o=>o.defib);if(df){df.defib=0;this.fx.push({k:'ring',x:d.x,y:(d.gy||this.G)-10,t:0,r:16,c:'#9ad0ff'});this.fx.push({k:'arc',x:d.x,gy:d.gy||this.G,t:0,life:.4,dir:1,raw:1});this.ev('zap',{});Comms.bubble(this,df,Comms.pick(['Clear!','Shocking you awake!','Get up!']),true);this.st8(df).revives++;this.revive(d);continue;}}   /* 0.12.38 Defibrillator: one use, instant revive */
       if(helpers.length){d.revT=(d.revT||0)+dt;if(!d.revCall){d.revCall=1;Comms.say(this,helpers[0],'reviving',{ally:d});}}
       else{d.revT=Math.max(0,(d.revT||0)-dt*.5);if(d.revT<=0)d.revCall=0;}
-      if(d.revT>=need)this.revive(d);}}
+      if(d.revT>=need){if(helpers[0])this.st8(helpers[0]).revives++;this.revive(d);}}}
   revive(h){h.alive=true;h.downed=0;h.hp=Math.max(1,h.max*.25);h.en=0;h.revT=0;h.revCall=0;h.riseT=1.1;h.riseT0=1.1;h.invulnT=1.3;h.plan=null;h.thinkT=0;h.bleedT=0;h.hotT=0;
     this.fx.push({k:'ring',x:h.x,y:this.G-10,r:16,t:0,c:'#7dff9a'});this.ev('heal',{});this.text(h.x,this.G-56,'+'+Math.round(h.hp),'#7dff9a');
     Comms.bubble(this,h,Comms.pick(['Thanks!','I\'m up!','Back in it!','Not done yet!','Owe you one!','Still kicking!']));}
   tryResurge(h){if((this.resurgeT||-99)>this.t||h.pet)return false;const D=this.alive().find(o=>o!==h&&o.base&&o.base.char&&(o.base.char.abilities||[]).some(a=>a.id==='resurge'));if(!D)return false;
-    const A=D.base.char.abilities.find(a=>a.id==='resurge');this.resurgeT=this.t+(A.icd||25);h.hp=1;h.invulnT=A.dur;h.bleedT=0;h.hotT=A.dur;h.hotTick=0;h.hotEvery=.5;h.hotAmt=h.max*A.heal/(A.dur/.5);
+    const A=D.base.char.abilities.find(a=>a.id==='resurge');this.resurgeT=this.t+(A.icd||25);h.hp=1;h.invulnT=A.dur;h.bleedT=0;h.hotT=A.dur;h.hotTick=0;h.hotSrc=D;h.hotEvery=.5;h.hotAmt=h.max*A.heal/(A.dur/.5);
     this.fx.push({k:'mend',x:this.heroX(h),gy:h.gy||this.G,t:0,life:1.2,raw:1});this.ev('heal',{});Comms.bubble(this,D,Comms.pick(['Not today!','I\'ve got you!','Stay with me!','Roots, hold!','Not yet!']));return true;}
   robotGat(h,dt,C){const G=h.gat,A=G.A;G.t+=dt;G.acc+=dt;h.pauseT=Math.max(h.pauseT||0,.05);
     const live=this.enemies.filter(e=>!e.dead&&e.x>h.x-6&&e.x-h.x<=A.range);
     while(G.acc>=1/A.rate&&G.t<A.dur){G.acc-=1/A.rate;if(!live.length)break;const tg=live[Math.floor(this.rng()*live.length)];faceToward(h,tg.x,1);
       const dmg=(this.rollDice(A.dice)+(h.flatRanged||0)*.25)*(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
-      h._accBonus=A.accPen;const p=this.shoot(h,tg,'gat',dmg,{});this.aim(p,h,tg);h._accBonus=0;p.tgy+=(this.rng()*2-1)*A.spreadGy;p.aimH+=(this.rng()*2-1)*A.spreadH;h.gatFlash=.05;if(this.rng()<.45)this.ev('gun',{});}
+      h._accBonus=A.accPen;const p=this.shoot(h,tg,'gat',dmg,{});this.aim(p,h,tg);h._accBonus=0;p.tgy+=(this.rng()*2-1)*A.spreadGy;p.aimH+=(this.rng()*2-1)*A.spreadH;{const dh=(this.rng()*2-1)*(A.startH||0);p.h0=(p.h0!=null?p.h0:p.h)+dh;p.h=p.h0;p.y-=dh*UNIT_SCALE;}h.gatFlash=.05;if(this.rng()<.45)this.ev('gun',{});}
     if(G.t>=A.dur||!live.length&&G.t>.6)h.gat=null;}
   // Arc_Surge: lightning jumps from the blade's target to up to N more enemies nearby
   arcChain(h,from){const A=(h.base.char.abilities||[]).find(a=>a.id==='surge');if(!A)return;let cur=from;const done=new Set([from]);const pts=[[from.x,(from.gy||this.G)-12]];
@@ -1956,9 +1999,9 @@ class Game{
   disturb(x,gy,r,chance){chance=chance==null?.5:chance;for(const o of this.obst||[]){if(!/^car_/.test(o.k)||o.alarmed!=null)continue;const l=o.lanes.reduce((b,l)=>Math.abs(LANES[l]-gy)<Math.abs(LANES[b]-gy)?l:b,o.lanes[0]);
       if(Math.abs(LANES[l]-gy)>r*.5+6)continue;const [a,b]=this.obSpan(o,l);if(x<a-r||x>b+r)continue;
       o.alarmed=this.rng()<chance;if(o.alarmed)this.carAlarm(o);}}
-  // 0.12.31 tuning: the alarm blares for 10s and pulls in one zombie every ~1.25s (a little faster on later stages), up to 8 (+1 per
+  // 0.12.38: 30s, one zombie every 2s (was 10s / ~1.25s) (a little faster on later stages), up to 8 (+1 per
   //   3 stages). Ignoring it adds about one medium cluster - survivable - but shutting it off in the first few seconds saves most of them.
-  carAlarm(o){const other=(this.obst||[]).some(q=>q!==o&&q.alarmT>0&&q.alarmN>0);o.alarmT=10;o.alarmN=other?1:8+Math.floor((this.st.n-1)/3);   /* a second alarm at the same time only adds 1 extra zombie */o.alarmEvery=1.25/(1+.05*(this.st.n-1));o.alarmTick=.6;this.ev('shout',{});this.shake=Math.max(this.shake||0,.2);
+  carAlarm(o){const other=(this.obst||[]).some(q=>q!==o&&q.alarmT>0&&q.alarmN>0);o.alarmT=[30,22,15][upgT(this.run,'cutters')];o.alarmN=other?1:99;   /* 0.12.38 (Kyle): blares up to 30s, a zombie from off-screen every 2s until shut off; a second alarm at the same time only adds 1 */o.alarmEvery=2;o.alarmTick=.6;this.ev('shout',{});this.shake=Math.max(this.shake||0,.2);
     const sp=this.alive().filter(h=>h.key).sort((p,q)=>Math.abs(p.x-o.x)-Math.abs(q.x-o.x))[0];if(sp){Comms.bubble(this,sp,Comms.pick(['Car alarm!','Shut it off!','Great, now they heard us!','Here they come!','Who touched the car?!']));
       for(const o2 of this.alive())if(o2!==sp&&Math.random()<.4+.5*trait(o2,'listen'))o2.alDecide=null,o2.thinkT=Math.min(o2.thinkT||1,.1);}   // everyone rethinks right away
     if(this.demo)o.alarmN=0;}
@@ -1971,7 +2014,7 @@ class Game{
     if(scroll&&!this.exiting&&this.dist>=this.obNext&&!(this.boss&&!this.boss.dead)){this.obNext=this.dist+110+this.rng()*230;
       const tot=OBST_POOL.reduce((s,p)=>s+p[1],0);let r=this.rng()*tot,k='rock_crack';for(const [n,w] of OBST_POOL){if((r-=w)<0){k=n;break;}}const D=OBST[k];
       const x=this.W+40;const near=this.obst.filter(o=>Math.abs(o.x-x)<90);const used=new Set(near.flatMap(o=>o.lanes));
-      for(let tries=0;tries<8;tries++){const l=Math.floor(this.rng()*(LANES.length-D.lanes+1));const lanes=D.lanes===2?[l,l+1]:[l];const all=new Set([...used,...lanes]);
+      for(let tries=0;tries<8;tries++){const l=/^car_/.test(k)?1+Math.floor(this.rng()*(3-D.lanes+1)):Math.floor(this.rng()*(LANES.length-D.lanes+1));   /* 0.12.38 (Kyle): cars only in the middle three lanes */const lanes=D.lanes===2?[l,l+1]:[l];const all=new Set([...used,...lanes]);
         if(all.size>2)continue;const arr=[...all].sort();if(arr.length===2&&arr[1]-arr[0]>1&&near.length)continue;   // never two lanes walled off side by side plus another
         this.obst.push({k,x:x+this.rng()*20,lanes,blk:D.blk,flip:/^car_/.test(k)&&this.rng()<.5});   /* cars can face either way */break;}}}
   // keep bodies out of obstacles: IF a unit ends up inside one in its lane THEN push it out the near side
@@ -1994,10 +2037,10 @@ class Game{
 function setTimeoutSafe(g,t,fn){(g.timers=g.timers||[]).push({t,fn});}
 const BIGP={};
 // where shots leave each hero (px ahead of the hero's x, px above the ground), matched to the strike frame
-const MUZZLE={cultist:[10,13],robot:[13,17],lumberjack:[12,15],druid:[8,22],chibi:[10,15],archer:[17,14],flannel:[11,14],flannel_pal:[9,13],vile:[3,30],thing:[14,30],kykar:[15,46],dragons:[18,38],mathas:[17,33],marina:[11,25],thranduil:[12,34],joel:[11,33],robots:[18,33],blood:[13,46],mech:[20,30],weather:[14,47]};
+const MUZZLE={cultist:[10,11],robot:[13,17],lumberjack:[12,15],druid:[8,22],chibi:[10,15],archer:[17,16],flannel:[11,14],flannel_pal:[9,13],vile:[3,30],thing:[14,30],kykar:[15,46],dragons:[18,38],mathas:[17,33],marina:[11,25],thranduil:[12,34],joel:[11,33],robots:[18,33],blood:[13,46],mech:[20,30],weather:[14,47]};
 const ARC={kunai:16,dart:6};   // how high each kind is tossed above a straight line (ruler units): kunai lobbed, dart a slight drop
-const PSPD={void:165,gat:420,leaf:190,dart:330,kunai:240,yarrow:230,bullet:420,arrow:200,quarrel:215,bolt:150,orb:135,fire:150,shard:160,zap:170,wisp:120,plasma:180,blood:140,shell:160,frost:145,brick:190};   // px/s   // ranged shots don't shove, except the thrown brick (a little)
-const PCOL={void:'#b05cff',gat:'#ffd27a',skull:'#7dff9a',hex:'#c050ff',bolt:'#ffb040',orb:'#c050ff',arrow:'#e8e0c8',quarrel:'#e8e0c8',fire:'#ff8a1f',shard:'#6ff0ff',zap:'#bfefff',wisp:'#7dff9a',plasma:'#3ff0ff',blood:'#ff2a3a',shell:'#ffd23f',frost:'#9ae6ff',brick:'#c0603a'};
+const PSPD={void:165,gat:420,buck:380,leaf:190,dart:330,kunai:240,yarrow:230,bullet:420,arrow:200,quarrel:215,bolt:150,orb:135,fire:150,shard:160,zap:170,wisp:120,plasma:180,blood:140,shell:160,frost:145,brick:190};   // px/s   // ranged shots don't shove, except the thrown brick (a little)
+const PCOL={void:'#b05cff',gat:'#ffd27a',buck:'#ffe0a0',skull:'#7dff9a',hex:'#c050ff',bolt:'#ffb040',orb:'#c050ff',arrow:'#e8e0c8',quarrel:'#e8e0c8',fire:'#ff8a1f',shard:'#6ff0ff',zap:'#bfefff',wisp:'#7dff9a',plasma:'#3ff0ff',blood:'#ff2a3a',shell:'#ffd23f',frost:'#9ae6ff',brick:'#c0603a'};
 
 // ======================================================================= RUN / PICKS (pure)
 function newRun(team,slot){
@@ -2127,17 +2170,68 @@ function migrateSlot(slot,player){
 function newSlot(player){const heroes={};for(const h of DATA.heroes)if(h.owner===player)heroes[h.key]={lvl:1,xp:0};return {epoch:SAVE_EPOCH,partySize:3,gold:0,heroes,best:{score:0,stage:0,prestige:0},runs:0,run:null,created:Date.now()};}
 
 // ======================================================================= exports for node sims
+
+// ======================================================================================================================
+// 0.12.38 CAMP (Kyle): food & water upkeep, spare parts, camp upgrades (offered 3 at a time, tiered, roguelike: they last the run),
+//   Triage crafting, and level-up stat points. Gold and spare parts stay with the save; supplies and upgrades belong to the run.
+// ======================================================================================================================
+const CAMP_UPG={
+  water:{name:'Water Filtration System',icon:'💧',tiers:[100,175,275],txt:t=>`${[25,50,75][t-1]}% chance to give one hungry unit water by itself when you get back to camp.`},
+  triage:{name:'Triage Station',icon:'🩺',tiers:[125,200,300],txt:t=>`Build a Medkit (${TRIAGE.med[t-1]} spare parts), a Battery (${TRIAGE.bat[t-1]}) or a Defibrillator (${TRIAGE.defib[t-1]}) for a unit to carry into the next stage. ${t>=3?'Up to 2 builds':'1 build'} per camp.`},
+  garden:{name:'Garden Plot',icon:'🌱',tiers:[100,175,275],txt:t=>['50% chance of 1 food each time you get back.','1 food each time you get back.','2 food each time you get back.'][t-1]},
+  rain:{name:'Rain Barrels',icon:'🛢️',tiers:[100,175],txt:t=>['50% chance of 1 water each time you get back.','1 water each time you get back.'][t-1]},
+  smoker:{name:'Smokehouse',icon:'🍖',tiers:[125],txt:()=>'Smoked rations go further: one food feeds two units.'},
+  cots:{name:'Med Cots',icon:'🛏️',tiers:[100,175,275],txt:t=>`Everyone rests up: +${[10,20,30][t-1]}% HP when you get back to camp.`},
+  bench:{name:'Weapon Bench',icon:'🔧',tiers:[100,200,325],txt:t=>`+${t} damage on every basic attack, melee and ranged.`},
+  gen:{name:'Generator',icon:'🔋',tiers:[100,175,275],txt:t=>`Everyone regains energy faster: +${t} energy per second.`},
+  dummy:{name:'Training Dummy',icon:'🎯',tiers:[100,175,275],txt:t=>`+${[10,20,30][t-1]}% XP for everyone.`},
+  shrine:{name:'Lucky Shrine',icon:'🍀',tiers:[100,200],txt:t=>`+${[5,10][t-1]} Luck for everyone (better odds when searching).`},
+  board:{name:'Bounty Board',icon:'📌',tiers:[100,175,275],txt:t=>`Gold piles are worth ${[25,50,75][t-1]}% more.`},
+  yard:{name:'Scrap Yard',icon:'⚙️',tiers:[100,175],txt:t=>`+${t} spare part${t>1?'s':''} each time you get back.`},
+  cutters:{name:'Wire Cutters',icon:'✂️',tiers:[100,175],txt:t=>`Car alarms shut off ${[30,60][t-1]}% faster and give up after ${[22,15][t-1]}s instead of 30s.`},
+  lamp:{name:"Scavenger's Lamp",icon:'🔦',tiers:[100,175],txt:t=>`Searching takes ${[25,40][t-1]}% less time.`},
+  radio:{name:'Radio Tower',icon:'📻',tiers:[125,225],txt:t=>`You hear about more: ${t===1?4:5} upgrade offers each camp instead of 3.`},
+};
+const TRIAGE={med:[15,13,11],bat:[12,10,8],defib:[25,22,19],max:[1,1,2]};
+const LVPTS={hp:{name:'Toughness',icon:'❤️',txt:'+4% max HP'},dmg:{name:'Power',icon:'⚔️',txt:'+3% damage'},acc:{name:'Aim',icon:'🎯',txt:'+2 accuracy'},
+  crit:{name:'Edge',icon:'✴️',txt:'+1% crit chance'},luck:{name:'Fortune',icon:'🍀',txt:'+3 Luck'},armor:{name:'Hide',icon:'🛡️',txt:'+1 armor point'}};
+function upgT(run,id){return (run&&run.upg&&run.upg[id])||0;}
+function lvPtsFree(H){const used=Object.values(H.pts||{}).reduce((a,b)=>a+b,0);return Math.max(0,(H.lvl||1)-1-used);}
+function campOffers(run){const n=3+upgT(run,'radio');const pool=Object.keys(CAMP_UPG).filter(id=>upgT(run,id)<CAMP_UPG[id].tiers.length);
+  const out=[];const bag=pool.slice();while(out.length<n&&bag.length){const i=Math.floor(Math.random()*bag.length);out.push(bag.splice(i,1)[0]);}return out;}
+function upgPrice(run,id){const t=upgT(run,id);return CAMP_UPG[id].tiers[t];}
+/* back at camp after a cleared stage: the camp's own systems run once, then the player feeds whoever is still hungry */
+function campArrive(s,run){if(run.campAt===run.stage)return [];run.campAt=run.stage;const log=[];
+  run.food=run.food||0;run.water=run.water||0;s.parts=s.parts||0;run.fed={};run.triageN=0;run.upgBought=0;run.offers=campOffers(run);
+  const hungry=(run.needFeed||[]).filter(k=>run.team.includes(k));run.needFeed=hungry;
+  const g=upgT(run,'garden');if(g){const n=g===1?(Math.random()<.5?1:0):g===2?1:2;if(n){run.food+=n;log.push(`🌱 Garden: +${n} food`);}}
+  const r=upgT(run,'rain');if(r){const n=r===1?(Math.random()<.5?1:0):1;if(n){run.water+=n;log.push(`🛢️ Rain Barrels: +1 water`);}}
+  const y=upgT(run,'yard');if(y){s.parts+=y;log.push(`⚙️ Scrap Yard: +${y} spare part${y>1?'s':''}`);}
+  const w=upgT(run,'water');if(w&&hungry.length&&Math.random()<[.25,.5,.75][w-1]){const k=hungry[Math.floor(Math.random()*hungry.length)];run.fed[k]='auto';log.push(`💧 Water Filtration gave ${heroDef(k).name} water`);}
+  const cb=upgT(run,'cots');if(cb){for(const k of run.team){const hv=run.heroes[k];if(!hv.dead)hv.hpf=Math.min(1,(hv.hpf==null?1:hv.hpf)+[.1,.2,.3][cb-1]);}log.push(`🛏️ Med Cots: everyone +${[10,20,30][cb-1]}% HP`);}
+  return log;}
+function feedUnit(run,k,what){if(run.fed[k]||!(run.needFeed||[]).includes(k))return false;
+  if(what==='water'){if(run.water<1)return false;run.water-=1;}else{const cost=upgT(run,'smoker')?.5:1;if(run.food<cost-1e-9)return false;run.food=Math.round((run.food-cost)*2)/2;}
+  run.fed[k]=what;return true;}
+/* leaving camp: anyone still hungry starts the next stage with 10% less of their current HP (max HP untouched) */
+function campDepart(run){const starved=[];for(const k of run.needFeed||[]){if(run.fed&&run.fed[k])continue;const hv=run.heroes[k];if(hv.dead)continue;hv.hpf=Math.max(.05,(hv.hpf==null?1:hv.hpf)*.9);starved.push(k);}
+  run.needFeed=[];run.fed={};return starved;}
+function triageBuild(s,run,what,k){const t=upgT(run,'triage');if(!t)return 'no';if((run.triageN||0)>=TRIAGE.max[t-1])return 'max';const cost=TRIAGE[what][t-1];if((s.parts||0)<cost)return 'parts';
+  const cr=run.heroes[k].carry=run.heroes[k].carry||{kit:[]};
+  if(what==='med'){if(cr.medkit)return 'has';cr.medkit=1;}else if(what==='defib'){if(cr.defib)return 'has';cr.defib=1;}else{cr.kit=cr.kit||[];if(cr.kit.length>=2)return 'has';cr.kit.push('bat');}
+  s.parts-=cost;run.triageN=(run.triageN||0)+1;return 'ok';}
+
 const API={reticle,ABIL_DESC,HEADSHOT,isHead,inspHelp,PLAYER_ICON,BEHAVIOR,INSP,inspText,CHAR,AIM_BOXES,aimOdds,aimBoxesOf,hbOf,HERO_HITBOX,ENERGY,spendEnergy,faceToward,AIM_RANGE,accTighten,LANES,UNIT_SCALE,HITBOX,aimBands,airBands,rollAirAim,rollAimHeight,rollLaneOffset,ABILITIES_OFF,armorReduction,HP_PER_STAMINA,gearScore,heroGear,giveItem,rollItem,stockShop,itemPrice,honePrice,slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
 if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793890874';const BGI=new Image();BGI.src='crawl_bg.png?v=1793890874';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793890874';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793896692';const BGI=new Image();BGI.src='crawl_bg.png?v=1793896692';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793896692';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793890874';XIMG.wave.src='crawl_wave.png?v=1793890874';XIMG.chibi.src='crawl_chibi.png?v=1793890874';XIMG.flannel.src='crawl_flannel.png?v=1793890874';XIMG.rain.src='crawl_rain.png?v=1793890874';XIMG.druid.src='crawl_druid.png?v=1793890874';XIMG.camp.src='crawl_campfire.png?v=1793890874';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793890874';XIMG.tornado.src='crawl_fx_tornado.png?v=1793890874';XIMG.vine.src='crawl_fx_vine.png?v=1793890874';XIMG.thorn.src='crawl_fx_thorn.png?v=1793890874';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793896692';XIMG.wave.src='crawl_wave.png?v=1793896692';XIMG.chibi.src='crawl_chibi.png?v=1793896692';XIMG.flannel.src='crawl_flannel.png?v=1793896692';XIMG.rain.src='crawl_rain.png?v=1793896692';XIMG.druid.src='crawl_druid.png?v=1793896692';XIMG.camp.src='crawl_campfire.png?v=1793896692';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793896692';XIMG.tornado.src='crawl_fx_tornado.png?v=1793896692';XIMG.vine.src='crawl_fx_vine.png?v=1793896692';XIMG.thorn.src='crawl_fx_thorn.png?v=1793896692';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793890874';XIMG.obst.src='crawl_obst.png?v=1793890874';XIMG.cars.src='crawl_cars.png?v=1793890874';XIMG.robot.src='crawl_robot.png?v=1793890874';XIMG.cultist.src='crawl_cultist.png?v=1793890874';XIMG.tentacle.src='crawl_tentacle.png?v=1793890874';XIMG.boom.src='crawl_boom.png?v=1793890874';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793896692';XIMG.obst.src='crawl_obst.png?v=1793896692';XIMG.cars.src='crawl_cars.png?v=1793896692';XIMG.robot.src='crawl_robot.png?v=1793896692';XIMG.cultist.src='crawl_cultist.png?v=1793896692';XIMG.tentacle.src='crawl_tentacle.png?v=1793896692';XIMG.boom.src='crawl_boom.png?v=1793896692';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2258,6 +2352,9 @@ function drawGame(ctx,g,W,oy){
   for(const l of g.loot||[]){const x=Math.round(l.x),y=(l.gy||G)-1;ctx.save();shrinkAt(ctx,x,y+1,HS);
     if(l.kind==='gold'){const n=l.big?7:4;ctx.fillStyle='#7a5a10';ctx.fillRect(x-n,y-2,n*2,2);ctx.fillStyle='#d9a836';for(let i=0;i<n;i++)ctx.fillRect(x-n+1+i*2,y-3-(i%2),2,2);ctx.fillStyle='#ffe27a';ctx.fillRect(x-1,y-5,2,2);
       if(Math.floor(g.t*4+l.x)%3===0){ctx.fillStyle='#ffffff';ctx.fillRect(x+2,y-7,1,1);}}
+    else if(l.kind==='food'){ctx.fillStyle='#3a2a18';ctx.fillRect(x-3,y-7,6,7);ctx.fillStyle='#b07a3a';ctx.fillRect(x-2,y-6,4,5);ctx.fillStyle='#e8d0a0';ctx.fillRect(x-2,y-5,4,2);ctx.fillStyle='#d8d8d8';ctx.fillRect(x-3,y-8,6,1);}   /* a tin can */
+    else if(l.kind==='water'){ctx.fillStyle='#1a2a38';ctx.fillRect(x-2,y-9,4,9);ctx.fillStyle='#7fd0ff';ctx.fillRect(x-1,y-7,2,6);ctx.fillStyle='#e8f6ff';ctx.fillRect(x-1,y-10,2,2);}   /* a bottle */
+    else if(l.kind==='parts'){ctx.fillStyle='#2a2a2e';ctx.fillRect(x-4,y-4,8,4);ctx.fillStyle='#9aa0a8';ctx.fillRect(x-3,y-3,3,2);ctx.fillRect(x+1,y-4,2,3);ctx.fillStyle='#c87a3a';ctx.fillRect(x-1,y-5,2,2);}   /* a little pile of bolts and gears */
     else{const c=(CFG.rarity.find(r=>r.id===l.item.rar)||CFG.rarity[0]).col;const by=Math.round(Math.sin(g.t*4)*1.5);glow(ctx,x,y-6+by,7,c,.25);
       ctx.fillStyle='#5a3a1a';ctx.fillRect(x-4,y-8+by,8,6);ctx.fillStyle=c;ctx.fillRect(x-4,y-8+by,8,2);ctx.fillRect(x-1,y-6+by,2,2);ctx.fillStyle='#ffffff';ctx.fillRect(x+3,y-11+by,1,1);}ctx.restore();}
   for(const z of g.zones||[]){const k=Math.min(1,z.t/z.T);const pulse=.25+.25*Math.sin(g.t*18);ctx.save();
@@ -2332,11 +2429,12 @@ function drawGame(ctx,g,W,oy){
       if(e.hexT>0){ctx.save();ctx.globalCompositeOperation='lighter';for(let i=0;i<3;i++){const a=g.t*4+i*2.1;ctx.fillStyle='rgba(150,60,255,.75)';ctx.fillRect(e.x+Math.cos(a)*5,y-4+Math.sin(a*1.3)*6,1.2,1.2);}glow(ctx,e.x,y,6,'#6a20c0',.12);ctx.restore();}
       if(e.fearT>0){ctx.fillStyle='#c080ff';ctx.fillRect(Math.round(e.x)-.5,Math.round(y-18),1,3);ctx.fillRect(Math.round(e.x)-.5,Math.round(y-14),1,1);}}
     for(const h of g.alive())if(h.key==='cultist'&&!(h.riseT>0)){const d=h.face||1,ey=(h.gy||g.G)-14.6;ctx.save();ctx.globalCompositeOperation='lighter';for(const ox of[-.1,1.7])glow(ctx,g.heroX(h)+d*(1.2+ox),ey,1.3,'#ff2a20',.32+.12*Math.sin(g.t*3+ox));ctx.restore();}   // his eyes glow red in the dark
+    for(const h of g.alive())if(h.defib){const x=Math.round(g.heroX(h)+(h.medkit?12:6)),y=Math.round((h.gy||g.G)-31);ctx.fillStyle='#202020';ctx.fillRect(x-1,y-1,5,5);ctx.fillStyle='#f2d23a';ctx.fillRect(x,y,3,3);ctx.fillStyle='#202020';ctx.fillRect(x+1,y,1,2);ctx.fillRect(x,y+1,1,1);ctx.fillRect(x+2,y+1,1,1);}   /* carrying a Defibrillator: a little yellow pad with a bolt */
     for(const h of g.alive())if(h.medkit){const x=Math.round(g.heroX(h)+6),y=Math.round((h.gy||g.G)-31);ctx.fillStyle='#202020';ctx.fillRect(x-1,y-1,5,5);ctx.fillStyle='#f2f2f2';ctx.fillRect(x,y,3,3);ctx.fillStyle='#e02020';ctx.fillRect(x+1,y,1,3);ctx.fillRect(x,y+1,3,1);}   /* carrying an ambulance Medkit */
     for(const h of g.alive()){if(h.kit&&h.kit.length){const y=(h.gy||g.G)-30;h.kit.forEach((it,i)=>{const x=g.heroX(h)-3+i*3;if(it==='med'){ctx.fillStyle='#f0f0f0';ctx.fillRect(x,y-1,2,2);ctx.fillStyle='#e02020';ctx.fillRect(x+.5,y-.5,1,1);}else{ctx.fillStyle='#ffd23f';ctx.fillRect(x,y-1.5,1.5,2.5);ctx.fillStyle='#404040';ctx.fillRect(x+.2,y-2,1,.6);}});}
       if(h.herbs>0){const y=(h.gy||g.G)-30;for(let i=0;i<h.herbs;i++){const x=g.heroX(h)-3+i*3;ctx.fillStyle='#2e7a2a';ctx.fillRect(x,y,2,1.5);ctx.fillStyle='#8fe36a';ctx.fillRect(x,y-.6,1.2,1);}}   // Scavenger: herbs carried
       if(h.herbT>0&&Math.random()<.4){ctx.fillStyle='rgba(140,230,110,.8)';ctx.fillRect(g.heroX(h)-5+Math.random()*10,(h.gy||g.G)-6-Math.random()*16,1,1);}}
-    for(const f of g.fx)if(f.k==='herbget'){const k=f.t/f.life;ctx.save();ctx.globalAlpha=1-k;ctx.fillStyle='#8fe36a';ctx.fillRect(f.x-1,f.y-k*6,3,2);ctx.fillStyle='#2e7a2a';ctx.fillRect(f.x,f.y-k*6+1,1,2);ctx.restore();}
+    for(const f of g.fx)if(f.k==='herbget'){const k=f.t/f.life;ctx.save();ctx.globalAlpha=1-k;ctx.fillStyle={med:'#f2f2f2',bat:'#7fe0ff',defib:'#f2d23a'}[f.kit]||'#8fe36a';ctx.fillRect(f.x-1,f.y-k*6,3,2);ctx.fillStyle='#2e7a2a';ctx.fillRect(f.x,f.y-k*6+1,1,2);ctx.restore();}
     for(const h of g.alive())if(h.search){const k=Math.min(1,h.search.t/(h.search.T||1.5)),x=Math.round(g.heroX(h)+8),y0=Math.round((h.gy||g.G)-14),H=12;ctx.fillStyle='#000b';ctx.fillRect(x-1,y0-H-1,4,H+2);const f=Math.round(H*k);const gr=ctx.createLinearGradient(x,0,x+2,0);gr.addColorStop(0,'#e8ecf2');gr.addColorStop(1,'#8a92a0');ctx.fillStyle=gr;ctx.fillRect(x,y0-f,2,f);}   // searching: a silver bar rising beside him
     for(const h of g.alive())if(h.shellT>0){ctx.save();ctx.globalAlpha=.55;ctx.fillStyle='#3e7a3a';ctx.beginPath();ctx.ellipse(g.heroX(h),(h.gy||g.G)-9,10,10,0,Math.PI,0);ctx.fill();ctx.strokeStyle='#9be07a';ctx.lineWidth=1;ctx.stroke();ctx.restore();}   // Shell Up
     for(const e of g.enemies)if(!e.dead&&e.webT>0){e.webT-=1/60;const y=(e.gy!=null?e.gy:g.G)-10;ctx.save();ctx.strokeStyle='rgba(235,240,255,.7)';ctx.lineWidth=.6;for(let i=0;i<4;i++){const a=i*.8;ctx.beginPath();ctx.moveTo(e.x-6*Math.cos(a),y-6*Math.sin(a));ctx.lineTo(e.x+6*Math.cos(a),y+6*Math.sin(a));ctx.stroke();}ctx.restore();}   // webbed
@@ -2382,7 +2480,7 @@ function drawGame(ctx,g,W,oy){
         shadow(ctx,cx,G+4,7);spr(ctx,'h_'+h.key+'_a',h.animT>0?fa:pf,cx-32,G-60+4-cy,(h.compV||0)<-4&&!h.animT,null,0);}
     }else if(UNITS[h.key]&&UNITS[h.key].idle){shadow(ctx,h.x+lx,G,9);const U=UNITS[h.key],C=h.base.char;let A=U.idle,f=Math.floor(g.t*(h.key==='druid'?5:6))%A.n;
       const mov=h.moving||g.scroll;
-      let riseRot=0,rum=null;
+      let riseRot=0,rum=null,runLean=0,runBob=0;
       // 0.12.22 getting back up: his last death frame, then the death frames played backwards (falling ones rotate back upright), then idle
       if(h.riseT>0&&U.death){const D=U.death,k=1-h.riseT/(h.riseT0||1.1);
         if(k>.86){A=U.idle;f=0;}
@@ -2408,8 +2506,9 @@ function drawGame(ctx,g,W,oy){
       else if(h.search&&U.idle){A=U.idle;f=Math.floor(g.t*3)%A.n;rum=h.search;}   /* 0.12.37: rummaging (built from his idle frames, bent over and digging) */
       else if(h.hitFlash>0){A=U.hurt;f=Math.min(A.n-1,Math.floor((1-h.hitFlash/.12)*A.n));}
       else if(C&&C.ranged&&U.reload&&h.ammo<=0&&!mov){A=U.reload;f=Math.min(A.n-1,Math.floor((h.reloadT||0)/C.ranged.reload*A.n));}
-      else if(mov){A=(h.running&&U.run)||U.walk;f=Math.floor(g.t*(h.running?12:h.key==='lumberjack'?9:8))%A.n;}
-      const bob=mov&&A.n===1?-Math.abs(Math.sin(g.t*11))*1.6:0;   // one-frame walk (companion art has no walk row): a little hop
+      else if(mov){A=(h.running&&U.run)||U.walk;f=Math.floor(g.t*(h.running?12:h.key==='lumberjack'?9:8))%A.n;
+        if(h.running&&!U.run&&A.n>1){f=Math.floor(g.t*15)%A.n;runLean=((h.face||1)>0?1:-1)*.11;runBob=-Math.abs(Math.sin(g.t*15*Math.PI*2/A.n))*1.4;}}   /* 0.12.38: no run row (druid): her walk played fast, leaning into it with a bounce */
+      const bob=(mov&&A.n===1?-Math.abs(Math.sin(g.t*11))*1.6:0)+runBob;if(runLean&&!riseRot)riseRot=runLean;   // one-frame walk (companion art has no walk row): a little hop
       if(h.whirl){ctx.save();const sp=g.t*16;   // 0.12.26: a wider slashing wave whips round him while he spins, so the reach reads
         ctx.globalCompositeOperation='lighter';
         for(let i=0;i<3;i++){const a0=sp+i*2.09;ctx.lineCap='round';
@@ -2440,7 +2539,7 @@ function drawGame(ctx,g,W,oy){
   const drawEnemy0=(e)=>{const G=(e.gy!=null&&!e.fly&&!e.boss)?e.gy:g.G;let fr=e.animT>0?6+Math.min(2,Math.floor((.3-e.animT)/.1)):e.hitFlash>0&&!e.boss?9:Math.floor(e.walkT*8)%6;
     if(e.boss){const bf=e.animT>0?2:Math.floor(g.t*2)%2;const y=e.fly?e.y-90:G-124;shadow(ctx,e.x,G,26);spr(ctx,'b_'+e.type,bf,e.x-64,y,false,null,e.hitFlash);return;}
     if(UNITS[e.skin||e.type]){const U=UNITS[e.skin||e.type];const [A,uf]=unitFrame(e,U);const gy=e.gy!=null?G:G+e.lane;const sc=(e.E.scale||1)*(e.elite?1.1:1);shadow(ctx,e.x,gy,8);
-      drawUnit(ctx,A,uf,e.x,gy,sc,null,e.hitFlash,0,e.face>0);const y=gy-U.walk.ay*sc;
+      const dsc=A.pre?sc/A.pre:sc;drawUnit(ctx,A,uf,e.x,gy,dsc,null,e.hitFlash,0,e.face>0);const y=gy-U.walk.ay*(U.walk.pre?sc/U.walk.pre:sc);   /* pre-shrunk art (zombies) is drawn 1:1 */
       if(e.slow>0){ctx.fillStyle='rgba(154,230,255,.8)';for(let i=0;i<3;i++)ctx.fillRect(Math.round(e.x-6+i*5),Math.round(y+8+((g.t*20+i*7)%20)),1,1);}
       if(e.burnT>0){ctx.fillStyle=Math.random()<.5?'#ffb040':'#ff5a1a';ctx.fillRect(Math.round(e.x-3+Math.random()*6),Math.round(y+10+Math.random()*12),1,2);}
       if(e.hp<e.max||e.bleedT>0||e.burnT>0||e.slow>0||e.stun>0)plate(ctx,e,e.x,y-2,e.elite?20:14,false,e.elite?'#ffb020':'#e8303a');
@@ -2475,6 +2574,9 @@ function drawGame(ctx,g,W,oy){
   // projectiles
   for(const p of g.proj){const x=Math.round(p.x),y=p.aimed?Math.round(p.y):Math.round(G+(p.y-G)*HS);const c=PCOL[p.kind]||'#ff3a3a';ctx.save();shrinkAt(ctx,x,y,HS);
     if(p.kind==='void'){const d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';for(let i=1;i<=5;i++){ctx.fillStyle=`rgba(150,60,255,${.4-.07*i})`;ctx.fillRect(x-d*i*2.8-1,y-1+Math.sin(g.t*25+i)*.8,2,2);}glow(ctx,x,y,6,'#7a30e0',.35);ctx.restore();ctx.fillStyle='#12061e';ctx.beginPath();ctx.arc(x,y,2.4,0,7);ctx.fill();ctx.strokeStyle='#c090ff';ctx.lineWidth=.8;ctx.stroke();}   // void bolt: a black core in a violet halo
+    else if(p.kind==='buck'){const d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';   /* buckshot: a tight cluster of pellets with faint streaks, spreading a touch as it flies */
+      const sp=1+Math.min(2.2,(p.t||0)*6);const PEL=[[0,0],[-1.2,-1.1],[-.6,1.2],[-2,.3],[-1.6,-2],[.4,-1.8],[-2.6,1.6]];
+      for(const [ox,oy] of PEL){const px=x+ox*d*sp,py=y+oy*sp*.8;ctx.strokeStyle='rgba(255,200,120,.35)';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(px-d*3.5,py);ctx.lineTo(px,py);ctx.stroke();ctx.fillStyle='#fff0c0';ctx.fillRect(px-.5,py-.5,1,1);}ctx.restore();}
     else if(p.kind==='gat'){const d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle='rgba(255,210,120,.85)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-d*8,y);ctx.lineTo(x,y);ctx.stroke();ctx.fillStyle='#fff4c8';ctx.fillRect(x-1,y-.5,2,1);ctx.restore();}   // gatling tracer
     else if(p.kind==='leaf'){const d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';   // 0.12.15 nature bolt: a glowing seed with leaves spinning round it and a fading green trail
       for(let i=1;i<=5;i++){ctx.fillStyle=`rgba(90,255,120,${.38-.065*i})`;const s=1.6-.22*i;ctx.fillRect(x-d*i*2.6-s/2,y-s/2+Math.sin(g.t*20+i)*.5,s,s);}
@@ -2657,7 +2759,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.37</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.38</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -2763,8 +2865,22 @@ function showTeam(){
 function rankStars(r){return r>=CFG.maxRank?'<span class="cc-asc">✦ MAX ✦</span>':'<span class="cc-stars">'+'★'.repeat(Math.min(5,Math.ceil(r/2)))+'</span> <span class="cc-sub" style="font-size:11px">r'+r+'</span>';}
 function chipFor(e,item,hk){const base=item?shortCard(e.card):sname(hk,e.card);const name=e.r>=CFG.maxRank?`✦ ${esc(maxTitle(e.card,e.arch))}`:esc(base);
   return `<span class="cc-chip ${item?'it':''}" title="${item?esc(e.card):'Inspired by '+esc(e.card)}"><b>${name}</b> · ${item?ITEM[e.arch].label:SPELL[e.arch].label} r${e.r}${(e.augs||[]).map(g=>' +'+AUG[g].name).join('')}${item?' · GS '+gearScore(e):''}${item&&e.proc?' · ✦ '+({onhit:'on hit',oncrit:'on crit',onkill:'on kill',whenhit:'when hit',near:'when close',allylow:'ally low',oncast:'on cast'}[PROCS[e.proc].t]||''):''}</span>`;}
+/* camp panel: supplies, what the camp did on arrival, upgrades (pick 1 of the offers per camp), Triage builds */
+function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=run.food||0;
+  const owned=Object.keys(run.upg||{}).filter(id=>run.upg[id]);
+  const sup=`<div class="cc-card"><b>🏕️ Camp</b> <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · ⚙️ <b>${parts}</b> spare parts · 🥫 <b>${Number.isInteger(food)?food:Math.floor(food)+'½'}</b> food · 💧 <b>${run.water||0}</b> water</span>
+    ${(run.campLog||[]).length?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${run.campLog.map(esc).join(' · ')}</div>`:''}
+    ${owned.length?`<div class="cc-chips" style="margin-top:6px">${owned.map(id=>{const U=CAMP_UPG[id],t=run.upg[id];return `<span class="cc-chip" title="${esc(U.txt(t))}">${U.icon} ${esc(U.name)} ${'I'.repeat(t)}</span>`;}).join('')}</div>`:''}</div>`;
+  const offers=(run.offers||[]).filter(id=>upgT(run,id)<CAMP_UPG[id].tiers.length);
+  const up=`<div class="cc-card"><b>🔨 Camp upgrades</b> <span class="cc-sub" style="font-size:11px">${run.upgBought?'Built one this camp. More offers next time.':'Pick one to build this camp.'} They last for this run.</span>
+    <div class="cc-offers" style="margin-top:8px">${offers.map(id=>{const U=CAMP_UPG[id],t=upgT(run,id)+1,pr=upgPrice(run,id);return `<div class="cc-offer" style="--rc:${t>1?'#7fd0ff':'#a6ff2e'}"><span class="rar">${t>1?'TIER '+t:'NEW'}</span><span class="cn">${U.icon} ${esc(U.name)}${U.tiers.length>1?' '+'I'.repeat(t):''}</span><span class="tx">${esc(U.txt(t))}</span>
+      <button class="cc-btn" data-upg="${id}" ${run.upgBought||gold<pr?'disabled':''}>Build · ${fmt(pr)}g</button></div>`;}).join('')||'<span class="cc-sub">Everything is fully built!</span>'}</div></div>`;
+  const tt=upgT(run,'triage');const tri=tt?`<div class="cc-card"><b>🩺 Triage Station ${'I'.repeat(tt)}</b> <span class="cc-sub" style="font-size:11px">${(run.triageN||0)}/${TRIAGE.max[tt-1]} built this camp · whoever you pick carries it into the next stage</span>
+    ${[['med','Medkit','heals an ally under 50% for 35%'],['bat','Battery','+30 energy for an ally running low'],['defib','Defibrillator','instantly revives a downed ally']].map(([w,n,d])=>`<div class="cc-chips" style="align-items:center;margin-top:4px"><span class="cc-sub" style="font-size:11px;margin:0;min-width:180px"><b>${n}</b> · ⚙️ ${TRIAGE[w][tt-1]} · ${d}</span>${run.team.map(k=>btn(`data-tri="${w}|${k}" ${parts<TRIAGE[w][tt-1]||(run.triageN||0)>=TRIAGE.max[tt-1]?'disabled':''}`,'→ '+esc(heroDef(k).name.split(/[ _]/)[0]),'Build it for '+heroDef(k).name)).join(' ')}</div>`).join('')}</div>`:'';
+  return sup+up+tri;}
 function showCamp(){
   const s=SLOT();const run=s.run;migrate(s,CC.player);run.bag=run.bag||[];if(ABILITIES_OFF){run.pending=0;run.bag=run.bag.filter(e=>e.kind==='item');}const st=CFG.stage(run.stage,run.prestige);
+  {const lg=campArrive(s,run);if(lg.length)run.campLog=lg;else if(run.campAt!==run.stage)run.campLog=[];}const hungry=new Set(run.needFeed||[]);
   const btn=(attrs,label,title)=>`<button class="cc-mini" ${attrs} ${title?`title="${esc(title)}"`:''}>${label}</button>`;
   const P=showPanel(`<div class="cc-h">STAGE ${run.stage}${run.prestige?' · ★'+run.prestige:''}</div><div class="cc-h2">${esc(st.biome.name)}${st.boss?` — ${esc(CFG.bosses[st.boss].name)} awaits`:''}</div>
     <p class="cc-sub">Score ${fmt(run.score)} · save point. ${run.pending?`<b style="color:#a6ff2e">⬆ ${run.pending} upgrade${run.pending>1?'s':''} waiting</b>`:'No upgrades waiting.'}</p>
@@ -2772,8 +2888,13 @@ function showCamp(){
       const act=hv.spells.map((e,i)=>[e,i]).filter(([e])=>!SPELL[e.arch].passive),pas=hv.spells.map((e,i)=>[e,i]).filter(([e])=>SPELL[e.arch].passive);
       const row=(lbl,list,n,c,slotName)=>`<div class="cc-slotrow"><span class="cc-sub" style="font-size:11px;margin:0">${lbl} ${n}/${c}</span><div class="cc-chips">${list.map(([e,i])=>`<span class="cc-chipw">${chipFor(e,slotName==='item',k)}${btn(`data-un="${k}|${slotName}|${i}"`,'↓','Move to backpack')}</span>`).join('')}</div></div>`;
       return `<div class="cc-card cc-lh"><span data-por="${k}"></span><div style="flex:1;min-width:0"><b>${d.icon} ${esc(d.name)}</b> <span class="cc-sub" style="font-size:11px">LV ${L.lvl} · Gear ${heroGear(hv)} · ${hv.dead?'fallen (revives at 25%)':Math.round((hv.hpf==null?1:hv.hpf)*100)+'% HP'}</span>
-        ${ABILITIES_OFF?'<div class="cc-sub" style="font-size:11px;margin:4px 0 0">Abilities are being rebuilt — basic attacks only for now.</div>':`<div class="cc-chips"><span class="cc-chip" title="${esc(SIG[k].txt)}" style="border-color:#ffd23f"><b>⚡ ${esc(SIG[k].name)}</b> · signature</span></div>`}
-        ${ABILITIES_OFF?'':row('Abilities',act,act.length,cap.active,'spell')+row('Passives',pas,pas.length,cap.passive,'spell')}${row('Items',hv.items.map((e,i)=>[e,i]),hv.items.length,cap.item,'item')}</div></div>`;}).join('')}
+        ${ABILITIES_OFF?'':`<div class="cc-chips"><span class="cc-chip" title="${esc(SIG[k].txt)}" style="border-color:#ffd23f"><b>⚡ ${esc(SIG[k].name)}</b> · signature</span></div>`+row('Abilities',act,act.length,cap.active,'spell')+row('Passives',pas,pas.length,cap.passive,'spell')}
+        ${hungry.has(k)?(run.fed&&run.fed[k]?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0">🍽 Fed${run.fed[k]==='auto'?' (filtered water)':run.fed[k]==='water'?' (water)':' (food)'} ✓</div>`
+          :`<div class="cc-sub" style="font-size:11px;margin:4px 0 0;color:#ffb070">🍽 Hungry: feed them or they start the next stage with 10% less HP ${btn(`data-feed="${k}|food" ${run.food>=(upgT(run,'smoker')?.5:1)?'':'disabled'}`,'🥫 Food','Use 1 food'+(upgT(run,'smoker')?' (smoked: half a ration)':''))} ${btn(`data-feed="${k}|water" ${run.water>=1?'':'disabled'}`,'💧 Water','Use 1 water')}</div>`):''}
+        ${(()=>{const fr=lvPtsFree(L),P=L.pts||{};const have=Object.keys(LVPTS).filter(x=>P[x]).map(x=>`${LVPTS[x].icon}${P[x]}`).join(' ');
+          return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${fr?`<b style="color:#a6ff2e">⬆ ${fr} stat point${fr>1?'s':''} to spend</b> `+Object.keys(LVPTS).map(x=>btn(`data-pt="${k}|${x}"`,LVPTS[x].icon+' '+LVPTS[x].name,LVPTS[x].txt+' per point')).join(' '):'Stat points: one per level gained.'}${have?` <span style="opacity:.8">· spent: ${have}</span>`:''}</div>`;})()}
+        ${hv.carry&&(hv.carry.medkit||hv.carry.defib||(hv.carry.kit||[]).length)?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0">🎒 Carrying into the stage: ${[hv.carry.medkit?'Medkit':'',hv.carry.defib?'Defibrillator':'',...(hv.carry.kit||[]).map(x=>x==='bat'?'Battery':'Medicine')].filter(Boolean).join(', ')}</div>`:''}</div></div>`;}).join('')}
+      ${campPanel(s,run,btn)}
       <div class="cc-shopwrap" ${CAMP_SHOP?'':'hidden'}>${(()=>{const gold=s.gold||0;if(run.shopAt!==run.stage)return `<div class="cc-card"><b>🛒 Merchant</b> <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · the merchant sets up shop after each boss you beat.</span></div>`;if(!run.shop||run.shop.stage!==run.stage)stockShop(run);
         const owned=[...run.team.flatMap(k=>run.heroes[k].items.map((e,i)=>({e,where:'hero',k,i}))),...run.bag.map((e,i)=>({e,where:'bag',i})).filter(o=>o.e.kind==='item')];
         return `<div class="cc-card"><b>🛒 Merchant</b> <span class="cc-sub" style="font-size:12px">here after your boss win · 💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold (kept by this save)</span>
@@ -2799,7 +2920,13 @@ function showCamp(){
   const owned2=[...run.team.flatMap(k=>run.heroes[k].items),...run.bag.filter(e=>e.kind==='item')];
   P.querySelectorAll('[data-hone]').forEach(b=>b.onclick=()=>{const e=owned2[+b.dataset.hone];const pr=honePrice(e.r,run.stage);if((s.gold||0)<pr)return;s.gold-=pr;e.r=Math.min(CFG.maxRank,e.r+1);sfx('level');persist();showCamp();});
   const pk=P.querySelector('[data-pick]');if(pk)pk.onclick=showPick;
-  const bg=P.querySelector('[data-begin]');if(bg)bg.onclick=beginStage;
+  const bg=P.querySelector('[data-begin]');if(bg)bg.onclick=()=>{const left=(run.needFeed||[]).filter(k=>!(run.fed&&run.fed[k])&&!run.heroes[k].dead);
+    if(left.length&&!bg.dataset.sure){bg.dataset.sure=1;bg.textContent='Go hungry? '+left.map(k=>heroDef(k).name).join(', ')+' lose 10% HP ▶';return;}campDepart(run);persist();beginStage();};
+  P.querySelectorAll('[data-feed]').forEach(b=>b.onclick=()=>{const [k,w]=b.dataset.feed.split('|');if(feedUnit(run,k,w)){sfx('level');persist();showCamp();}});
+  P.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>{const [k,x]=b.dataset.pt.split('|');const H=s.heroes[k];if(lvPtsFree(H)<1)return;H.pts=H.pts||{};H.pts[x]=(H.pts[x]||0)+1;sfx('level');persist();showCamp();});
+  P.querySelectorAll('[data-upg]').forEach(b=>b.onclick=()=>{const id=b.dataset.upg,pr=upgPrice(run,id);if(run.upgBought||(s.gold||0)<pr)return;s.gold-=pr;run.upg=run.upg||{};run.upg[id]=(run.upg[id]||0)+1;run.upgBought=1;sfx('level');persist();showCamp();});
+  P.querySelectorAll('[data-tri]').forEach(b=>b.onclick=()=>{const [w,k]=b.dataset.tri.split('|');const r=triageBuild(s,run,w,k);if(r==='ok'){sfx('level');persist();showCamp();}else msg({max:'No more builds at this camp.',parts:'Not enough spare parts.',has:heroDef(k).name+' already carries one of those.'}[r]||'Can\'t build that.');});
+
   P.querySelector('[data-quit]').onclick=showSlots;
 }
 function showPick(){
@@ -2861,13 +2988,27 @@ function loop(now){
   if(g.over){return finishStage(g);}
   CC.raf=requestAnimationFrame(loop);
 }
+/* 0.12.38 (Kyle): a stats brief after each stage: who did what, plus a few awards */
+function statsBrief(g){const S=g.stats||{};const keys=Object.keys(S).filter(k=>k!=='?');if(!keys.length)return '';const secs=Math.max(1,g.t||1);
+  const nm=k=>k==='flannel_pal'?'Traveling_Companion':(heroDef(k)?heroDef(k).name:((CHAR[k]||{}).name||k));
+  const best=(f,min)=>{let b=null,bv=min||0;for(const k of keys){const v=f(S[k]);if(v>bv){bv=v;b=k;}}return b?[b,bv]:null;};
+  const aw=[['💥 Most damage',best(s=>s.dmg),v=>fmt(Math.round(v))],['💚 Top healer',best(s=>s.heal,1),v=>fmt(Math.round(v))+' healed'],['💀 Most kills',best(s=>s.kills),v=>v+' kills'],
+    ['🎯 Biggest hit',best(s=>s.biggest),v=>Math.round(v)],['🧠 Headshots',best(s=>s.heads),v=>v],['🛟 Revives',best(s=>s.revives),v=>v],['🔍 Searches',best(s=>s.searches),v=>v],['🩸 Took the most',best(s=>s.taken),v=>fmt(Math.round(v))+' dmg']]
+    .filter(a=>a[1]).map(([t,[k,v],f])=>`<span class="cc-chip" style="margin:2px">${t}: <b>${esc(nm(k))}</b> (${f(v)})</span>`).join('');
+  const rows=keys.sort((a,b)=>S[b].dmg-S[a].dmg).map(k=>{const s=S[k];return `<tr><td style="text-align:left">${esc(nm(k))}</td><td>${fmt(Math.round(s.dmg))}</td><td>${(s.dmg/secs).toFixed(1)}</td><td>${fmt(Math.round(s.heal))}</td><td>${s.kills}</td><td>${s.crits}</td><td>${s.heads}</td><td>${fmt(Math.round(s.taken))}</td><td>${s.downs}</td><td>${s.revives}</td><td>${s.searches}</td></tr>`;}).join('');
+  return `<div class="cc-card" style="margin-top:8px"><b>📊 Stage stats</b> <span class="cc-sub" style="font-size:11px">${Math.round(secs)}s of fighting</span>
+    <div style="margin:6px 0">${aw}</div>
+    <div style="overflow-x:auto"><table class="cc-stats" style="border-collapse:collapse;font-size:11px;width:100%;text-align:right"><tr style="opacity:.7"><th style="text-align:left">Unit</th><th>Damage</th><th>DPS</th><th>Healed</th><th>Kills</th><th>Crits</th><th>Heads</th><th>Taken</th><th>Downed</th><th>Revives</th><th>Searches</th></tr>${rows}</table></div></div>`;}
 function finishStage(g){
   const s=SLOT(),run=s.run;g.saveBack();run.score+=g.stageScore;s.gold=(s.gold||0)+g.stageGold;
+  s.parts=(s.parts||0)+(g.stageParts||0);run.food=(run.food||0)+(g.stageFood||0);run.water=(run.water||0)+(g.stageWater||0);   /* camp supplies */
+  run.lastHaul={food:g.stageFood||0,water:g.stageWater||0,parts:g.stageParts||0};
   const found=[];if(g.over==='clear')for(const it of g.stageItems){const where=giveItem(run,s,it);if(where)found.push(shortCard(it.card)+(where==='bag'?' (backpack)':''));else{const v=Math.round(itemPrice(it.rar,run.stage)/3);s.gold+=v;found.push(shortCard(it.card)+' (sold, no room: +'+v+'g)');}}
   const lvls=run.team.filter(k=>s.heroes[k].lvl>CC.lv0[k]).map(k=>`${esc(heroDef(k).name)} → LV ${s.heroes[k].lvl}`);
   if(g.over==='clear'){
     sfx('clear');
     for(const k of run.team){const h=run.heroes[k];if(h.dead){h.dead=false;h.hpf=.25;}else h.hpf=Math.min(1,(h.hpf||0)+.3);}
+    run.needFeed=run.team.slice();   /* 0.12.38: everyone needs food or water at camp */
     const cleared=run.stage;run.score+=Math.round(250*cleared*(1+run.prestige));
     if(cleared>=CFG.maxStage){persist();CC.game=null;return showVictory(lvls);}
     if(cleared===CFG.strangerStage&&run.team.length<3&&!run.strangerDone){run.strangerDone=1;const free=s.forsook?[]:DATA.heroes.filter(h=>h.owner===CC.player&&!run.team.includes(h.key));
@@ -2876,7 +3017,7 @@ function finishStage(g){
     run.stage++;run.rerolls=Math.max(run.rerolls,1);
     if(run.prestige*100+run.stage-1>s.best.prestige*100+s.best.stage){s.best.stage=run.stage-1;s.best.prestige=run.prestige;}
     persist();CC.game=null;
-    const P=showPanel(`<div class="cc-h">STAGE ${cleared} CLEAR!</div><p class="cc-sub">+${fmt(g.stageScore+250*cleared*(1+run.prestige))} score · ${g.kills} kills · 💰 +${fmt(g.stageGold)} gold${found.length?'<br>Found: '+found.map(esc).join(', '):''}${lvls.length?'<br>'+lvls.join(', '):''}</p><div class="cc-row"><button class="cc-btn go" data-c>TO CAMP ▶</button></div>`);
+    const P=showPanel(`<div class="cc-h">STAGE ${cleared} CLEAR!</div><p class="cc-sub">+${fmt(g.stageScore+250*cleared*(1+run.prestige))} score · ${g.kills} kills · 💰 +${fmt(g.stageGold)} gold${g.stageParts?' · ⚙ +'+g.stageParts+' spare parts':''}${g.stageFood?' · 🥫 +'+g.stageFood+' food':''}${g.stageWater?' · 💧 +'+g.stageWater+' water':''}${found.length?'<br>Found: '+found.map(esc).join(', '):''}${lvls.length?'<br>'+lvls.join(', '):''}</p>${statsBrief(g)}<div class="cc-row"><button class="cc-btn go" data-c>TO CAMP ▶</button></div>`);
     P.querySelector('[data-c]').onclick=showCamp;return;}
   // defeat
   sfx('die');const reached=run.stage,score=run.score,team=run.team.slice();endRun(s,0);CC.game=null;
