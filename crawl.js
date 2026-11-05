@@ -2047,7 +2047,7 @@ const PSPD={void:165,gat:420,buck:380,leaf:190,dart:330,kunai:240,yarrow:230,bul
 const PCOL={void:'#b05cff',gat:'#ffd27a',buck:'#ffe0a0',skull:'#7dff9a',hex:'#c050ff',bolt:'#ffb040',orb:'#c050ff',arrow:'#e8e0c8',quarrel:'#e8e0c8',fire:'#ff8a1f',shard:'#6ff0ff',zap:'#bfefff',wisp:'#7dff9a',plasma:'#3ff0ff',blood:'#ff2a3a',shell:'#ffd23f',frost:'#9ae6ff',brick:'#c0603a'};
 
 // ======================================================================= RUN / PICKS (pure)
-function newRun(team,slot){
+function newRun(team,slot){if(slot){slot.gold=0;slot.parts=0;}   /* 0.12.41 (Kyle): every new run starts broke: gold and spare parts reset to 0 */
   if(slot){slot.partySize=3;team=team.slice(0,3);}
   const run={team:team.slice(),stage:1,prestige:0,score:0,xp:0,lv:0,pending:0,rerolls:1,heroes:{},bag:[]};
   for(const k of team){const d=heroDef(k);run.heroes[k]={hpf:1,dead:false,spells:ABILITIES_OFF||!d.spells.length?[]:[{card:d.spells[0].card,arch:d.spells[0].arch,r:1,augs:[]}],items:[]};}
@@ -2177,7 +2177,7 @@ function newSlot(player){const heroes={};for(const h of DATA.heroes)if(h.owner==
 
 // ======================================================================================================================
 // 0.12.38 CAMP (Kyle): food & water upkeep, spare parts, camp upgrades (offered 3 at a time, tiered, roguelike: they last the run),
-//   Triage crafting, and level-up stat points. Gold and spare parts stay with the save; supplies and upgrades belong to the run.
+//   Triage crafting, and level-up stat points. Gold, spare parts, supplies and upgrades all belong to the run (gold and parts reset in newRun).
 // ======================================================================================================================
 const CAMP_UPG={
   water:{name:'Water Filtration System',icon:'💧',tiers:[100,175,275],txt:t=>`${[25,50,75][t-1]}% chance to give one hungry unit water by itself when you get back to camp.`},
@@ -2230,12 +2230,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793897224';const BGI=new Image();BGI.src='crawl_bg.png?v=1793897224';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793897224';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793897242';const BGI=new Image();BGI.src='crawl_bg.png?v=1793897242';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793897242';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793897224';XIMG.wave.src='crawl_wave.png?v=1793897224';XIMG.chibi.src='crawl_chibi.png?v=1793897224';XIMG.flannel.src='crawl_flannel.png?v=1793897224';XIMG.rain.src='crawl_rain.png?v=1793897224';XIMG.druid.src='crawl_druid.png?v=1793897224';XIMG.camp.src='crawl_campfire.png?v=1793897224';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793897224';XIMG.tornado.src='crawl_fx_tornado.png?v=1793897224';XIMG.vine.src='crawl_fx_vine.png?v=1793897224';XIMG.thorn.src='crawl_fx_thorn.png?v=1793897224';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793897242';XIMG.wave.src='crawl_wave.png?v=1793897242';XIMG.chibi.src='crawl_chibi.png?v=1793897242';XIMG.flannel.src='crawl_flannel.png?v=1793897242';XIMG.rain.src='crawl_rain.png?v=1793897242';XIMG.druid.src='crawl_druid.png?v=1793897242';XIMG.camp.src='crawl_campfire.png?v=1793897242';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793897242';XIMG.tornado.src='crawl_fx_tornado.png?v=1793897242';XIMG.vine.src='crawl_fx_vine.png?v=1793897242';XIMG.thorn.src='crawl_fx_thorn.png?v=1793897242';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793897224';XIMG.obst.src='crawl_obst.png?v=1793897224';XIMG.cars.src='crawl_cars.png?v=1793897224';XIMG.robot.src='crawl_robot.png?v=1793897224';XIMG.cultist.src='crawl_cultist.png?v=1793897224';XIMG.tentacle.src='crawl_tentacle.png?v=1793897224';XIMG.boom.src='crawl_boom.png?v=1793897224';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793897242';XIMG.obst.src='crawl_obst.png?v=1793897242';XIMG.cars.src='crawl_cars.png?v=1793897242';XIMG.robot.src='crawl_robot.png?v=1793897242';XIMG.cultist.src='crawl_cultist.png?v=1793897242';XIMG.tentacle.src='crawl_tentacle.png?v=1793897242';XIMG.boom.src='crawl_boom.png?v=1793897242';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2766,7 +2766,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.40</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.41</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
