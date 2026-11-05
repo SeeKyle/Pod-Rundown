@@ -330,7 +330,7 @@ const INSP={   /* 0.12.4 (Kyle): every bonus doubled. 0.12.34: Herbalist x3 and 
  'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up: the pod\'s biggest Finish',mod:{meleeDmg:20},sl:{range:2}},
  'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen',mod:{xp:12},sl:{energy:-2}},
  'Truly Fantastic':{o:'Kyle',why:'The Thing\'s deep mana pool',mod:{enMax:24},sl:{plan:2}},
- 'Dice Boys Casino':{o:'Kyle',why:'Mr. House: the biggest ramp deck in the pod',mod:{enRegen:2},sl:{flair:2}},
+ 'Dice Boys Casino':{o:'Kyle',why:'Mr. House runs the casino: the house always has money',passive:'bankroll',sl:{flair:2}},   /* 0.12.42 (Kyle): starting gold instead of energy regen */
  'Tame Depala':{o:'Kyle',why:'Dwarf mechanics who salvage anything with wheels and stand like an anvil',passive:'scavenger',mod:{kbRes:20}},
  "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat',passive:'bounty',sl:{size:2}},
  'The Last of Us':{o:'Kyle',why:'Survivors who live off what they scrounge from the wrecks and slip every grab',passive:'scavenger',mod:{dodge:4}},
@@ -421,6 +421,7 @@ function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.pas
 const INSP_PASSIVE={
  herbalist:['Herbalist','he searches nearby foliage, rocks, stumps and fallen logs for healing herbs (1.5s each; the chance is good and goes up with his Luck and with how Perceptive he is) and carries up to 3. When he or an ally within about 50px is under 80% health, he uses one: it heals 20% of their max HP over 5s, but any damage stops it. He searches whatever is close by without going far out of his way, and goes to hurt allies with herbs.'],
  scavenger:['Scavenger','he searches broken-down cars (2s each; the chance goes up with his Luck and how Perceptive he is). He can turn up a Medkit (heals an ally under 60% for 25% at once), a Battery (+30 energy for an ally running low) or loose scrap worth gold, and carries 2 Medkits and Batteries at most, in any mix. He searches wrecks close by without going far out of his way, and brings supplies to whoever needs them.'],
+ bankroll:['House Money','the house fronts you: the run starts with +50 gold for every hero carrying this deck. Spend it at camp.'],
  bounty:['Bounty Hunter','his first hit on the biggest enemy on the field puts a bounty on it: it is marked (takes 25% more damage from everyone for 8s), and when it dies the party gets +10 gold.'],
  haunt:['Haunted','anything that hits him has a 20% chance to be spooked and back away for 1.5s.'],
  omen:['Dark Omen','once every 12s, the first hit that would land on him passes straight through.'],
@@ -2047,7 +2048,7 @@ const PSPD={void:165,gat:420,buck:380,leaf:190,dart:330,kunai:240,yarrow:230,bul
 const PCOL={void:'#b05cff',gat:'#ffd27a',buck:'#ffe0a0',skull:'#7dff9a',hex:'#c050ff',bolt:'#ffb040',orb:'#c050ff',arrow:'#e8e0c8',quarrel:'#e8e0c8',fire:'#ff8a1f',shard:'#6ff0ff',zap:'#bfefff',wisp:'#7dff9a',plasma:'#3ff0ff',blood:'#ff2a3a',shell:'#ffd23f',frost:'#9ae6ff',brick:'#c0603a'};
 
 // ======================================================================= RUN / PICKS (pure)
-function newRun(team,slot){if(slot){slot.gold=0;slot.parts=0;}   /* 0.12.41 (Kyle): every new run starts broke: gold and spare parts reset to 0 */
+function newRun(team,slot){if(slot){slot.gold=0;slot.parts=0;for(const k of team){const H=slot.heroes&&slot.heroes[k];if(H&&H.insp&&INSP[H.insp]&&INSP[H.insp].passive==='bankroll')slot.gold+=50;}}   /* 0.12.41 (Kyle): every new run starts broke: gold and spare parts reset to 0 */
   if(slot){slot.partySize=3;team=team.slice(0,3);}
   const run={team:team.slice(),stage:1,prestige:0,score:0,xp:0,lv:0,pending:0,rerolls:1,heroes:{},bag:[]};
   for(const k of team){const d=heroDef(k);run.heroes[k]={hpf:1,dead:false,spells:ABILITIES_OFF||!d.spells.length?[]:[{card:d.spells[0].card,arch:d.spells[0].arch,r:1,augs:[]}],items:[]};}
@@ -2230,12 +2231,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793897242';const BGI=new Image();BGI.src='crawl_bg.png?v=1793897242';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793897242';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793897272';const BGI=new Image();BGI.src='crawl_bg.png?v=1793897272';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793897272';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793897242';XIMG.wave.src='crawl_wave.png?v=1793897242';XIMG.chibi.src='crawl_chibi.png?v=1793897242';XIMG.flannel.src='crawl_flannel.png?v=1793897242';XIMG.rain.src='crawl_rain.png?v=1793897242';XIMG.druid.src='crawl_druid.png?v=1793897242';XIMG.camp.src='crawl_campfire.png?v=1793897242';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793897242';XIMG.tornado.src='crawl_fx_tornado.png?v=1793897242';XIMG.vine.src='crawl_fx_vine.png?v=1793897242';XIMG.thorn.src='crawl_fx_thorn.png?v=1793897242';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793897272';XIMG.wave.src='crawl_wave.png?v=1793897272';XIMG.chibi.src='crawl_chibi.png?v=1793897272';XIMG.flannel.src='crawl_flannel.png?v=1793897272';XIMG.rain.src='crawl_rain.png?v=1793897272';XIMG.druid.src='crawl_druid.png?v=1793897272';XIMG.camp.src='crawl_campfire.png?v=1793897272';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793897272';XIMG.tornado.src='crawl_fx_tornado.png?v=1793897272';XIMG.vine.src='crawl_fx_vine.png?v=1793897272';XIMG.thorn.src='crawl_fx_thorn.png?v=1793897272';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793897242';XIMG.obst.src='crawl_obst.png?v=1793897242';XIMG.cars.src='crawl_cars.png?v=1793897242';XIMG.robot.src='crawl_robot.png?v=1793897242';XIMG.cultist.src='crawl_cultist.png?v=1793897242';XIMG.tentacle.src='crawl_tentacle.png?v=1793897242';XIMG.boom.src='crawl_boom.png?v=1793897242';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793897272';XIMG.obst.src='crawl_obst.png?v=1793897272';XIMG.cars.src='crawl_cars.png?v=1793897272';XIMG.robot.src='crawl_robot.png?v=1793897272';XIMG.cultist.src='crawl_cultist.png?v=1793897272';XIMG.tentacle.src='crawl_tentacle.png?v=1793897272';XIMG.boom.src='crawl_boom.png?v=1793897272';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2766,7 +2767,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.41</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.42</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
