@@ -364,7 +364,7 @@ const ABIL_DESC={
   momentum:'Momentum · Passive. Every sword hit within 2s of the last one gives +6% attack speed, stacking up to +30%. Stop swinging for 2s and it resets.',
   pin:'Pinning_Shot · 30 energy · 12s. An arrow that nails the biggest threat to the ground for 2.5s and marks it for 6s: marked enemies take 25% more damage from everyone.',
   wind:'Wind_Reading · Passive. He reads the wind: shots at anything more than about 450px away get +15 accuracy and +0.5x crit damage.',
-  resurge:'Verdant_Resurgence · Passive · once per stage. When an ally would die, vines catch them: they stay up, can\'t be hurt for 2s and heal 30% of their max HP.',
+  resurge:'Verdant_Resurgence · Passive · 25s cooldown. When an ally would die, vines catch them: they stay up, can\'t be hurt for 2s and heal 30% of their max HP.',
   plating:'Reactive_Plating · Passive. Every 5 hits he takes, his plating vents: a shockwave shoves nearby enemies away and he gets a 12% max-HP shield for 4s.',
   surge:'Arc_Surge · 30 energy · 10s. Overcharges the arc blade for 5s: every blade hit also chains lightning to up to 3 more enemies within 40px (1d8 each) and stuns each one for 0.4s.',
   gatling:'Gatling_Arm · 40 energy · 14s. Spins up the gatling on his far arm and hoses the field for 3s: 12 shots a second, 1d3 each, with terrible accuracy (-40) and wild spread, so most of them miss.',
@@ -482,7 +482,7 @@ CHAR.druid={name:'Druid',role:'Staff + Nature Bolts',flatHp:0,stamina:7,hpPerSta
     //   (within 40px) toward it and deals small, steady damage to everything inside it (1d3 +flat every 0.5s). 40 energy, 18s cooldown.
     // 0.12.20 Verdant_Resurgence (passive, new): once per stage, when an ally would die, vines catch them instead: they stay up at 1 HP,
     //   can't be hurt for 2s and heal 30% of max HP over those 2s.
-    {id:'resurge',name:'Verdant_Resurgence',passive:1,heal:.3,dur:2},
+    {id:'resurge',name:'Verdant_Resurgence',passive:1,heal:.3,dur:2,icd:25},   // 0.12.24 (Kyle): no longer once per stage, 25s internal cooldown
     {id:'cyclone',name:'Cyclone',en:45,cd:18,dist:140,dur:5,dice:[1,3],every:.5,pullR:40,pull:16,inR:12,depth:6,spd:20,wander:28,cast:.5}]};
 // 0.12.11 Lumber_Jack (Claude's starting numbers): a burly axeman with a hunting bow. Sturdy, hits hard up close.
 CHAR.lumberjack={name:'Lumber_Jack',role:'Axe + Bow',combo:0,flatHp:0,stamina:11,hpPerStamina:5,armorPts:7,dodge:.03,kbRes:.45,
@@ -1807,8 +1807,8 @@ class Game{
   revive(h){h.alive=true;h.downed=0;h.hp=Math.max(1,h.max*.25);h.en=0;h.revT=0;h.revCall=0;h.riseT=1.1;h.riseT0=1.1;h.invulnT=1.3;h.plan=null;h.thinkT=0;h.bleedT=0;h.hotT=0;
     this.fx.push({k:'ring',x:h.x,y:this.G-10,r:16,t:0,c:'#7dff9a'});this.ev('heal',{});this.text(h.x,this.G-56,'+'+Math.round(h.hp),'#7dff9a');
     Comms.bubble(this,h,Comms.pick(['Thanks!','I\'m up!','Back in it!','Not done yet!','Owe you one!','Still kicking!']));}
-  tryResurge(h){if(this.resurgeUsed||h.pet)return false;const D=this.alive().find(o=>o!==h&&o.base&&o.base.char&&(o.base.char.abilities||[]).some(a=>a.id==='resurge'));if(!D)return false;
-    const A=D.base.char.abilities.find(a=>a.id==='resurge');this.resurgeUsed=1;h.hp=1;h.invulnT=A.dur;h.bleedT=0;h.hotT=A.dur;h.hotTick=0;h.hotEvery=.5;h.hotAmt=h.max*A.heal/(A.dur/.5);
+  tryResurge(h){if((this.resurgeT||-99)>this.t||h.pet)return false;const D=this.alive().find(o=>o!==h&&o.base&&o.base.char&&(o.base.char.abilities||[]).some(a=>a.id==='resurge'));if(!D)return false;
+    const A=D.base.char.abilities.find(a=>a.id==='resurge');this.resurgeT=this.t+(A.icd||25);h.hp=1;h.invulnT=A.dur;h.bleedT=0;h.hotT=A.dur;h.hotTick=0;h.hotEvery=.5;h.hotAmt=h.max*A.heal/(A.dur/.5);
     this.fx.push({k:'mend',x:this.heroX(h),gy:h.gy||this.G,t:0,life:1.2,raw:1});this.ev('heal',{});Comms.bubble(this,D,Comms.pick(['Not today!','I\'ve got you!','Stay with me!','Roots, hold!','Not yet!']));return true;}
   robotGat(h,dt,C){const G=h.gat,A=G.A;G.t+=dt;G.acc+=dt;h.pauseT=Math.max(h.pauseT||0,.05);
     const live=this.enemies.filter(e=>!e.dead&&e.x>h.x-6&&e.x-h.x<=A.range);
@@ -2001,12 +2001,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793884914';const BGI=new Image();BGI.src='crawl_bg.png?v=1793884914';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793884914';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793884994';const BGI=new Image();BGI.src='crawl_bg.png?v=1793884994';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793884994';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793884914';XIMG.wave.src='crawl_wave.png?v=1793884914';XIMG.chibi.src='crawl_chibi.png?v=1793884914';XIMG.flannel.src='crawl_flannel.png?v=1793884914';XIMG.rain.src='crawl_rain.png?v=1793884914';XIMG.druid.src='crawl_druid.png?v=1793884914';XIMG.camp.src='crawl_campfire.png?v=1793884914';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793884914';XIMG.tornado.src='crawl_fx_tornado.png?v=1793884914';XIMG.vine.src='crawl_fx_vine.png?v=1793884914';XIMG.thorn.src='crawl_fx_thorn.png?v=1793884914';
+const XIMG={cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793884994';XIMG.wave.src='crawl_wave.png?v=1793884994';XIMG.chibi.src='crawl_chibi.png?v=1793884994';XIMG.flannel.src='crawl_flannel.png?v=1793884994';XIMG.rain.src='crawl_rain.png?v=1793884994';XIMG.druid.src='crawl_druid.png?v=1793884994';XIMG.camp.src='crawl_campfire.png?v=1793884994';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793884994';XIMG.tornado.src='crawl_fx_tornado.png?v=1793884994';XIMG.vine.src='crawl_fx_vine.png?v=1793884994';XIMG.thorn.src='crawl_fx_thorn.png?v=1793884994';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793884914';XIMG.obst.src='crawl_obst.png?v=1793884914';XIMG.robot.src='crawl_robot.png?v=1793884914';XIMG.cultist.src='crawl_cultist.png?v=1793884914';XIMG.tentacle.src='crawl_tentacle.png?v=1793884914';XIMG.boom.src='crawl_boom.png?v=1793884914';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793884994';XIMG.obst.src='crawl_obst.png?v=1793884994';XIMG.robot.src='crawl_robot.png?v=1793884994';XIMG.cultist.src='crawl_cultist.png?v=1793884994';XIMG.tentacle.src='crawl_tentacle.png?v=1793884994';XIMG.boom.src='crawl_boom.png?v=1793884994';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2490,7 +2490,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.23</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.24</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
