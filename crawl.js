@@ -775,7 +775,7 @@ const Brain={
       if(o){if(!h.amDecide||h.amDecide.o!==o||g.t>h.amDecide.until){const danger=bb.E.filter(e=>Math.abs(e.x-o.x)<60).length;h.amDecide={o,until:g.t+1.5+Math.random(),go:Math.random()<(danger?.2+.5*aggr:.6+.3*trait(h,'perc'))};}
         if(h.amDecide.go){const runMul=.45+1.4*pace;return {xoff:0,intent:'search',runMul,goTo:{ob:o},reviveLane:g.searchSpot(o,h).lane};}}}
     /* 0.12.51 Sapper: IF a spotted mine is near AND nothing is around it THEN go defuse it (Techy units are keener) */
-    if(!h.pet){const M=(g.mines||[]).find(M=>M.armed&&M.spotted&&Math.abs(M.x-g.heroX(h))<95&&!bb.E.some(e=>Math.abs(e.x-M.x)<35)&&!g.heroes.some(o=>o!==h&&o.alive&&o.defuse&&o.defuse.M===M));
+    if(!h.pet){const M=(g.mines||[]).find(M=>!M.owner&&M.armed&&M.spotted&&Math.abs(M.x-g.heroX(h))<95&&!bb.E.some(e=>Math.abs(e.x-M.x)<35)&&!g.heroes.some(o=>o!==h&&o.alive&&o.defuse&&o.defuse.M===M));
       /* IF a spotted mine is near AND it's calm AND nobody else is on it THEN: a Sapper usually goes for it; anyone else only if their own odds look decent (bolder ones gamble more) */
       if(M){if(!h.dfDecide||h.dfDecide.M!==M||g.t>h.dfDecide.until){const od=defuseOdds(h);h.dfDecide={M,until:g.t+2,go:Math.random()<(hasPerk(h,'sapper')?.85+.12*trait(h,'tech'):Math.max(0,od-.22)*1.3*(.45+.55*aggr))};}
         if(h.dfDecide.go){if(!h.defuse||h.defuse.M!==M)h.defuse={M,need:(2.4-1.5*trait(h,'tech'))*(hasPerk(h,'sapper')?1:1.3)*(1+.3*(.5-trait(h,'pace')))};return {xoff:0,intent:'defuse',runMul:.45+1.4*pace,goTo:{mine:M},reviveLane:M.l};}}}
@@ -1948,7 +1948,7 @@ class Game{
   obHitsShot(o,p){if(!(o.blk>0))return false;const D=OBST[o.k];if(p.x0!=null&&Math.abs(p.x0-o.x)<D.fw/4+14)return false;   /* shooting from right behind cover: he leans out over it */if(!o.lanes.some(l=>Math.abs(LANES[l]-p.gy)<=3.5))return false;
     if(!D.prof){const l=o.lanes[0];const [a,b]=this.obSpan(o,l);return p.h<=o.blk&&p.x>=a&&p.x<=b;}
     const col=Math.floor((p.x-o.x)*(o.flip?-1:1)+D.fw/4);if(col<0||col>=D.prof.length)return false;return p.h<=D.prof[col]-1;}
-  laneBlocked(l,x0,x1){for(const M of this.mines||[]){if(M!==this._ignoreMine&&M.armed&&M.spotted&&M.l===l&&M.x+6>x0&&M.x-6<x1)return {mine:M};}for(const o of this.obst||[]){if(!o.lanes.includes(l))continue;const [a,b]=this.obSpan(o,l);if(b>x0&&a<x1)return o;}return null;}
+  laneBlocked(l,x0,x1){for(const M of this.mines||[]){if(M!==this._ignoreMine&&!M.owner&&M.armed&&M.spotted&&M.l===l&&M.x+6>x0&&M.x-6<x1)return {mine:M};}for(const o of this.obst||[]){if(!o.lanes.includes(l))continue;const [a,b]=this.obSpan(o,l);if(b>x0&&a<x1)return o;}return null;}
   // IF the lane I want is blocked just ahead THEN take the nearest open lane (ties go to whichever way I was already heading)
   freeLane(want,cur,x0,x1){if(!this.laneBlocked(want,x0,x1))return want;let best=null,bd=99;for(let l=0;l<LANES.length;l++){if(this.laneBlocked(l,x0,x1))continue;const d=Math.abs(l-want)+Math.abs(l-cur)*.3;if(d<bd){bd=d;best=l;}}return best==null?want:best;}
   onKillDark(e){
@@ -2025,6 +2025,7 @@ class Game{
       this.mines.push({x:this.W+30,l,gy:LANES[l],t:0,armed:true,spotted:false,chk:0});}
     const al=this.alive().filter(h=>!h.pet||h.dog);
     for(const M of this.mines){M.x-=scroll*dt;M.t+=dt;if(!M.armed)continue;
+      if(M.owner){if(M.t<M.arm)continue;if(this.enemies.some(e=>!e.dead&&!e.fly&&!e.boss&&Math.abs(e.x-M.x)<=5&&Math.abs((e.gy!=null?e.gy:this.G)-M.gy)<=3))this.mineBoom(M);continue;}
       if(!M.spotted){M.chk-=dt;if(M.chk<=0){M.chk=.5;for(const h of al){const d=M.x-this.heroX(h);if(d<-10||d>75)continue;const sp=(hasPerk(h,'sapper')?.3:0)+trait(h,'perc');
           if(this.rng()<.2*(.35+1.3*sp)){M.spotted=true;M.by=h;this.fx.push({k:'ring',x:M.x,y:M.gy-3,t:0,r:8,c:'#ff4a3a'});Comms.bubble(this,h,Comms.pick(['Trap!','Mine, watch it!','Tripwire!','Careful, mine!']),true);for(const o of al)o.thinkT=Math.min(o.thinkT||1,.1);break;}}}}
       for(const h of al){if(Math.abs((h.gy||this.G)-M.gy)>3||Math.abs(this.heroX(h)-M.x)>4||h.leap)continue;
@@ -2043,13 +2044,15 @@ class Game{
         else{this.gainParts(null,{x:M.x,lanes:[M.l]});Comms.bubble(this,h,Comms.pick(['Fell apart. Parts, at least.','Busted it. Spare parts.','Not usable, but salvageable.']),true);}}}   /* ...25% it comes apart into spare parts */
     // planting a defused mine in front of zombies coming down my lane
     for(const h of al){if(!(h.mine>0)||(h.mineCd||0)>this.t)continue;const lane=this.enemies.filter(e=>!e.dead&&!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-(h.gy||this.G))<4&&e.x-this.heroX(h)>18&&e.x-this.heroX(h)<75);
-      if(!lane.length||this.enemies.some(e=>!e.dead&&Math.abs(e.x-this.heroX(h))<16))continue;h.mine--;h.mineCd=this.t+1;const TB=(CHAR.flannel.abilities||[]).find(a=>a.id==='trip');
-      (this.traps=this.traps||[]).push({x:this.heroX(h)+12,gy:h.gy!=null?h.gy:this.G,t:0,A:TB,owner:h,mine:1});Comms.bubble(this,h,Comms.pick(['Mine down!','Step on this.','Present for you!']),true);}}
+      if(!lane.length||this.enemies.some(e=>!e.dead&&Math.abs(e.x-this.heroX(h))<16))continue;h.mine--;h.mineCd=this.t+1;const gy=h.gy!=null?h.gy:this.G;const l=LANES.reduce((b,y,i)=>Math.abs(y-gy)<Math.abs(LANES[b]-gy)?i:b,0);
+      /* 0.12.54 (Kyle): a planted mine is our own rust mine: 4d4, 60px blast, no stage bonus; its punch comes from who set it (Sapper +25%, Techy up to +30%, Optimal up to +10%, a little Luck) */
+      const mult=1+(hasPerk(h,'sapper')?.25:0)+.3*trait(h,'tech')+.1*trait(h,'exec')+.004*Math.max(0,(h.luck||0)-10);
+      this.mines.push({x:this.heroX(h)+12,l,gy:LANES[l],t:0,armed:true,spotted:true,chk:0,owner:h,mult,arm:.6});Comms.bubble(this,h,Comms.pick(['Mine down!','Step on this.','Present for you!']),true);}}
   mineBoom(M){if(!M.armed)return;M.armed=false;this.fx.push({k:'boom',x:M.x,gy:M.gy,t:0,life:1.15,raw:1,small:1});this.fx.push({k:'ring',x:M.x,y:M.gy-2,t:0,r:20,c:'#ff8a5a'});this.ev('boom',{});this.shake=Math.max(this.shake||0,.4);
     /* 0.12.54 (Kyle): 4d4 +5% per stage, blast radius 60 screen px (20 world) as a ground oval (9 deep); full damage in the inner third, 60% out to the edge */
-    const R=20,RD=9,dmg=(this.rollDice([4,4]))*(1+.05*(this.st.n-1));const inB=(x,gy)=>{const dx=x-M.x,dz=gy-M.gy;const q=(dx/R)**2+(dz/RD)**2;return q<=1?(q<=1/9?1:.6):0;};
-    for(const h of this.alive()){const f=inB(this.heroX(h),h.gy||this.G);if(!f)continue;this.hurtHero(h,dmg*f,null);h.x-=Math.sign(M.x-this.heroX(h)||1)*6;}
-    for(const e of this.enemies){if(e.dead||e.fly)continue;const f=inB(e.x,e.gy!=null?e.gy:this.G);if(!f)continue;this.hitEnemy(e,dmg*f,null,{blast:1,bx:M.x,sure:1});}}
+    const R=20,RD=9,dmg=(this.rollDice([4,4]))*(M.owner?M.mult:(1+.05*(this.st.n-1)));const inB=(x,gy)=>{const dx=x-M.x,dz=gy-M.gy;const q=(dx/R)**2+(dz/RD)**2;return q<=1?(q<=1/9?1:.6):0;};
+    for(const h of this.alive()){if(M.owner&&!this.hardcore)break;const f=inB(this.heroX(h),h.gy||this.G);if(!f)continue;this.hurtHero(h,dmg*f,null);h.x-=Math.sign(M.x-this.heroX(h)||1)*6;}
+    for(const e of this.enemies){if(e.dead||e.fly)continue;const f=inB(e.x,e.gy!=null?e.gy:this.G);if(!f)continue;this.hitEnemy(e,dmg*f,M.owner&&M.owner.alive?M.owner:null,{blast:1,bx:M.x,sure:1});}}
   /* 0.12.38 what a finished search turns up (each thing is looted once in total).
      Ambulance (anyone): a Medkit (60% + Luck/Perception, if he has none), a Defibrillator (30%, if he has none), spare parts (55%), food or water (30%).
      Scavenger, on any wreck incl. the ambulance (on top of the ambulance table): medkit/battery (max 2), food/water (good odds), spare parts or a little gold.
@@ -2391,12 +2394,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793900839';const BGI=new Image();BGI.src='crawl_bg.png?v=1793900839';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793900839';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793900893';const BGI=new Image();BGI.src='crawl_bg.png?v=1793900893';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793900893';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793900839';XIMG.wave.src='crawl_wave.png?v=1793900839';XIMG.chibi.src='crawl_chibi.png?v=1793900839';XIMG.flannel.src='crawl_flannel.png?v=1793900839';XIMG.rain.src='crawl_rain.png?v=1793900839';XIMG.druid.src='crawl_druid.png?v=1793900839';XIMG.camp.src='crawl_campfire.png?v=1793900839';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793900839';XIMG.tornado.src='crawl_fx_tornado.png?v=1793900839';XIMG.vine.src='crawl_fx_vine.png?v=1793900839';XIMG.thorn.src='crawl_fx_thorn.png?v=1793900839';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793900893';XIMG.wave.src='crawl_wave.png?v=1793900893';XIMG.chibi.src='crawl_chibi.png?v=1793900893';XIMG.flannel.src='crawl_flannel.png?v=1793900893';XIMG.rain.src='crawl_rain.png?v=1793900893';XIMG.druid.src='crawl_druid.png?v=1793900893';XIMG.camp.src='crawl_campfire.png?v=1793900893';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793900893';XIMG.tornado.src='crawl_fx_tornado.png?v=1793900893';XIMG.vine.src='crawl_fx_vine.png?v=1793900893';XIMG.thorn.src='crawl_fx_thorn.png?v=1793900893';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793900839';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793900839';XIMG.obst.src='crawl_obst.png?v=1793900839';XIMG.cars.src='crawl_cars.png?v=1793900839';XIMG.robot.src='crawl_robot.png?v=1793900839';XIMG.cultist.src='crawl_cultist.png?v=1793900839';XIMG.tentacle.src='crawl_tentacle.png?v=1793900839';XIMG.boom.src='crawl_boom.png?v=1793900839';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793900893';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793900893';XIMG.obst.src='crawl_obst.png?v=1793900893';XIMG.cars.src='crawl_cars.png?v=1793900893';XIMG.robot.src='crawl_robot.png?v=1793900893';XIMG.cultist.src='crawl_cultist.png?v=1793900893';XIMG.tentacle.src='crawl_tentacle.png?v=1793900893';XIMG.boom.src='crawl_boom.png?v=1793900893';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2739,8 +2742,8 @@ function drawGame(ctx,g,W,oy){
     ctx.strokeStyle='rgba(200,200,190,.55)';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(x-7,y-1.5);ctx.lineTo(x+7,y-1.5);ctx.stroke();ctx.fillStyle='#3a2a24';ctx.fillRect(x-7.5,y-2.5,1,2);ctx.fillRect(x+6.5,y-2.5,1,2);   /* wire + stakes */
     ctx.fillStyle='#1c1412';ctx.fillRect(x-3,y-3,6,3);ctx.fillStyle='#6a2a1e';ctx.fillRect(x-2.5,y-2.5,5,2);ctx.fillStyle='#8a4a2a';ctx.fillRect(x-2,y-2.5,2,1);   /* rusted casing */
     ctx.fillStyle='#9a9a90';for(const sx of [-2.5,-.5,1.5])ctx.fillRect(x+sx,y-4,1,1);   /* nail spikes */
-    if(Math.floor(g.t*3)%2===0){ctx.fillStyle='#ff3a2a';ctx.fillRect(x-.5,y-3.5,1,1);glow(ctx,x,y-3,1.6,'#ff3a2a',M.spotted?.3:.12);}
-    ctx.globalAlpha=1;if(M.spotted){const b=Math.round(Math.sin(g.t*5)*1);ptext(ctx,'!',x,y-12+b,'#ff5a3a',1);}ctx.restore();}
+    if(Math.floor(g.t*3)%2===0){const lc=M.owner?'#5aff6a':'#ff3a2a';ctx.fillStyle=lc;ctx.fillRect(x-.5,y-3.5,1,1);glow(ctx,x,y-3,1.6,lc,M.spotted?.3:.12);}   /* ours blink green */
+    ctx.globalAlpha=1;if(M.spotted&&!M.owner){const b=Math.round(Math.sin(g.t*5)*1);ptext(ctx,'!',x,y-12+b,'#ff5a3a',1);}ctx.restore();}
   for(const h of g.alive())if(h.mine>0){const x=Math.round(g.heroX(h)-8),y=Math.round((h.gy||g.G)-31);ctx.fillStyle='#1c1412';ctx.fillRect(x-1,y,5,3);ctx.fillStyle='#6a2a1e';ctx.fillRect(x,y+1,3,1);ctx.fillStyle='#ff3a2a';ctx.fillRect(x+1,y,1,1);}   /* carrying a defused mine */
   for(const it of items)it[3]();
   laser();waves();druidFx();robotFx();darkFx();quakes();poultices();booms();
