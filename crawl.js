@@ -414,7 +414,7 @@ const INSP_HELP={acc:'More shots land on the body and head instead of flying ove
   lifesteal:'Heals for part of the damage he deals.',move:'Walks and runs faster.',meleeDmg:'Melee hits deal more damage.',rangedDmg:'Ranged hits deal more damage.',
   meleeSpd:'Swings his melee weapon more often.',rangedSpd:'Shoots and reloads faster.',kb:'Melee hits shove enemies back further.'};
 function stashText(S){return Object.entries(S).map(([k,v])=>`+${v} ${{gold:'gold',parts:'spare parts',food:'food',water:'water'}[k]}`).join(', ');}
-function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.perk==='sapper')out.push('🧨 Sapper (perk): spots enemy mines far more easily, and can go defuse a spotted one (faster when Techy). A defused mine is usually (75%) kept as a one-time item he plants in front of zombies coming down his lane; otherwise (25%) it comes apart into spare parts.');if(I.stash)out.push('🎒 Starting stash: the run starts with '+stashText(I.stash)+' for every hero carrying this deck.');if(I.passive&&INSP_PASSIVE[I.passive])out.push('✦ '+INSP_PASSIVE[I.passive][0]+' (passive): '+INSP_PASSIVE[I.passive][1]);
+function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.perk==='sapper')out.push('🧨 Sapper (perk): spots enemy mines far more easily and defuses them with good odds (about 82% before traits, versus about 30% for anyone else; a failure sets it off). Slow and Steady, Techy, Steady nerves, Optimal and Luck all help. A defused mine is kept as a one-time item 75% of the time (40% for non-Sappers) and planted in front of zombies coming down his lane; otherwise it comes apart into spare parts.');if(I.stash)out.push('🎒 Starting stash: the run starts with '+stashText(I.stash)+' for every hero carrying this deck.');if(I.passive&&INSP_PASSIVE[I.passive])out.push('✦ '+INSP_PASSIVE[I.passive][0]+' (passive): '+INSP_PASSIVE[I.passive][1]);
   for(const [k,v] of Object.entries(I.mod||{})){const [l,u]=INSP_LABEL[k]||[k,''];out.push(`${v>0?'+':''}${v}${u} ${l}: ${INSP_HELP[k]||''}`);}
   for(const [k,v] of Object.entries(I.sl||{})){const S=SLIDERS.find(s=>s[0]===k);if(!S)continue;const side=v>0?S[2]:S[1];
     if(false)0;out.push(`${side} +${Math.abs(v)}: slides his personality ${Math.abs(v)} step${Math.abs(v)>1?'s':''} toward "${side}" (the ${S[1]} ↔ ${S[2]} slider: ${S[3].toLowerCase()}). If that would go past 0 or 10, it doesn't move.`);}
@@ -608,7 +608,7 @@ function needRunXp(k){return 8+6*k;}
 const SLIDERS=[
  ['aggr','Calculated Play','Blind Aggression','Safe plays and retreats vs. charging into danger'],
  ['aware','Enemy Awareness','Ally Awareness','Decides by where the enemies are vs. by where allies are'],
- ['pace','Slow and Steady','Fast and Furious','Walks and stops to think vs. always running, thinking on the move'],
+ ['pace','Slow and Steady','Fast and Furious','Walks and stops to think, steady hands for fiddly jobs like defusing vs. always running, thinking on the move'],
  ['lane','Stay In Your Lane','Switch It Up','Works the lane it is in vs. hunts for a better lane'],
  ['self','Selfless','Selfish','Protects allies and goes back for the downed vs. looks after itself and rarely risks a revive'],
  ['range','Shooter','Slasher','Prefers fighting from far vs. up close'],
@@ -775,9 +775,10 @@ const Brain={
       if(o){if(!h.amDecide||h.amDecide.o!==o||g.t>h.amDecide.until){const danger=bb.E.filter(e=>Math.abs(e.x-o.x)<60).length;h.amDecide={o,until:g.t+1.5+Math.random(),go:Math.random()<(danger?.2+.5*aggr:.6+.3*trait(h,'perc'))};}
         if(h.amDecide.go){const runMul=.45+1.4*pace;return {xoff:0,intent:'search',runMul,goTo:{ob:o},reviveLane:g.searchSpot(o,h).lane};}}}
     /* 0.12.51 Sapper: IF a spotted mine is near AND nothing is around it THEN go defuse it (Techy units are keener) */
-    if(hasPerk(h,'sapper')&&!h.pet){const M=(g.mines||[]).find(M=>M.armed&&M.spotted&&Math.abs(M.x-g.heroX(h))<95&&!bb.E.some(e=>Math.abs(e.x-M.x)<35));
-      if(M){if(!h.dfDecide||h.dfDecide.M!==M||g.t>h.dfDecide.until)h.dfDecide={M,until:g.t+2,go:Math.random()<.55+.4*trait(h,'tech')};
-        if(h.dfDecide.go){if(!h.defuse||h.defuse.M!==M)h.defuse={M,need:2.4-1.5*trait(h,'tech')};return {xoff:0,intent:'defuse',runMul:.45+1.4*pace,goTo:{mine:M},reviveLane:M.l};}}}
+    if(!h.pet){const M=(g.mines||[]).find(M=>M.armed&&M.spotted&&Math.abs(M.x-g.heroX(h))<95&&!bb.E.some(e=>Math.abs(e.x-M.x)<35)&&!g.heroes.some(o=>o!==h&&o.alive&&o.defuse&&o.defuse.M===M));
+      /* IF a spotted mine is near AND it's calm AND nobody else is on it THEN: a Sapper usually goes for it; anyone else only if their own odds look decent (bolder ones gamble more) */
+      if(M){if(!h.dfDecide||h.dfDecide.M!==M||g.t>h.dfDecide.until){const od=defuseOdds(h);h.dfDecide={M,until:g.t+2,go:Math.random()<(hasPerk(h,'sapper')?.85+.12*trait(h,'tech'):Math.max(0,od-.22)*1.3*(.45+.55*aggr))};}
+        if(h.dfDecide.go){if(!h.defuse||h.defuse.M!==M)h.defuse={M,need:(2.4-1.5*trait(h,'tech'))*(hasPerk(h,'sapper')?1:1.3)*(1+.3*(.5-trait(h,'pace')))};return {xoff:0,intent:'defuse',runMul:.45+1.4*pace,goTo:{mine:M},reviveLane:M.l};}}}
     /* 0.12.45 thievery: IF I'm a Pickpocket AND truly Selfish (8+) AND nothing is in my face AND an ally nearby carries something good THEN I may sidle over and lift it.
        More Selfish = more likely; Light-Footed thieves try it more (they don't get caught as much); a Perceptive one spots what's worth taking. */
     if(insP(h)==='pickpocket'&&selfish>=.75&&!h.pet&&!(bb.heat.get(h)||0)&&(h.thiefCd||0)<=g.t){const goods=o=>(o.defib&&!h.defib)||(o.medkit&&!h.medkit)||((o.kit||[]).length&&(h.kit||[]).length<2)||(o.herbs>0&&(h.herbs||0)<3);
@@ -2035,9 +2036,10 @@ class Game{
     for(const h of al){const D=h.defuse;if(!D)continue;const M=D.M;if(!M.armed||!this.mines.includes(M)||h.plan&&h.plan.intent!=='defuse'){h.defuse=null;if(h.search&&h.search.trap)h.search=null;continue;}
       if(Math.abs(this.heroX(h)-(M.x-7))>5||Math.abs((h.gy||this.G)-M.gy)>3)continue;h.pauseT=Math.max(h.pauseT||0,.05);h.x-=scroll*dt;if(h.moving)continue;
       h.search=h.search&&h.search.trap?h.search:{o:M,t:0,T:D.need,disarm:1,trap:1};h.search.t+=dt;
-      if(!D.rolled){D.rolled=1;if(this.rng()<.08*(1-trait(h,'tech'))){h.search=null;h.defuse=null;this.mineBoom(M);Comms.bubble(this,h,Comms.pick(['Oh no.','Wrong wire!']),true);continue;}}
-      if(h.search.t>=D.need){M.armed=false;h.search=null;h.defuse=null;h.plan=null;h.thinkT=0;this.st8(h).defused=(this.st8(h).defused||0)+1;
-        if(this.rng()<.75){h.mine=(h.mine||0)+1;this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.9,raw:1,kit:'defib'});Comms.bubble(this,h,Comms.pick(['Disarmed. Mine now.','Got it. I\'ll save this for them.','Wire cut. Keeping it.']),true);}   /* 0.12.52 (Kyle): 75% he keeps the mine */
+      if(h.search.t>=D.need){h.search=null;h.defuse=null;h.plan=null;h.thinkT=0;
+        if(this.rng()>defuseOdds(h)){this.mineBoom(M);Comms.bubble(this,h,Comms.pick(['Oh no.','Wrong wire!','Was it the red one?!','Uh oh.']),true);this.st8(h).fumbled=(this.st8(h).fumbled||0)+1;continue;}   /* failed: it goes off in his hands */
+        M.armed=false;this.st8(h).defused=(this.st8(h).defused||0)+1;
+        if(this.rng()<(hasPerk(h,'sapper')?.75:.4)){h.mine=(h.mine||0)+1;this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.9,raw:1,kit:'defib'});Comms.bubble(this,h,Comms.pick(['Disarmed. Mine now.','Got it. I\'ll save this for them.','Wire cut. Keeping it.']),true);}   /* 0.12.52 (Kyle): 75% he keeps the mine */
         else{this.gainParts(null,{x:M.x,lanes:[M.l]});Comms.bubble(this,h,Comms.pick(['Fell apart. Parts, at least.','Busted it. Spare parts.','Not usable, but salvageable.']),true);}}}   /* ...25% it comes apart into spare parts */
     // planting a defused mine in front of zombies coming down my lane
     for(const h of al){if(!(h.mine>0)||(h.mineCd||0)>this.t)continue;const lane=this.enemies.filter(e=>!e.dead&&!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-(h.gy||this.G))<4&&e.x-this.heroX(h)>18&&e.x-this.heroX(h)<75);
@@ -2350,6 +2352,9 @@ function brewCourage(run,k){const t=upgT(run,'still');if(!t)return 'no';if((run.
 const TRIAGE={med:[15,13,11],bat:[12,10,8],defib:[25,22,19],max:[1,1,2]};
 const LVPTS={hp:{name:'Toughness',icon:'❤️',txt:'+4% max HP'},dmg:{name:'Power',icon:'⚔️',txt:'+3% damage'},acc:{name:'Aim',icon:'🎯',txt:'+2 accuracy'},
   crit:{name:'Edge',icon:'✴️',txt:'+1% crit chance'},luck:{name:'Fortune',icon:'🍀',txt:'+3 Luck'},armor:{name:'Hide',icon:'🛡️',txt:'+1 armor point'}};
+/* 0.12.53 (Kyle): anyone can try to defuse a mine; a failure sets it off. Sapper makes it far safer, and fiddly-job traits help:
+   Slow and Steady (biggest), Techy, Steady nerves, Optimal, and a little Luck. */
+function defuseOdds(h){const sap=hasPerk(h,'sapper');let s=sap?.82:.30;s+=.24*(trait(h,'tech')-.5)+.2*(.5-trait(h,'pace'))+.16*(.5-trait(h,'nerve'))+.12*(trait(h,'exec')-.5)+.006*((h.luck||15)-15);return Math.max(.05,Math.min(.97,s));}
 function hasPerk(u,p){const I=u&&u.insp&&INSP[u.insp];return !!(I&&I.perk===p);}
 function upgT(run,id){return (run&&run.upg&&run.upg[id])||0;}
 function lvPtsFree(H){const used=Object.values(H.pts||{}).reduce((a,b)=>a+b,0);return Math.max(0,(H.lvl||1)-1-used);}
@@ -2385,12 +2390,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793900421';const BGI=new Image();BGI.src='crawl_bg.png?v=1793900421';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793900421';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793900662';const BGI=new Image();BGI.src='crawl_bg.png?v=1793900662';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793900662';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793900421';XIMG.wave.src='crawl_wave.png?v=1793900421';XIMG.chibi.src='crawl_chibi.png?v=1793900421';XIMG.flannel.src='crawl_flannel.png?v=1793900421';XIMG.rain.src='crawl_rain.png?v=1793900421';XIMG.druid.src='crawl_druid.png?v=1793900421';XIMG.camp.src='crawl_campfire.png?v=1793900421';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793900421';XIMG.tornado.src='crawl_fx_tornado.png?v=1793900421';XIMG.vine.src='crawl_fx_vine.png?v=1793900421';XIMG.thorn.src='crawl_fx_thorn.png?v=1793900421';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793900662';XIMG.wave.src='crawl_wave.png?v=1793900662';XIMG.chibi.src='crawl_chibi.png?v=1793900662';XIMG.flannel.src='crawl_flannel.png?v=1793900662';XIMG.rain.src='crawl_rain.png?v=1793900662';XIMG.druid.src='crawl_druid.png?v=1793900662';XIMG.camp.src='crawl_campfire.png?v=1793900662';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793900662';XIMG.tornado.src='crawl_fx_tornado.png?v=1793900662';XIMG.vine.src='crawl_fx_vine.png?v=1793900662';XIMG.thorn.src='crawl_fx_thorn.png?v=1793900662';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793900421';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793900421';XIMG.obst.src='crawl_obst.png?v=1793900421';XIMG.cars.src='crawl_cars.png?v=1793900421';XIMG.robot.src='crawl_robot.png?v=1793900421';XIMG.cultist.src='crawl_cultist.png?v=1793900421';XIMG.tentacle.src='crawl_tentacle.png?v=1793900421';XIMG.boom.src='crawl_boom.png?v=1793900421';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793900662';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793900662';XIMG.obst.src='crawl_obst.png?v=1793900662';XIMG.cars.src='crawl_cars.png?v=1793900662';XIMG.robot.src='crawl_robot.png?v=1793900662';XIMG.cultist.src='crawl_cultist.png?v=1793900662';XIMG.tentacle.src='crawl_tentacle.png?v=1793900662';XIMG.boom.src='crawl_boom.png?v=1793900662';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2928,7 +2933,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.52</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.53</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -3171,7 +3176,7 @@ function statsBrief(g){const S=g.stats||{};const keys=Object.keys(S).filter(k=>k
   const nm=k=>k==='flannel_pal'?'Traveling_Companion':(heroDef(k)?heroDef(k).name:((CHAR[k]||{}).name||k));
   const best=(f,min)=>{let b=null,bv=min||0;for(const k of keys){const v=f(S[k]);if(v>bv){bv=v;b=k;}}return b?[b,bv]:null;};
   const aw=[['💥 Most damage',best(s=>s.dmg),v=>fmt(Math.round(v))],['💚 Top healer',best(s=>s.heal,1),v=>fmt(Math.round(v))+' healed'],['💀 Most kills',best(s=>s.kills),v=>v+' kills'],
-    ['🎯 Biggest hit',best(s=>s.biggest),v=>Math.round(v)],['🧠 Headshots',best(s=>s.heads),v=>v],['🛟 Revives',best(s=>s.revives),v=>v],['🔍 Searches',best(s=>s.searches),v=>v],['🤏 Sticky fingers',best(s=>s.steals||0),v=>v+' stolen from allies'],['🧨 Defused',best(s=>s.defused||0),v=>v+' mines'],['💢 Friendly fire',best(s=>s.ff||0),v=>v+' hits on allies'],['🩸 Took the most',best(s=>s.taken),v=>fmt(Math.round(v))+' dmg']]
+    ['🎯 Biggest hit',best(s=>s.biggest),v=>Math.round(v)],['🧠 Headshots',best(s=>s.heads),v=>v],['🛟 Revives',best(s=>s.revives),v=>v],['🔍 Searches',best(s=>s.searches),v=>v],['🤏 Sticky fingers',best(s=>s.steals||0),v=>v+' stolen from allies'],['🧨 Defused',best(s=>s.defused||0),v=>v+' mines'],['💥 Wrong wire',best(s=>s.fumbled||0),v=>v+' mines set off'],['💢 Friendly fire',best(s=>s.ff||0),v=>v+' hits on allies'],['🩸 Took the most',best(s=>s.taken),v=>fmt(Math.round(v))+' dmg']]
     .filter(a=>a[1]).map(([t,[k,v],f])=>`<span class="cc-chip" style="margin:2px">${t}: <b>${esc(nm(k))}</b> (${f(v)})</span>`).join('');
   const rows=keys.sort((a,b)=>S[b].dmg-S[a].dmg).map(k=>{const s=S[k];return `<tr><td style="text-align:left">${esc(nm(k))}</td><td>${fmt(Math.round(s.dmg))}</td><td>${(s.dmg/secs).toFixed(1)}</td><td>${fmt(Math.round(s.heal))}</td><td>${s.kills}</td><td>${s.crits}</td><td>${s.heads}</td><td>${fmt(Math.round(s.taken))}</td><td>${s.downs}</td><td>${s.revives}</td><td>${s.searches}</td></tr>`;}).join('');
   return `<div class="cc-card" style="margin-top:8px"><b>📊 Stage stats</b> <span class="cc-sub" style="font-size:11px">${Math.round(secs)}s of fighting</span>
