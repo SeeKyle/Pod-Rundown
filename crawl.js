@@ -378,7 +378,7 @@ const ABIL_DESC={
   dash:'Wave Dash · 50 energy · 16s. Rides a blue energy wave about 300px forward; everything it passes through (2 lanes each way) takes 1.4x a sword hit.',
   shout:'War Cry · 25 energy · 7s. Every ally within 600px gets +25% damage and attack speed for 7s.',
   rain:'Arrow_Rain · 45 energy · 18s. 16 arrows rain down on the thickest group of enemies (1d6 each).',
-  rapid:'One Nocked, Two in Hand · 35 energy · 14s. He nocks one arrow and holds two more, then rapid-fires all 3 as full basic shots within 1.5 seconds.',
+  rapid:'One Nocked, Two in Hand · 35 energy · 14s. He nocks one arrow and holds two more, then rapid-fires all 3 as basic shots within 1.5 seconds, each at the same or a different target, with slightly lower accuracy (-5).',
   blowgun:'Blow_Gun · 30 energy · 9s. A poison dart: 1 poison stack for sure, 75% for a 2nd, 50% for a 3rd. Each stack: 3% max HP every 1.5s for 7.5s. Undead are immune.',
   poultice:'Poultice · 25 energy · 15s. When he\'s under 60% health he slaps a herbal poultice on: heals himself 4% of max HP every second for 6s.',
   whirl:'Whirl_Wind · 45 energy · 14s. Spins with his axe for 2.4s, drifting forward: every 0.4s it hits everything around him for 1d6.',
@@ -450,7 +450,7 @@ CHAR.archer={name:'Yumi_Archer',role:'Bow + Melee',flatHp:0,stamina:9,hpPerStami
   ranged:{dice:[1,10],flat:0,every:1.7,range:280,clip:0,reload:0,pellets:1,anim:.8,releaseAt:.55},
   acc:22,walkPenalty:15,crit:.12,critMul:2,luck:18,xp:0,run:2,turn:.25,enMax:100,enRegen:5,
   // One Nocked, Two in Hand (Kyle's name, with the archery spelling 'nocked'): his next 3 arrows come much faster (time between shots x0.3, quicker draw). 30 energy, 14s cooldown.
-  abilities:[{id:'rapid',name:'One Nocked, Two in Hand',en:35,cd:14,shots:3},   // 0.12.23: 3 basic shots in 1.5s
+  abilities:[{id:'rapid',name:'One Nocked, Two in Hand',en:35,cd:14,shots:3,accPen:5},   // 0.12.23: 3 basic shots in 1.5s
     // Blow_Gun: he puts a bamboo blowgun to his lips (0.7s) and puffs a poison dart (1d3). It always applies 1 poison stack to a
     //   non-undead target, with a 75% chance for a 2nd and a 50% chance for a 3rd. 25 energy, 9s cooldown. Picks living targets.
     // Arrow_Rain: 0.6s to loose a volley high into the air, then 16 arrows rain down over 1.4s on the thickest group of enemies in
@@ -1507,10 +1507,10 @@ class Game{
     // 0.12.23 (Kyle): One Nocked, Two in Hand = 3 real basic shots rapid-fired inside 1.5s (one every 0.5s), then back to normal
     if(h.volley3&&RA){const V=h.volley3;V.t-=dt;h.pauseT=Math.max(h.pauseT||0,.05);
       if(V.t<=0&&V.left>0){V.left--;V.t=1.5/RA.shots;h.rT=0;h.animR=.42;h.animRT=.42;h.firedMoving=false;
-        const pt=h.plan&&h.plan.tgt;const tg0=pt&&!pt.dead&&Math.abs(pt.x-h.x)<=C.ranged.range?pt:this.liveE().filter(e=>Math.abs(e.x-h.x)<=C.ranged.range).sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x))[0];   /* each shot picks its own target: whatever he's after right now, else the closest in range */
+        const inR=this.liveE().filter(e=>Math.abs(e.x-h.x)<=C.ranged.range);const pk=inR.length?Brain.pickTarget(this,h,inR,this.alive(),true):null;const tg0=pk&&pk.tgt;   /* each shot is its own choice through the behavior system: same target or a different one */
         if(tg0){faceToward(h,tg0.x,1);const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(C.ranged.dmgMul||1)*(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
           setTimeoutSafe(this,.2,()=>{if(!h.alive)return;const tg=tg0.dead?this.liveE().sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x))[0]:tg0;if(!tg)return;this.ev('bow',{});
-            const WR=(C.abilities||[]).find(a=>a.id==='wind');const far=WR&&Math.abs(tg.x-h.x)>WR.far;h._accBonus=far?WR.acc:0;
+            const WR=(C.abilities||[]).find(a=>a.id==='wind');const far=WR&&Math.abs(tg.x-h.x)>WR.far;h._accBonus=(far?WR.acc:0)-(RA.accPen||0);   /* rushed shots: slightly less accurate */
             const p=this.shoot(h,tg,st.proj,dmg,{});this.aim(p,h,tg);h._accBonus=0;if(far)p.critMul=(h.critMul||1.75)+WR.critMul;});}}
       if(V.left<=0&&V.t<=0)h.volley3=null;
       return;}
@@ -2001,12 +2001,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793884609';const BGI=new Image();BGI.src='crawl_bg.png?v=1793884609';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793884609';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793884664';const BGI=new Image();BGI.src='crawl_bg.png?v=1793884664';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793884664';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793884609';XIMG.wave.src='crawl_wave.png?v=1793884609';XIMG.chibi.src='crawl_chibi.png?v=1793884609';XIMG.flannel.src='crawl_flannel.png?v=1793884609';XIMG.rain.src='crawl_rain.png?v=1793884609';XIMG.druid.src='crawl_druid.png?v=1793884609';XIMG.camp.src='crawl_campfire.png?v=1793884609';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793884609';XIMG.tornado.src='crawl_fx_tornado.png?v=1793884609';XIMG.vine.src='crawl_fx_vine.png?v=1793884609';XIMG.thorn.src='crawl_fx_thorn.png?v=1793884609';
+const XIMG={cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793884664';XIMG.wave.src='crawl_wave.png?v=1793884664';XIMG.chibi.src='crawl_chibi.png?v=1793884664';XIMG.flannel.src='crawl_flannel.png?v=1793884664';XIMG.rain.src='crawl_rain.png?v=1793884664';XIMG.druid.src='crawl_druid.png?v=1793884664';XIMG.camp.src='crawl_campfire.png?v=1793884664';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793884664';XIMG.tornado.src='crawl_fx_tornado.png?v=1793884664';XIMG.vine.src='crawl_fx_vine.png?v=1793884664';XIMG.thorn.src='crawl_fx_thorn.png?v=1793884664';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793884609';XIMG.obst.src='crawl_obst.png?v=1793884609';XIMG.robot.src='crawl_robot.png?v=1793884609';XIMG.cultist.src='crawl_cultist.png?v=1793884609';XIMG.tentacle.src='crawl_tentacle.png?v=1793884609';XIMG.boom.src='crawl_boom.png?v=1793884609';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793884664';XIMG.obst.src='crawl_obst.png?v=1793884664';XIMG.robot.src='crawl_robot.png?v=1793884664';XIMG.cultist.src='crawl_cultist.png?v=1793884664';XIMG.tentacle.src='crawl_tentacle.png?v=1793884664';XIMG.boom.src='crawl_boom.png?v=1793884664';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
