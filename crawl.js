@@ -103,7 +103,7 @@ const SIG={
   marina:{name:'Lantern Haunt',cd:9,txt:'Lets the lantern ghost out to fight for 9s (one at a time).',fn:(g,h,a)=>{g.addMinion(h,h.max*.3,a*.6,9,'spirit','sig',1);return true;}},
   korvold:{name:'Gorge',cd:6,txt:'Bites the front enemy for 260% and heals for 30% of it.',fn:(g,h,a)=>g.sigFront(h,a*2.6,{heal:.3})},
   thranduil:{name:'Volley',cd:6,txt:'Looses 3 heavy arrows at random enemies for 115% each.',fn:(g,h,a)=>g.sigMulti(h,'arrow',a*1.15,3)},
-  chibi:{name:'(no abilities yet)',cd:999,txt:'Sword combo only for now: Attack 1, Attack 2, and a running slash.',fn:()=>false},
+  chibi:{name:'Wave Dash · War Cry',cd:10,txt:'Wave Dash (30 energy, 10s cooldown): dashes forward with a blue energy wave on his sword, cutting every enemy in the line for 1.6x a sword hit. War Cry (20 energy, 7s cooldown): every ally within 800px gets +25% damage and attack speed for 7s. Sword combo: Attack 1, Attack 2, and a running slash.',fn:()=>false},
   flannel:{name:'Aimed Shot · Trip Bomb · Traveling_Companion',cd:14,txt:'Call Traveling_Companion (25 energy, 24s cooldown, 0.8s whistle): calls his Traveling_Companion, a timid partner who hangs back, with a third of his stats and her own Brick Throw (never misses, 75% stun). If she is already out, she heals 7% of her max HP instead. Trip Bomb (30 energy, 20s cooldown, 1s to set): a nail bomb on a tripwire that blows up the first enemy to walk into it, hurting everything around it (area damage, knockback, 50% bleed). Aimed Shot (40 energy, 14s cooldown, 2s cast with a laser sight): a carefully aimed rifle shot that always goes to the middle (head) box, with +5% crit chance and 2.5x crit damage. Pierces through one enemy.',fn:()=>false},   // runs from Game.gunner (CHAR abilities), shown here
   joel:{name:'Brick Toss',cd:7,txt:'The scout lobs a brick for 200% that stuns the target for 0.75s.',fn:(g,h,a)=>g.sigShot(h,'brick',a*2,{stun:.75})},
   robots:{name:'Overcharge',cd:7,txt:'A piercing plasma beam hits every enemy in a line for 160%.',fn:(g,h,a)=>g.sigArea(h,260,a*1.6,{fx:'beamline',c:'#3ff0ff'})},
@@ -351,7 +351,13 @@ function inspText(name){const I=INSP[name];if(!I)return '';const out=[];
 //   2-hit combo (Attack 1, Attack 2) standing still and a running slash when he's on the move. No gun, no abilities yet.
 CHAR.chibi={name:'Chibi_Warrior',flatHp:0,stamina:10,hpPerStamina:5,armorPts:8,dodge:.06,kbRes:.30,
   melee:{dice:[2,6],every:1.1,reach:24,kb:15,hitAt:.18},ranged:null,
-  acc:0,walkPenalty:0,crit:.10,critMul:1.75,luck:15,xp:0,run:2,turn:.18,enMax:100,enRegen:5,abilities:[]};
+  acc:0,walkPenalty:0,crit:.10,critMul:1.75,luck:15,xp:0,run:2,turn:.18,enMax:100,enRegen:5,
+  abilities:[
+    // Wave Dash: dashes ~70px forward along his lane in 0.32s with a blue energy wave (1.5x his height) riding his sword;
+    //   every enemy in the line takes 1.6x a sword roll (+flat bonuses) and a small shove. 30 energy, 10s cooldown.
+    {id:'dash',name:'Wave Dash',en:30,cd:10,dist:70,dur:.42,dmgMul:1.6,depth:5,kb:20},
+    // War Cry: every ally within 800px gets +25% damage and +25% attack speed for 7s. 20 energy, 7s cooldown (Kyle).
+    {id:'shout',name:'War Cry',en:20,cd:7,range:800,dur:7,dmg:.25,spd:.25}]};
 const PAL_FRAC=1/3;
 CHAR.flannel_pal=(()=>{const C=CHAR.flannel,f=PAL_FRAC;return {name:'Traveling_Companion',flatHp:C.flatHp*f,stamina:C.stamina*f,hpPerStamina:C.hpPerStamina,armorPts:Math.round(C.armorPts*f),
   dodge:C.dodge*f,kbRes:C.kbRes*f,melee:{dice:C.melee.dice,dmgMul:f,every:C.melee.every,reach:16,kb:Math.round(C.melee.kb*f),hitAt:.12},
@@ -982,13 +988,33 @@ class Game{
   //   Melee when something is in reach (crowbar), otherwise shoot. Each shot uses a round; with an empty clip he reloads.
   //   Shooting on the move costs accuracy (flat walkPenalty, never below 1) and plays the walking-fire animation.
   gunner(h,dt,f,findT){const C=h.base.char;const st=h.style;
-    h.mT=(h.mT||0)+dt*h.meleeSpd;h.rT=(h.rT||0)+dt*h.rangedSpd;if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
+    if(h.shoutT>0)h.shoutT-=dt;const cry=h.shoutT>0?h.shoutB:null;const spdB=cry?1+cry.spd:1;h.cryDmg=cry?1+cry.dmg:1;
+    h.mT=(h.mT||0)+dt*h.meleeSpd*spdB;h.rT=(h.rT||0)+dt*h.rangedSpd*spdB;if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
     if(h.ammo==null)h.ammo=C.ranged?C.ranged.clip:0;
-    if(C.ranged&&h.ammo<=0&&C.ranged.clip>0){h.reloadT=(h.reloadT||0)+dt*h.rangedSpd;if(h.reloadT>=C.ranged.reload){h.reloadT=0;h.ammo=C.ranged.clip;}}
+    if(C.ranged&&h.ammo<=0&&C.ranged.clip>0){h.reloadT=(h.reloadT||0)+dt*h.rangedSpd*spdB;if(h.reloadT>=C.ranged.reload){h.reloadT=0;h.ammo=C.ranged.clip;}}
     const reachPx=ENEMY_BODY+C.melee.reach*UNIT_SCALE;   // same body gap the zombies measure from, so a 20 reach out-reaches a 12 reach zombie
     const mt=this.enemies.filter(e=>!e.dead&&!e.fly&&(e.boss?e.x-e.w-h.x<=reachPx&&e.x>h.x-4:Math.abs(e.x-this.heroX(h))<=reachPx&&(e.gy==null||Math.abs(e.gy-h.gy)<2.5))).sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x))[0];
+    // ---- Wave Dash in progress: slide forward along the lane, cutting everything in the line once
+    if(h.dash){const D=h.dash;D.t+=dt;const k=Math.min(1,D.t/D.T);const nx=D.x0+(D.x1-D.x0)*(1-(1-k)*(1-k));const px=h.x;h.x=nx;h.pauseT=Math.max(h.pauseT||0,.05);
+      D.trail.push(nx);if(D.trail.length>7)D.trail.shift();
+      for(const e of this.enemies){if(e.dead||e.fly||D.hit.has(e))continue;const dz=Math.abs((e.gy!=null?e.gy:this.G)-h.gy);
+        if(dz<=D.A.depth&&e.x>=Math.min(px,D.x0)-4&&e.x<=nx+14){D.hit.add(e);const dd=this.hitEnemy(e,D.dmg,h,{});
+          if(dd&&!e.dead){e.kbv=Math.max(e.kbv||0,D.A.kb/100*40*8*(1-((e.E&&e.E.kbRes)||0)));e.kbDir=1;}this.fx.push({k:'slash',x:e.x-6,y:e.y-24,t:0});}}
+      if(k>=1)h.dash=null;return;}
+    const DA=(C.abilities||[]).find(a=>a.id==='dash'),SA=(C.abilities||[]).find(a=>a.id==='shout');
+    if(DA){if(h.daT==null)h.daT=DA.cd*.3;if(h.daT>0)h.daT-=dt;}if(SA){if(h.shT==null)h.shT=0;if(h.shT>0)h.shT-=dt;}
+    // IF War Cry is ready AND a fight is close AND I'm not already fired up THEN shout
+    if(SA&&h.shT<=0&&!(h.shoutT>.5)&&(h.en||0)>=SA.en&&this.enemies.some(e=>!e.dead&&Math.abs(e.x-h.x)<150)&&spendEnergy(h,SA.en)){
+      h.shT=SA.cd*(1-(h.cdr||0));for(const o of this.alive())if(Math.abs(this.heroX(o)-this.heroX(h))<=SA.range){o.shoutT=SA.dur;o.shoutB={dmg:SA.dmg,spd:SA.spd};o.buffT=Math.max(o.buffT||0,SA.dur);}
+      this.text(h.x,this.G-74,'WAR CRY!','#ffd23f',true);this.fx.push({k:'ring',x:h.x,y:this.G-14,r:46,t:0,c:'#ffd23f'});this.ev('shout',{});}
+    // IF Wave Dash is ready AND an enemy is in my lane a short way ahead (not in my face) THEN dash through the line
+    if(DA&&h.daT<=0&&(h.en||0)>=DA.en*(1+.3*trait(h,'energy')-.15)){
+      const foe=this.enemies.find(e=>!e.dead&&!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=3&&e.x-h.x>18&&e.x-h.x<DA.dist+20);
+      if(foe&&spendEnergy(h,DA.en)){h.daT=DA.cd*(1-(h.cdr||0));h.face=1;
+        const dmg=(this.rollDice(C.melee.dice)+(C.melee.flat||0)+(h.flatMelee||0))*(C.melee.dmgMul||1)*DA.dmgMul*(h.atk/h.base.atk)*h.meleeDmg*(h.cryDmg||1);
+        h.dash={t:0,T:DA.dur,x0:h.x,x1:Math.min(this.W-12,h.x+DA.dist),hit:new Set(),dmg,A:DA,trail:[]};this.text(h.x,this.G-70,'WAVE DASH!','#7fd8ff');this.ev('dash',{});return;}}
     const tgt=mt||(C.ranged?findT('ranged'):(findT('melee'),null));const rd=faceToward(h,tgt?tgt.x:h.x+10,dt);if(!rd||!tgt)return;
-    if(mt){if(h.mT>=C.melee.every){h.mT=0;h.combo=(h.combo||0)+1;h.swingAnim=C.ranged?null:(h.moving?'runatk':(h.combo%2?'attack1':'attack2'));h.animM=h.swingAnim==='attack2'?.36:.45;h.animT=0;const roll=(this.rollDice(C.melee.dice)+(C.melee.flat||0)+(h.flatMelee||0))*(C.melee.dmgMul||1)*(h.atk/h.base.atk)*h.meleeDmg;
+    if(mt){if(h.mT>=C.melee.every){h.mT=0;h.combo=(h.combo||0)+1;h.swingAnim=C.ranged?null:(h.moving?'runatk':(h.combo%2?'attack1':'attack2'));h.animM=h.swingAnim==='attack2'?.36:.45;h.animT=0;const roll=(this.rollDice(C.melee.dice)+(C.melee.flat||0)+(h.flatMelee||0))*(C.melee.dmgMul||1)*(h.atk/h.base.atk)*h.meleeDmg*(h.cryDmg||1);
         setTimeoutSafe(this,C.melee.hitAt||.15,()=>{if(!h.alive||mt.dead)return;   // the blow lands a moment into the swing (Kyle: very slight delay)
         const K=Math.min(100,C.melee.kb+(h.kbAdd||0));const dealt=this.hitEnemy(mt,roll,h,{});   // knockback, Kyle's scale: 0-100, 100 = about a 40px shove
         if(dealt&&!mt.dead&&K>0){const res=mt.boss?.9:((mt.E&&mt.E.kbRes)||0);mt.kbv=Math.max(mt.kbv||0,K/100*40*8*(1-res));mt.kbDir=mt.x>=h.x?1:-1;}   
@@ -1034,7 +1060,7 @@ class Game{
     if(C.ranged&&h.ammo>0&&h.rT>=C.ranged.every){
       if(h.moving&&trait(h,'exec')>.5&&!(h.plan&&h.plan.intent==='retreat')&&(h.plantT=(h.plantT||0)+dt)<.6)return;   // optimal shooters plant their feet first (but not when running away)
       h.plantT=0;h.rT=0;h.ammo-=1;h.animR=.5;h.firedMoving=h.moving;this.ev('gun',{});
-      const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(C.ranged.dmgMul||1)*(h.atk/h.base.atk)*h.rangedDmg;
+      const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(C.ranged.dmgMul||1)*(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
       for(let i=0;i<C.ranged.pellets;i++){const tg=tgt;const acc=h.moving?Math.max(1,h.acc-C.walkPenalty):h.acc;h._accBonus=acc-h.acc;
         const p=this.shoot(h,tg,st.proj,dmg/C.ranged.pellets,{});this.aim(p,h,tg);h._accBonus=0;}}}
   callPal(h,PB){this.pets=this.pets||[];let pal=this.pets.find(p=>p.owner===h&&p.alive);
@@ -1288,8 +1314,8 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793863734';const BGI=new Image();BGI.src='crawl_bg.png?v=1793863734';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793863734';const XIMG={flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image()};XIMG.chibi.src='crawl_chibi.png?v=1793863734';XIMG.flannel.src='crawl_flannel.png?v=1793863734';XIMG.pal.src='crawl_pal.png?v=1793863734';XIMG.boom.src='crawl_boom.png?v=1793863734';
+const IMG=new Image();IMG.src='crawl.png?v=1793864116';const BGI=new Image();BGI.src='crawl_bg.png?v=1793864116';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793864116';const XIMG={flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image()};XIMG.chibi.src='crawl_chibi.png?v=1793864116';XIMG.flannel.src='crawl_flannel.png?v=1793864116';XIMG.pal.src='crawl_pal.png?v=1793864116';XIMG.boom.src='crawl_boom.png?v=1793864116';
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
 const GQ=2;   // the game canvas renders at 2x its old pixel density so full-detail art stays clean (pixel art still draws crisp)
@@ -1310,6 +1336,8 @@ function sfx(k){if(muted)return;try{AC=AC||new (window.AudioContext||window.webk
   if(k==='boom'){const d=1.1,n=Math.floor(AC.sampleRate*d),buf=AC.createBuffer(1,n,AC.sampleRate),ch=buf.getChannelData(0);for(let i=0;i<n;i++)ch[i]=(Math.random()*2-1)*Math.pow(1-i/n,1.6);
     const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=buf;f.type='lowpass';f.frequency.setValueAtTime(1600,t);f.frequency.exponentialRampToValueAtTime(220,t+d);g.gain.value=.7;
     s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t);tone(60,.8,'sine',.5,24);}
+  if(k==='dash'){tone(240,.25,'sawtooth',.05,900);tone(1200,.2,'sine',.04,300);}
+  if(k==='shout'){tone(160,.5,'sawtooth',.07,120);tone(240,.45,'square',.04,200);}
   if(k==='boss')tone(70,1.2,'sawtooth',.08,40);if(k==='clear')tone(392,.5,'triangle',.07,784);if(k==='die')tone(220,.6,'sawtooth',.06,55);
 }catch(e){}}
 // ---------------------------------------------------------------- pixel font (3x5) for numbers + a few letters
@@ -1364,7 +1392,7 @@ const MINI={bat:'e_bat',spirit:'e_ghost',raise:'e_skeleton',spore:'e_spawn',dron
 const HS=UNIT_SCALE;   // units, effects and projectiles are drawn at half size so the world reads bigger
 function shrinkAt(ctx,x,y,s){ctx.translate(x,y);ctx.scale(s,s);ctx.translate(-x,-y);}
 // 0.11 unit status plate: framed health bar (a tick every 10 HP), energy bar under it, and status pips above it
-const PIPS=[['bleedT','#d01830','drop'],['burnT','#ff8a1f','flame'],['slow','#9ae6ff','snow'],['stun','#ffffff','star'],['shield','#7fd8ff','shield'],['buffT','#ffd23f','up']];
+const PIPS=[['shoutT','#ff7a1a','up'],['bleedT','#d01830','drop'],['burnT','#ff8a1f','flame'],['slow','#9ae6ff','snow'],['stun','#ffffff','star'],['shield','#7fd8ff','shield'],['buffT','#ffd23f','up']];
 function pip(ctx,x,y,c,k){ctx.fillStyle='#120a14';ctx.fillRect(x-1,y-1,5,5);ctx.fillStyle=c;
   if(k==='drop'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,2);}else if(k==='flame'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,1);ctx.fillRect(x+1,y+2,1,1);}
   else if(k==='snow'){ctx.fillRect(x+1,y,1,3);ctx.fillRect(x,y+1,3,1);}else if(k==='star'){ctx.fillRect(x,y,1,1);ctx.fillRect(x+2,y,1,1);ctx.fillRect(x+1,y+1,1,1);ctx.fillRect(x,y+2,1,1);ctx.fillRect(x+2,y+2,1,1);}
@@ -1405,6 +1433,12 @@ function drawGame(ctx,g,W,oy){
       ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(tx,ty);ctx.stroke();ctx.setLineDash([]);glow(ctx,tx,ty,3+3*k,'#ff2828',.35+.3*Math.sin(g.t*30));ctx.restore();}};
   const traps=()=>{const T0=UNITS.flannel&&UNITS.flannel.tripbomb;if(!T0)return;for(const T of g.traps||[]){ctx.save();shrinkAt(ctx,T.x,T.gy,HS);
       drawUnit(ctx,T0,0,T.x,T.gy,.5,T.t<T.A.arm?.55+.45*Math.sin(g.t*20)**2:1,0,0,false);ctx.restore();}};
+  // Wave Dash: a blue crescent of energy (about 1.5x his height) riding his sword, with fading afterimages
+  const waves=()=>{for(const h of g.alive()){const D=h.dash;if(!D)continue;const G0=h.gy||g.G,H=hbOf(h).h*UNIT_SCALE*1.5;ctx.save();ctx.globalCompositeOperation='lighter';
+      const pts=D.trail.concat([h.x]);pts.forEach((x,i)=>{const a=(i+1)/pts.length;const cx=x+8;
+        for(let L=0;L<3;L++){ctx.strokeStyle=L===0?`rgba(60,140,255,${.35*a})`:L===1?`rgba(120,200,255,${.55*a})`:`rgba(230,248,255,${.8*a})`;ctx.lineWidth=[4,2.2,1][L];
+          ctx.beginPath();ctx.ellipse(cx-4,G0-H/2,7-L*1.5,H/2,0,-Math.PI/2,Math.PI/2);ctx.stroke();}});
+      glow(ctx,h.x+10,G0-H/2,10,'#4aa8ff',.25);ctx.restore();}};
   const booms=()=>{for(const f of g.fx){if(f.k!=='boom')continue;const k=f.t/f.life,fr=Math.min(BOOM.n-1,Math.floor(k*BOOM.n));drawUnit(ctx,BOOM,fr,f.x,f.gy+2,.32,k>.85?(1-k)/.15:1,0,0,false);}};
   const drawHero=(h)=>{const G0=h.gy||g.G;ctx.save();shrinkAt(ctx,h.x,G0,HS);drawHero0(h);ctx.restore();};
   const drawHero0=(h)=>{const G=h.gy||g.G;if(!h.alive){return;}
@@ -1426,7 +1460,8 @@ function drawGame(ctx,g,W,oy){
         shadow(ctx,cx,G+4,7);spr(ctx,'h_'+h.key+'_a',h.animT>0?fa:pf,cx-32,G-60+4-cy,(h.compV||0)<-4&&!h.animT,null,0);}
     }else if(UNITS[h.key]&&UNITS[h.key].idle){shadow(ctx,h.x+lx,G,9);const U=UNITS[h.key],C=h.base.char;let A=U.idle,f=Math.floor(g.t*6)%A.n;
       const mov=h.moving||g.scroll;
-      if(h.animM>0){A=(h.swingAnim&&U[h.swingAnim])||U.melee;const D=h.swingAnim==='attack2'?.36:.45;f=Math.min(A.n-1,Math.floor((1-h.animM/D)*A.n));}
+      if(h.dash&&U.runatk){A=U.runatk;f=Math.min(A.n-1,3+Math.floor(h.dash.t/h.dash.T*2));}
+      else if(h.animM>0){A=(h.swingAnim&&U[h.swingAnim])||U.melee;const D=h.swingAnim==='attack2'?.36:.45;f=Math.min(A.n-1,Math.floor((1-h.animM/D)*A.n));}
       else if(h.animR>0){A=(h.firedMoving&&U.walkfire)||U.ranged;f=Math.min(A.n-1,Math.floor((1-h.animR/.5)*A.n));}
       else if(h.cast){A=U.ranged;f=0;}
       else if(h.setting){A=U.reload;f=Math.min(A.n-1,Math.floor(h.setting.t/h.setting.T*A.n));}   // kneels to set the Trip Bomb   // holding the aim during Aimed Shot's cast
@@ -1464,7 +1499,7 @@ function drawGame(ctx,g,W,oy){
     .sort((a,b)=>a[0]-b[0]||a[1]-b[1]||a[2]-b[2]);
   traps();
   for(const it of items)it[3]();
-  laser();booms();
+  laser();waves();booms();
   // projectiles
   for(const p of g.proj){const x=Math.round(p.x),y=p.aimed?Math.round(p.y):Math.round(G+(p.y-G)*HS);const c=PCOL[p.kind]||'#ff3a3a';ctx.save();shrinkAt(ctx,x,y,HS);
     if(p.kind==='bullet'&&UNITS.flannel&&UNITS.flannel.bullet){const B=UNITS.flannel.bullet;drawUnit(ctx,B,0,x,y+B.ay*ART_SCALE/HS,ART_SCALE/HS,null,0,0,(p.dir||1)<0);}   // sprite bullet from the character's own sheet
@@ -1799,7 +1834,7 @@ function loop(now){
   const g=CC.game;if(!g||root.hidden)return;let dt=Math.min(.05,(now-CC.last)/1000);CC.last=now;
   if(!CC.paused){for(let i=0;i<CC.speed;i++)g.step(dt);}
   for(const e of g.events){if(e.type==='levelup'){sfx('level');flash('LEVEL UP!',900);}if(e.type==='boss'){sfx('boss');flash(e.name.toUpperCase(),1800);}
-    if(e.type==='herolevel')sfx('level');if(e.type==='enrage')flash('ENRAGED!',1400);if(e.type==='itemdrop'){sfx('level');flash('ITEM FOUND!',900);}if(e.type==='herodown')sfx('die');if(e.type==='gun')sfx(e.big?'biggun':'gun');if(e.type==='boom')sfx('boom');}
+    if(e.type==='herolevel')sfx('level');if(e.type==='enrage')flash('ENRAGED!',1400);if(e.type==='itemdrop'){sfx('level');flash('ITEM FOUND!',900);}if(e.type==='herodown')sfx('die');if(e.type==='gun')sfx(e.big?'biggun':'gun');if(e.type==='boom')sfx('boom');if(e.type==='dash')sfx('dash');if(e.type==='shout')sfx('shout');}
   g.events.length=0;
   ctx.imageSmoothingEnabled=false;drawGame(ctx,g,384,0);
   const run=g.run;info.innerHTML=`<span class="px" style="font-size:10px;color:#a6ff2e">STAGE ${run.stage}${run.prestige?' ★'+run.prestige:''}</span><span>${esc(g.st.biome.name)}</span><span>Score <b>${fmt(run.score+g.stageScore)}</b></span><span>💰 <b>${fmt((SLOT().gold||0)+g.stageGold)}</b></span>
