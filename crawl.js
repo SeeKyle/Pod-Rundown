@@ -1314,9 +1314,9 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793864624';const BGI=new Image();BGI.src='crawl_bg.png?v=1793864624';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793864624';const XIMG={flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image()};XIMG.wave.src='crawl_wave.png?v=1793864624';XIMG.chibi.src='crawl_chibi.png?v=1793864624';XIMG.flannel.src='crawl_flannel.png?v=1793864624';XIMG.pal.src='crawl_pal.png?v=1793864624';XIMG.boom.src='crawl_boom.png?v=1793864624';
-const WAVE={fw:110,fh:68,n:1,ax:48,ay:66,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
+const IMG=new Image();IMG.src='crawl.png?v=1793864802';const BGI=new Image();BGI.src='crawl_bg.png?v=1793864802';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793864802';const XIMG={flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image()};XIMG.wave.src='crawl_wave.png?v=1793864802';XIMG.chibi.src='crawl_chibi.png?v=1793864802';XIMG.flannel.src='crawl_flannel.png?v=1793864802';XIMG.pal.src='crawl_pal.png?v=1793864802';XIMG.boom.src='crawl_boom.png?v=1793864802';
+const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
 const GQ=2;   // the game canvas renders at 2x its old pixel density so full-detail art stays clean (pixel art still draws crisp)
