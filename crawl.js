@@ -300,31 +300,31 @@ const CHAR={
 const INSP={   // 0.12.4 (Kyle): every bonus doubled
  // Kyle
  'The Grim Throne':{o:'Kyle',why:'Kenrith\'s royal court: the most consistent big threats in the pod',mod:{crit:4},sl:{plan:-2}},
- 'Felothar':{o:'Kyle',why:'Walls everywhere: the pod\'s top Survival',mod:{armor:4,kbRes:10}},
- 'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up: the pod\'s biggest Finish',mod:{meleeDmg:20}},
+ 'Felothar':{o:'Kyle',why:'Walls everywhere: the pod\'s top Survival',mod:{armor:4,kbRes:10},sl:{aggr:-2}},
+ 'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up: the pod\'s biggest Finish',mod:{meleeDmg:20},sl:{range:2}},
  'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen',mod:{xp:12},sl:{energy:-2}},
- 'Truly Fantastic':{o:'Kyle',why:'The Thing\'s deep mana pool',mod:{enMax:24}},
- 'Dice Boys Casino':{o:'Kyle',why:'Mr. House: the biggest ramp deck in the pod, and dice',mod:{enRegen:1.5,luck:6}},
- 'Tame Depala':{o:'Kyle',why:'Dwarves crewing heavy vehicles',mod:{kbRes:20}},
+ 'Truly Fantastic':{o:'Kyle',why:'The Thing\'s deep mana pool',mod:{enMax:24},sl:{plan:2}},
+ 'Dice Boys Casino':{o:'Kyle',why:'Mr. House: the biggest ramp deck in the pod, and dice',mod:{enRegen:1.5,luck:6},sl:{flair:2}},
+ 'Tame Depala':{o:'Kyle',why:'Dwarves crewing heavy vehicles',mod:{kbRes:20},sl:{pace:-2}},
  "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat',mod:{crit:6},sl:{size:2}},
- 'The Last of Us':{o:'Kyle',why:'Survivors who know when to duck',mod:{dodge:4}},
+ 'The Last of Us':{o:'Kyle',why:'Survivors who know when to duck',mod:{dodge:4},sl:{aware:2}},
  'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming',mod:{luck:4},sl:{aware:-2}},
  'Mothman Cometh!':{o:'Kyle',why:'Flying, hard to pin down',mod:{dodge:2},sl:{lane:2}},
- 'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back',mod:{kb:30}},
- 'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger',mod:{stamina:2}},
+ 'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back',mod:{kb:30},sl:{pace:-2}},
+ 'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger',mod:{stamina:2},sl:{flair:2}},
  "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward',mod:{meleeDmg:10},sl:{aggr:2}},
  // Cheez
- 'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: fast flyers',mod:{move:12}},
- 'Double Dragons':{o:'Cheez',why:'Dragon fire: the pod\'s biggest Threats',mod:{rangedDmg:10,crit:2}},
+ 'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: fast flyers',mod:{move:12},sl:{pace:2}},
+ 'Double Dragons':{o:'Cheez',why:'Dragon fire: the pod\'s biggest Threats',mod:{rangedDmg:10,crit:2},sl:{aggr:2}},
  'Turtle Power':{o:'Cheez',why:'Shells and teamwork',mod:{armor:4},sl:{self:-2}},
- 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills (and ramps doing it)',mod:{lifesteal:4,enRegen:0.5}},
- 'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone',mod:{luck:10}},
+ 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills (and ramps doing it)',mod:{lifesteal:4,enRegen:0.5},sl:{size:2}},
+ 'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone',mod:{luck:10},sl:{self:2}},
  'Blood Suckers':{o:'Cheez',why:'Lifelinking bats with long memories',mod:{lifesteal:4},sl:{grudge:2}},
- 'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman overclocks the machines',mod:{rangedSpd:16}},
+ 'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman overclocks the machines',mod:{rangedSpd:16},sl:{exec:2}},
  // Leon
  'Family Matters':{o:'Leon',why:'Zinnia\'s copies look out for each other',sl:{aware:2,pack:-2}},
- 'Thranduil':{o:'Leon',why:'Elven eyes and elf mana',mod:{acc:8,enRegen:0.5}},
- 'Primary Directive':{o:'Leon',why:'Optimus transforms and swings fast',mod:{meleeSpd:20}},
+ 'Thranduil':{o:'Leon',why:'Elven eyes and elf mana',mod:{acc:8,enRegen:0.5},sl:{lane:-2}},
+ 'Primary Directive':{o:'Leon',why:'Optimus transforms and swings fast',mod:{meleeSpd:20},sl:{self:-2}},
  'Cosmic Spider':{o:'Leon',why:'Spider-Sense',mod:{dodge:2},sl:{exec:2}},
 };
 const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼'};
@@ -1457,11 +1457,11 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793867806';const BGI=new Image();BGI.src='crawl_bg.png?v=1793867806';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793867806';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
-const XIMG={druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793867806';XIMG.wave.src='crawl_wave.png?v=1793867806';XIMG.chibi.src='crawl_chibi.png?v=1793867806';XIMG.flannel.src='crawl_flannel.png?v=1793867806';XIMG.rain.src='crawl_rain.png?v=1793867806';XIMG.druid.src='crawl_druid.png?v=1793867806';XIMG.tornado.src='crawl_fx_tornado.png?v=1793867806';XIMG.vine.src='crawl_fx_vine.png?v=1793867806';XIMG.thorn.src='crawl_fx_thorn.png?v=1793867806';
+const IMG=new Image();IMG.src='crawl.png?v=1793867872';const BGI=new Image();BGI.src='crawl_bg.png?v=1793867872';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793867872';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const XIMG={druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793867872';XIMG.wave.src='crawl_wave.png?v=1793867872';XIMG.chibi.src='crawl_chibi.png?v=1793867872';XIMG.flannel.src='crawl_flannel.png?v=1793867872';XIMG.rain.src='crawl_rain.png?v=1793867872';XIMG.druid.src='crawl_druid.png?v=1793867872';XIMG.tornado.src='crawl_fx_tornado.png?v=1793867872';XIMG.vine.src='crawl_fx_vine.png?v=1793867872';XIMG.thorn.src='crawl_fx_thorn.png?v=1793867872';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793867806';XIMG.boom.src='crawl_boom.png?v=1793867806';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793867872';XIMG.boom.src='crawl_boom.png?v=1793867872';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
