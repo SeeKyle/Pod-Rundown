@@ -324,32 +324,32 @@ const CHAR={
 const INSP={   // 0.12.4 (Kyle): every bonus doubled
  // Kyle
  'The Grim Throne':{o:'Kyle',why:'Kenrith\'s royal court: the most consistent big threats in the pod',mod:{crit:4},sl:{plan:-2}},
- 'Felothar':{o:'Kyle',why:'Walls everywhere: the pod\'s top Survival',mod:{armor:4,kbRes:10},sl:{aggr:-2}},
+ 'Felothar':{o:'Kyle',why:'Walls everywhere: the pod\'s top Survival',mod:{armor:6},sl:{aggr:-2}},
  'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up: the pod\'s biggest Finish',mod:{meleeDmg:20},sl:{range:2}},
  'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen',mod:{xp:12},sl:{energy:-2}},
  'Truly Fantastic':{o:'Kyle',why:'The Thing\'s deep mana pool',mod:{enMax:24},sl:{plan:2}},
- 'Dice Boys Casino':{o:'Kyle',why:'Mr. House: the biggest ramp deck in the pod, and dice',mod:{enRegen:1.5,luck:6},sl:{flair:2}},
+ 'Dice Boys Casino':{o:'Kyle',why:'Mr. House: the biggest ramp deck in the pod',mod:{enRegen:2},sl:{flair:2}},
  'Tame Depala':{o:'Kyle',why:'Dwarves crewing heavy vehicles',mod:{kbRes:20},sl:{pace:-2}},
- "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat',mod:{crit:6},sl:{size:2}},
+ "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat',passive:'bounty',sl:{size:2}},
  'The Last of Us':{o:'Kyle',why:'Survivors who know when to duck',mod:{dodge:4},sl:{aware:2}},
- 'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming',mod:{luck:4},sl:{aware:-2}},
- 'Mothman Cometh!':{o:'Kyle',why:'Flying, hard to pin down',mod:{dodge:2},sl:{lane:2}},
+ 'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming',passive:'haunt',sl:{aware:-2}},
+ 'Mothman Cometh!':{o:'Kyle',why:'A dark omen that is never quite where you hit',passive:'omen',sl:{lane:2}},
  'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back',mod:{kb:30},sl:{pace:-2}},
  'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger',mod:{stamina:2},sl:{flair:2}},
- "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward',mod:{meleeDmg:10},sl:{aggr:2}},
+ "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward',passive:'onslaught',sl:{aggr:2}},
  // Cheez
  'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: fast flyers',mod:{move:12},sl:{pace:2}},
- 'Double Dragons':{o:'Cheez',why:'Dragon fire: the pod\'s biggest Threats',mod:{rangedDmg:10,crit:2},sl:{aggr:2}},
- 'Turtle Power':{o:'Cheez',why:'Shells and teamwork',mod:{armor:4},sl:{self:-2}},
- 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills (and ramps doing it)',mod:{lifesteal:4,enRegen:0.5},sl:{size:2}},
- 'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone',mod:{luck:10},sl:{self:2}},
- 'Blood Suckers':{o:'Cheez',why:'Lifelinking bats with long memories',mod:{lifesteal:4},sl:{grudge:2}},
+ 'Double Dragons':{o:'Cheez',why:'Dragon fire: the pod\'s biggest Threats',mod:{rangedDmg:16},sl:{aggr:2}},
+ 'Turtle Power':{o:'Cheez',why:'Shells and teamwork',passive:'shell',sl:{self:-2}},
+ 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills',passive:'devour',sl:{size:2}},
+ 'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone',passive:'pickpocket',sl:{self:2}},
+ 'Blood Suckers':{o:'Cheez',why:'Lifelinking bats with long memories, always scrounging for something to keep the flock alive',passive:'scavenger',sl:{grudge:2}},   // 0.12.27 (Kyle): the lifegain deck gives the Scavenger passive instead of a stat
  'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman overclocks the machines',mod:{rangedSpd:16},sl:{exec:2}},
  // Leon
- 'Family Matters':{o:'Leon',why:'Zinnia\'s copies look out for each other',sl:{aware:2,pack:-2}},
- 'Thranduil':{o:'Leon',why:'Elven eyes and elf mana',mod:{acc:8,enRegen:0.5},sl:{lane:-2}},
+ 'Family Matters':{o:'Leon',why:'Zinnia\'s copies look out for each other',passive:'bodyguard',sl:{aware:2,pack:-2}},
+ 'Thranduil':{o:'Leon',why:'Elven eyes',mod:{acc:12},sl:{lane:-2}},
  'Primary Directive':{o:'Leon',why:'Optimus transforms and swings fast',mod:{meleeSpd:20},sl:{self:-2}},
- 'Cosmic Spider':{o:'Leon',why:'Spider-Sense',mod:{dodge:2},sl:{exec:2}},
+ 'Cosmic Spider':{o:'Leon',why:'Spider-Sense and web shooters',passive:'webs',sl:{exec:2}},
 };
 const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼'};
 // what each character is like in a fight (shown when you hover them on the party screen)
@@ -410,12 +410,26 @@ const INSP_HELP={acc:'More shots land on the body and head instead of flying ove
   xp:'Levels up faster.',kbRes:'Gets shoved around less by heavy hits.',enMax:'Can store more energy for abilities.',enRegen:'Energy refills faster, so abilities come back sooner.',
   lifesteal:'Heals for part of the damage he deals.',move:'Walks and runs faster.',meleeDmg:'Melee hits deal more damage.',rangedDmg:'Ranged hits deal more damage.',
   meleeSpd:'Swings his melee weapon more often.',rangedSpd:'Shoots and reloads faster.',kb:'Melee hits shove enemies back further.'};
-function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];
+function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.passive&&INSP_PASSIVE[I.passive])out.push('✦ '+INSP_PASSIVE[I.passive][0]+' (passive): '+INSP_PASSIVE[I.passive][1]);
   for(const [k,v] of Object.entries(I.mod||{})){const [l,u]=INSP_LABEL[k]||[k,''];out.push(`${v>0?'+':''}${v}${u} ${l}: ${INSP_HELP[k]||''}`);}
   for(const [k,v] of Object.entries(I.sl||{})){const S=SLIDERS.find(s=>s[0]===k);if(!S)continue;const side=v>0?S[2]:S[1];
     out.push(`${side} +${Math.abs(v)}: slides his personality ${Math.abs(v)} step${Math.abs(v)>1?'s':''} toward "${side}" (the ${S[1]} ↔ ${S[2]} slider: ${S[3].toLowerCase()}). If that would go past 0 or 10, it doesn't move.`);}
   return out;}
-function inspText(name){const I=INSP[name];if(!I)return '';const out=[];
+// 0.12.27 (Kyle): more decks give one unique passive instead of a small stat; fewer give two things at once
+const INSP_PASSIVE={
+ scavenger:['Scavenger','every enemy that dies near him has an 18% chance to turn up a healing herb, and he forages a few on the march (holds up to 3). When he or an ally within about 50px is under 80% health, he uses one: it heals 20% of their max HP over 5s, but any damage stops it. He goes looking for hurt allies to patch up.'],
+ bounty:['Bounty Hunter','his first hit on the biggest enemy on the field puts a bounty on it: it is marked (takes 25% more damage from everyone for 8s), and when it dies the party gets +10 gold.'],
+ haunt:['Haunted','anything that hits him has a 20% chance to be spooked and back away for 1.5s.'],
+ omen:['Dark Omen','once every 12s, the first hit that would land on him passes straight through.'],
+ onslaught:['Onslaught','after he has been moving for 1s, his next hit deals double damage.'],
+ shell:['Shell Up','when he drops under 40% health he pulls into his shell: 70% less damage taken for 3s while he holds still (30s cooldown).'],
+ devour:['Devour','every enemy he kills heals him 3% of his max HP and gives him 4 energy.'],
+ pickpocket:['Pickpocket','each enemy he hits has a 25% chance to be robbed once: +2 gold.'],
+ bodyguard:['Bodyguard','a scripted behavior: he sticks to whichever ally is most hurt and stands by their side, and while he is within reach of them he takes 30% of every hit meant for them.'],
+ webs:['Web Shooter','his hits have a 15% chance to web the target: 60% slower for 2s.'],
+};
+const insP=u=>u&&u.insp&&INSP[u.insp]&&INSP[u.insp].passive;
+function inspText(name){const I=INSP[name];if(!I)return '';const out=[];if(I.passive&&INSP_PASSIVE[I.passive])out.push('✦ '+INSP_PASSIVE[I.passive][0]);
   for(const [k,v] of Object.entries(I.mod||{})){const [l,u]=INSP_LABEL[k]||[k,''];out.push(`${v>0?'+':''}${v}${u} ${l}`);}
   for(const [k,v] of Object.entries(I.sl||{})){const S=SLIDERS.find(s=>s[0]===k);if(S)out.push(`${v>0?S[2]:S[1]} +${Math.abs(v)}`);}
   return out.join(', ');}
@@ -697,6 +711,12 @@ const Brain={
          let w=.62+.3*(1-selfish)+.18*(1-lone)+.12*A-.12*(hp<.35?1:0);if(danger)w*=.35+.85*aggr;w=Math.max(.05,Math.min(.97,w));
          h.revDecide={D,until:g.t+1.6+Math.random()*.8,go:Math.random()<w};}
        if(h.revDecide.go){const runMul=.45+1.4*pace;return {xoff:0,intent:'revive',runMul,reviveD:D,reviveLane:D.laneI};}}}
+    // 0.12.27 Bodyguard (Family Matters, a deck-scripted behavior): IF an ally is hurt (under 90%) THEN stand beside the most hurt one
+    if(insP(h)==='bodyguard'){const H=g.alive().filter(o=>o!==h&&!o.pet&&o.hp/o.max<.9).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];if(H&&!(hp<.25)){const runMul=.45+1.4*pace;return {xoff:0,intent:'guard',runMul,goTo:H,reviveLane:H.laneI};}}
+    // 0.12.27 Scavenger: IF I'm carrying an herb AND an ally is under 80% (and not already healing) THEN selfless, ally-aware units go to them
+    if(h.insp&&INSP[h.insp]&&INSP[h.insp].passive==='scavenger'&&h.herbs>0){const H=g.alive().filter(o=>o!==h&&!o.pet&&o.hp/o.max<.8&&!(o.herbT>0)).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
+      if(H){if(!h.herbDecide||h.herbDecide.H!==H||g.t>h.herbDecide.until){const danger=bb.E.filter(e=>Math.abs(e.x-g.heroX(H))<35).length;let w=.5+.35*(1-selfish)+.2*A;if(danger)w*=.4+.8*aggr;h.herbDecide={H,until:g.t+1.5+Math.random(),go:Math.random()<Math.min(.95,w)};}
+        if(h.herbDecide.go){const runMul=.45+1.4*pace;return {xoff:0,intent:'herb',runMul,goTo:H,reviveLane:H.laneI};}}}
     const AP=abilityPlan(h);
     if(AP.close&&tgt){xoff+=10+14*aggr;intent=intent==='hold'?'engage':intent;}
     if(AP.farRange&&tgt&&!AP.close){const d=Math.abs(tgt.x-g.heroX(h));if(d<AP.farRange*.4)xoff-=14;}
@@ -957,6 +977,11 @@ class Game{
     let crit=false;if(src&&!opt.nocrit&&this.rng()<src.crit+(opt.critAdd||0)){amt*=(opt.critMul||src.critMul||1.75);crit=true;
       const HR=!opt.fromTent&&src.base&&src.base.char&&(src.base.char.abilities||[]).find(a=>a.id==='herald');if(HR){src.critRegenT=HR.critT;for(const T of this.tentacles||[])T.heraldT=HR.critT;}}   // Herald: his crits (not his tentacles') feed him and every tentacle he has out   // Herald: crits feed energy
     if(opt.head){amt*=HEADSHOT.mul;this.text(e.x,e.y-(e.fly?24:54),'HEADSHOT!','#ff6040',true);}
+    {const ip=insP(src);   // inspiration passives that trigger on his hits
+     if(ip==='onslaught'&&(src.moveT||0)>1){amt*=2;src.moveT=0;}
+     if(ip==='bounty'&&!e.bounty&&!e.dead){const big=this.enemies.filter(o=>!o.dead).reduce((b,o)=>!b||o.max>b.max?o:b,null);if(big===e){e.bounty=src;e.markT=8;e.markAmp=.25;}}
+     if(ip==='pickpocket'&&!e.robbed&&this.rng()<.25){e.robbed=1;this.stageGold+=2;this.text(e.x,e.y-34,'+2','#ffd23f');}
+     if(ip==='webs'&&!e.boss&&this.rng()<.15){e.slow=Math.max(e.slow||0,.6);e.slowT=Math.max(e.slowT||0,2);e.webT=2;}}
     amt=mitigate(e,amt,opt.type); if(e.shred>0)amt*=1.2;if(e.markT>0)amt*=1+(e.markAmp||.25);   // Pinning_Shot mark
     if(opt.execute&&e.hp<e.max*.3)amt*=2;
     amt=Math.max(1,amt);e.hp-=amt;e.hitFlash=.12;this.lastHit=this.t;
@@ -971,6 +996,8 @@ class Game{
     return amt;
   }
   kill(e,src){
+    if(e.bounty&&!this.demo){this.stageGold+=10;this.text(e.x,e.y-40,'+10','#ffd23f');}
+    if(insP(src)==='devour'&&src.alive){this.healHero(src,src.max*.03,true);src.en=Math.min(src.enMax||100,(src.en||0)+4);}
     e.dead=true;this.kills++;this.onKillDark(e);if(src&&src.key&&!this.demo)Brain.showoff(this,src,'kill');if(src&&src.key)Comms.onKill(this,src);
     const xp=(e.boss?e.B.xp:e.E.xp*(e.elite?2.5:1)*.33)*this.st.xpMul;   // regular enemies give about half the XP they used to (stages are twice as long)
     const pts=Math.round((e.boss?e.B.pts:e.E.pts*(e.elite?3:1))*(1+.4*(this.st.n-1))*(1+this.run.prestige)*(src?src.scoreM:1));
@@ -1009,10 +1036,16 @@ class Game{
     if(!h||!h.alive)return;if(from&&from.E){h.lastHitBy=from;h.grudgeT=1+19*trait(h,'grudge');}   // Forgiving forgets in a second; Vengeful holds it 20s
     if(this.rng()<h.dodge){this.text(h.x,this.G-52,'dodge','#9ae6ff');return false;}
     if(from&&from.smokeT>0&&this.rng()<.5){this.text(h.x,this.G-52,'miss','#c8d0d8');return false;}   // Smoke_Screen: blinded attackers miss half the time
+    if(!this._bgRedirect&&from){const bg=this.alive().find(o=>o!==h&&insP(o)==='bodyguard'&&Math.abs(this.heroX(o)-this.heroX(h))<14&&Math.abs((o.gy||this.G)-(h.gy||this.G))<6);
+      if(bg){this._bgRedirect=1;this.hurtHero(bg,amt*.3,from);this._bgRedirect=0;amt*=.7;}}   // Bodyguard takes 30% of the hit
+    {const ip=insP(h);
+     if(ip==='omen'&&(h.omenCd||0)<=this.t){h.omenCd=this.t+12;this.text(h.x,this.G-52,'miss','#b8a0ff');return false;}
+     if(ip==='haunt'&&from&&from.E&&!from.boss&&this.rng()<.2){from.retreatT=Math.max(from.retreatT||0,1.5);from.fearT=1.5;}
+     if(ip==='shell'&&h.hp/h.max<.4&&(h.shellCd||0)<=this.t){h.shellCd=this.t+30;h.shellT=3;}}
     if(h.cloneT>0&&from&&from.E&&this.rng()<(h.cloneDecoy||.35)){this.fx.push({k:'spark',x:h.x-(h.face||1)*10,y:this.G-22,t:0,c:'#9ad8ff'});return false;}   // Shadow_Clone soaks it
     if(h.smokeT>0&&this.rng()<.25){this.text(h.x,this.G-52,'dodge','#c8d0d8');return false;}   // ...and heroes inside the smoke are harder to hit
     if(h.invulnT>0){this.text(h.x,this.G-52,'miss','#9ae6ff');return false;}
-    amt=mitigate(h,amt,'physical');if(h.rageT>0)amt*=.75;if(h.gritT>0)amt*=1-(h.gritDR||0);   // Grit_Teeth
+    amt=mitigate(h,amt,'physical');if(h.rageT>0)amt*=.75;if(h.shellT>0)amt*=.3;if(amt>0&&h.herbT>0)h.herbT=0;   // a hit stops a herb healif(h.gritT>0)amt*=1-(h.gritDR||0);   // Grit_Teeth
     if(h.shield>0){const s=Math.min(h.shield,amt);h.shield-=s;amt-=s;if(h.thorns&&from&&!from.dead)this.hitEnemy(from,s*.3,null,{nocrit:1,sure:1});}
     if(amt<=0)return false;
     h.hp-=amt;h.hitFlash=.12;this.text(h.x+4,this.G-52,Math.round(amt),'#ff5a5a');
@@ -1124,10 +1157,10 @@ class Game{
     // formation
     // formation: everyone heads for their slot at their own pace; while marching, quicker heroes drift ahead and slow ones lag a little
     const avgMv=al.reduce((m,h)=>m+(MOVE[h.key]||26),0)/Math.max(1,al.length);
-    al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;let tx=this.exiting?this.W+60:(h.plan&&h.plan.reviveD&&!h.plan.reviveD.alive?h.plan.reviveD.x:this.home(h)+drift+(h.plan?h.plan.xoff:0));tx=Math.max(8,Math.min(this.W-8,tx));
-      if(!this.exiting&&trait(h,'range')>.55&&!(h.plan&&(h.plan.intent==='retreat'||h.plan.reviveD))){const foe=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&e.gy!=null&&Math.abs(e.gy-(h.gy||190))<4&&e.x>h.x&&e.x-h.x<90).reduce((b,e)=>!b||e.x<b.x?e:b,null);if(foe)tx=Math.max(tx,Math.min(this.home(h)+28,foe.x-12));}   // push forward into the fight
-      const x0=h.x;const C=h.base.char;const rm=C?((h.plan&&/retreat|charge|kite|cover|regroup|gather|revive/.test(h.plan.intent))||this.exiting?C.run:1):(h.plan?h.plan.runMul:1);h.running=C?rm>1:false;
-      const d=tx-h.x,st=mv*(h.mvMul||1)*(h.whirl?.5:1)*(this.exiting&&!C?2.6:1.6)*rm*(rm>1?.75:.85)*dt;/* 0.12.13 (Kyle): walking 15% slower, running 25% slower */if(!(h.pauseT>0)||this.exiting)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;});
+    al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;let tx=this.exiting?this.W+60:(h.plan&&h.plan.reviveD&&!h.plan.reviveD.alive?h.plan.reviveD.x:h.plan&&h.plan.goTo&&h.plan.goTo.alive?this.heroX(h.plan.goTo)+(h.plan.goTo.x<h.x?8:-8):this.home(h)+drift+(h.plan?h.plan.xoff:0));tx=Math.max(8,Math.min(this.W-8,tx));
+      if(!this.exiting&&trait(h,'range')>.55&&!(h.plan&&(h.plan.intent==='retreat'||h.plan.reviveD||h.plan.goTo))){const foe=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&e.gy!=null&&Math.abs(e.gy-(h.gy||190))<4&&e.x>h.x&&e.x-h.x<90).reduce((b,e)=>!b||e.x<b.x?e:b,null);if(foe)tx=Math.max(tx,Math.min(this.home(h)+28,foe.x-12));}   // push forward into the fight
+      const x0=h.x;const C=h.base.char;const rm=C?((h.plan&&/retreat|charge|kite|cover|regroup|gather|revive|herb|guard/.test(h.plan.intent))||this.exiting?C.run:1):(h.plan?h.plan.runMul:1);h.running=C?rm>1:false;
+      const d=tx-h.x,st=mv*(h.mvMul||1)*(h.whirl?.5:1)*(this.exiting&&!C?2.6:1.6)*rm*(rm>1?.75:.85)*dt;/* 0.12.13 (Kyle): walking 15% slower, running 25% slower */if(!(h.pauseT>0)||this.exiting)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;h.moveT=h.moving?(h.moveT||0)+dt:0;});
     const f=this.front();if(!f)return;
     // blocking: walk unless something is close
     const near=this.enemies.filter(e=>!e.dead&&!e.fly).reduce((m,e)=>Math.min(m,e.x-(e.boss?e.w:0)-(e.ranged?40:0)),1e9);
@@ -1170,6 +1203,7 @@ class Game{
        if(want!==h.laneI&&Math.abs(h.gy-LANES[h.laneI])<1)h.laneI+=Math.sign(want-h.laneI);}
       {const ty=LANES[h.laneI];h.gy+=Math.sign(ty-h.gy)*Math.min(Math.abs(ty-h.gy),LANE_SPD*1.4*dt);}
       regenEnergy(h,dt);if(h.critRegenT>0){h.critRegenT-=dt;h.en=Math.min(h.enMax||100,(h.en||0)+2*dt);h.hp=Math.min(h.max,h.hp+2*dt);}/* Herald: +1 energy and +1 HP every 0.5s */if(h.riseT>0){h.riseT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);}h.walkT+=dt*(scroll?(MOVE[h.key]||26)/26:0);if(h.animT>0)h.animT-=dt;if(h.hitFlash>0)h.hitFlash-=dt;if(h.buffT>0)h.buffT-=dt;
+      if(h.shellT>0){h.shellT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);}
       if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}
       if(h.invulnT>0)h.invulnT-=dt;
       if(h.hotT>0){h.hotT-=dt;h.hotTick=(h.hotTick||0)+dt;if(h.hotTick>=h.hotEvery){h.hotTick-=h.hotEvery;this.healHero(h,h.hotAmt);}}   // Rejuvenating Bloom
@@ -1401,7 +1435,7 @@ class Game{
     this.proj=this.proj.filter(p=>!p.dead);
     // fx + text
     // 0.12.14 (Kyle): nothing lying on the ground slides along with the party: bodies, stuck arrows, thorns, scorch marks scroll with the ground
-    this.stepRevive(dt);
+    this.stepRevive(dt);this.stepHerbs(dt,scroll);
     for(const h of this.alive())this.obClamp(h,true);for(const e of this.enemies)if(!e.dead)this.obClamp(e,false);
     for(const x of this.fx){x.t+=dt;if(scroll&&GROUND_FX.has(x.k))x.x-=scroll*dt;}this.fx=this.fx.filter(x=>x.t<(x.life||.6));
     if(scroll)for(const h of this.heroes.concat(this.pets||[]))if(!h.alive&&h.x!=null)h.x-=scroll*dt;   // fallen heroes stay where they fell
@@ -1775,6 +1809,7 @@ class Game{
   // IF the lane I want is blocked just ahead THEN take the nearest open lane (ties go to whichever way I was already heading)
   freeLane(want,cur,x0,x1){if(!this.laneBlocked(want,x0,x1))return want;let best=null,bd=99;for(let l=0;l<LANES.length;l++){if(this.laneBlocked(l,x0,x1))continue;const d=Math.abs(l-want)+Math.abs(l-cur)*.3;if(d<bd){bd=d;best=l;}}return best==null?want:best;}
   onKillDark(e){
+    for(const h of this.alive())if(h.insp&&INSP[h.insp]&&INSP[h.insp].passive==='scavenger'&&Math.abs(h.x-e.x)<120&&(h.herbs||0)<3&&this.rng()<.18){h.herbs=(h.herbs||0)+1;this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.8,raw:1});}
     if(e.hexT>0&&e.hexJ>0){const n=this.enemies.filter(o=>!o.dead&&o!==e&&!(o.hexT>0)&&Math.abs(o.x-e.x)<80).sort((p,q)=>Math.abs(p.x-e.x)-Math.abs(q.x-e.x))[0];
       if(n){n.hexT=e.hexA.dur;n.hexJ=e.hexJ-1;n.hexA=e.hexA;n.hexSrc=e.hexSrc;n.hexTick=0;this.fx.push({k:'bolt',pts:[[e.x,(e.gy||this.G)-14],[n.x,(n.gy||this.G)-14]],t:0,life:.35,raw:1,c:'v'});}}
     for(const h of this.alive()){const CM=h.base&&h.base.char&&(h.base.char.abilities||[]).find(a=>a.id==='communion');if(!CM||Math.abs(this.heroX(h)-e.x)>CM.r)continue;
@@ -1802,6 +1837,15 @@ class Game{
             this.fx.push({k:'quake',x:T.x+dir*A.reach*.8,gy:T.gy,t:0,life:.4,raw:1});});}}}
     this.tentacles=this.tentacles.filter(T=>!T.done);}
   // 0.12.22 Revive (Kyle): a living hero standing on a downed ally for 5s (4s with a Herald up) helps them back to their feet with 25% HP and 0 energy.
+  // 0.12.27 Scavenger (inspiration passive): herbs found on kills or foraged while marching; used on any hurt hero within 17 world px (50 screen px)
+  stepHerbs(dt,scroll){const al=this.alive().filter(o=>!o.pet||true);
+    for(const o of al){if(o.herbT>0){o.herbT-=dt;o.hp=Math.min(o.max,o.hp+o.herbHps*dt);}}
+    for(const h of al){if(!h.insp||!INSP[h.insp]||INSP[h.insp].passive!=='scavenger')continue;
+      if(scroll&&(h.herbs||0)<3&&this.rng()<.03*dt){h.herbs=(h.herbs||0)+1;this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.8,raw:1});}
+      if(!(h.herbs>0)||(h.herbCd||0)>this.t)continue;
+      const tg=al.filter(o=>o.hp/o.max<.8&&!(o.herbT>0)&&Math.abs(this.heroX(o)-this.heroX(h))<=17&&Math.abs((o.gy||this.G)-(h.gy||this.G))<6).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
+      if(tg){h.herbs--;h.herbCd=this.t+.6;tg.herbT=5;tg.herbHps=tg.max*.2/5;this.fx.push({k:'mend',x:this.heroX(tg),gy:tg.gy||this.G,t:0,life:.7,raw:1});this.ev('heal',{});
+        if(tg!==h&&Math.random()<.5)Comms.bubble(this,h,Comms.pick(['Here, chew this.','Herb for you!','Hold still.','This\'ll help.','Eat up!']));}}}
   stepRevive(dt){const downs=this.heroes.filter(h=>!h.alive&&h.downed);if(!downs.length)return;
     const al=this.alive().filter(o=>!o.pet);const herald=o=>(o.base.char&&o.base.char.abilities||[]).some(a=>a.id==='herald');
     for(const d of downs){const helpers=al.filter(o=>Math.abs(o.x-d.x)<9&&Math.abs((o.gy||this.G)-(d.gy||this.G))<4.5&&!(o.riseT>0));const need=helpers.some(herald)?4:5;d.revNeed=need;   /* 4s when the Herald is the one helping, 5s for everyone else */
@@ -2005,12 +2049,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793885694';const BGI=new Image();BGI.src='crawl_bg.png?v=1793885694';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793885694';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793886396';const BGI=new Image();BGI.src='crawl_bg.png?v=1793886396';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793886396';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793885694';XIMG.wave.src='crawl_wave.png?v=1793885694';XIMG.chibi.src='crawl_chibi.png?v=1793885694';XIMG.flannel.src='crawl_flannel.png?v=1793885694';XIMG.rain.src='crawl_rain.png?v=1793885694';XIMG.druid.src='crawl_druid.png?v=1793885694';XIMG.camp.src='crawl_campfire.png?v=1793885694';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793885694';XIMG.tornado.src='crawl_fx_tornado.png?v=1793885694';XIMG.vine.src='crawl_fx_vine.png?v=1793885694';XIMG.thorn.src='crawl_fx_thorn.png?v=1793885694';
+const XIMG={cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793886396';XIMG.wave.src='crawl_wave.png?v=1793886396';XIMG.chibi.src='crawl_chibi.png?v=1793886396';XIMG.flannel.src='crawl_flannel.png?v=1793886396';XIMG.rain.src='crawl_rain.png?v=1793886396';XIMG.druid.src='crawl_druid.png?v=1793886396';XIMG.camp.src='crawl_campfire.png?v=1793886396';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793886396';XIMG.tornado.src='crawl_fx_tornado.png?v=1793886396';XIMG.vine.src='crawl_fx_vine.png?v=1793886396';XIMG.thorn.src='crawl_fx_thorn.png?v=1793886396';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793885694';XIMG.obst.src='crawl_obst.png?v=1793885694';XIMG.robot.src='crawl_robot.png?v=1793885694';XIMG.cultist.src='crawl_cultist.png?v=1793885694';XIMG.tentacle.src='crawl_tentacle.png?v=1793885694';XIMG.boom.src='crawl_boom.png?v=1793885694';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793886396';XIMG.obst.src='crawl_obst.png?v=1793886396';XIMG.robot.src='crawl_robot.png?v=1793886396';XIMG.cultist.src='crawl_cultist.png?v=1793886396';XIMG.tentacle.src='crawl_tentacle.png?v=1793886396';XIMG.boom.src='crawl_boom.png?v=1793886396';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2195,6 +2239,11 @@ function drawGame(ctx,g,W,oy){
       if(e.hexT>0){ctx.save();ctx.globalCompositeOperation='lighter';for(let i=0;i<3;i++){const a=g.t*4+i*2.1;ctx.fillStyle='rgba(150,60,255,.75)';ctx.fillRect(e.x+Math.cos(a)*5,y-4+Math.sin(a*1.3)*6,1.2,1.2);}glow(ctx,e.x,y,6,'#6a20c0',.12);ctx.restore();}
       if(e.fearT>0){ctx.fillStyle='#c080ff';ctx.fillRect(Math.round(e.x)-.5,Math.round(y-18),1,3);ctx.fillRect(Math.round(e.x)-.5,Math.round(y-14),1,1);}}
     for(const h of g.alive())if(h.key==='cultist'&&!(h.riseT>0)){const d=h.face||1,ey=(h.gy||g.G)-14.6;ctx.save();ctx.globalCompositeOperation='lighter';for(const ox of[-.1,1.7])glow(ctx,g.heroX(h)+d*(1.2+ox),ey,1.3,'#ff2a20',.32+.12*Math.sin(g.t*3+ox));ctx.restore();}   // his eyes glow red in the dark
+    for(const h of g.alive()){if(h.herbs>0){const y=(h.gy||g.G)-30;for(let i=0;i<h.herbs;i++){const x=g.heroX(h)-3+i*3;ctx.fillStyle='#2e7a2a';ctx.fillRect(x,y,2,1.5);ctx.fillStyle='#8fe36a';ctx.fillRect(x,y-.6,1.2,1);}}   // Scavenger: herbs carried
+      if(h.herbT>0&&Math.random()<.4){ctx.fillStyle='rgba(140,230,110,.8)';ctx.fillRect(g.heroX(h)-5+Math.random()*10,(h.gy||g.G)-6-Math.random()*16,1,1);}}
+    for(const f of g.fx)if(f.k==='herbget'){const k=f.t/f.life;ctx.save();ctx.globalAlpha=1-k;ctx.fillStyle='#8fe36a';ctx.fillRect(f.x-1,f.y-k*6,3,2);ctx.fillStyle='#2e7a2a';ctx.fillRect(f.x,f.y-k*6+1,1,2);ctx.restore();}
+    for(const h of g.alive())if(h.shellT>0){ctx.save();ctx.globalAlpha=.55;ctx.fillStyle='#3e7a3a';ctx.beginPath();ctx.ellipse(g.heroX(h),(h.gy||g.G)-9,10,10,0,Math.PI,0);ctx.fill();ctx.strokeStyle='#9be07a';ctx.lineWidth=1;ctx.stroke();ctx.restore();}   // Shell Up
+    for(const e of g.enemies)if(!e.dead&&e.webT>0){e.webT-=1/60;const y=(e.gy!=null?e.gy:g.G)-10;ctx.save();ctx.strokeStyle='rgba(235,240,255,.7)';ctx.lineWidth=.6;for(let i=0;i<4;i++){const a=i*.8;ctx.beginPath();ctx.moveTo(e.x-6*Math.cos(a),y-6*Math.sin(a));ctx.lineTo(e.x+6*Math.cos(a),y+6*Math.sin(a));ctx.stroke();}ctx.restore();}   // webbed
     for(const h of g.alive())if(h.pactT>0){const gy=h.gy||g.G,p=.5+.5*Math.sin(g.t*8);ctx.save();ctx.globalAlpha=Math.min(1,h.pactT)*(.45+.3*p);ctx.strokeStyle='#d0202a';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(g.heroX(h),gy,9,2.4,0,0,7);ctx.stroke();ctx.restore();}};
   const druidFx=()=>{for(const f of g.fx){const k=f.t/f.life;
       if(f.k==='claw'){const d=f.dir,e=1-Math.pow(1-Math.min(1,k/.55),3);const span=Math.max(6,Math.abs(f.tx-f.x));const cx=f.x+d*(span*e),cy=f.gy-11-2*Math.sin(Math.PI*e);
@@ -2502,7 +2551,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.26</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.27</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
