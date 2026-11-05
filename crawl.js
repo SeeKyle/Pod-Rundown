@@ -1232,8 +1232,8 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793861486';const BGI=new Image();BGI.src='crawl_bg.png?v=1793861486';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793861486';const XIMG={flannel:new Image(),boom:new Image()};XIMG.flannel.src='crawl_flannel.png?v=1793861486';XIMG.boom.src='crawl_boom.png?v=1793861486';
+const IMG=new Image();IMG.src='crawl.png?v=1793861627';const BGI=new Image();BGI.src='crawl_bg.png?v=1793861627';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793861627';const XIMG={flannel:new Image(),boom:new Image()};XIMG.flannel.src='crawl_flannel.png?v=1793861627';XIMG.boom.src='crawl_boom.png?v=1793861627';
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
 const GQ=2;   // the game canvas renders at 2x its old pixel density so full-detail art stays clean (pixel art still draws crisp)
