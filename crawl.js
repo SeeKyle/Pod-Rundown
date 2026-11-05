@@ -414,7 +414,7 @@ const INSP_HELP={acc:'More shots land on the body and head instead of flying ove
   lifesteal:'Heals for part of the damage he deals.',move:'Walks and runs faster.',meleeDmg:'Melee hits deal more damage.',rangedDmg:'Ranged hits deal more damage.',
   meleeSpd:'Swings his melee weapon more often.',rangedSpd:'Shoots and reloads faster.',kb:'Melee hits shove enemies back further.'};
 function stashText(S){return Object.entries(S).map(([k,v])=>`+${v} ${{gold:'gold',parts:'spare parts',food:'food',water:'water'}[k]}`).join(', ');}
-function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.perk==='sapper')out.push('🧨 Sapper (perk): spots enemy mines far more easily, and can go defuse a spotted one (faster when Techy). A defused mine becomes a one-time item he plants in front of zombies coming down his lane.');if(I.stash)out.push('🎒 Starting stash: the run starts with '+stashText(I.stash)+' for every hero carrying this deck.');if(I.passive&&INSP_PASSIVE[I.passive])out.push('✦ '+INSP_PASSIVE[I.passive][0]+' (passive): '+INSP_PASSIVE[I.passive][1]);
+function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.perk==='sapper')out.push('🧨 Sapper (perk): spots enemy mines far more easily, and can go defuse a spotted one (faster when Techy). A defused mine is usually (75%) kept as a one-time item he plants in front of zombies coming down his lane; otherwise (25%) it comes apart into spare parts.');if(I.stash)out.push('🎒 Starting stash: the run starts with '+stashText(I.stash)+' for every hero carrying this deck.');if(I.passive&&INSP_PASSIVE[I.passive])out.push('✦ '+INSP_PASSIVE[I.passive][0]+' (passive): '+INSP_PASSIVE[I.passive][1]);
   for(const [k,v] of Object.entries(I.mod||{})){const [l,u]=INSP_LABEL[k]||[k,''];out.push(`${v>0?'+':''}${v}${u} ${l}: ${INSP_HELP[k]||''}`);}
   for(const [k,v] of Object.entries(I.sl||{})){const S=SLIDERS.find(s=>s[0]===k);if(!S)continue;const side=v>0?S[2]:S[1];
     if(false)0;out.push(`${side} +${Math.abs(v)}: slides his personality ${Math.abs(v)} step${Math.abs(v)>1?'s':''} toward "${side}" (the ${S[1]} ↔ ${S[2]} slider: ${S[3].toLowerCase()}). If that would go past 0 or 10, it doesn't move.`);}
@@ -646,7 +646,10 @@ const PERSONA={   // starting values (Kyle's test numbers: middling with a few e
 const TRAIT_WORDS={aggr:['Careful','Reckless'],aware:['Hunter','Guardian'],pace:['Patient','Frantic'],lane:['Steadfast','Roaming'],self:['Loyal','Greedy'],
  range:['Sharpshooter','Brawler'],plan:['Stubborn','Fickle'],energy:['Spendthrift','Hoarder'],size:['Swarm-Breaker','Giant-Slayer'],exec:['Sloppy','Precise'],
  grudge:['Forgiving','Vengeful'],pack:['Pack','Lone'],flair:['Stoic','Showoff'],talk:['Silent','Loudmouth'],listen:['Headstrong','Team Player'],perc:['Tunnel-Visioned','Watchful'],nerve:['Steady','Jumpy'],noise:['Quiet','Clanky'],cover:['Exposed','Hunkered'],tech:['Old-Ways','Gearhead']};
-function personaOf(u){if(!u.persona){const key=u.key||u.type;const b=PERSONA[key]||PERSONA._default;u.persona={talk:5,listen:5,perc:5,tech:5,nerve:5,noise:5,cover:5,...b};
+/* 0.12.52 D&D mode (Kyle): each hero's sliders are rolled (2d6-2 each, so 0-10 with most near the middle) at the start of a run instead of fixed */
+let DND_ROLLS=null;function setRunModes(run){DND_ROLLS=run&&run.dnd&&run.rolls?run.rolls:null;}
+function rollPersonas(team){const out={};const keys=SLIDERS.map(s=>s[0]);for(const k of team){const r={};for(const s of keys)r[s]=Math.floor(Math.random()*6)+Math.floor(Math.random()*6);out[k]=r;}return out;}
+function personaOf(u){if(!u.persona){const key=u.key||u.type;const b=(u.key&&DND_ROLLS&&DND_ROLLS[key])||PERSONA[key]||PERSONA._default;u.persona={talk:5,listen:5,perc:5,tech:5,nerve:5,noise:5,cover:5,...b};
   if(u.insp)for(const [k,d] of Object.entries((INSP[u.insp]||{}).sl||{})){const v=u.persona[k]+d;if(v>=0&&v<=10)u.persona[k]=v;}   // Kyle: a slide past 0 or 10 doesn't move at all
   if(!u.key){for(const k in u.persona)u.persona[k]=Math.max(0,Math.min(10,u.persona[k]+Math.round((Math.random()-.5)*2)));}   // monsters vary a little
   u.moods=[];}return u.persona;}
@@ -990,7 +993,7 @@ const Comms={
 class Game{
   constructor(opt){
     this.W=opt.W||CFG.W;this.H=CFG.H;this.G=CFG.GROUND;
-    this.rng=opt.rng||Math.random;this.demo=!!opt.demo;this.run=opt.run;this.slot=opt.slot;
+    this.rng=opt.rng||Math.random;this.demo=!!opt.demo;this.run=opt.run;this.slot=opt.slot;if(!this.demo)setRunModes(this.run);this.hardcore=!this.demo&&!!(this.run&&this.run.hardcore);
     this.st=CFG.stage(this.run.stage,this.run.prestige);
     this.dist=0;this.t=0;this.events=[];this.enemies=[];this.proj=[];this.fx=[];this.minions=[];this.texts=[];
     this.budget=2;this.bossSpawned=false;this.over=null;this.kills=0;this.shake=0;this.devourStacks=0;
@@ -1514,6 +1517,10 @@ class Game{
             if(Math.abs((o.gy||this.G)-p.gy)<=depthHalf(hb)&&Math.abs(p.x-this.heroX(o))<=hb.w*UNIT_SCALE/2&&p.h>=0&&p.h<=hb.h){p.hit.add(o);this.hurtHero(o,p.dmg*(isHead(o,p.h)?HEADSHOT.mul:1),p.src);
               this.fx.push({k:'spark',x:p.x,y:p.y,t:0,c:PCOL[p.kind]||'#fff'});if(p.pierce>0)p.pierce--;else{p.dead=true;break;}}}
           continue;}
+        if(this.hardcore&&p.src&&p.src.key&&Math.abs(p.x-p.x0)>14){let ffHit=false;for(const o of this.alive()){if(o===p.src||p.hit.has(o))continue;const hb=hbOf(o);
+            if(Math.abs((o.gy||this.G)-p.gy)<=depthHalf(hb)&&Math.abs(p.x-this.heroX(o))<=hb.w*UNIT_SCALE/2&&p.h>=0&&p.h<=hb.h){p.hit.add(o);this.hurtHero(o,p.dmg,null);this.fx.push({k:'spark',x:p.x,y:p.y,t:0,c:'#ff8080'});
+              this.st8(p.src).ff=(this.st8(p.src).ff||0)+1;if(Math.random()<.5)Comms.bubble(this,o,Comms.pick(['Watch it!','Friendly fire!','I\'m on YOUR side!','Ow! Hey!']),true);if(p.pierce>0)p.pierce--;else{p.dead=true;ffHit=true;break;}}}
+          if(ffHit)continue;}   /* 0.12.52 Hardcore: shots hit whoever is in the way, allies included */
         for(const e of this.enemies){if(e.dead||p.hit.has(e))continue;
           let ok;
           if(e.boss)ok=Math.abs(p.x-(e.x-e.w*.4))<e.w*.6&&p.h<220;
@@ -1842,6 +1849,8 @@ class Game{
       if(dealt&&!e.dead){const res=e.boss?.9:((e.E&&e.E.kbRes)||0);e.kbv=Math.max(e.kbv||0,A.kb/100*40*8*(1-res)*fall);e.kbDir=e.x>=T.x?1:-1;
         if(this.rng()<A.bleed.chance){e.bleedT=A.bleed.dur;e.bleedDps=A.bleed.dmg/A.bleed.dur;}}
       e._tripHit=T;}
+    if(this.hardcore)for(const o of this.alive()){const dx=Math.abs(this.heroX(o)-(T.x+6)),dz=Math.abs((o.gy||this.G)-T.gy);const C2=A.cross;const inR=dx<=C2.long&&dz<=C2.thin,inC=dz<=C2.across&&dx<=C2.wide;
+      if(inR||inC){this.hurtHero(o,base*mul*.8,null);this.st8(h||o).ff=(this.st8(h||o).ff||0)+1;}}   /* Hardcore: your own bomb hurts your people too */
     /* 0.12.38 (Kyle): shockwave. A wider ring around the cross: anything it reaches that the cross missed takes half damage and a heavier shove (no bleed) */
     const SW=A.shock;if(SW){this.fx.push({k:'ring',x:T.x+6,y:T.gy-4,t:0,r:SW.r,c:'#ffd9a0'});
       for(const e of this.enemies){if(e.dead||e.fly||e._tripHit===T)continue;const dx=Math.abs(e.x-(T.x+6)),dz=Math.abs((e.gy!=null?e.gy:this.G)-T.gy);
@@ -2027,8 +2036,9 @@ class Game{
       if(Math.abs(this.heroX(h)-(M.x-7))>5||Math.abs((h.gy||this.G)-M.gy)>3)continue;h.pauseT=Math.max(h.pauseT||0,.05);h.x-=scroll*dt;if(h.moving)continue;
       h.search=h.search&&h.search.trap?h.search:{o:M,t:0,T:D.need,disarm:1,trap:1};h.search.t+=dt;
       if(!D.rolled){D.rolled=1;if(this.rng()<.08*(1-trait(h,'tech'))){h.search=null;h.defuse=null;this.mineBoom(M);Comms.bubble(this,h,Comms.pick(['Oh no.','Wrong wire!']),true);continue;}}
-      if(h.search.t>=D.need){M.armed=false;h.search=null;h.defuse=null;h.mine=(h.mine||0)+1;h.plan=null;h.thinkT=0;this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.9,raw:1,kit:'defib'});
-        Comms.bubble(this,h,Comms.pick(['Disarmed. Mine now.','Got it. I\'ll save this for them.','Wire cut. Keeping it.']),true);this.st8(h).defused=(this.st8(h).defused||0)+1;}}
+      if(h.search.t>=D.need){M.armed=false;h.search=null;h.defuse=null;h.plan=null;h.thinkT=0;this.st8(h).defused=(this.st8(h).defused||0)+1;
+        if(this.rng()<.75){h.mine=(h.mine||0)+1;this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.9,raw:1,kit:'defib'});Comms.bubble(this,h,Comms.pick(['Disarmed. Mine now.','Got it. I\'ll save this for them.','Wire cut. Keeping it.']),true);}   /* 0.12.52 (Kyle): 75% he keeps the mine */
+        else{this.gainParts(null,{x:M.x,lanes:[M.l]});Comms.bubble(this,h,Comms.pick(['Fell apart. Parts, at least.','Busted it. Spare parts.','Not usable, but salvageable.']),true);}}}   /* ...25% it comes apart into spare parts */
     // planting a defused mine in front of zombies coming down my lane
     for(const h of al){if(!(h.mine>0)||(h.mineCd||0)>this.t)continue;const lane=this.enemies.filter(e=>!e.dead&&!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-(h.gy||this.G))<4&&e.x-this.heroX(h)>18&&e.x-this.heroX(h)<75);
       if(!lane.length||this.enemies.some(e=>!e.dead&&Math.abs(e.x-this.heroX(h))<16))continue;h.mine--;h.mineCd=this.t+1;const TB=(CHAR.flannel.abilities||[]).find(a=>a.id==='trip');
@@ -2088,7 +2098,8 @@ class Game{
     if(this.missiles&&this.missiles.length){for(const M of this.missiles){M.t+=dt;M.x0-=scroll*dt;M.tx-=scroll*dt;const u=Math.min(1,M.t/M.T);M.x=M.x0+(M.tx-M.x0)*u;M.gyNow=M.gy+(M.tgy-M.gy)*u;M.hgt=(1-u)*23+46*Math.sin(Math.PI*u);
         M.trail-=dt;if(M.trail<=0){M.trail=.035;this.fx.push({k:'puff',x:M.x,y:M.gyNow-M.hgt,t:0,life:.7+this.rng()*.3,s:.6+this.rng()*.5,raw:1});}
         if(u>=1&&!M.done){M.done=1;this.fx.push({k:'boom',x:M.x,gy:M.tgy,t:0,life:.8,raw:1,small:1});this.ev('boom',{});this.shake=Math.max(this.shake||0,.25);
-          for(const e of this.enemies){if(e.dead||e.fly)continue;if(Math.abs(e.x-M.x)<=M.A.r+(e.boss?e.w*.5:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-M.tgy)<=8))this.hitEnemy(e,(this.rollDice(M.A.dice)+(M.src.flatRanged||0)*.5)*M.mul,M.src&&M.src.alive?M.src:null,{blast:1});}}}
+          for(const e of this.enemies){if(e.dead||e.fly)continue;if(Math.abs(e.x-M.x)<=M.A.r+(e.boss?e.w*.5:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-M.tgy)<=8))this.hitEnemy(e,(this.rollDice(M.A.dice)+(M.src.flatRanged||0)*.5)*M.mul,M.src&&M.src.alive?M.src:null,{blast:1});}
+          if(this.hardcore)for(const o of this.alive()){if(Math.abs(this.heroX(o)-M.x)<=M.A.r&&Math.abs((o.gy||this.G)-M.tgy)<=8)this.hurtHero(o,this.rollDice(M.A.dice)*M.mul*.8,null);}}}   /* Hardcore: missiles don't care whose side you're on */
       this.missiles=this.missiles.filter(M=>!M.done);}
     if(this.nades&&this.nades.length){for(const N of this.nades){N.t+=dt;N.x1-=scroll*dt;N.x0-=scroll*dt;const u=Math.min(1,N.t/N.T);N.x=N.x0+(N.x1-N.x0)*u;N.gyNow=N.gy0+(N.gy-N.gy0)*u;N.hgt=18*(1-u)+22*Math.sin(Math.PI*u);
         if(u>=1&&!N.done){N.done=1;(this.clouds=this.clouds||[]).push({x:N.x1,gy:N.gy,r:N.A.r,t:0,life:N.A.dur,A:N.A,seed:Math.floor(this.rng()*999)});this.ev('wind',{});}}
@@ -2374,12 +2385,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793900275';const BGI=new Image();BGI.src='crawl_bg.png?v=1793900275';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793900275';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793900421';const BGI=new Image();BGI.src='crawl_bg.png?v=1793900421';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793900421';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793900275';XIMG.wave.src='crawl_wave.png?v=1793900275';XIMG.chibi.src='crawl_chibi.png?v=1793900275';XIMG.flannel.src='crawl_flannel.png?v=1793900275';XIMG.rain.src='crawl_rain.png?v=1793900275';XIMG.druid.src='crawl_druid.png?v=1793900275';XIMG.camp.src='crawl_campfire.png?v=1793900275';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793900275';XIMG.tornado.src='crawl_fx_tornado.png?v=1793900275';XIMG.vine.src='crawl_fx_vine.png?v=1793900275';XIMG.thorn.src='crawl_fx_thorn.png?v=1793900275';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793900421';XIMG.wave.src='crawl_wave.png?v=1793900421';XIMG.chibi.src='crawl_chibi.png?v=1793900421';XIMG.flannel.src='crawl_flannel.png?v=1793900421';XIMG.rain.src='crawl_rain.png?v=1793900421';XIMG.druid.src='crawl_druid.png?v=1793900421';XIMG.camp.src='crawl_campfire.png?v=1793900421';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793900421';XIMG.tornado.src='crawl_fx_tornado.png?v=1793900421';XIMG.vine.src='crawl_fx_vine.png?v=1793900421';XIMG.thorn.src='crawl_fx_thorn.png?v=1793900421';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793900275';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793900275';XIMG.obst.src='crawl_obst.png?v=1793900275';XIMG.cars.src='crawl_cars.png?v=1793900275';XIMG.robot.src='crawl_robot.png?v=1793900275';XIMG.cultist.src='crawl_cultist.png?v=1793900275';XIMG.tentacle.src='crawl_tentacle.png?v=1793900275';XIMG.boom.src='crawl_boom.png?v=1793900275';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793900421';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793900421';XIMG.obst.src='crawl_obst.png?v=1793900421';XIMG.cars.src='crawl_cars.png?v=1793900421';XIMG.robot.src='crawl_robot.png?v=1793900421';XIMG.cultist.src='crawl_cultist.png?v=1793900421';XIMG.tentacle.src='crawl_tentacle.png?v=1793900421';XIMG.boom.src='crawl_boom.png?v=1793900421';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2917,7 +2928,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.51</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.52</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -2996,7 +3007,7 @@ function statBars(k,lvl){const b=heroBase(k,lvl,3);const mx={hp:80,atk:40,aspd:1
   return `<div class="cc-stat"><span title="${b.stamina} Stamina × 5 = ${b.hp} HP">HP ${b.hp}</span><i><b style="width:${Math.min(100,b.hp/mx.hp*100)}%"></b></i><span title="Basic attack ${b.dice[0]}d${b.dice[1]}, crit ${Math.round(b.crit*100)}%, accuracy ${b.acc||0}; bar = ability power">PWR</span><i><b style="width:${Math.min(100,b.atk/mx.atk*100)}%"></b></i><span>SPD</span><i><b style="width:${Math.min(100,b.aspd/mx.aspd*100)}%"></b></i></div>`;}
 const ROLE={melee:'Melee',ranged:'Ranged',caster:'Caster',duo:'Duo',gunner:'Rifle + Melee',blade:'Sword'};
 function showTeam(){
-  const s=SLOT();migrate(s,CC.player);s.partySize=3;const pick=[];   /* 0.12.33: back to a 3-hero party */
+  setRunModes(null);  const s=SLOT();migrate(s,CC.player);s.partySize=3;const pick=[];   /* 0.12.33: back to a 3-hero party */
   const mine=DATA.heroes.filter(h=>h.owner===CC.player);
   const P=showPanel(`<div class="cc-h">PICK YOUR PARTY</div><p class="cc-sub">Up to 3 heroes from your decks. Fewer heroes = each one is stronger. Lower-level heroes earn catch-up XP.</p>
     <div class="cc-heroes">${mine.map(h=>{const st=STYLE[h.key];const H=s.heroes[h.key],L=H.lvl;const tip=[h.name,'',BEHAVIOR[h.key]||h.blurb||'','',...personaLines({key:h.key,insp:H.insp})].join('\n');
@@ -3005,7 +3016,7 @@ function showTeam(){
       <div class="cc-insp" data-ik="${h.key}"><div class="cc-sub" style="margin:4px 0 2px;font-size:10px">✨ INSPIRATION DECK</div>
         <select data-ip><option value="">Pick a player…</option>${Object.keys(PLAYER_ICON).map(p=>`<option value="${p}"${H.insp&&INSP[H.insp]&&INSP[H.insp].o===p?' selected':''}>${PLAYER_ICON[p]} ${p}</option>`).join('')}</select>
         <select data-id ${H.insp?'':'disabled'}></select><div class="cc-ibx"></div></div></div>`;}).join('')}</div>
-    <div class="cc-row" style="margin-top:12px"><button class="cc-btn go" data-go disabled>START RUN</button><button class="cc-btn" data-back>← Saves</button></div>`);
+    <div class="cc-row" style="margin-top:12px"><label class="cc-sub" style="margin:0 8px 0 0;font-size:12px;cursor:pointer" data-tipt="Friendly fire: your heroes' shots can hit allies in the way, and your own explosions (Trip Bomb, its shockwave, missiles, planted mines) hurt your units too."><input type="checkbox" data-hc ${s.lastModes&&s.lastModes.hardcore?'checked':''}> ☠ Hardcore</label><label class="cc-sub" style="margin:0 10px 0 0;font-size:12px;cursor:pointer" data-tipt="Every hero's 20 personality sliders are rolled (2d6-2 each) when the run starts instead of using their fixed values. Deck nudges still apply on top."><input type="checkbox" data-dnd ${s.lastModes&&s.lastModes.dnd?'checked':''}> 🎲 D&amp;D mode</label><button class="cc-btn go" data-go disabled>START RUN</button><button class="cc-btn" data-back>← Saves</button></div>`);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
   // Inspiration: player first, then that player's decks (each option shows its bonus). Saved per hero on this save slot.
   P.querySelectorAll('.cc-insp').forEach(box=>{const k=box.dataset.ik,H=s.heroes[k];const ip=box.querySelector('[data-ip]'),id=box.querySelector('[data-id]'),ib=box.querySelector('.cc-ibx');
@@ -3018,7 +3029,7 @@ function showTeam(){
     const g=P.querySelector('[data-go]');g.disabled=!pick.length;g.textContent=`START RUN (${pick.length}/${s.partySize||2})`;};
   P.querySelectorAll('.cc-hero').forEach(b=>b.onclick=()=>{const k=b.dataset.k,i=pick.indexOf(k);if(i>=0)pick.splice(i,1);else if(pick.length<(s.partySize||3))pick.push(k);upd();});
   P.querySelector('[data-back]').onclick=showSlots;
-  P.querySelector('[data-go]').onclick=()=>{s.run=newRun(pick,s);s.runs++;persist();showCamp();};upd();
+  P.querySelector('[data-go]').onclick=()=>{s.run=newRun(pick,s);s.lastModes={hardcore:!!P.querySelector('[data-hc]').checked,dnd:!!P.querySelector('[data-dnd]').checked};s.run.hardcore=s.lastModes.hardcore;s.run.dnd=s.lastModes.dnd;if(s.run.dnd)s.run.rolls=rollPersonas(pick);s.runs++;persist();showCamp();};upd();
 }
 function rankStars(r){return r>=CFG.maxRank?'<span class="cc-asc">✦ MAX ✦</span>':'<span class="cc-stars">'+'★'.repeat(Math.min(5,Math.ceil(r/2)))+'</span> <span class="cc-sub" style="font-size:11px">r'+r+'</span>';}
 function chipFor(e,item,hk){const base=item?shortCard(e.card):sname(hk,e.card);const name=e.r>=CFG.maxRank?`✦ ${esc(maxTitle(e.card,e.arch))}`:esc(base);
@@ -3044,9 +3055,9 @@ function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=r
   return sup+up+tri+tower+still;}
 function showCamp(){
   const s=SLOT();const run=s.run;migrate(s,CC.player);run.bag=run.bag||[];if(ABILITIES_OFF){run.pending=0;run.bag=run.bag.filter(e=>e.kind==='item');}const st=CFG.stage(run.stage,run.prestige);
-  {const lg=campArrive(s,run);if(lg.length)run.campLog=lg;else if(run.campAt!==run.stage)run.campLog=[];}const hungry=new Set(run.needFeed||[]);
+  setRunModes(run);{const lg=campArrive(s,run);if(lg.length)run.campLog=lg;else if(run.campAt!==run.stage)run.campLog=[];}const hungry=new Set(run.needFeed||[]);
   const btn=(attrs,label,title)=>`<button class="cc-mini" ${attrs} ${title?`title="${esc(title)}"`:''}>${label}</button>`;
-  const P=showPanel(`<div class="cc-h">STAGE ${run.stage}${run.prestige?' · ★'+run.prestige:''}</div><div class="cc-h2">${esc(st.biome.name)}${st.boss?` — ${esc(CFG.bosses[st.boss].name)} awaits`:''}</div>
+  const P=showPanel(`<div class="cc-h">STAGE ${run.stage}${run.prestige?' · ★'+run.prestige:''}${run.hardcore?' <span style="color:#ff5a5a;font-size:12px">☠ HARDCORE</span>':''}${run.dnd?' <span style="color:#c8a0ff;font-size:12px">🎲 D&amp;D</span>':''}</div><div class="cc-h2">${esc(st.biome.name)}${st.boss?` — ${esc(CFG.bosses[st.boss].name)} awaits`:''}</div>
     <p class="cc-sub">Score ${fmt(run.score)} · save point. ${run.pending?`<b style="color:#a6ff2e">⬆ ${run.pending} upgrade${run.pending>1?'s':''} waiting</b>`:'No upgrades waiting.'}</p>
     <div class="cc-load">${run.team.map(k=>{const d=heroDef(k),hv=run.heroes[k],L=s.heroes[k],cap=slotCaps(L.lvl);
       const act=hv.spells.map((e,i)=>[e,i]).filter(([e])=>!SPELL[e.arch].passive),pas=hv.spells.map((e,i)=>[e,i]).filter(([e])=>SPELL[e.arch].passive);
@@ -3160,7 +3171,7 @@ function statsBrief(g){const S=g.stats||{};const keys=Object.keys(S).filter(k=>k
   const nm=k=>k==='flannel_pal'?'Traveling_Companion':(heroDef(k)?heroDef(k).name:((CHAR[k]||{}).name||k));
   const best=(f,min)=>{let b=null,bv=min||0;for(const k of keys){const v=f(S[k]);if(v>bv){bv=v;b=k;}}return b?[b,bv]:null;};
   const aw=[['💥 Most damage',best(s=>s.dmg),v=>fmt(Math.round(v))],['💚 Top healer',best(s=>s.heal,1),v=>fmt(Math.round(v))+' healed'],['💀 Most kills',best(s=>s.kills),v=>v+' kills'],
-    ['🎯 Biggest hit',best(s=>s.biggest),v=>Math.round(v)],['🧠 Headshots',best(s=>s.heads),v=>v],['🛟 Revives',best(s=>s.revives),v=>v],['🔍 Searches',best(s=>s.searches),v=>v],['🤏 Sticky fingers',best(s=>s.steals||0),v=>v+' stolen from allies'],['🧨 Defused',best(s=>s.defused||0),v=>v+' mines'],['🩸 Took the most',best(s=>s.taken),v=>fmt(Math.round(v))+' dmg']]
+    ['🎯 Biggest hit',best(s=>s.biggest),v=>Math.round(v)],['🧠 Headshots',best(s=>s.heads),v=>v],['🛟 Revives',best(s=>s.revives),v=>v],['🔍 Searches',best(s=>s.searches),v=>v],['🤏 Sticky fingers',best(s=>s.steals||0),v=>v+' stolen from allies'],['🧨 Defused',best(s=>s.defused||0),v=>v+' mines'],['💢 Friendly fire',best(s=>s.ff||0),v=>v+' hits on allies'],['🩸 Took the most',best(s=>s.taken),v=>fmt(Math.round(v))+' dmg']]
     .filter(a=>a[1]).map(([t,[k,v],f])=>`<span class="cc-chip" style="margin:2px">${t}: <b>${esc(nm(k))}</b> (${f(v)})</span>`).join('');
   const rows=keys.sort((a,b)=>S[b].dmg-S[a].dmg).map(k=>{const s=S[k];return `<tr><td style="text-align:left">${esc(nm(k))}</td><td>${fmt(Math.round(s.dmg))}</td><td>${(s.dmg/secs).toFixed(1)}</td><td>${fmt(Math.round(s.heal))}</td><td>${s.kills}</td><td>${s.crits}</td><td>${s.heads}</td><td>${fmt(Math.round(s.taken))}</td><td>${s.downs}</td><td>${s.revives}</td><td>${s.searches}</td></tr>`;}).join('');
   return `<div class="cc-card" style="margin-top:8px"><b>📊 Stage stats</b> <span class="cc-sub" style="font-size:11px">${Math.round(secs)}s of fighting</span>
@@ -3193,7 +3204,7 @@ function finishStage(g){
     <div class="cc-load">${team.map(k=>`<div class="cc-card cc-lh"><span data-por="${k}"></span><div><b>${esc(heroDef(k).name)}</b><div class="cc-sub" style="margin:0">LV ${s.heroes[k].lvl} · ${fmt(s.heroes[k].xp)}/${fmt(needHeroXp(s.heroes[k].lvl))} XP</div></div></div>`).join('')}</div>
     <div class="cc-row" style="margin-top:12px"><button class="cc-btn go" data-again>SAME TEAM AGAIN</button><button class="cc-btn" data-team>New team</button><button class="cc-btn" data-saves>Saves</button></div>`);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por,48)));
-  P.querySelector('[data-again]').onclick=()=>{s.run=newRun(team,s);s.runs++;persist();showCamp();};
+  P.querySelector('[data-again]').onclick=()=>{s.run=newRun(team,s);const M=s.lastModes||{};s.run.hardcore=!!M.hardcore;s.run.dnd=!!M.dnd;if(s.run.dnd)s.run.rolls=rollPersonas(team);s.runs++;persist();showCamp();};
   P.querySelector('[data-team]').onclick=showTeam;P.querySelector('[data-saves]').onclick=showSlots;
 }
 function showStranger(free){
