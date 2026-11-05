@@ -31,10 +31,10 @@ const CFG={
     // rebuilt roster: only the zombie so far. animAtk = attack animation length (s), hitAt = when in it the blow lands (s)
     // Kyle's zombie: 25 HP (0.12.3, was 15), 1d6 per hit, swings every 1.25s, 12px reach, very slow, 3 armor (=6% less damage), small-medium knockback resistance,
     // 25% on hit to Bleed (20 dmg over 5s), item 4% / small gold 17.5%. Three looks (skins), identical stats.
-    zombie:  {undead:1,hp:25,dmgDie:6,spd:8,atk:1.25,reach:12,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
+    zombie:  {undead:1,hp:25,dmgDie:6,spd:8.8,atk:1.25,reach:12,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
               itemChance:.04,goldChance:.175,goldAmt:[2,5],stack:true,xp:2,pts:10,cost:1.2,animAtk:.6,hitAt:.38,skins:['zombie','zombie_f','zombie_b']},
     // Kyle's werewolf, the first fast enemy: zombie stats except 30 HP (0.12.3, was 40) and fast; hunts the back-line heroes first
-    werewolf:{hp:30,dmgDie:6,spd:40,atk:1.25,reach:12,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
+    werewolf:{hp:30,dmgDie:6,spd:44,atk:1.25,reach:12,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
               itemChance:.04,goldChance:.175,goldAmt:[2,5],xp:3,pts:16,cost:2.2,animAtk:.7,hitAt:.45,backline:true,fps:12,scale:.77,
               leap:{dmg:10,gap:20,dur:.5,cd:8}},   // jumping attack: bounds over a 20px gap and lands for 10 damage
   },
@@ -49,8 +49,11 @@ const CFG={
     return {n,biome:b,bi,boss:n%this.stagesPerBiome===0?b.boss:null,
       len:1.5*(820+42*(n-1)),   // 5 stages per biome; each about 25% shorter than before
       rate:1.5*(0.62+0.061*(n-1))*(1+0.3*P),   // spawn budget per second
-      hpMul:Math.pow(1.28,.555*(n-1))*Math.pow(2.2,P),   // difficulty climbs over 15 stages the way it used to over 9
-      dmgMul:Math.pow(1.16,.555*(n-1))*Math.pow(1.8,P),
+      // 0.12.13 (Kyle): each stage ~10-20% harder on average (was ~25%): +8% enemy HP, +5% damage and +4% more enemies per stage
+      //   = about 1.08*1.05*1.04 = +18% total threat per stage (plus the extra werewolves and strays).
+      hpMul:Math.pow(1.08,n-1)*Math.pow(2.2,P),
+      dmgMul:Math.pow(1.05,n-1)*Math.pow(1.8,P),
+      countMul:1+.04*(n-1),
       xpMul:1+0.19*(n-1)+P*2.4};
   },
 };
@@ -276,7 +279,8 @@ function regenEnergy(u,dt){const M=ENERGY.max(u);if(u.en==null)u.en=M;u.enMax=M;
 function spendEnergy(u,c){if((u.en||0)<c)return false;u.en-=c;return true;}
 // Werewolves come in a set number per stage (Kyle: 1 on stage 1, 2 on stage 3), spread along the stage instead of from the random pool
 const CLUSTERS={count:7,first:2,last:[6,7]};   // Kyle: first cluster 2, last cluster 6-7
-const WOLVES_PER_STAGE=n=>n<=2?1:n<=4?2:n===5?3:Math.min(6,2+Math.floor((n-5)/2));
+const WOLVES_PER_STAGE=n=>Math.min(7,2+Math.floor((n-1)*.4));   // 0.12.13 (Kyle): 2 on stage 1, then one more about every 2-3 stages (2,2,2,3,3,4,4,4,5...)
+const STRAYS_PER_STAGE=n=>2+Math.floor((n-1)/3);   // 0.12.13 (Kyle): a lonely zombie here or there between cluster waves
 const ENEMY_BODY=9;   // px between a melee enemy's centre and the front hero's centre before reach is added
 const HERO_FLAT_HP=0,HP_PER_STAMINA=5,HERO_DICE=[2,4],HERO_BASE_CRIT=.1;   // basic attack = 2d4; every hero starts at 10% crit
 // ---- 0.12.3 real characters: every number comes straight from the character sheet Kyle fills out
@@ -502,24 +506,26 @@ const SLIDERS=[
  ['grudge','Forgiving','Vengeful','Forgets who hit it vs. hunts whoever hit it last'],
  ['pack','Pack Hunter','Lone Wolf','Piles onto what allies are fighting vs. picks its own fight'],
  ['flair','Stoic','Showoff','All business vs. taunts and celebrates'],
+ ['talk','Quiet','Chatty','Almost never calls anything out vs. calls out everything it sees'],
+ ['listen','Ignores Callouts','Follows Callouts','Does its own thing vs. does what allies shout for'],
 ];
 const PERSONA={   // starting values (Kyle's test numbers: middling with a few extremes, and very different between the two heroes)
- lumberjack:{aggr:7,aware:4,pace:6,lane:5,self:6,range:7,plan:5,energy:4,size:8,exec:4,grudge:8,pack:4,flair:6},   // Lumber_Jack: big, angry, goes for the big ones
- druid:{aggr:2,aware:9,pace:4,lane:3,self:0,range:2,plan:4,energy:4,size:5,exec:6,grudge:2,pack:6,flair:3},   // Druid: selfless healer
- archer:{aggr:2,aware:5,pace:3,lane:3,self:5,range:0,plan:2,energy:7,size:7,exec:9,grudge:4,pack:7,flair:2},   // Yumi_Archer: patient marksman
- chibi:{aggr:8,aware:3,pace:7,lane:6,self:6,range:9,plan:6,energy:3,size:6,exec:5,grudge:7,pack:3,flair:7},   // Chibi_Warrior: bold front-liner
- flannel_pal:{aggr:1,aware:9,pace:4,lane:2,self:5,range:1,plan:3,energy:6,size:2,exec:6,grudge:3,pack:2,flair:0},   // the companion (timid): hangs back, keeps her distance, picks off small ones next to him
- flannel:{aggr:3,aware:7,pace:5,lane:4,self:1,range:5,plan:3,energy:4,size:8,exec:7,grudge:8,pack:6,flair:1},   // Flannel_Man (Kyle's sheet)
- joel:   {aggr:6,aware:7,pace:8,lane:7,self:3,range:7,plan:7,energy:2,size:3,exec:4,grudge:3,pack:2,flair:8},   // The Spore Runners
- mathas: {aggr:3,aware:2,pace:3,lane:2,self:8,range:1,plan:2,energy:9,size:10,exec:9,grudge:9,pack:9,flair:1},  // Bounty Fiend
+ lumberjack:{aggr:7,aware:4,pace:6,lane:5,self:6,range:7,plan:5,energy:4,size:8,exec:4,grudge:8,pack:4,flair:6,talk:7,listen:1},   // Lumber_Jack: big, angry, goes for the big ones
+ druid:{aggr:2,aware:9,pace:4,lane:3,self:0,range:2,plan:4,energy:4,size:5,exec:6,grudge:2,pack:6,flair:3,talk:6,listen:8},   // Druid: selfless healer
+ archer:{aggr:2,aware:5,pace:3,lane:3,self:5,range:0,plan:2,energy:7,size:7,exec:9,grudge:4,pack:7,flair:2,talk:2,listen:7},   // Yumi_Archer: patient marksman
+ chibi:{aggr:8,aware:3,pace:7,lane:6,self:6,range:9,plan:6,energy:3,size:6,exec:5,grudge:7,pack:3,flair:7,talk:9,listen:2},   // Chibi_Warrior: bold front-liner
+ flannel_pal:{aggr:1,aware:9,pace:4,lane:2,self:5,range:1,plan:3,energy:6,size:2,exec:6,grudge:3,pack:2,flair:0,talk:3,listen:10},   // the companion (timid): hangs back, keeps her distance, picks off small ones next to him
+ flannel:{aggr:3,aware:7,pace:5,lane:4,self:1,range:5,plan:3,energy:4,size:8,exec:7,grudge:8,pack:6,flair:1,talk:5,listen:6},   // Flannel_Man (Kyle's sheet)
+ joel:   {aggr:6,aware:7,pace:8,lane:7,self:3,range:7,plan:7,energy:2,size:3,exec:4,grudge:3,pack:2,flair:8,talk:8,listen:3},   // The Spore Runners
+ mathas: {aggr:3,aware:2,pace:3,lane:2,self:8,range:1,plan:2,energy:9,size:10,exec:9,grudge:9,pack:9,flair:1,talk:1,listen:1},  // Bounty Fiend
  zombie: {aggr:10,aware:1,pace:1,lane:3,self:9,range:10,plan:2,energy:5,size:5,exec:1,grudge:6,pack:6,flair:2},
  werewolf:{aggr:7,aware:2,pace:10,lane:9,self:9,range:10,plan:6,energy:3,size:1,exec:6,grudge:8,pack:8,flair:7},
  _default:{aggr:5,aware:5,pace:5,lane:5,self:5,range:5,plan:5,energy:5,size:5,exec:5,grudge:5,pack:5,flair:5},
 };
 const TRAIT_WORDS={aggr:['Careful','Reckless'],aware:['Hunter','Guardian'],pace:['Patient','Frantic'],lane:['Steadfast','Roaming'],self:['Loyal','Greedy'],
  range:['Sharpshooter','Brawler'],plan:['Stubborn','Fickle'],energy:['Spendthrift','Hoarder'],size:['Swarm-Breaker','Giant-Slayer'],exec:['Sloppy','Precise'],
- grudge:['Forgiving','Vengeful'],pack:['Pack','Lone'],flair:['Stoic','Showoff']};
-function personaOf(u){if(!u.persona){const key=u.key||u.type;const b=PERSONA[key]||PERSONA._default;u.persona={...b};
+ grudge:['Forgiving','Vengeful'],pack:['Pack','Lone'],flair:['Stoic','Showoff'],talk:['Silent','Loudmouth'],listen:['Headstrong','Team Player']};
+function personaOf(u){if(!u.persona){const key=u.key||u.type;const b=PERSONA[key]||PERSONA._default;u.persona={talk:5,listen:5,...b};
   if(u.insp)for(const [k,d] of Object.entries((INSP[u.insp]||{}).sl||{})){const v=u.persona[k]+d;if(v>=0&&v<=10)u.persona[k]=v;}   // Kyle: a slide past 0 or 10 doesn't move at all
   if(!u.key){for(const k in u.persona)u.persona[k]=Math.max(0,Math.min(10,u.persona[k]+Math.round((Math.random()-.5)*2)));}   // monsters vary a little
   u.moods=[];}return u.persona;}
@@ -538,7 +544,7 @@ const Brain={
     g.bb={H,E,onTarget,heat,maxE,maxH,t:g.t};},
   // the decision loop: how often a unit rethinks comes from On Track/New Plan, Slow/Fast and its current mood
   due(g,u,dt){u.thinkT=(u.thinkT==null?Math.random()*.4:u.thinkT)-dt;if(u.thinkT>0)return false;
-    u.thinkT=.3+1.6*(1-trait(u,'plan'))+.5*(1-trait(u,'pace'))+Math.random()*.25;return true;},
+    u.thinkT=.12+4.2*Math.pow(1-trait(u,'plan'),1.5)+1.2*(1-trait(u,'pace'))+Math.random()*.25;return true;},   // New Plan 10 rethinks ~8x a second; On Track 0 holds a plan 4-5s
   tick(u,dt){if(u.moods)u.moods=u.moods.filter(m=>(m.t-=dt)>0);if(u.grudgeT>0)u.grudgeT-=dt;if(u.pauseT>0)u.pauseT-=dt;},
   // score every foe a unit could fight
   pickTarget(g,u,foes,friends,isHero){if(!foes.length)return null;const bb=g.bb;const A=trait(u,'aware'),ef=1-A;
@@ -548,44 +554,49 @@ const Brain={
     let best=null,bs=-1e9,why='';
     for(const c of foes){const cx=c.owner?c.x:(c.key?g.heroX(c):c.x);const d=Math.abs(cx-ux);let sc=0,w=[];
       // IF it is close THEN it's easier (enemy-focused units care most; slashers care even more)
-      const near=Math.max(0,1-d/220);sc+=near*(1.2+1.2*slash)*(.6+.4*ef);
+      const near=Math.max(0,1-d/220);sc+=near*(.4+3.2*slash)*(.2+1.6*ef);
       // IF it is in my lane THEN good, unless I like switching lanes
-      if(c.laneI!=null&&u.laneI!=null&&c.laneI===u.laneI){sc+=.9*stay;w.push('in my lane');}
+      if(c.laneI!=null&&u.laneI!=null&&c.laneI===u.laneI){sc+=3*stay*stay;w.push('in my lane');}
       // IF I prefer big THEN size counts up, ELSE small ones count up
-      const sz=(c.max||10)/maxSize;sc+=(big*sz+(1-big)*(1-sz))*1.1;
+      const sz=(c.max||10)/maxSize;sc+=(big*sz+(1-big)*(1-sz))*3.5*Math.abs(big-.5)*2;
       // IF it hit me recently AND I hold grudges THEN go get it
-      if(u.lastHitBy===c&&u.grudgeT>0){sc+=2.2*venge;if(venge>.5)w.push('grudge');}
+      if(u.lastHitBy===c&&u.grudgeT>0){sc+=7*Math.pow(venge,2);if(venge>.5)w.push('grudge');}
       // IF allies are already on it THEN pack hunters join, lone wolves look elsewhere
       const n=bb.onTarget.get(c)||(c.key?0:0);const allies=isHero?(bb.onTarget.get(c)||0):(bb.heat.get(c)||0);
-      sc+=allies*(.7*(1-lone)-.6*lone)*(.5+.5*A);if(allies&&lone<.4)w.push('with the pack');
+      sc+=allies*(2.2*Math.pow(1-lone,1.5)-2*Math.pow(lone,1.5))*(.4+.6*A);if(allies&&lone<.4)w.push('with the pack');
       // IF it is hurting my weakest friend THEN selfless units step in
-      if(weakAlly&&c.target===weakAlly&&weakAlly.hp/weakAlly.max<.7){sc+=1.8*(1-selfish)*(.4+.6*A)*(1-weakAlly.hp/weakAlly.max);if(selfish<.5)w.push('protecting');}
+      if(weakAlly&&c.target===weakAlly&&weakAlly.hp/weakAlly.max<.7){sc+=6*Math.pow(1-selfish,1.5)*(.3+.7*A)*(1-weakAlly.hp/weakAlly.max);if(selfish<.5)w.push('protecting');}
       // IF it is nearly dead THEN optimal units finish it
-      if(c.hp!=null&&c.max)sc+=opt*(1-c.hp/c.max)*.9;
+      if(c.hp!=null&&c.max)sc+=Math.pow(opt,1.5)*(1-c.hp/c.max)*3;
       // IF it is my current target THEN stubborn units keep at it
-      if(u.plan&&u.plan.tgt===c)sc+=1.4*commit;
+      if(u.plan&&u.plan.tgt===c)sc+=4*Math.pow(commit,1.5);
+      // IF an ally called this one out AND I chose to listen THEN it jumps up my list
+      if(isHero){const O=Comms.ord(u,g,['focus','help','flank','boss','reload','tapped','burst','lane']);if(O){const ot=O.tgt||(O.type==='boss'?g.boss:null);
+        if(ot===c){sc+=3+5*O.w;w.unshift('called: '+O.type);}
+        else if((O.type==='help'||O.type==='reload'||O.type==='tapped')&&O.from&&c.target===O.from){sc+=2+4*O.w;w.unshift('covering '+Comms.name(O.from));}}}
       // IF it is a big threat to me and I'm careful THEN I'd rather not walk into it... unless I'm reckless
       if(!isHero&&u.E&&u.E.backline&&!g.isMeleeHero(c)){sc+=2.5;w.push('going for the back line');}   // IF I'm a back-line hunter THEN the squishy ones first
       if(isHero&&c.dmg)sc+=(aggr-.5)*.4*Math.min(2,c.dmg/10);
-      sc+=(Math.random()-.5)*(1.2-opt);   // sloppy units are less predictable
+      sc+=(Math.random()-.5)*(.05+4*Math.pow(1-opt,1.5));   // sloppy units are all over the place; optimal ones are near-perfectly consistent
       if(sc>bs){bs=sc;best=c;why=w[0]||(big>.6?'big target':big<.4?'small target':'closest');}}
     return {tgt:best,why};},
   // which lane to stand in
   pickLane(g,u,tgt,isHero){const bb=g.bb;const cur=u.laneI;const roam=trait(u,'lane'),A=trait(u,'aware'),lone=trait(u,'pack'),aggr=trait(u,'aggr'),commit=1-trait(u,'plan');
     const melee=isHero?g.isMeleeHero(u):true;let best=cur,bs=-1e9;
-    const reach=roam>.6?2:1;
+    const reach=roam<.1?0:roam<.45?1:roam<.8?2:4;   // Stay In Your Lane 0 never leaves it; Switch It Up 10 can cross the whole field
     for(let l=Math.max(0,cur-reach);l<=Math.min(LANES.length-1,cur+reach);l++){let sc=0;
-      if(l===cur)sc+=1.2*(1-roam)+.6*commit;   // IF I stay put by nature THEN my lane wins ties
-      sc-=Math.abs(l-cur)*.35;
+      if(l===cur)sc+=3*(1-roam)+.6*commit-1.2*roam*roam;   // IF I stay put by nature THEN my lane wins ties
+      if(isHero){const O=Comms.ord(u,g,['lane','flank','help']);const ol=O?(O.type==='lane'?O.lane:O.type==='flank'?(O.tgt&&O.tgt.laneI):(O.from&&O.from.laneI)):null;if(ol!=null&&l===ol)sc+=2+4*O.w;}   // IF called to a lane THEN go there
+      sc-=Math.abs(l-cur)*(.8-.75*roam);
       if(tgt&&tgt.laneI!=null){if(l===tgt.laneI)sc+=melee?2.4:.8;}   // melee has to share a lane with what it hits
       const foesHere=bb.E.filter(e=>e.laneI===l).length,friendsHere=(isHero?bb.H:bb.E).filter(o=>o!==u&&o.laneI===l).length;
-      sc+=foesHere*(isHero?(aggr-.5):0)*.5;   // IF careful THEN avoid crowded enemy lanes; IF reckless THEN wade in
-      sc+=friendsHere*(A*(1-lone)*.5-lone*.4);   // ally-minded pack units bunch up, lone wolves spread out
+      sc+=foesHere*(isHero?(aggr-.5):0)*1.6;   // IF careful THEN avoid crowded enemy lanes; IF reckless THEN wade in
+      sc+=friendsHere*(A*(1-lone)*1.4-lone*1.3);   // ally-minded pack units bunch up, lone wolves spread out
       if(sc>bs){bs=sc;best=l;}}
     return best;},
   // how far ahead of / behind its formation spot a hero stands, and how fast it moves
   pickPosition(g,h,tgt){const bb=g.bb;const aggr=trait(h,'aggr'),slash=trait(h,'range'),pace=trait(h,'pace'),A=trait(h,'aware'),selfish=trait(h,'self');
-    let xoff=(aggr-.5)*40+(slash-.5)*90,intent='hold';   // Shooter (0) hangs well back, Slasher (10) stands well forward; no class rules
+    let xoff=(aggr-.5)*70+(slash-.5)*150,intent='hold';   // Shooter (0) hangs well back, Slasher (10) stands well forward; no class rules
     const hp=h.hp/h.max,danger=bb.heat.get(h)||0;const near=bb.E.filter(e=>Math.abs(e.x-g.heroX(h))<45).length;
     // 0.12.11 (Kyle): plans account for ability cooldowns and distances. IF a close-range ability is ready (and affordable) THEN
     //   step toward the fight; IF only ranged ones are ready THEN keep to their range; IF the big ones are all on cooldown AND hurt
@@ -594,19 +605,29 @@ const Brain={
     if(AP.close&&tgt){xoff+=10+14*aggr;intent=intent==='hold'?'engage':intent;}
     if(AP.farRange&&tgt&&!AP.close){const d=Math.abs(tgt.x-g.heroX(h));if(d<AP.farRange*.4)xoff-=14;}
     if(AP.allDown&&hp<.6){xoff-=10+12*(1-aggr);}
+    // callouts: IF I took an order THEN it pushes where I stand (personality still wins in an emergency below)
+    const O=Comms.ord(h,g,['fallback','push','help','reload','tapped','camp','flank','trap']);
+    if(O){const fx=O.from?g.heroX(O.from):g.heroX(h);
+      if(O.type==='fallback'||O.type==='trap'){xoff-=O.type==='trap'?25:55;intent='regroup';}
+      else if(O.type==='push'){xoff+=55;intent='charge';}
+      else if(O.type==='camp'&&O.x!=null){xoff=O.x-g.home(h);intent='gather';}
+      else if(O.type==='flank'&&O.ally===h){xoff-=35;intent='kite';}
+      else{xoff+=Math.max(-40,Math.min(50,fx-g.home(h)-xoff))*.7+10;intent='cover';}}
     // IF hurt AND careful THEN back off (the more careful, the earlier)
-    const bail=.18+.42*(1-aggr);if(hp<bail&&(danger||near)){xoff-=30+30*(1-aggr);intent='retreat';}
+    const bail=.03+.72*Math.pow(1-aggr,1.3);if(hp<bail&&(danger||near)){xoff-=30+60*(1-aggr);intent='retreat';}   // Calculated 0 runs at 75% HP; Blind Aggression 10 basically never runs
     // IF a ranged unit has foes in its face THEN shooters step back to keep their distance
-    else if(near&&slash<.5){xoff-=24*(1-slash);intent='kite';}   // shooter-minded units keep their distance (by slider, not by class)
+    else if(near&&slash<.5){xoff-=60*(1-slash*2);intent='kite';}   // shooter-minded units keep their distance (by slider, not by class)
     else if(aggr>.7&&tgt){intent='charge';}
     // IF an ally is getting mobbed AND I'm selfless and ally-minded THEN move up to help
-    const mobbed=bb.H.filter(o=>o!==h&&(bb.heat.get(o)||0)>=2&&o.hp/o.max<.6)[0];if(mobbed&&selfish<.5&&A>.4&&intent!=='retreat'){xoff+=14;intent='cover';}
-    const runMul=.75+.75*pace;
-    return {xoff:Math.max(-60,Math.min(45,xoff)),intent,runMul};},
+    const mobbed=bb.H.filter(o=>o!==h&&(bb.heat.get(o)||0)>=2&&o.hp/o.max<.6)[0];if(mobbed&&selfish<.5&&A>.4&&intent!=='retreat'){xoff+=14+40*(1-selfish*2);intent='cover';}
+    const runMul=.45+1.4*pace;
+    return {xoff:Math.max(-115,Math.min(95,xoff)),intent,runMul};},
   // energy: squanderers spend at every chance; preservers wait to unload several big hits in a row
   energyCall(u){const pres=trait(u,'energy');const en=u.en||0;if(u.burst>0)return true;
-    if(pres<.5){return en>=30&&Math.random()<1-pres;}
-    if(en>=90){u.burst=3;return true;}return false;},
+    if(u.order&&u.order.type==='burst'&&u.order.until>(u._gt||0)&&en>=20)return true;   // IF told to unload on a clump THEN spend now
+    // 0 = spends the moment it can afford anything; 10 = sits on it until FULL, then dumps 4 in a row
+    if(pres<.5){return en>=10+40*pres&&Math.random()<Math.pow(1-pres*2,.5);}
+    const need=70+30*((pres-.5)*2);if(en>=need-0.01){u.burst=2+Math.round(2*(pres-.5)*2);return true;}return false;},
   // Danger zones (marked boss attacks). Replaces the old Reflex stat with if/then rules on the sliders:
   //   notice it?  Enemy Awareness and Optimal units watch the ground; Blind Aggression and units locked on a target miss it more.
   //   react?      Calculated units step out; Blind Aggression may stand and keep swinging; Selfish units always look after themselves;
@@ -615,9 +636,9 @@ const Brain={
   //   how far?    Optimal steps fully clear with a margin; Suboptimal often comes up short.
   dangerCall(g,u,z,ux){const ag=trait(u,'aggr'),aw=trait(u,'aware'),pc=trait(u,'pace'),se=trait(u,'self'),pl=trait(u,'plan'),ex=trait(u,'exec'),fl=trait(u,'flair'),r=()=>g.rng();
     const low=u.max?1-Math.max(0,u.hp)/u.max:0;let why;
-    let notice=.55+.3*(1-aw)+.2*ex-.25*ag+.25*low;if(u.atkTgt||u.target)notice-=.1*(1-pl);
+    let notice=.45+.45*(1-aw)+.35*(ex-.5)-.45*(ag-.3)+.25*low;if(u.atkTgt||u.target)notice-=.1*(1-pl);
     if(r()>Math.min(.97,Math.max(.15,notice)))return {react:0,why:'did not see it'};
-    let stay=.45*ag*(1-low)-.25*se-.2*(1-ag);if(fl>.6&&low<.5)stay+=.1;
+    let stay=.8*Math.pow(ag,1.5)*(1-low)-.35*se-.3*(1-ag);if(fl>.6&&low<.5)stay+=.1;
     if(r()<Math.max(0,stay))return {react:0,why:'ignores it, keeps fighting'};
     let delay=.15+.45*(1-pc)+.25*(1-pl)-.2*low+r()*.3;let showoff=0;
     if(fl>.7&&low<.4&&r()<fl-.5){delay+=.35;showoff=1;}
@@ -626,8 +647,131 @@ const Brain={
     const spd=60+60*pc+30*low;
     why=showoff?'waits till the last second':mul<1?'steps out (short)':'steps clear';
     return {react:1,delay,mul,spd,why};},
-  showoff(g,u,what){const fl=trait(u,'flair');if(Math.random()>fl*.8)return;const L=SHOW_LINES[u.key?'hero':u.type]||SHOW_LINES.hero;
-    const x=u.key?g.heroX(u):u.x;g.text(x,(u.key?g.G:u.y)-62,L[Math.floor(Math.random()*L.length)],'#ffd23f');u.pauseT=.25+.5*fl;}   // showing off costs a moment
+  showoff(g,u,what){const fl=trait(u,'flair');if(fl<.05||Math.random()>Math.pow(fl,1.3))return;const L=SHOW_LINES[u.key?'hero':u.type]||SHOW_LINES.hero;
+    const x=u.key?g.heroX(u):u.x;g.text(x,(u.key?g.G:u.y)-62,L[Math.floor(Math.random()*L.length)],'#ffd23f');u.pauseT=.1+1.1*fl*fl;}   // showing off costs a moment
+};
+// ---- 0.12.13 Callouts: heroes shout short, colour-coded callouts to each other, and the callouts can change what allies do.
+//   Two sliders run it (both part of the if/then behavior system like every other slider):
+//     Quiet (0) <-> Chatty (10)            how often a unit calls things out. 0 almost never speaks; 10 calls out everything it sees.
+//     Ignores Callouts (0) <-> Follows Callouts (10)   how often a unit does what it's asked. 0 nearly always ignores; 10 nearly always obeys.
+//   Each callout is IF (something on the field) THEN (a unit may shout it) AND (each ally rolls whether to listen) THEN (that ally's
+//   targeting / position / lane / energy / danger rules get pushed toward what was asked for a few seconds).
+const CALL_COLOR={flannel:'#f2c94c',flannel_pal:'#ff6b6b',chibi:'#5ab4ff',archer:'#ff9f43',druid:'#7ee081',lumberjack:'#c79bff'};
+const NICK={flannel:'Flannel',flannel_pal:'Companion',chibi:'Chibi',archer:'Yumi',druid:'Druid',lumberjack:'Jack'};
+const FOE_NICK={zombie:['the zombie','that zombie','the shambler','the rotter','the dead one'],werewolf:['the wolf','the werewolf','the dog','the furball','the beast']};
+const LANE_NAME=['top','upper','middle','lower','bottom'];
+const CALLS={
+  help:{dur:5,lines:['Help!','I need help here!','Get it off me!','A little help?!','They\'re on me!','Somebody, please!','I\'m getting swarmed!','Can\'t hold them!','Back me up!','Over here, quick!','I\'m in trouble!','HELP ME!','Cover me!','I can\'t shake {foe}!','{foe} is on me!'],
+    ack:['Coming!','On my way!','Hang on!','I\'ve got you!','Moving to you!','Hold on, {ally}!','Right there!','I see you!']},
+  heal:{dur:6,lines:['I need healing!','Heal me!','Patch me up!','I\'m bleeding out!','Medic!','Druid, a little help?','Need a heal!','I\'m hurt bad!','Could use some green magic!','Healer!','I\'m not gonna last!','Fix me up!'],
+    poison:['I\'m poisoned!','Something in my veins...','I feel sick!','Poison! Cleanse me!'],ack:['Healing!','I\'ve got you!','Hold still!','Mending!','Hang in there!','Here, breathe!']},
+  focus:{dur:6,lines:['Focus {foe}!','Everyone on {foe}!','Hit {foe}!','Take out {foe}!','{foe} first!','Burn {foe} down!','Go for {foe}!','Kill {foe}!','Target {foe}!','{foe}! Now!','All in on {foe}!','Drop {foe}!'],
+    weak:['{foe} is almost dead!','Finish {foe}!','{foe} is hurt, finish it!','One more hit on {foe}!','{foe} is weak!','Clean up {foe}!'],
+    ack:['On it!','Got it!','Switching!','Target acquired.','Yep!','Copy!','Locked on!']},
+  flank:{dur:4,lines:['Behind you, {ally}!','{ally}, watch out!','{ally}, on your left!','Something\'s on {ally}!','{ally}, look out!','Watch your back, {ally}!','{ally}! Close one!','It\'s on {ally}!','Protect {ally}!','{foe} is on {ally}!'],
+    ack:['I see it!','Got it!','Thanks!','Moving!','On it!']},
+  fallback:{dur:5,lines:['Fall back!','Pull back!','Regroup!','Back up, back up!','Retreat!','Too many! Back!','Get back here!','Fall back and breathe!','Back off!','Reset! Reset!','Give ground!','Back to me!'],
+    ack:['Falling back!','Backing up!','Right behind you!','Moving!','Regrouping!'],no:['No way!','Not yet!','I can take them!','Retreat? Never!','Keep running then.']},
+  push:{dur:5,lines:['Push!','Push forward!','Go go go!','They\'re breaking!','Charge!','Press them!','Move up!','Don\'t let up!','Keep pushing!','Now\'s our chance!','At them!','Forward!'],
+    ack:['Pushing!','Let\'s go!','Right with you!','Charging!','Hah! Yes!'],no:['Careful...','You go first.','Not so fast.','I\'ll hang back.','Too risky.']},
+  burst:{dur:4,lines:['They\'re bunched up!','Hit them all!','Big group, light them up!','Now! Use everything!','They\'re clumped, blow it!','All together, now!','Pile of them here!','Perfect spot, unload!','Group\'s tight, go big!'],
+    ack:['Unloading!','Here it comes!','Saying goodbye!','Firing everything!'],no:['Saving it.','Not yet.','Wait for it...']},
+  boss:{dur:7,lines:['Big one!','Here it comes!','Boss incoming!','That\'s a big one!','Oh no. Oh no.','Everybody, on the big one!','Look at the size of it!','Bring it down!','Here\'s the boss!','Whoa, what is THAT?'],
+    ack:['Ready!','Let\'s do it!','Bring it!','I\'m ready.']},
+  down:{dur:8,lines:['{ally} is down!','We lost {ally}!','{ally}! No!','Man down!','{ally} fell!','They got {ally}!','{ally}, get up!','Avenge {ally}!'],
+    angry:['You\'ll pay for that!','For {ally}!','Now I\'m mad.','No mercy!'],scared:['We\'re losing...','Stay close!','This is bad...','Careful, everyone!']},
+  reload:{dur:3,lines:['Reloading!','Cover me, reloading!','Changing mags!','Out! Reloading!','Give me a sec!','Reload!','Hold them, reloading!'],ack:['Covering!','Got you!','I\'ll hold them!']},
+  camp:{dur:7,lines:['Campfire\'s up!','Gather round the fire!','Warm up, everyone!','Fire\'s lit, come heal!','Come sit by the fire!','Rest up here!'],ack:['Coming!','Ooh, warm!','Be right there!','Don\'t mind if I do!']},
+  lane:{dur:5,lines:['Coming up {lane}!','{lane} lane, watch it!','They\'re sneaking {lane}!','{lane} is open!','Somebody cover {lane}!','Eyes {lane}!','Movement {lane}!'],ack:['I\'ll take {lane}!','Got {lane}!','Moving {lane}!']},
+  danger:{dur:2,lines:['Move!','Get out of there!','Look out!','Dodge!','Watch the ground!','{ally}, move!','Out of the way!','It\'s gonna hit!','Clear out!','MOVE, {ally}!'],ack:['Whoa!','Thanks!','Moving!','Close one!']},
+  tapped:{dur:4,lines:['I\'m tapped out!','No energy!','Out of tricks!','I\'ve got nothing left!','Running on empty!','Cooling down!'],ack:['I\'ll cover you!','Got you!','Take a breath!']},
+  kill:{dur:0,lines:['Got one!','Down!','Gotcha!','Next!','That\'s one!','Dropped it!','Stay down!','Easy!','And stay dead!','Another one!','Clean!','Scratch one!']},
+  trap:{dur:4,lines:['Trap\'s down!','Lure them in!','Watch the wire!','Bait them over here!','Mind the bomb!'],ack:['Pulling back!','Luring!','Got it!']},
+};
+const REFUSE=['Busy!','In a sec!','Nope.','Can\'t right now!','Do it yourself!','I\'ve got my own problems!','Hmm... no.','Later!','Not now!','I\'m on something!','Ugh, fine... no.','Maybe not.'];
+// IF this ally cares about this kind of callout THEN how much (0..1); multiplied with Follows Callouts to get the chance it obeys
+function callRelevance(type,o,ctx){const ag=trait(o,'aggr'),se=trait(o,'self'),aw=trait(o,'aware'),lone=trait(o,'pack'),en=trait(o,'energy');
+  switch(type){
+    case 'heal':return isHealer(o)?1:0;
+    case 'help':return .4+.6*(1-se);
+    case 'focus':return .45+.55*(1-lone);
+    case 'flank':return o===ctx.ally?1:(.3+.7*aw);
+    case 'fallback':return Math.max(.05,1.1-ag);
+    case 'push':return Math.max(.05,.15+ag);
+    case 'burst':return hasAbilities(o)?(.25+.75*(1-en)):0;
+    case 'boss':return .5+.5*(1-lone);
+    case 'reload':case 'tapped':return .3+.7*(1-se);
+    case 'camp':return o.hp/o.max<.9?1:.3;
+    case 'lane':return .2+.8*trait(o,'lane');
+    case 'danger':return o===ctx.ally?1:0;
+    case 'trap':return .4+.6*(1-ag);
+    default:return 0;}}
+function isHealer(u){return ((CHAR[u.key]||{}).abilities||[]).some(a=>a.id==='mend'||a.id==='bloom');}
+function hasAbilities(u){return ((CHAR[u.key]||{}).abilities||[]).length>0;}
+const Comms={
+  name(u){return NICK[u.key]||((CHAR[u.key]||{}).name)||u.key;},
+  foe(e){if(!e)return 'that one';if(e.boss)return 'the boss';const L=FOE_NICK[e.type];return L?L[Math.floor(Math.random()*L.length)]:'that one';},
+  fill(s,ctx){return s.replace('{foe}',this.foe(ctx.tgt)).replace('{ally}',ctx.ally?this.name(ctx.ally):'you').replace('{lane}',ctx.lane!=null?LANE_NAME[Math.min(4,ctx.lane)]||'that lane':'that lane');},
+  pick(a){return a[Math.floor(Math.random()*a.length)];},
+  bubble(g,u,s){s=s.charAt(0).toUpperCase()+s.slice(1);(g.calls=g.calls||[]).push({u,s,c:CALL_COLOR[u.key]||'#e8e8e8',t:0,life:1.6+Math.min(1.4,s.length*.045)});
+    if(g.calls.length>8)g.calls.shift();},
+  // IF a unit decides to speak (Quiet<->Chatty, a personal cooldown, and the team not having just said the same thing) THEN shout it
+  say(g,u,type,ctx,force){if(!u||!u.alive||g.demo)return false;const C=CALLS[type];if(!C)return false;ctx=ctx||{};
+    const talk=trait(u,'talk');g.callGap=g.callGap||0;g.callType=g.callType||{};
+    if(!force){if((u.callT||0)>g.t)return false;if(g.t<g.callGap)return false;if((g.callType[type]||-99)>g.t-3.5)return false;
+      // 0 = nearly never (2% for something urgent), 10 = practically every time it sees something
+      const urgent=type==='help'||type==='heal'||type==='danger'||type==='down';const p=Math.pow(talk,1.6)*.95+(urgent?.03:.004);if(Math.random()>p)return false;}
+    u.callT=g.t+.8+9*(1-talk);g.callGap=g.t+.45;g.callType[type]=g.t;
+    const pool=ctx.variant&&C[ctx.variant]?C[ctx.variant]:C.lines;this.bubble(g,u,this.fill(this.pick(pool),ctx));
+    if(C.dur)this.broadcast(g,u,type,ctx,C);return true;},
+  // every ally hears it: IF it's relevant to them AND they roll under Follows Callouts THEN they take the order
+  broadcast(g,u,type,ctx,C){for(const o of g.alive()){if(o===u||!o.key)continue;const rel=callRelevance(type,o,ctx);if(rel<=0)continue;
+      const L=trait(o,'listen');const p=(.02+.96*Math.pow(L,1.15))*rel;
+      if(Math.random()<p){o.order={type,from:u,tgt:ctx.tgt||null,ally:ctx.ally||null,lane:ctx.lane,x:ctx.x,until:g.t+C.dur*(.5+L),w:L};
+        o.thinkT=Math.min(o.thinkT==null?0:o.thinkT,.08+.25*(1-trait(o,'pace')));   // drop what they're doing and rethink right away
+        if(C.ack&&Math.random()<.15+.6*trait(o,'talk'))setTimeoutSafe(g,.35+Math.random()*.5,()=>{if(o.alive)this.bubble(g,o,this.fill(this.pick(C.ack),{tgt:ctx.tgt,ally:u,lane:ctx.lane}));});}
+      else if(Math.random()<.05+.35*trait(o,'talk')*(1-L)){const pool=C.no||REFUSE;setTimeoutSafe(g,.4+Math.random()*.5,()=>{if(o.alive)this.bubble(g,o,this.pick(pool));});}}},
+  ord(u,g,types){const o=u.order;if(!o||g.t>o.until)return null;if(o.from&&!o.from.alive&&o.type!=='down')return null;return types.includes(o.type)?o:null;},
+  // the scan: each hero looks at the field on its own clock (Chatty units look more often) and checks the IF side of every callout
+  step(g,dt){if(!g.calls)g.calls=[];for(const c of g.calls)c.t+=dt;g.calls=g.calls.filter(c=>c.t<c.life&&c.u.alive!==false);
+    const al=g.alive().filter(h=>h.key&&h.alive);if(!al.length)return;const bb=g.bb;if(!bb)return;
+    const E=g.enemies.filter(e=>!e.dead&&e.x<g.W);const mean=al.reduce((s,h)=>s+g.heroX(h),0)/al.length;
+    if(g.boss&&!g.boss.dead&&!g.bossCalled){g.bossCalled=1;const sp=al.slice().sort((a,b)=>trait(b,'talk')-trait(a,'talk'))[0];this.say(g,sp,'boss',{tgt:g.boss},trait(sp,'talk')>.15);}
+    for(const h of al){h.commT=(h.commT==null?Math.random()*.6:h.commT)-dt;if(h.commT>0)continue;h.commT=.35+.9*(1-trait(h,'talk'))+Math.random()*.3;
+      const hp=h.hp/h.max,hx=g.heroX(h),heat=bb.heat.get(h)||0;
+      // IF I'm hurt AND a healer is with us THEN ask for healing (poisoned units say so)
+      if(hp<.5&&al.some(o=>o!==h&&isHealer(o))&&this.say(g,h,'heal',{ally:h,variant:(h.poison&&h.poison.n)?'poison':null}))continue;
+      // IF I'm getting hit AND hurt THEN shout for help
+      if(hp<.45&&heat>=1){const t=h.lastHitBy&&!h.lastHitBy.dead?h.lastHitBy:E.filter(e=>e.target===h)[0];if(this.say(g,h,'help',{tgt:t,ally:h}))continue;}
+      // IF something has reached a back-liner (someone standing behind the team's middle) THEN warn them
+      const back=al.filter(o=>o!==h&&g.heroX(o)<mean-4);for(const v of back){const e=E.find(e=>!e.fly&&Math.abs(e.x-g.heroX(v))<26&&(e.target===v||Math.abs((e.gy||g.G)-(v.gy||g.G))<8));
+        if(e&&this.say(g,h,'flank',{tgt:e,ally:v}))break;}
+      // IF two or more of us are hurt OR we're badly outnumbered THEN call a fall back
+      const hurt=al.filter(o=>o.hp/o.max<.45).length;if((hurt>=2||E.length>=al.length*3+2)&&this.say(g,h,'fallback',{}))continue;
+      // IF the enemies are few or nearly dead AND we're healthy THEN call a push
+      if(E.length&&al.every(o=>o.hp/o.max>.6)&&(E.length<=2||E.every(e=>e.hp/e.max<.4))&&!(g.boss&&!g.boss.dead)&&this.say(g,h,'push',{}))continue;
+      // IF 3+ enemies are bunched within ~17 world px THEN call for everyone to unload
+      const clump=E.find(e=>E.filter(o=>Math.abs(o.x-e.x)<17).length>=3);if(clump&&this.say(g,h,'burst',{tgt:clump}))continue;
+      // IF my target is big OR nearly dead THEN call a focus
+      const T=h.plan&&h.plan.tgt;if(T&&!T.dead){const big=T.boss||(T.max||0)>=bb.maxE*.7,weak=T.hp/T.max<.3;if((big||weak)&&this.say(g,h,'focus',{tgt:T,variant:weak?'weak':null}))continue;}
+      // IF a lane has enemies in it but none of us THEN call the lane
+      const ln=E.find(e=>e.laneI!=null&&!al.some(o=>o.laneI===e.laneI)&&e.x<g.W*.8);if(ln&&this.say(g,h,'lane',{lane:ln.laneI,tgt:ln}))continue;
+      // IF I'm out of energy AND every ability is on cooldown AND enemies are close THEN tell them I've got nothing
+      if(hasAbilities(h)&&(h.en||0)<12&&abilityPlan(h).allDown&&E.some(e=>Math.abs(e.x-hx)<60)&&this.say(g,h,'tapped',{ally:h}))continue;}},
+  // hooks the rest of the game calls
+  onReload(g,h){this.say(g,h,'reload',{ally:h,tgt:h.plan&&h.plan.tgt});},
+  onCamp(g,h,x){this.say(g,h,'camp',{ally:h,x},true&&trait(h,'talk')>.1);},
+  onTrap(g,h,x){this.say(g,h,'trap',{ally:h,x});},
+  onKill(g,h){if(h&&h.key)this.say(g,h,'kill',{});},
+  // IF an ally falls THEN someone shouts it; everyone who hears gets angrier (Vengeful) or more careful (Forgiving)
+  onDown(g,h){const al=g.alive().filter(o=>o.key&&o!==h);if(!al.length)return;const sp=al.slice().sort((a,b)=>trait(b,'talk')-trait(a,'talk'))[0];
+    this.say(g,sp,'down',{ally:h},true);
+    for(const o of al){const L=trait(o,'listen'),v=trait(o,'grudge');if(Math.random()<.2+.8*L){if(v>=.5)addMood(o,{aggr:4,grudge:2},10,'avenge');else addMood(o,{aggr:-4,self:-2},10,'shaken');
+      if(Math.random()<.3*trait(o,'talk'))setTimeoutSafe(g,.7+Math.random()*.6,()=>{if(o.alive)this.bubble(g,o,this.fill(this.pick(v>=.5?CALLS.down.angry:CALLS.down.scared),{ally:h}));});}}},
+  // IF a danger zone is about to hit someone who didn't notice THEN an ally may yell at them, and IF they listen THEN they dodge late
+  onDanger(g,z,missed){const al=g.alive().filter(o=>o.key);for(const v of missed){const sp=al.filter(o=>o!==v).sort((a,b)=>trait(b,'talk')-trait(a,'talk'))[0];if(!sp)continue;
+      if(this.say(g,sp,'danger',{ally:v})&&v.order&&v.order.type==='danger'){const hx=g.heroX(v);const need=hx<z.cx?-(z.hw+8-(z.cx-hx)):(z.hw+8-(hx-z.cx));
+        v.dodge={at:g.t+.25,dx:(v.dodgeX||0)+need,until:g.t+z.T+.5,spd:110};v.dangerWhy='⚠ '+this.name(sp)+' warned me';}}},
 };
 class Game{
   constructor(opt){
@@ -700,7 +844,7 @@ class Game{
   pickType(){const pool=this.st.biome.pool;let tot=0;for(const k in pool)tot+=pool[k];let r=this.rng()*tot;for(const k in pool){r-=pool[k];if(r<=0)return k;}return Object.keys(pool)[0];}
   // ---------------------------------------------------------------- damage
   hitEnemy(e,amt,src,opt){
-    if(e.dead||amt<=0)return 0;opt=opt||{};if(src&&src.key){e.lastHitBy=src;e.grudgeT=6;}
+    if(e.dead||amt<=0)return 0;opt=opt||{};if(src&&src.key){e.lastHitBy=src;e.grudgeT=1+14*trait(e,'grudge');}
     if(!opt.sure&&e.E&&e.E.dodge&&this.rng()<e.E.dodge){this.text(e.x,e.y-30,'miss','#9aa');return 0;}
     let crit=false;if(src&&!opt.nocrit&&this.rng()<src.crit+(opt.critAdd||0)){amt*=(opt.critMul||src.critMul||1.75);crit=true;}
     if(opt.head){amt*=HEADSHOT.mul;this.text(e.x,e.y-(e.fly?24:54),'HEADSHOT!','#ff6040',true);}
@@ -718,7 +862,7 @@ class Game{
     return amt;
   }
   kill(e,src){
-    e.dead=true;this.kills++;if(src&&src.key&&!this.demo)Brain.showoff(this,src,'kill');
+    e.dead=true;this.kills++;if(src&&src.key&&!this.demo)Brain.showoff(this,src,'kill');if(src&&src.key)Comms.onKill(this,src);
     const xp=(e.boss?e.B.xp:e.E.xp*(e.elite?2.5:1)*.33)*this.st.xpMul;   // regular enemies give about half the XP they used to (stages are twice as long)
     const pts=Math.round((e.boss?e.B.pts:e.E.pts*(e.elite?3:1))*(1+.4*(this.st.n-1))*(1+this.run.prestige)*(src?src.scoreM:1));
     this.stageScore+=pts;this.gainXp(xp);
@@ -753,7 +897,7 @@ class Game{
   // Bleed: damage over time that ignores armor; reapplying refreshes it (doesn't stack)
   bleed(h,total,dur){const fresh=!(h.bleedT>0);h.bleedT=dur;h.bleedDps=total/dur;h.bleedTick=h.bleedTick||0;if(fresh)this.text(h.x,this.G-66,'BLEED','#ff3a4a');}
   hurtHero(h,amt,from){
-    if(!h||!h.alive)return;if(from&&from.E){h.lastHitBy=from;h.grudgeT=6;}
+    if(!h||!h.alive)return;if(from&&from.E){h.lastHitBy=from;h.grudgeT=1+19*trait(h,'grudge');}   // Forgiving forgets in a second; Vengeful holds it 20s
     if(this.rng()<h.dodge){this.text(h.x,this.G-52,'dodge','#9ae6ff');return false;}
     if(h.invulnT>0){this.text(h.x,this.G-52,'miss','#9ae6ff');return false;}
     amt=mitigate(h,amt,'physical');if(h.rageT>0)amt*=.75;
@@ -767,7 +911,7 @@ class Game{
     if(h.hp<=0)this.heroDown(h);
     return true;
   }
-  heroDown(h){if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
+  heroDown(h){if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
     if(!h.pet){for(const p of this.pets||[])if(p.owner===h&&p.alive){p.alive=false;this.fx.push({k:'poof',x:p.x,y:this.G-20,t:0});}}   // she leaves when he goes down
     if(!this.aliveHeroes().length){this.over='defeat';this.ev('defeat');}}
   procs(h,trig,e,amt,ally){
@@ -856,18 +1000,18 @@ class Game{
     for(const t of this.timers||[])t.t-=dt;
     if(this.timers){for(const t of this.timers.filter(t=>t.t<=0))t.fn();this.timers=this.timers.filter(t=>t.t>0);}
     // 0.12.2 behavior AI: everyone reads the same snapshot of the battlefield, then each hero thinks on its own clock
-    Brain.snapshot(this);
+    Brain.snapshot(this);for(const h of al)h._gt=this.t;Comms.step(this,dt);
     for(const h of al){Brain.tick(h,dt);if(Brain.due(this,h,dt)){const foes=this.enemies.filter(e=>!e.dead&&e.x<this.W+4);
       const pk=Brain.pickTarget(this,h,foes,al,true);const lane=Brain.pickLane(this,h,pk&&pk.tgt,true);const pos=Brain.pickPosition(this,h,pk&&pk.tgt);
       h.plan={tgt:pk&&pk.tgt,why:pk?pk.why:'',lane,...pos};
-      if(pos.intent==='hold'&&trait(h,'pace')<.45&&Math.random()<(1-trait(h,'pace'))*.25)h.pauseT=.5+.6*(1-trait(h,'pace'));}}   // slow-and-steady units stop to think
+      if(pos.intent==='hold'&&trait(h,'pace')<.45&&Math.random()<(1-trait(h,'pace'))*.5)h.pauseT=.4+1.6*(1-trait(h,'pace'));}}   // slow-and-steady units stop to think
     // formation
     // formation: everyone heads for their slot at their own pace; while marching, quicker heroes drift ahead and slow ones lag a little
     const avgMv=al.reduce((m,h)=>m+(MOVE[h.key]||26),0)/Math.max(1,al.length);
     al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;let tx=this.exiting?this.W+60:this.home(h)+drift+(h.plan?h.plan.xoff:0);tx=Math.max(8,Math.min(this.W-8,tx));
       if(!this.exiting&&trait(h,'range')>.55&&!(h.plan&&h.plan.intent==='retreat')){const foe=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&e.gy!=null&&Math.abs(e.gy-(h.gy||190))<4&&e.x>h.x&&e.x-h.x<90).reduce((b,e)=>!b||e.x<b.x?e:b,null);if(foe)tx=Math.max(tx,Math.min(this.home(h)+28,foe.x-12));}   // push forward into the fight
-      const x0=h.x;const C=h.base.char;const rm=C?((h.plan&&/retreat|charge|kite|cover/.test(h.plan.intent))||this.exiting?C.run:1):(h.plan?h.plan.runMul:1);h.running=C?rm>1:false;
-      const d=tx-h.x,st=mv*(h.mvMul||1)*(this.exiting&&!C?2.6:1.6)*rm*dt;if(!(h.pauseT>0)||this.exiting)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;});
+      const x0=h.x;const C=h.base.char;const rm=C?((h.plan&&/retreat|charge|kite|cover|regroup|gather/.test(h.plan.intent))||this.exiting?C.run:1):(h.plan?h.plan.runMul:1);h.running=C?rm>1:false;
+      const d=tx-h.x,st=mv*(h.mvMul||1)*(this.exiting&&!C?2.6:1.6)*rm*(rm>1?.75:.85)*dt;/* 0.12.13 (Kyle): walking 15% slower, running 25% slower */if(!(h.pauseT>0)||this.exiting)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;});
     const f=this.front();if(!f)return;
     // blocking: walk unless something is close
     const near=this.enemies.filter(e=>!e.dead&&!e.fly).reduce((m,e)=>Math.min(m,e.x-(e.boss?e.w:0)-(e.ranged?40:0)),1e9);
@@ -886,7 +1030,12 @@ class Game{
       if(!this.clusters){const N=CLUSTERS.count;this.clusters=[];
         for(let i=0;i<N;i++){const t=i/(N-1);const size=i===0?CLUSTERS.first:i===N-1?CLUSTERS.last[0]+Math.floor(this.rng()*(CLUSTERS.last[1]-CLUSTERS.last[0]+1)):
             Math.max(2,Math.min(7,Math.round(CLUSTERS.first+(CLUSTERS.last[0]+.5-CLUSTERS.first)*t+(this.rng()*2-1))));
-          const at=this.st.len*Math.max(.02,Math.min(.9,.04+.84*t+(this.rng()*2-1)*.04));this.clusters.push({at,size,left:size,t:0});}}
+          const at=this.st.len*Math.max(.02,Math.min(.9,.04+.84*t+(this.rng()*2-1)*.04));const sz=Math.max(1,Math.round(size*(this.st.countMul||1)+(this.rng()-.5)*.6));this.clusters.push({at,size:sz,left:sz,t:0});}
+        // strays: single zombies dropped in the quiet gaps between clusters (never right on top of one), some stages get none in a gap
+        this.strays=[];const ats=this.clusters.map(q=>q.at);for(let i=0;i<STRAYS_PER_STAGE(this.st.n)*3&&this.strays.length<STRAYS_PER_STAGE(this.st.n);i++){
+          const k=Math.floor(this.rng()*(ats.length-1));const a=ats[k],b=ats[k+1];if(b-a<this.st.len*.07)continue;const x=a+(b-a)*(.3+.4*this.rng());if(this.strays.some(s=>Math.abs(s-x)<this.st.len*.05))continue;this.strays.push(x);}
+        this.strays.sort((p,q)=>p-q);}
+      while(this.strays&&this.strays.length&&this.dist>=this.strays[0]){this.strays.shift();if(this.enemies.filter(e=>!e.dead).length<24)this.spawnEnemy('zombie',{x:this.W+10+this.rng()*22,elite:'roll',stray:1});}
       const C0=this.clusters[0];
       if(C0&&this.dist>=C0.at){C0.t-=dt;if(C0.t<=0&&this.enemies.filter(e=>!e.dead).length<24){C0.left--;C0.t=.12+this.rng()*.35;
           this.spawnEnemy(this.pickType(),{x:this.W+10+this.rng()*22,elite:'roll'});if(C0.left<=0)this.clusters.shift();}}}
@@ -1142,7 +1291,7 @@ class Game{
     if(h.shoutT>0)h.shoutT-=dt;const cry=h.shoutT>0?h.shoutB:null;const spdB=(cry?1+cry.spd:1)*(h.rageT>0?1.2:1);h.cryDmg=cry?1+cry.dmg:1;
     h.mT=(h.mT||0)+dt*h.meleeSpd*spdB;h.rT=(h.rT||0)+dt*h.rangedSpd*spdB;if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
     if(h.ammo==null)h.ammo=C.ranged?(C.ranged.clip||Infinity):0;   // clip 0 = never reloads
-    if(C.ranged&&h.ammo<=0&&C.ranged.clip>0){h.reloadT=(h.reloadT||0)+dt*h.rangedSpd*spdB;if(h.reloadT>=C.ranged.reload){h.reloadT=0;h.ammo=C.ranged.clip;}}
+    if(C.ranged&&h.ammo<=0&&C.ranged.clip>0){if(!h.reloadT&&C.ranged.reload>=1.5)Comms.onReload(this,h);h.reloadT=(h.reloadT||0)+dt*h.rangedSpd*spdB;if(h.reloadT>=C.ranged.reload){h.reloadT=0;h.ammo=C.ranged.clip;}}
     const reachPx=ENEMY_BODY+C.melee.reach*UNIT_SCALE;   // same body gap the zombies measure from, so a 20 reach out-reaches a 12 reach zombie
     const mt=this.enemies.filter(e=>!e.dead&&!e.fly&&(e.boss?e.x-e.w-h.x<=reachPx&&e.x>h.x-4:Math.abs(e.x-this.heroX(h))<=reachPx&&(e.gy==null||Math.abs(e.gy-h.gy)<2.5))).sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x))[0];
     // ---- Wave Dash in progress: slide forward along the lane, cutting everything in the line once
@@ -1175,7 +1324,7 @@ class Game{
     // ---- Set_Camp (Flannel_Man)
     const CA=(C.abilities||[]).find(a=>a.id==='camp');if(CA){if(h.caT==null)h.caT=CA.cd*.1;if(h.caT>0)h.caT-=dt;
       if(h.camping){h.camping-=dt;h.pauseT=Math.max(h.pauseT||0,.05);if(h.camping<=0){h.camping=0;
-          this.camp={x:h.x+(h.face<0?-11:11),gy:h.gy,life:CA.life,t:0,A:CA,owner:h,state:'start'};this.text(h.x+16,this.G-40,'CAMPFIRE','#ffb040');this.ev('camp',{});}
+          this.camp={x:h.x+(h.face<0?-11:11),gy:h.gy,life:CA.life,t:0,A:CA,owner:h,state:'start'};Comms.onCamp(this,h,this.camp.x);this.text(h.x+16,this.G-40,'CAMPFIRE','#ffb040');this.ev('camp',{});}
         return;}
       // IF there's no fire going AND nothing is right on top of us AND Set_Camp is ready THEN kneel and light one
       const close=this.enemies.some(e=>!e.dead&&Math.abs(e.x-h.x)<70);
@@ -1198,7 +1347,7 @@ class Game{
       else{S.t+=dt;h.pauseT=Math.max(h.pauseT||0,.1);
         if(S.t>=S.T){h.setting=null;if(spendEnergy(h,TB.en)){h.tbT=TB.cd*(1-(h.cdr||0));const foe=S.near;
           const x=Math.max(h.x+16,Math.min(h.x+46,foe&&!foe.dead?foe.x-16:h.x+34));
-          (this.traps=this.traps||[]).push({x,gy:h.gy!=null?h.gy:this.G,t:0,A:TB,owner:h});this.text(x,this.G-40,'TRIP BOMB','#ffd23f');}}
+          (this.traps=this.traps||[]).push({x,gy:h.gy!=null?h.gy:this.G,t:0,A:TB,owner:h});Comms.onTrap(this,h,x);this.text(x,this.G-40,'TRIP BOMB','#ffd23f');}}
         return;}}
     // IF Trip Bomb is ready AND no trap is out AND an enemy is coming (in front, not in my face yet) AND enough energy THEN set one
     if(TB&&!h.cast&&!mt&&h.tbT<=0&&!(this.traps||[]).some(t=>t.owner===h)&&(h.en||0)>=TB.en*(1+.3*trait(h,'energy')-.15)){
@@ -1262,7 +1411,8 @@ class Game{
     const AB_=id=>(C.abilities||[]).find(a=>a.id===id);const MD=AB_('mend'),BL=AB_('bloom'),TH=AB_('thorns'),CY=AB_('cyclone');
     if(MD||BL||TH||CY){for(const [A,k] of [[MD,'mdT'],[BL,'blT'],[TH,'thT'],[CY,'cyT']])if(A){if(h[k]==null)h[k]=A.cd*.2;if(h[k]>0)h[k]-=dt;}
       if(h.casting){h.casting-=dt;h.pauseT=Math.max(h.pauseT||0,.05);if(h.casting<=0)h.casting=0;return;}
-      const allies=this.alive();const hurt=allies.slice().sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];const mul=(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
+      const allies=this.alive();let hurt=allies.slice().sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];const mul=(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
+      {const O=Comms.ord(h,this,['heal']);if(O&&O.from&&O.from.alive&&O.from.hp/O.from.max<.9)hurt=O.from;}   // IF someone shouted for a heal AND I listened THEN them first
       // IF an ally is low (under 85%) AND Mend is ready THEN heal them now
       if(MD&&h.mdT<=0&&hurt&&hurt.hp/hurt.max<MD.under&&(h.en||0)>=MD.en&&spendEnergy(h,MD.en)){h.mdT=MD.cd*(1-(h.cdr||0));this.healHero(hurt,hurt.max*MD.heal);
         this.fx.push({k:'mend',x:this.heroX(hurt),gy:hurt.gy||this.G,t:0,life:.9,raw:1});this.ev('heal',{});h.animC=.35;}
@@ -1301,7 +1451,7 @@ class Game{
         return;}}
     const rap=h.rapid>0&&RA;
     if(C.ranged&&h.ammo>0&&h.rT>=C.ranged.every*(rap?RA.every:1)){
-      if(h.moving&&trait(h,'exec')>.5&&!(h.plan&&h.plan.intent==='retreat')&&(h.plantT=(h.plantT||0)+dt)<.6)return;   // optimal shooters plant their feet first (but not when running away)
+      if(h.moving&&trait(h,'exec')>.5&&!(h.plan&&h.plan.intent==='retreat')&&(h.plantT=(h.plantT||0)+dt)<.2+1.2*(trait(h,'exec')-.5)*2)return;   // optimal shooters plant their feet first (but not when running away)
       h.plantT=0;h.rT=0;h.ammo-=1;h.animR=rap?RA.anim:(C.ranged.anim||.5);h.animRT=h.animR;h.firedMoving=h.moving;if(!C.ranged.releaseAt)this.ev('gun',{});
       const rel=C.ranged.releaseAt?C.ranged.releaseAt*(h.animR/(C.ranged.anim||.5)):0;if(rap)h.rapid--;
       const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(C.ranged.dmgMul||1)*(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
@@ -1404,7 +1554,8 @@ class Game{
       // 0.12.2: the old Reflex stat is gone; the unit's personality decides if, when and how well it steps out (Brain.dangerCall)
       const D=Brain.dangerCall(this,h,z,hx);if(D.react){
         const need=hx<cx?-(hw+8-(cx-hx)):(hw+8-(hx-cx));const out=need*D.mul;h.dodge={at:this.t+D.delay,dx:(h.dodgeX||0)+out,until:this.t+T+.5,spd:D.spd};}
-      h.dangerWhy='⚠ '+D.why;h.dangerT=this.t+T+.6;}
+      h.dangerWhy='⚠ '+D.why;h.dangerT=this.t+T+.6;if(!D.react)(z.missed=z.missed||[]).push(h);}
+    if(z.missed)Comms.onDanger(this,z,z.missed);
     return z;}
   hurtMinion(m,amt,from){if(!m||m.dead)return;m.hp-=amt;m.hitFlash=.12;this.text(m.x,this.G-40,Math.round(amt),'#ffb0b0');}
   heroX(h){return h.x+(h.dodgeX||0)+(h.wanderX||0);}   // where a hero actually stands right now
@@ -1563,12 +1714,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793869295';const BGI=new Image();BGI.src='crawl_bg.png?v=1793869295';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793869295';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793869935';const BGI=new Image();BGI.src='crawl_bg.png?v=1793869935';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793869935';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793869295';XIMG.wave.src='crawl_wave.png?v=1793869295';XIMG.chibi.src='crawl_chibi.png?v=1793869295';XIMG.flannel.src='crawl_flannel.png?v=1793869295';XIMG.rain.src='crawl_rain.png?v=1793869295';XIMG.druid.src='crawl_druid.png?v=1793869295';XIMG.camp.src='crawl_campfire.png?v=1793869295';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793869295';XIMG.tornado.src='crawl_fx_tornado.png?v=1793869295';XIMG.vine.src='crawl_fx_vine.png?v=1793869295';XIMG.thorn.src='crawl_fx_thorn.png?v=1793869295';
+const XIMG={lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793869935';XIMG.wave.src='crawl_wave.png?v=1793869935';XIMG.chibi.src='crawl_chibi.png?v=1793869935';XIMG.flannel.src='crawl_flannel.png?v=1793869935';XIMG.rain.src='crawl_rain.png?v=1793869935';XIMG.druid.src='crawl_druid.png?v=1793869935';XIMG.camp.src='crawl_campfire.png?v=1793869935';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793869935';XIMG.tornado.src='crawl_fx_tornado.png?v=1793869935';XIMG.vine.src='crawl_fx_vine.png?v=1793869935';XIMG.thorn.src='crawl_fx_thorn.png?v=1793869935';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793869295';XIMG.boom.src='crawl_boom.png?v=1793869295';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793869935';XIMG.boom.src='crawl_boom.png?v=1793869935';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -1850,6 +2001,14 @@ function drawGame(ctx,g,W,oy){
     for(const h of g.alive()){const P=h.plan;if(!P)continue;tag(h,g.heroX(h),(h.gy||G)-Math.max(60,hbOf(h).h*UNIT_SCALE+14),[personaTitle(h),`${P.intent.toUpperCase()} → ${nm(P.tgt)}`,P.why,...(h.dangerT>g.t?[h.dangerWhy]:[]),h.pauseT>0?'(thinking...)':h.burst>0?'BURST!':''],'#b6ff00');}
     for(const e of g.enemies){if(e.dead||!e.plan)continue;tag(e,e.x,(e.gy||G)-(e.type==='werewolf'?40:52),[`${e.retreatT>0?'BACK OFF':'HUNT'} → ${nm(e.plan.tgt)}`,e.plan.why,e.pauseT>0?'(shambling...)':''],'#ff9a9a');}
     ctx.restore();}
+  // 0.12.13 callouts: short shouts above the speaker's head, in that hero's colour
+  if(g.calls&&g.calls.length){ctx.save();ctx.font='bold 6px monospace';ctx.textAlign='center';ctx.textBaseline='bottom';const seen=new Set();
+    for(let i=g.calls.length-1;i>=0;i--){const c=g.calls[i];if(seen.has(c.u))continue;seen.add(c.u);const u=c.u;if(!u.alive)continue;
+      const x=Math.max(30,Math.min(g.W-30,g.heroX(u))),y=(u.gy||G)-Math.max(56,hbOf(u).h*UNIT_SCALE+10)-(CC.brain?32:0)-Math.min(3,c.t*8);
+      const k=c.t<.12?c.t/.12:c.t>c.life-.35?Math.max(0,(c.life-c.t)/.35):1;ctx.globalAlpha=k;const w=ctx.measureText(c.s).width+6;
+      ctx.fillStyle='rgba(8,6,14,.78)';ctx.fillRect(Math.round(x-w/2),Math.round(y-8),Math.round(w),9);ctx.fillStyle=c.c;ctx.fillRect(Math.round(x-w/2),Math.round(y),Math.round(w),1);
+      ctx.beginPath();ctx.moveTo(x-2,y+1);ctx.lineTo(x+2,y+1);ctx.lineTo(x,y+3);ctx.fill();ctx.fillText(c.s,Math.round(x),Math.round(y));}
+    ctx.restore();ctx.globalAlpha=1;}
   for(const t of g.texts){const a=1-t.t/.9;ctx.globalAlpha=Math.max(0,a);ptext(ctx,t.s,t.x,Math.round(G+(t.y-G)*HS),t.c,t.big?2:1);ctx.globalAlpha=1;}
   ctx.restore();
   // boss bar / stage progress
