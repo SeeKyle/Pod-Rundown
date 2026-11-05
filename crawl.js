@@ -3,8 +3,8 @@
    Content lives in the CFG tables so stages, biomes, enemies, bosses, items and abilities can be added as rows. */
 (function(){
 'use strict';
-const DATA={"heroes":[{"key":"flannel","char":1,"deck":"","icon":"🌲","owner":"Kyle","cmdr":"","name":"Flannel_Man","cls":"duo","duo":false,"blurb":"A bearded drifter in green flannel with a bolt-action rifle and a crowbar.","stats":{},"spells":[],"items":[]},{"key":"chibi","char":1,"deck":"","icon":"⚔️","owner":"Kyle","cmdr":"","name":"Chibi_Warrior","cls":"melee","duo":false,"blurb":"A small, fearless swordsman in a long brown coat.","stats":{},"spells":[],"items":[]},{"key":"archer","char":1,"deck":"","icon":"🏹","owner":"Kyle","cmdr":"","name":"Yumi_Archer","cls":"ranged","duo":false,"blurb":"A red-armored longbow archer.","stats":{},"spells":[],"items":[]},{"key":"druid","char":1,"deck":"","icon":"🌿","owner":"Kyle","cmdr":"","name":"Druid","cls":"caster","duo":false,"blurb":"A sea-green druid with a gnarled staff.","stats":{},"spells":[],"items":[]},{"key":"lumberjack","char":1,"deck":"","icon":"🪓","owner":"Kyle","cmdr":"","name":"Lumber_Jack","cls":"melee","duo":false,"blurb":"A red-bearded lumberjack with an axe and a hunting bow.","stats":{},"spells":[],"items":[]}],"arch":{"bolt":{"label":"Bolt","titles":["Starfall","Hellfire Lance","the Pyre Eternal"]},"nova":{"label":"Nova","titles":["Cataclysm","the Last Sunrise","Worldbreaker"]},"smite":{"label":"Smite","titles":["Executioner","Final Verdict","the Godslayer"]},"drain":{"label":"Drain","titles":["Soul Harvest","the Bleeding Moon","Crimson Tithe"]},"summon":{"label":"Summon","titles":["Legion Eternal","the Endless Horde","Army of the Damned"]},"regen":{"label":"Regen","titles":["Undying Grace","the Phoenix Psalm","Everbloom"]},"aegis":{"label":"Aegis","titles":["Bastion Unbroken","the Last Wall","Adamant Dawn"]},"pump":{"label":"Pump","titles":["Titan Rising","the Warlord Ascendant","Giantblood"]},"devour":{"label":"Devour","titles":["the Gluttonous Abyss","Bone Feast","Maw of Ages"]},"haste":{"label":"Haste","titles":["Overdrive","the Thousand Hands","Quickening Storm"]},"insight":{"label":"Insight","titles":["the Open Eye","Omniscient","Library of Ash"]},"freeze":{"label":"Freeze","titles":["Absolute Zero","the Long Winter","Glacial Tomb"]},"counter":{"label":"Counter","titles":["Null Mirror","the Silent Ward","Spellbreaker"]},"blade":{"label":"Weapon","titles":["Kingsbane","the Red Edge","Doomforged"]},"armor":{"label":"Armor","titles":["Aegis of Ages","the Unbreakable","Ironsoul"]},"relic":{"label":"Relic","titles":["Clockwork Heart","the Ever-Turning","Infinity Engine"]},"charm":{"label":"Charm","titles":["Lucky Bones","Fate's Favorite","the Gilded Skull"]}}};      // heroes from the decks (built by battler_data.py)
-const ATLAS={"sprites":{"h_grim":[0,0,128,128,12],"h_vile":[1536,0,160,128,12],"h_vile_a":[0,128,128,128,12],"h_vile_b":[1536,128,128,128,12],"h_felothar":[0,256,128,128,12],"h_thing":[1536,256,128,128,12],"h_kykar":[0,384,128,128,12],"h_depala":[1536,384,128,128,12],"h_kotis":[0,512,128,128,12],"h_dragons":[1536,512,128,128,12],"h_mathas":[0,640,128,128,12],"h_turtle":[1536,640,160,128,12],"h_turtle_a":[0,768,128,128,12],"h_turtle_b":[1536,768,128,128,12],"h_marina":[0,896,128,128,12],"h_korvold":[1536,896,128,128,12],"h_thranduil":[0,1024,128,128,12],"h_joel":[1536,1024,160,128,12],"h_joel_a":[0,1152,128,128,12],"h_joel_b":[1536,1152,128,128,12],"h_robots":[0,1280,128,128,12],"h_blood":[1536,1280,128,128,12],"h_mech":[0,1408,128,128,12],"h_weather":[1536,1408,128,128,12],"e_ghoul":[0,1536,128,128,12],"e_cultist":[1536,1536,128,128,12],"e_knight":[0,1664,128,128,12],"e_wolfman":[1536,1664,128,128,12],"e_hag":[0,1792,128,128,12],"e_zombie":[1536,1792,128,128,12],"e_drowned":[0,1920,128,128,12],"e_skeleton":[1536,1920,128,128,12],"e_archer":[0,2048,128,128,12],"e_thrall":[1536,2048,128,128,12],"e_wraith":[0,2176,128,128,12],"e_leech":[1536,2176,96,96,12],"e_bat":[2688,2176,96,96,12],"e_ghost":[0,2304,96,96,12],"e_gargoyle":[1152,2304,96,96,12],"e_hound":[2304,2304,96,96,12],"e_spawn":[0,2400,96,96,12],"e_eye":[1152,2400,96,96,12],"e_spider":[2304,2400,96,96,12],"b_gravelord":[0,2496,256,256,3],"b_countess":[768,2496,256,256,3],"b_maw":[1536,2496,256,256,3]},"bg":{"grave":{"fill":"#001b27","top":"#000a12","artTop":97,"layers":[{"r":[776,0,48,160],"y":97.0,"sp":0.04,"w":36.0,"h":120.0,"tile":36.0},{"r":[822,409,128,48],"y":97.0,"sp":0.0,"w":96.0,"h":36.0,"once":{"x":230,"period":0}},{"r":[0,247,544,160],"y":97.0,"sp":0.35,"w":408.0,"h":120.0,"tile":408.0},{"r":[0,571,272,48],"y":181.0,"sp":1.0,"w":204.0,"h":36.0,"tile":204.0}]},"manor":{"fill":"#1a4652","top":"#06141c","artTop":69,"layers":[{"r":[546,247,272,160],"y":69.0,"sp":0.04,"w":204.0,"h":120.0,"tile":204.0},{"r":[820,247,272,160],"y":69.0,"sp":0.12,"w":204.0,"h":120.0,"tile":204.0},{"r":[0,409,272,160],"y":69.0,"sp":0.28,"w":204.0,"h":120.0,"tile":204.0},{"r":[274,409,272,81],"y":128.25,"sp":0.5,"w":204.0,"h":60.75,"tile":204.0},{"r":[548,409,272,49],"y":152.25,"sp":0.75,"w":204.0,"h":36.75,"tile":204.0},{"r":[274,571,272,44],"y":183.0,"sp":1.0,"w":204.0,"h":33.0,"tile":204.0}]},"bog":{"fill":"#5a2236","top":"#1e0a16","artTop":44,"layers":[{"r":[322,0,160,224],"y":44.0,"sp":0.04,"w":120.0,"h":168.0,"tile":120.0},{"r":[484,0,160,224],"y":44.0,"sp":0.12,"w":120.0,"h":168.0,"tile":120.0},{"r":[646,0,128,224],"y":44.0,"sp":0.3,"w":96.0,"h":168.0,"once":{"x":130,"period":420}},{"r":[0,0,320,245],"y":44.0,"sp":1.0,"w":240.0,"h":183.75,"tile":240.0}]}},"res":2,"units":{"zombie":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":0,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":192,"y":0}},"zombie_f":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":512,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":704,"y":0}},"zombie_b":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":1024,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":1216,"y":0}},"werewolf":{"walk":{"fw":112,"fh":76,"n":6,"ax":65,"ay":75,"x":1536,"y":0},"atk":{"fw":112,"fh":76,"n":8,"ax":60,"ay":75,"x":2208,"y":0},"die":{"fw":112,"fh":76,"n":10,"ax":58,"ay":75,"x":3104,"y":0},"jump":{"fw":112,"fh":76,"n":2,"ax":72,"ay":71,"x":4224,"y":0},"fall":{"fw":112,"fh":76,"n":2,"ax":56,"ay":63,"x":4448,"y":0}},"flannel":{"idle":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":0,"img":"flannel","art":1},"walk":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":208,"img":"flannel","art":1},"run":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":416,"img":"flannel","art":1},"melee":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":624,"img":"flannel","art":1},"ranged":{"fw":230,"fh":208,"n":5,"ax":140,"ay":200,"x":0,"y":832,"img":"flannel","art":1},"reload":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":1040,"img":"flannel","art":1},"hurt":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":1248,"img":"flannel","art":1},"death":{"fw":230,"fh":208,"n":3,"ax":140,"ay":200,"x":0,"y":1456,"img":"flannel","art":1},"walkfire":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":1664,"img":"flannel","art":1},"kneel":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":1872,"img":"flannel","art":1},"bullet":{"fw":24,"fh":16,"n":1,"ax":22,"ay":8,"x":0,"y":2080,"img":"flannel","art":1},"tripbomb":{"fw":45,"fh":36,"n":1,"ax":9,"ay":14,"x":40,"y":2080,"img":"flannel"}},"flannel_pal":{"idle":{"fw":230,"fh":208,"n":1,"ax":140,"ay":200,"x":0,"y":0,"img":"pal","art":1},"walk":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":208,"img":"pal","art":1},"melee":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":416,"img":"pal","art":1},"ranged":{"fw":230,"fh":208,"n":5,"ax":140,"ay":200,"x":0,"y":624,"img":"pal","art":1},"reload":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":832,"img":"pal","art":1},"hurt":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":1040,"img":"pal","art":1},"death":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":1248,"img":"pal","art":1}},"chibi":{"idle":{"fw":177,"fh":115,"n":6,"ax":94,"ay":111,"x":0,"y":0,"img":"chibi","pre":0.5526},"walk":{"fw":177,"fh":115,"n":8,"ax":94,"ay":111,"x":0,"y":115,"img":"chibi","pre":0.5526},"run":{"fw":177,"fh":115,"n":8,"ax":94,"ay":111,"x":0,"y":230,"img":"chibi","pre":0.5526},"attack1":{"fw":177,"fh":115,"n":5,"ax":94,"ay":111,"x":0,"y":345,"img":"chibi","pre":0.5526},"attack2":{"fw":177,"fh":115,"n":3,"ax":94,"ay":111,"x":0,"y":460,"img":"chibi","pre":0.5526},"runatk":{"fw":177,"fh":115,"n":5,"ax":94,"ay":111,"x":0,"y":575,"img":"chibi","pre":0.5526},"hurt":{"fw":177,"fh":115,"n":3,"ax":94,"ay":111,"x":0,"y":690,"img":"chibi","pre":0.5526},"death":{"fw":177,"fh":115,"n":5,"ax":94,"ay":111,"x":0,"y":805,"img":"chibi","pre":0.5526},"ranged":{"fw":177,"fh":115,"n":4,"ax":94,"ay":111,"x":0,"y":920,"img":"chibi","pre":0.5526}},"archer":{"idle":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":0,"img":"archer","pre":0.5526},"walk":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":143,"img":"archer","pre":0.5526},"run":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":285,"img":"archer","pre":0.5526},"melee":{"fw":204,"fh":143,"n":5,"ax":111,"ay":138,"x":0,"y":428,"img":"archer","pre":0.5526},"ranged":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":570,"img":"archer","pre":0.5526},"hurt":{"fw":204,"fh":143,"n":3,"ax":111,"ay":138,"x":0,"y":713,"img":"archer","pre":0.5526},"death":{"fw":204,"fh":143,"n":5,"ax":111,"ay":138,"x":0,"y":855,"img":"archer","pre":0.5526},"blowgun":{"fw":204,"fh":143,"n":4,"ax":111,"ay":138,"x":0,"y":998,"img":"archer","pre":0.5526},"arrow":{"fw":36,"fh":7,"n":1,"ax":35,"ay":3,"x":0,"y":1141,"img":"archer","pre":0.5526}},"druid":{"walk":{"fw":64,"fh":56,"n":8,"ax":33,"ay":53,"x":0,"y":0,"img":"druid"},"idle":{"fw":64,"fh":56,"n":6,"ax":33,"ay":53,"x":0,"y":56,"img":"druid"},"melee":{"fw":64,"fh":56,"n":3,"ax":33,"ay":53,"x":0,"y":112,"img":"druid"},"ranged":{"fw":64,"fh":56,"n":3,"ax":33,"ay":53,"x":0,"y":168,"img":"druid"},"hurt":{"fw":64,"fh":56,"n":2,"ax":33,"ay":53,"x":0,"y":224,"img":"druid"},"death":{"fw":64,"fh":56,"n":1,"ax":33,"ay":53,"x":0,"y":280,"img":"druid","fall":1}},"lumberjack":{"idle":{"fw":154,"fh":129,"n":1,"ax":82,"ay":121,"x":0,"y":0,"img":"lumberjack","pre":0.5526},"walk":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":129,"img":"lumberjack","pre":0.5526},"run":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":258,"img":"lumberjack","pre":0.5526},"melee":{"fw":154,"fh":129,"n":3,"ax":82,"ay":121,"x":0,"y":388,"img":"lumberjack","pre":0.5526},"ranged":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":517,"img":"lumberjack","pre":0.5526},"hurt":{"fw":154,"fh":129,"n":2,"ax":82,"ay":121,"x":0,"y":646,"img":"lumberjack","pre":0.5526},"death":{"fw":154,"fh":129,"n":3,"ax":82,"ay":121,"x":0,"y":776,"img":"lumberjack","fall":1,"pre":0.5526},"spin":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":905,"img":"lumberjack","pre":0.5526},"chop":{"fw":154,"fh":129,"n":4,"ax":82,"ay":121,"x":0,"y":1034,"img":"lumberjack","pre":0.5526},"leap":{"fw":154,"fh":129,"n":4,"ax":82,"ay":121,"x":0,"y":1163,"img":"lumberjack","pre":0.5526},"rage":{"fw":154,"fh":129,"n":4,"ax":82,"ay":121,"x":0,"y":1292,"img":"lumberjack","pre":0.5526},"roll":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":1422,"img":"lumberjack","pre":0.5526}}}};    // sprite + backdrop atlas (built by make_crawl_art.py)
+const DATA={"heroes":[{"key":"flannel","char":1,"deck":"","icon":"🌲","owner":"Kyle","cmdr":"","name":"Flannel_Man","cls":"duo","duo":false,"blurb":"A bearded drifter in green flannel with a bolt-action rifle and a crowbar.","stats":{},"spells":[],"items":[]},{"key":"chibi","char":1,"deck":"","icon":"⚔️","owner":"Kyle","cmdr":"","name":"Chibi_Warrior","cls":"melee","duo":false,"blurb":"A small, fearless swordsman in a long brown coat.","stats":{},"spells":[],"items":[]},{"key":"archer","char":1,"deck":"","icon":"🏹","owner":"Kyle","cmdr":"","name":"Yumi_Archer","cls":"ranged","duo":false,"blurb":"A red-armored longbow archer.","stats":{},"spells":[],"items":[]},{"key":"druid","char":1,"deck":"","icon":"🌿","owner":"Kyle","cmdr":"","name":"Druid","cls":"caster","duo":false,"blurb":"A sea-green druid with a gnarled staff.","stats":{},"spells":[],"items":[]},{"key":"lumberjack","char":1,"deck":"","icon":"🪓","owner":"Kyle","cmdr":"","name":"Lumber_Jack","cls":"melee","duo":false,"blurb":"A red-bearded lumberjack with an axe and a hunting bow.","stats":{},"spells":[],"items":[]},{"key":"robot","char":1,"deck":"","icon":"🤖","owner":"Kyle","cmdr":"","name":"Moss_Mech","cls":"melee","duo":false,"blurb":"A moss-grown green war mech with a blue arc blade and a gatling arm.","stats":{},"spells":[],"items":[]}],"arch":{"bolt":{"label":"Bolt","titles":["Starfall","Hellfire Lance","the Pyre Eternal"]},"nova":{"label":"Nova","titles":["Cataclysm","the Last Sunrise","Worldbreaker"]},"smite":{"label":"Smite","titles":["Executioner","Final Verdict","the Godslayer"]},"drain":{"label":"Drain","titles":["Soul Harvest","the Bleeding Moon","Crimson Tithe"]},"summon":{"label":"Summon","titles":["Legion Eternal","the Endless Horde","Army of the Damned"]},"regen":{"label":"Regen","titles":["Undying Grace","the Phoenix Psalm","Everbloom"]},"aegis":{"label":"Aegis","titles":["Bastion Unbroken","the Last Wall","Adamant Dawn"]},"pump":{"label":"Pump","titles":["Titan Rising","the Warlord Ascendant","Giantblood"]},"devour":{"label":"Devour","titles":["the Gluttonous Abyss","Bone Feast","Maw of Ages"]},"haste":{"label":"Haste","titles":["Overdrive","the Thousand Hands","Quickening Storm"]},"insight":{"label":"Insight","titles":["the Open Eye","Omniscient","Library of Ash"]},"freeze":{"label":"Freeze","titles":["Absolute Zero","the Long Winter","Glacial Tomb"]},"counter":{"label":"Counter","titles":["Null Mirror","the Silent Ward","Spellbreaker"]},"blade":{"label":"Weapon","titles":["Kingsbane","the Red Edge","Doomforged"]},"armor":{"label":"Armor","titles":["Aegis of Ages","the Unbreakable","Ironsoul"]},"relic":{"label":"Relic","titles":["Clockwork Heart","the Ever-Turning","Infinity Engine"]},"charm":{"label":"Charm","titles":["Lucky Bones","Fate's Favorite","the Gilded Skull"]}}};      // heroes from the decks (built by battler_data.py)
+const ATLAS={"sprites":{"h_grim":[0,0,128,128,12],"h_vile":[1536,0,160,128,12],"h_vile_a":[0,128,128,128,12],"h_vile_b":[1536,128,128,128,12],"h_felothar":[0,256,128,128,12],"h_thing":[1536,256,128,128,12],"h_kykar":[0,384,128,128,12],"h_depala":[1536,384,128,128,12],"h_kotis":[0,512,128,128,12],"h_dragons":[1536,512,128,128,12],"h_mathas":[0,640,128,128,12],"h_turtle":[1536,640,160,128,12],"h_turtle_a":[0,768,128,128,12],"h_turtle_b":[1536,768,128,128,12],"h_marina":[0,896,128,128,12],"h_korvold":[1536,896,128,128,12],"h_thranduil":[0,1024,128,128,12],"h_joel":[1536,1024,160,128,12],"h_joel_a":[0,1152,128,128,12],"h_joel_b":[1536,1152,128,128,12],"h_robots":[0,1280,128,128,12],"h_blood":[1536,1280,128,128,12],"h_mech":[0,1408,128,128,12],"h_weather":[1536,1408,128,128,12],"e_ghoul":[0,1536,128,128,12],"e_cultist":[1536,1536,128,128,12],"e_knight":[0,1664,128,128,12],"e_wolfman":[1536,1664,128,128,12],"e_hag":[0,1792,128,128,12],"e_zombie":[1536,1792,128,128,12],"e_drowned":[0,1920,128,128,12],"e_skeleton":[1536,1920,128,128,12],"e_archer":[0,2048,128,128,12],"e_thrall":[1536,2048,128,128,12],"e_wraith":[0,2176,128,128,12],"e_leech":[1536,2176,96,96,12],"e_bat":[2688,2176,96,96,12],"e_ghost":[0,2304,96,96,12],"e_gargoyle":[1152,2304,96,96,12],"e_hound":[2304,2304,96,96,12],"e_spawn":[0,2400,96,96,12],"e_eye":[1152,2400,96,96,12],"e_spider":[2304,2400,96,96,12],"b_gravelord":[0,2496,256,256,3],"b_countess":[768,2496,256,256,3],"b_maw":[1536,2496,256,256,3]},"bg":{"grave":{"fill":"#001b27","top":"#000a12","artTop":97,"layers":[{"r":[776,0,48,160],"y":97.0,"sp":0.04,"w":36.0,"h":120.0,"tile":36.0},{"r":[822,409,128,48],"y":97.0,"sp":0.0,"w":96.0,"h":36.0,"once":{"x":230,"period":0}},{"r":[0,247,544,160],"y":97.0,"sp":0.35,"w":408.0,"h":120.0,"tile":408.0},{"r":[0,571,272,48],"y":181.0,"sp":1.0,"w":204.0,"h":36.0,"tile":204.0}]},"manor":{"fill":"#1a4652","top":"#06141c","artTop":69,"layers":[{"r":[546,247,272,160],"y":69.0,"sp":0.04,"w":204.0,"h":120.0,"tile":204.0},{"r":[820,247,272,160],"y":69.0,"sp":0.12,"w":204.0,"h":120.0,"tile":204.0},{"r":[0,409,272,160],"y":69.0,"sp":0.28,"w":204.0,"h":120.0,"tile":204.0},{"r":[274,409,272,81],"y":128.25,"sp":0.5,"w":204.0,"h":60.75,"tile":204.0},{"r":[548,409,272,49],"y":152.25,"sp":0.75,"w":204.0,"h":36.75,"tile":204.0},{"r":[274,571,272,44],"y":183.0,"sp":1.0,"w":204.0,"h":33.0,"tile":204.0}]},"bog":{"fill":"#5a2236","top":"#1e0a16","artTop":44,"layers":[{"r":[322,0,160,224],"y":44.0,"sp":0.04,"w":120.0,"h":168.0,"tile":120.0},{"r":[484,0,160,224],"y":44.0,"sp":0.12,"w":120.0,"h":168.0,"tile":120.0},{"r":[646,0,128,224],"y":44.0,"sp":0.3,"w":96.0,"h":168.0,"once":{"x":130,"period":420}},{"r":[0,0,320,245],"y":44.0,"sp":1.0,"w":240.0,"h":183.75,"tile":240.0}]}},"res":2,"units":{"zombie":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":0,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":192,"y":0}},"zombie_f":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":512,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":704,"y":0}},"zombie_b":{"walk":{"fw":32,"fh":48,"n":6,"ax":18,"ay":47,"x":1024,"y":0},"atk":{"fw":64,"fh":57,"n":5,"ax":41,"ay":56,"x":1216,"y":0}},"werewolf":{"walk":{"fw":112,"fh":76,"n":6,"ax":65,"ay":75,"x":1536,"y":0},"atk":{"fw":112,"fh":76,"n":8,"ax":60,"ay":75,"x":2208,"y":0},"die":{"fw":112,"fh":76,"n":10,"ax":58,"ay":75,"x":3104,"y":0},"jump":{"fw":112,"fh":76,"n":2,"ax":72,"ay":71,"x":4224,"y":0},"fall":{"fw":112,"fh":76,"n":2,"ax":56,"ay":63,"x":4448,"y":0}},"flannel":{"idle":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":0,"img":"flannel","art":1},"walk":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":208,"img":"flannel","art":1},"run":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":416,"img":"flannel","art":1},"melee":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":624,"img":"flannel","art":1},"ranged":{"fw":230,"fh":208,"n":5,"ax":140,"ay":200,"x":0,"y":832,"img":"flannel","art":1},"reload":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":1040,"img":"flannel","art":1},"hurt":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":1248,"img":"flannel","art":1},"death":{"fw":230,"fh":208,"n":3,"ax":140,"ay":200,"x":0,"y":1456,"img":"flannel","art":1},"walkfire":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":1664,"img":"flannel","art":1},"kneel":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":1872,"img":"flannel","art":1},"bullet":{"fw":24,"fh":16,"n":1,"ax":22,"ay":8,"x":0,"y":2080,"img":"flannel","art":1},"tripbomb":{"fw":45,"fh":36,"n":1,"ax":9,"ay":14,"x":40,"y":2080,"img":"flannel"}},"flannel_pal":{"idle":{"fw":230,"fh":208,"n":1,"ax":140,"ay":200,"x":0,"y":0,"img":"pal","art":1},"walk":{"fw":230,"fh":208,"n":6,"ax":140,"ay":200,"x":0,"y":208,"img":"pal","art":1},"melee":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":416,"img":"pal","art":1},"ranged":{"fw":230,"fh":208,"n":5,"ax":140,"ay":200,"x":0,"y":624,"img":"pal","art":1},"reload":{"fw":230,"fh":208,"n":8,"ax":140,"ay":200,"x":0,"y":832,"img":"pal","art":1},"hurt":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":1040,"img":"pal","art":1},"death":{"fw":230,"fh":208,"n":4,"ax":140,"ay":200,"x":0,"y":1248,"img":"pal","art":1}},"chibi":{"idle":{"fw":177,"fh":115,"n":6,"ax":94,"ay":111,"x":0,"y":0,"img":"chibi","pre":0.5526},"walk":{"fw":177,"fh":115,"n":8,"ax":94,"ay":111,"x":0,"y":115,"img":"chibi","pre":0.5526},"run":{"fw":177,"fh":115,"n":8,"ax":94,"ay":111,"x":0,"y":230,"img":"chibi","pre":0.5526},"attack1":{"fw":177,"fh":115,"n":5,"ax":94,"ay":111,"x":0,"y":345,"img":"chibi","pre":0.5526},"attack2":{"fw":177,"fh":115,"n":3,"ax":94,"ay":111,"x":0,"y":460,"img":"chibi","pre":0.5526},"runatk":{"fw":177,"fh":115,"n":5,"ax":94,"ay":111,"x":0,"y":575,"img":"chibi","pre":0.5526},"hurt":{"fw":177,"fh":115,"n":3,"ax":94,"ay":111,"x":0,"y":690,"img":"chibi","pre":0.5526},"death":{"fw":177,"fh":115,"n":5,"ax":94,"ay":111,"x":0,"y":805,"img":"chibi","pre":0.5526},"ranged":{"fw":177,"fh":115,"n":4,"ax":94,"ay":111,"x":0,"y":920,"img":"chibi","pre":0.5526}},"archer":{"idle":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":0,"img":"archer","pre":0.5526},"walk":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":143,"img":"archer","pre":0.5526},"run":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":285,"img":"archer","pre":0.5526},"melee":{"fw":204,"fh":143,"n":5,"ax":111,"ay":138,"x":0,"y":428,"img":"archer","pre":0.5526},"ranged":{"fw":204,"fh":143,"n":6,"ax":111,"ay":138,"x":0,"y":570,"img":"archer","pre":0.5526},"hurt":{"fw":204,"fh":143,"n":3,"ax":111,"ay":138,"x":0,"y":713,"img":"archer","pre":0.5526},"death":{"fw":204,"fh":143,"n":5,"ax":111,"ay":138,"x":0,"y":855,"img":"archer","pre":0.5526},"blowgun":{"fw":204,"fh":143,"n":4,"ax":111,"ay":138,"x":0,"y":998,"img":"archer","pre":0.5526},"arrow":{"fw":36,"fh":7,"n":1,"ax":35,"ay":3,"x":0,"y":1141,"img":"archer","pre":0.5526}},"druid":{"walk":{"fw":64,"fh":56,"n":8,"ax":33,"ay":53,"x":0,"y":0,"img":"druid"},"idle":{"fw":64,"fh":56,"n":6,"ax":33,"ay":53,"x":0,"y":56,"img":"druid"},"melee":{"fw":64,"fh":56,"n":3,"ax":33,"ay":53,"x":0,"y":112,"img":"druid"},"ranged":{"fw":64,"fh":56,"n":3,"ax":33,"ay":53,"x":0,"y":168,"img":"druid"},"hurt":{"fw":64,"fh":56,"n":2,"ax":33,"ay":53,"x":0,"y":224,"img":"druid"},"death":{"fw":64,"fh":56,"n":1,"ax":33,"ay":53,"x":0,"y":280,"img":"druid","fall":1}},"robot":{"walk":{"fw":64,"fh":56,"n":8,"ax":33,"ay":53,"x":0,"y":0,"img":"robot","sc":0.8},"idle":{"fw":64,"fh":56,"n":4,"ax":33,"ay":53,"x":0,"y":56,"img":"robot","sc":0.8},"melee":{"fw":64,"fh":56,"n":4,"ax":33,"ay":53,"x":0,"y":112,"img":"robot","sc":0.8},"ranged":{"fw":64,"fh":56,"n":4,"ax":33,"ay":53,"x":0,"y":168,"img":"robot","sc":0.8},"missile":{"fw":64,"fh":56,"n":4,"ax":33,"ay":53,"x":0,"y":224,"img":"robot","sc":0.8},"throw":{"fw":64,"fh":56,"n":3,"ax":33,"ay":53,"x":0,"y":280,"img":"robot","sc":0.8},"hurt":{"fw":64,"fh":56,"n":2,"ax":33,"ay":53,"x":0,"y":336,"img":"robot","sc":0.8},"death":{"fw":64,"fh":56,"n":5,"ax":33,"ay":53,"x":0,"y":392,"img":"robot","sc":0.8,"fall":0}},"lumberjack":{"idle":{"fw":154,"fh":129,"n":1,"ax":82,"ay":121,"x":0,"y":0,"img":"lumberjack","pre":0.5526},"walk":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":129,"img":"lumberjack","pre":0.5526},"run":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":258,"img":"lumberjack","pre":0.5526},"melee":{"fw":154,"fh":129,"n":3,"ax":82,"ay":121,"x":0,"y":388,"img":"lumberjack","pre":0.5526},"ranged":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":517,"img":"lumberjack","pre":0.5526},"hurt":{"fw":154,"fh":129,"n":2,"ax":82,"ay":121,"x":0,"y":646,"img":"lumberjack","pre":0.5526},"death":{"fw":154,"fh":129,"n":3,"ax":82,"ay":121,"x":0,"y":776,"img":"lumberjack","fall":1,"pre":0.5526},"spin":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":905,"img":"lumberjack","pre":0.5526},"chop":{"fw":154,"fh":129,"n":4,"ax":82,"ay":121,"x":0,"y":1034,"img":"lumberjack","pre":0.5526},"leap":{"fw":154,"fh":129,"n":4,"ax":82,"ay":121,"x":0,"y":1163,"img":"lumberjack","pre":0.5526},"rage":{"fw":154,"fh":129,"n":4,"ax":82,"ay":121,"x":0,"y":1292,"img":"lumberjack","pre":0.5526},"roll":{"fw":154,"fh":129,"n":6,"ax":82,"ay":121,"x":0,"y":1422,"img":"lumberjack","pre":0.5526}}}};    // sprite + backdrop atlas (built by make_crawl_art.py)
 const OWNERS={Kyle:'🎩'};   // 0.12.1: only Kyle's tab while the game is rebuilt (Cheez and Leon come back later)
 
 // ======================================================================= CONFIG TABLES
@@ -73,7 +73,8 @@ const STYLE={
   korvold:{atk:'melee',reach:28,hp:1.35,dmg:1.05,devour:1},
   thranduil:{atk:'ranged',proj:'arrow',range:230,hp:.85,dmg:1.05,aspd:1.1},
   flannel:{atk:'gunner',proj:'bullet',reach:20,range:250,hp:1,dmg:1},
-  lumberjack:{atk:'blade',proj:'yarrow',reach:22,range:200,hp:1,dmg:1},   // 0.12.11 Lumber_Jack: axe + bow
+  lumberjack:{atk:'blade',proj:'yarrow',reach:22,range:200,hp:1,dmg:1},
+  robot:{atk:'gunner',proj:'gat',reach:22,range:200,hp:1,dmg:1},   // 0.12.17 Moss_Mech: arc blade + gatling arm   // 0.12.11 Lumber_Jack: axe + bow
   druid:{atk:'gunner',proj:'leaf',reach:18,range:220,hp:1,dmg:1},   // 0.12.9 Druid: nature caster and healer
   archer:{atk:'gunner',proj:'yarrow',reach:22,range:280,hp:1,dmg:1},   // 0.12.7 Yumi_Archer: longbow + bow strike
   chibi:{atk:'blade',proj:'kunai',reach:24,range:180,hp:1,dmg:1},   // 0.12.6 Chibi_Warrior: sword only
@@ -86,7 +87,7 @@ const STYLE={
 };
 const ORDER={melee:0,blade:.5,duo:1,gunner:1.5,ranged:2,caster:3};
 // walking pace per hero (px/s): heavy/armored/stone slow, light and quick ones faster
-const MOVE={lumberjack:18,druid:16,archer:17,chibi:20,flannel:15,flannel_pal:15,grim:24,vile:26,felothar:18,thing:20,kykar:26,depala:22,kotis:34,dragons:30,mathas:28,turtle:22,marina:26,korvold:26,thranduil:32,joel:28,robots:22,blood:30,mech:24,weather:24};
+const MOVE={robot:14,lumberjack:18,druid:16,archer:17,chibi:20,flannel:15,flannel_pal:15,grim:24,vile:26,felothar:18,thing:20,kykar:26,depala:22,kotis:34,dragons:30,mathas:28,turtle:22,marina:26,korvold:26,thranduil:32,joel:28,robots:22,blood:30,mech:24,weather:24};
 const MINION_SPEED=62;
 // how each hero's Summon spell behaves when recast (easy to retune per hero)
 const SUMMON_STYLE={grim:'empower',thing:'empower',korvold:'empower',felothar:'mend',depala:'mend',robots:'mend',mech:'mend',
@@ -109,6 +110,7 @@ const SIG={
   marina:{name:'Lantern Haunt',cd:9,txt:'Lets the lantern ghost out to fight for 9s (one at a time).',fn:(g,h,a)=>{g.addMinion(h,h.max*.3,a*.6,9,'spirit','sig',1);return true;}},
   korvold:{name:'Gorge',cd:6,txt:'Bites the front enemy for 260% and heals for 30% of it.',fn:(g,h,a)=>g.sigFront(h,a*2.6,{heal:.3})},
   thranduil:{name:'Volley',cd:6,txt:'Looses 3 heavy arrows at random enemies for 115% each.',fn:(g,h,a)=>g.sigMulti(h,'arrow',a*1.15,3)},
+  robot:{name:'Arc_Surge · Gatling_Arm · Missile_Barrage · Smoke_Screen',cd:12,txt:'A moss-grown war mech with an arc blade and a gatling arm.',fn:()=>false},
   lumberjack:{name:'Whirl_Wind · Ground_Chop · Hatchet_Leap · Timber_Rage · Log_Roll',cd:14,txt:'An axeman with a hunting bow.',fn:()=>false},
   druid:{name:'Mend · Rejuvenating Bloom · Thorn Wave · Cyclone',cd:4,txt:'Mend (12 energy, 4s): instantly heals the most-hurt ally 12%. Rejuvenating Bloom (30 energy, 12s): heals an ally 5% of max HP every second for 8s. Thorn Wave (35 energy, 14s): a wave of thorns erupts along the ground down her lane; everything it bursts under takes 2d6 and bleeds. Cyclone (40 energy, 18s): a tornado wanders in front of her for 5s, pulling nearby enemies in and grinding down everything inside it.',fn:()=>false},
   archer:{name:'Arrow_Rain · One Nocked, Two in Hand · Blow_Gun',cd:14,txt:'Arrow_Rain (40 energy, 18s cooldown): looses a volley into the air and 16 arrows rain down on the thickest group of enemies (1d6 each, about 70px wide and 2 lanes up and down). Blow_Gun (25 energy, 9s cooldown): puffs a poison dart that always adds 1 poison stack to a living target (75% chance of a 2nd, 50% of a 3rd); each stack deals 3% of max HP every 1.5s for 7.5s, and any new stack resets the timer. Undead are immune. One Nocked, Two in Hand (30 energy, 14s cooldown): he nocks one arrow and holds two more ready, his next 3 arrows fly much faster (a third of the usual wait, quicker draw). Longbow shots (1d10) and a close-range bow strike (1d8).',fn:()=>false},
@@ -227,7 +229,7 @@ function rollLaneOffset(acc,rng){const m=accTighten(acc);const off2=10*(1-m),off
 // hitboxes, ruler units: w = width, h = height above the feet
 const HITBOX={zombie:{w:16,h:46},werewolf:{w:30,h:36}};   // werewolf h is before his 0.77 draw scale (~28 tall walking)
 // 0.11: heroes have bodies too. Every non-boss unit has a hitbox about its own size (ruler units). Per-hero overrides go in HERO_HB.
-const HERO_HITBOX={w:20,h:46},HERO_HB={lumberjack:{w:20,h:46},druid:{w:18,h:46},archer:{w:20,h:46},flannel:{w:20,h:46},flannel_pal:{w:18,h:42}};   // Flannel_Man: full-detail art drawn at normal humanoid size
+const HERO_HITBOX={w:20,h:46},HERO_HB={robot:{w:22,h:48},lumberjack:{w:20,h:46},druid:{w:18,h:46},archer:{w:20,h:46},flannel:{w:20,h:46},flannel_pal:{w:18,h:42}};   // Flannel_Man: full-detail art drawn at normal humanoid size
 function hbOf(u){return u&&u.key?(HERO_HB[u.key]||HERO_HITBOX):(u&&HITBOX[u.type])||{w:16,h:44};}
 function depthHalf(hb){return Math.max(1.5,hb.w*.12);}   // how much lane depth (px, top view) a body fills either side of its feet
 // ---- 0.11 Aiming reticle (Kyle): when a ranged unit picks a target, a 'shoot box' is laid over the target where it stands.
@@ -351,6 +353,10 @@ const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼'};
 // what each character is like in a fight (shown when you hover them on the party screen)
 // one line per ability for the party-screen hover boxes
 const ABIL_DESC={
+  surge:'Arc_Surge · 25 energy · 10s. Overcharges the arc blade for 5s: every blade hit also chains lightning to up to 3 more enemies within 40px (1d8 each) and stuns each one for 0.4s.',
+  gatling:'Gatling_Arm · 35 energy · 14s. Spins up the gatling on his far arm and hoses the field for 3s: 12 shots a second, 1d3 each, with terrible accuracy (-40) and wild spread, so most of them miss.',
+  missiles:'Missile_Barrage · 45 energy · 18s. The pod on his back pops open and lobs 6 little missiles high over the field onto the thickest group of enemies: 2d4 each to everything within 9px of where each one lands.',
+  smoke:'Smoke_Screen · 30 energy · 16s. Lobs a smoke grenade between a hurt ally and the enemies on them: a thick cloud for 6s (about 180px wide). Enemies inside move 30% slower and miss half their attacks; allies inside dodge 25% of hits.',
   aimed:'Aimed Shot · 40 energy · 14s · 2s cast with a laser sight. Never misses the head box, +5% crit, 2.5x crit damage, pierces one enemy.',
   trip:'Trip Bomb · 30 energy · 20s · 1s to set. A nail bomb on a tripwire: cross-shaped blast (3d6), knockback, 50% bleed.',
   grit:'Grit_Teeth · 30 energy · 22s. He grits his teeth and digs in: takes 60% less damage for 7s, and leans hard into melee for that time (his sliders slide toward Slasher and Aggressive), wading in with the crowbar while he tells the others to get behind him.',
@@ -372,6 +378,7 @@ const ABIL_DESC={
   thorns:'Thorn Wave · 35 energy · 14s. A wave of earth thorns erupts along the ground 400px down her lane: 2d6 to everything it bursts under, plus bleed (12 over 4s) and a 50% chance of a poison stack (undead are immune).',
   cyclone:'Cyclone · 40 energy · 18s. A slow tornado wanders close in front of her for 5s, slowly pulling nearby enemies toward it and dealing small steady damage (1d3 every 0.5s) to everything inside.'};
 const BEHAVIOR={
+  robot:'Heavy, patient war machine. Walks slowly, holds a line in front of the squishies and trusts its plating. Slashes with its blue arc blade up close and fires short bursts from the gatling on its far arm. When a crowd lines up it spins the gatling up and sprays; when they bunch it sends a missile barrage; when a friend is hurt and swarmed it smokes them out. Listens to callouts.',
   lumberjack:'Big, stubborn brawler. Wades into the thick of it with his axe and goes for the biggest enemy, holding a grudge against whatever hit him. Shoots his hunting bow while he closes in, spins into crowds, leaps onto targets, chops the ground to stun, gets angry when he\'s hurt, and rolls out of trouble.',
   druid:'Selfless healer. Hangs back near her friends and watches their health more than the enemies: patches up whoever is hurt worst, wraps allies in healing vines, and pokes at range with nature bolts. When enemies bunch up she drops thorns on them or sends a tornado down the lane.',
   archer:'Patient longbow marksman. Stays well back in his own lane, moves slowly and plants his feet for clean, accurate shots at the biggest threat. Backs up what his allies are fighting, sticks to his plan and doesn\'t waste energy. If something gets in close he cracks it with his bow.',
@@ -466,11 +473,26 @@ CHAR.lumberjack={name:'Lumber_Jack',role:'Axe + Bow',combo:0,flatHp:0,stamina:11
     {id:'rage',name:'Timber_Rage',en:30,cd:20,dur:6,dmg:.3,spd:.2,dr:.25,under:.5,want:'close'},
     // Log_Roll: when he's hurt and something is in his face, he rolls back 30px and can't be hit during the roll (0.6s). 15 energy, 8s.
     {id:'roll',name:'Log_Roll',en:15,cd:8,dur:.6,dist:30,want:'any'}]};
+// 0.12.17 Moss_Mech (Kyle): an original moss-grown green war mech with a blue electric arc blade on its near arm and a gatling on
+//   the far arm, plus a missile pod on its back. Heavy and slow, lots of armor. Basic ranged: a short 3-round burst from the gatling.
+CHAR.robot={name:'Moss_Mech',role:'Arc Blade + Gatling',combo:0,flatHp:0,stamina:12,hpPerStamina:5,armorPts:12,dodge:.02,kbRes:.6,
+  melee:{dice:[1,8],every:1.3,reach:22,kb:20,hitAt:.2,arc:1},
+  ranged:{dice:[1,4],flat:0,every:2.4,range:200,clip:0,reload:0,pellets:1,anim:.45,burst:3,burstGap:.08},
+  acc:10,walkPenalty:8,crit:.08,critMul:1.8,luck:10,xp:0,run:1.6,turn:.3,enMax:100,enRegen:5,
+  abilities:[
+    // Arc_Surge: IF 2+ enemies are within 40px THEN overcharge the blade for 5s: each blade hit chains to 3 more (1d8, 0.4s stun). 25 energy, 10s.
+    {id:'surge',name:'Arc_Surge',en:25,cd:10,dur:5,chains:3,r:40,dice:[1,8],stun:.4},
+    // Gatling_Arm: IF 3+ enemies are in front within range AND nothing is in blade reach THEN spray for 3s at 12/s, 1d3, accuracy -40. 35 energy, 14s.
+    {id:'gatling',name:'Gatling_Arm',en:35,cd:14,dur:3,rate:12,dice:[1,3],range:210,accPen:-40,spreadH:10,spreadGy:4,min:3},
+    // Missile_Barrage: IF 3+ enemies are bunched (or a boss is up) 40-260px out THEN 6 missiles arc onto them, 2d4 within 9px each. 45 energy, 18s.
+    {id:'missiles',name:'Missile_Barrage',en:45,cd:18,n:6,gap:.14,fly:.95,range:260,min:40,r:9,dice:[2,4],spread:14},
+    // Smoke_Screen: IF an ally under 50% has enemies on them (or I'm swarmed by 3+) THEN smoke the spot for 6s. 30 energy, 16s.
+    {id:'smoke',name:'Smoke_Screen',en:30,cd:16,dur:6,r:30,slow:.3,miss:.5,dodge:.25,under:.5,throw:.55}]};
 const PAL_FRAC=1/3;
 // which cooldown timer each ability uses, so the planner can see what is ready
-const CD_KEY={grit:'grT',poultice:'poT',aimed:'abT',trip:'tbT',pal:'palT',camp:'caT',dash:'daT',shout:'shT',rapid:'raT',blowgun:'bgT',rain:'arT',mend:'mdT',bloom:'blT',thorns:'thT',cyclone:'cyT',
+const CD_KEY={surge:'suT',gatling:'gaT',missiles:'msT',smoke:'smT',grit:'grT',poultice:'poT',aimed:'abT',trip:'tbT',pal:'palT',camp:'caT',dash:'daT',shout:'shT',rapid:'raT',blowgun:'bgT',rain:'arT',mend:'mdT',bloom:'blT',thorns:'thT',cyclone:'cyT',
   whirl:'whT',chop:'cpT',leap:'lpT',rage:'rgT',roll:'rlT',brick:'brT'};
-const CLOSE_AB=new Set(['grit','dash','whirl','chop','leap','rage','trip']),FAR_AB=new Set(['aimed','rain','rapid','blowgun','thorns','cyclone','brick']);
+const CLOSE_AB=new Set(['surge','grit','dash','whirl','chop','leap','rage','trip']),FAR_AB=new Set(['gatling','missiles','smoke','aimed','rain','rapid','blowgun','thorns','cyclone','brick']);
 function abilityPlan(h){const C=h.base&&h.base.char;if(!C||!C.abilities||!C.abilities.length)return {};let close=0,far=0,farRange=0,ready=0;
   for(const a of C.abilities){const k=CD_KEY[a.id];const up=!(h[k]>0)&&(h.en||0)>=a.en;if(!up)continue;ready++;
     if(CLOSE_AB.has(a.id))close++;if(FAR_AB.has(a.id)){far++;farRange=Math.max(farRange,a.range||a.dist||(C.ranged&&C.ranged.range)||150);}}
@@ -521,6 +543,7 @@ const SLIDERS=[
  ['listen','Ignores Callouts','Follows Callouts','Does its own thing vs. does what allies shout for'],
 ];
 const PERSONA={   // starting values (Kyle's test numbers: middling with a few extremes, and very different between the two heroes)
+ robot:{aggr:6,aware:6,pace:2,lane:3,self:3,range:6,plan:2,energy:4,size:7,exec:6,grudge:4,pack:6,flair:2,talk:4,listen:7},   // Moss_Mech: slow, steady, team-minded
  lumberjack:{aggr:7,aware:4,pace:6,lane:5,self:6,range:7,plan:5,energy:4,size:8,exec:4,grudge:8,pack:4,flair:6,talk:7,listen:1},   // Lumber_Jack: big, angry, goes for the big ones
  druid:{aggr:2,aware:9,pace:4,lane:3,self:0,range:2,plan:4,energy:4,size:5,exec:6,grudge:2,pack:6,flair:3,talk:6,listen:8},   // Druid: selfless healer
  archer:{aggr:2,aware:5,pace:3,lane:3,self:5,range:0,plan:2,energy:7,size:7,exec:9,grudge:4,pack:7,flair:2,talk:2,listen:7},   // Yumi_Archer: patient marksman
@@ -618,11 +641,11 @@ const Brain={
     if(AP.farRange&&tgt&&!AP.close){const d=Math.abs(tgt.x-g.heroX(h));if(d<AP.farRange*.4)xoff-=14;}
     if(AP.allDown&&hp<.6){xoff-=10+12*(1-aggr);}
     // callouts: IF I took an order THEN it pushes where I stand (personality still wins in an emergency below)
-    const O=Comms.ord(h,g,['fallback','push','help','reload','tapped','camp','flank','trap','tank']);
+    const O=Comms.ord(h,g,['fallback','push','help','reload','tapped','camp','flank','trap','tank','smoke']);
     if(O){const fx=O.from?g.heroX(O.from):g.heroX(h);
       if(O.type==='fallback'||O.type==='trap'||O.type==='tank'){xoff-=O.type==='fallback'?55:25;intent='regroup';}
       else if(O.type==='push'){xoff+=55;intent='charge';}
-      else if(O.type==='camp'&&O.x!=null){xoff=O.x-g.home(h);intent='gather';}
+      else if((O.type==='camp'||O.type==='smoke')&&O.x!=null){xoff=O.x-g.home(h);intent='gather';}
       else if(O.type==='flank'&&O.ally===h){xoff-=35;intent='kite';}
       else{xoff+=Math.max(-40,Math.min(50,fx-g.home(h)-xoff))*.7+10;intent='cover';}}
     // IF hurt AND careful THEN back off (the more careful, the earlier)
@@ -668,8 +691,8 @@ const Brain={
 //     Ignores Callouts (0) <-> Follows Callouts (10)   how often a unit does what it's asked. 0 nearly always ignores; 10 nearly always obeys.
 //   Each callout is IF (something on the field) THEN (a unit may shout it) AND (each ally rolls whether to listen) THEN (that ally's
 //   targeting / position / lane / energy / danger rules get pushed toward what was asked for a few seconds).
-const CALL_COLOR={flannel:'#f2c94c',flannel_pal:'#ff6b6b',chibi:'#5ab4ff',archer:'#ff9f43',druid:'#7ee081',lumberjack:'#c79bff'};
-const NICK={flannel:'Flannel',flannel_pal:'Companion',chibi:'Chibi',archer:'Yumi',druid:'Druid',lumberjack:'Jack'};
+const CALL_COLOR={robot:'#4de0d0',flannel:'#f2c94c',flannel_pal:'#ff6b6b',chibi:'#5ab4ff',archer:'#ff9f43',druid:'#7ee081',lumberjack:'#c79bff'};
+const NICK={robot:'Mech',flannel:'Flannel',flannel_pal:'Companion',chibi:'Chibi',archer:'Yumi',druid:'Druid',lumberjack:'Jack'};
 const FOE_NICK={zombie:['the zombie','that zombie','the shambler','the rotter','the dead one'],werewolf:['the wolf','the werewolf','the dog','the furball','the beast']};
 const LANE_NAME=['top','upper','middle','lower','bottom'];
 const CALLS={
@@ -698,6 +721,9 @@ const CALLS={
   danger:{dur:2,lines:['Move!','Get out of there!','Look out!','Dodge!','Watch the ground!','{ally}, move!','Out of the way!','It\'s gonna hit!','Clear out!','MOVE, {ally}!'],ack:['Whoa!','Thanks!','Moving!','Close one!']},
   tapped:{dur:4,lines:['I\'m tapped out!','No energy!','Out of tricks!','I\'ve got nothing left!','Running on empty!','Cooling down!'],ack:['I\'ll cover you!','Got you!','Take a breath!']},
   kill:{dur:0,lines:['Got one!','Down!','Gotcha!','Next!','That\'s one!','Dropped it!','Stay down!','Easy!','And stay dead!','Another one!','Clean!','Scratch one!']},
+  smoke:{dur:5,lines:['Smoke out!','Popping smoke!','Get in the smoke!','Smoke screen, use it!','Hide in the cloud!','Covering you!'],ack:['Thanks!','Into the smoke!','Got it!']},
+  missiles:{dur:0,lines:['Missiles away!','Incoming!','Barrage out!','Fire in the hole!','Rockets!','Duck!']},
+  gatling:{dur:0,lines:['Spinning up!','Eat lead!','Brrrrt!','Covering fire!','Hose them down!','Lead incoming!']},
   tank:{dur:6,lines:['Get behind me!','I\'ll hold them!','Come on then!','Stay back, I got this!','Let \'em come!','I can take it!','Behind me, now!','Tanking!'],ack:['Behind you!','Got it!','Careful!','Okay!']},
   trap:{dur:4,lines:['Trap\'s down!','Lure them in!','Watch the wire!','Bait them over here!','Mind the bomb!'],ack:['Pulling back!','Luring!','Got it!']},
 };
@@ -718,6 +744,7 @@ function callRelevance(type,o,ctx){const ag=trait(o,'aggr'),se=trait(o,'self'),a
     case 'lane':return .2+.8*trait(o,'lane');
     case 'danger':return o===ctx.ally?1:0;
     case 'trap':return .4+.6*(1-ag);
+    case 'smoke':return o===ctx.ally?1:o.hp/o.max<.6?.8:.15;
     case 'tank':return .2+.8*(1-trait(o,'range'));
     default:return 0;}}
 function isHealer(u){return ((CHAR[u.key]||{}).abilities||[]).some(a=>a.id==='mend'||a.id==='bloom');}
@@ -913,6 +940,8 @@ class Game{
   hurtHero(h,amt,from){
     if(!h||!h.alive)return;if(from&&from.E){h.lastHitBy=from;h.grudgeT=1+19*trait(h,'grudge');}   // Forgiving forgets in a second; Vengeful holds it 20s
     if(this.rng()<h.dodge){this.text(h.x,this.G-52,'dodge','#9ae6ff');return false;}
+    if(from&&from.smokeT>0&&this.rng()<.5){this.text(h.x,this.G-52,'miss','#c8d0d8');return false;}   // Smoke_Screen: blinded attackers miss half the time
+    if(h.smokeT>0&&this.rng()<.25){this.text(h.x,this.G-52,'dodge','#c8d0d8');return false;}   // ...and heroes inside the smoke are harder to hit
     if(h.invulnT>0){this.text(h.x,this.G-52,'miss','#9ae6ff');return false;}
     amt=mitigate(h,amt,'physical');if(h.rageT>0)amt*=.75;if(h.gritT>0)amt*=1-(h.gritDR||0);   // Grit_Teeth
     if(h.shield>0){const s=Math.min(h.shield,amt);h.shield-=s;amt-=s;if(h.thorns&&from&&!from.dead)this.hitEnemy(from,s*.3,null,{nocrit:1,sure:1});}
@@ -1061,7 +1090,7 @@ class Game{
     if(this.boss&&this.boss.dead&&!this.over&&!this.demo&&!this.exiting){this.exiting=true;this.exitT=0;}
     if(this.exiting&&!this.over){const al2=this.alive();if(!this.loot.length&&al2.every(h=>h.x>this.W+24)||this.exitT>12){this.over='clear';this.ev('clear');return;}}
     // heroes
-    this.stepObstacles(dt,scroll);
+    this.stepObstacles(dt,scroll);this.stepRobot(dt,scroll);
     for(const [i,h] of this.heroes.entries()){if(h.laneI==null){h.laneI=[2,1,3][i%3];h.gy=LANES[h.laneI];}}
     for(const h of al){
       {const hx=h.x,want=this.freeLane(h.plan&&h.plan.lane!=null?h.plan.lane:h.laneI,h.laneI,hx-8,hx+(scroll?55:14));   // walk around obstacles
@@ -1314,6 +1343,7 @@ class Game{
     if(h.ammo==null)h.ammo=C.ranged?(C.ranged.clip||Infinity):0;   // clip 0 = never reloads
     if(C.ranged&&h.ammo<=0&&C.ranged.clip>0){if(!h.reloadT&&C.ranged.reload>=1.5)Comms.onReload(this,h);h.reloadT=(h.reloadT||0)+dt*h.rangedSpd*spdB;if(h.reloadT>=C.ranged.reload){h.reloadT=0;h.ammo=C.ranged.clip;}}
     const reachPx=ENEMY_BODY+C.melee.reach*UNIT_SCALE;   // same body gap the zombies measure from, so a 20 reach out-reaches a 12 reach zombie
+    if(h.gat){this.robotGat(h,dt,C);return;}
     const mt=this.enemies.filter(e=>!e.dead&&!e.fly&&(e.boss?e.x-e.w-h.x<=reachPx&&e.x>h.x-4:Math.abs(e.x-this.heroX(h))<=reachPx&&(e.gy==null||Math.abs(e.gy-h.gy)<2.5))).sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x))[0];
     // ---- Wave Dash in progress: slide forward along the lane, cutting everything in the line once
     if(h.dash){const D=h.dash;D.t+=dt;const k=Math.min(1,D.t/D.T);const nx=D.x0+(D.x1-D.x0)*(1-(1-k)*(1-k));const px=h.x;h.x=nx;h.pauseT=Math.max(h.pauseT||0,.05);
@@ -1337,11 +1367,13 @@ class Game{
         h.dash={t:0,T:DA.dur,x0:h.x,x1:Math.min(this.W-12,h.x+DA.dist),hit:new Set(),dmg,A:DA,trail:[]};this.ev('dash',{});return;}}
     const tgt=mt||(C.ranged?(this.isMeleeHero(h)?(findT('melee'),findT('ranged')):findT('ranged')):(findT('melee'),null));const rd=faceToward(h,tgt?tgt.x:h.x+10,dt);if(!rd||!tgt)return;
     if(mt){if(h.mT>=C.melee.every){h.mT=0;h.combo=(h.combo||0)+1;h.swingAnim=!C.combo?null:(h.moving?'runatk':(h.combo%2?'attack1':'attack2'));h.animM=h.swingAnim==='attack2'?.36:.45;h.animT=0;const roll=(this.rollDice(C.melee.dice)+(C.melee.flat||0)+(h.flatMelee||0))*(C.melee.dmgMul||1)*(h.atk/h.base.atk)*h.meleeDmg*(h.cryDmg||1);
+        if(C.melee.arc)this.fx.push({k:'arc',x:h.x,gy:h.gy||this.G,dir:mt.x>=h.x?1:-1,t:0,life:.3,raw:1,big:h.surgeT>0});
         if(C.melee.claw)this.fx.push({k:'claw',x:h.x+(mt.x>=h.x?6:-6),gy:h.gy||this.G,tx:mt.x,dir:mt.x>=h.x?1:-1,t:0,life:.42,raw:1});
         setTimeoutSafe(this,C.melee.hitAt||.15,()=>{if(!h.alive||mt.dead)return;   // the blow lands a moment into the swing (Kyle: very slight delay)
         const K=Math.min(100,C.melee.kb+(h.kbAdd||0));const dealt=this.hitEnemy(mt,roll,h,{});   // knockback, Kyle's scale: 0-100, 100 = about a 40px shove
         if(dealt&&!mt.dead&&K>0){const res=mt.boss?.9:((mt.E&&mt.E.kbRes)||0);mt.kbv=Math.max(mt.kbv||0,K/100*40*8*(1-res));mt.kbDir=mt.x>=h.x?1:-1;}   
-        if(!C.melee.claw)this.fx.push({k:'slash',x:mt.x-6,y:mt.boss?mt.y-50:mt.y-24,t:0});});}return;}
+        if(h.surgeT>0&&!mt.dead)this.arcChain(h,mt);
+        if(!C.melee.claw&&!C.melee.arc)this.fx.push({k:'slash',x:mt.x-6,y:mt.boss?mt.y-50:mt.y-24,t:0});});}return;}
     const AB=(C.abilities||[]).find(a=>a.id==='aimed');h.sigT=Math.max(0,(h.abT==null?(h.abT=AB?AB.cd*.4:0):h.abT));if(AB&&h.abT>0)h.abT-=dt;
     // ---- Set_Camp (Flannel_Man)
     const GR=(C.abilities||[]).find(a=>a.id==='grit');if(GR){if(h.grT==null)h.grT=GR.cd*.2;if(h.grT>0)h.grT-=dt;if(h.gritT>0)h.gritT-=dt;
@@ -1434,6 +1466,29 @@ class Game{
       // IF a big target is 24-60px away (too far to swing, close enough to jump) AND Hatchet_Leap is ready THEN leap onto it
       const lt=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-h.x)>=LP.min&&Math.abs(e.x-h.x)<=LP.range).sort((p,q)=>(q.max-p.max))[0];
       if(LP&&h.lpT<=0&&lt&&en>=LP.en&&spendEnergy(h,LP.en)){h.lpT=LP.cd;h.leap={t:0,x0:h.x,x1:lt.x-(lt.x>h.x?10:-10)};faceToward(h,lt.x,1);h.laneI=lt.laneI!=null?lt.laneI:h.laneI;return;}}
+    // ---- 0.12.17 Moss_Mech abilities (all IF/THEN on what's on the field; the planner sees the cooldowns through CD_KEY)
+    {const RB=id=>(C.abilities||[]).find(a=>a.id===id);const SU=RB('surge'),GA=RB('gatling'),MS=RB('missiles'),SM=RB('smoke');
+     if(SU||GA||MS||SM){for(const [A,k] of [[SU,'suT'],[GA,'gaT'],[MS,'msT'],[SM,'smT']])if(A){if(h[k]==null)h[k]=A.cd*.25;if(h[k]>0)h[k]-=dt;}
+      if(h.surgeT>0)h.surgeT-=dt;if(h.launchT>0)h.launchT-=dt;if(h.throwT>0)h.throwT-=dt;
+      const live=this.enemies.filter(e=>!e.dead&&e.x<this.W+4),en=h.en||0,hx=h.x;
+      // IF 2+ enemies are close THEN overcharge the blade
+      if(SU&&h.suT<=0&&!(h.surgeT>0)&&live.filter(e=>Math.abs(e.x-hx)<40).length>=2&&en>=SU.en&&spendEnergy(h,SU.en)){h.suT=SU.cd*(1-(h.cdr||0));h.surgeT=SU.dur;this.ev('dash',{});
+        this.fx.push({k:'ring',x:hx,y:this.G-14,r:22,t:0,c:'#49c8ff'});}
+      // IF a hurt ally has enemies on them (or I'm swarmed) THEN smoke the spot
+      if(SM&&h.smT<=0&&en>=SM.en&&!(h.throwT>0)){const al=this.alive();let spot=null,who=null;
+        for(const o of al){if(o.hp/o.max>=SM.under)continue;const on=live.filter(e=>Math.abs(e.x-this.heroX(o))<40);if(on.length){spot=(on.reduce((s,e)=>s+e.x,0)/on.length+this.heroX(o))/2;who=o;break;}}
+        if(spot==null&&live.filter(e=>Math.abs(e.x-hx)<40).length>=3)spot=hx+10;
+        if(spot!=null&&Math.abs(spot-hx)<140&&spendEnergy(h,SM.en)){h.smT=SM.cd*(1-(h.cdr||0));h.throwT=.45;faceToward(h,spot,1);const gy=(who&&who.gy)||h.gy||this.G;
+          setTimeoutSafe(this,.25,()=>{if(!h.alive)return;this.ev('whoosh',{});(this.nades=this.nades||[]).push({x0:h.x,x:h.x,x1:spot,gy0:h.gy||this.G,gy,t:0,T:SM.throw,A:SM,src:h});});
+          Comms.say(this,h,'smoke',{x:spot,ally:who});return;}}
+      // IF 3+ enemies are bunched 40-260px out (or a boss is up) THEN missile barrage on the thickest spot
+      if(MS&&h.msT<=0&&en>=MS.en&&!(h.launchT>0)){let best=null,bn=0;for(const e of live){const d=e.x-hx;if(d<MS.min||d>MS.range)continue;const n=live.filter(o=>Math.abs(o.x-e.x)<MS.spread*1.6).length+(e.boss?3:0);if(n>bn){bn=n;best=e;}}
+        if(best&&bn>=3&&spendEnergy(h,MS.en)){h.msT=MS.cd*(1-(h.cdr||0));h.launchT=.2+MS.n*MS.gap+.2;const mul=(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
+          for(let i=0;i<MS.n;i++)setTimeoutSafe(this,.2+i*MS.gap,()=>{if(!h.alive)return;const T=best.dead?(live.find(e=>!e.dead)||best):best;this.ev('whoosh',{});
+            (this.missiles=this.missiles||[]).push({x0:h.x+(h.face<0?-3:3),x:h.x,tx:T.x+(this.rng()*2-1)*MS.spread,gy:h.gy||this.G,tgy:Math.max(LANES[0],Math.min(LANES[LANES.length-1],(T.gy||this.G)+(this.rng()*2-1)*6)),t:0,T:MS.fly*(.9+this.rng()*.2),A:MS,src:h,mul,trail:0});});
+          Comms.say(this,h,'missiles',{});return;}}
+      // IF 3+ enemies are lined up in front AND nothing is in blade reach THEN spin up the gatling
+      if(GA&&h.gaT<=0&&!mt&&en>=GA.en){const inGa=live.filter(e=>e.x>hx-6&&e.x-hx<=GA.range);if(inGa.length>=GA.min&&spendEnergy(h,GA.en)){h.gaT=GA.cd*(1-(h.cdr||0));h.gat={t:0,acc:0,A:GA};Comms.say(this,h,'gatling',{});return;}}}}
     // ---- Druid abilities
     const AB_=id=>(C.abilities||[]).find(a=>a.id===id);const MD=AB_('mend'),BL=AB_('bloom'),TH=AB_('thorns'),CY=AB_('cyclone');
     if(MD||BL||TH||CY){for(const [A,k] of [[MD,'mdT'],[BL,'blT'],[TH,'thT'],[CY,'cyT']])if(A){if(h[k]==null)h[k]=A.cd*.2;if(h[k]>0)h[k]-=dt;}
@@ -1485,7 +1540,7 @@ class Game{
       const fire=()=>{if(!h.alive)return;const tg=tgt.dead?this.liveE().sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x))[0]:tgt;if(!tg)return;if(C.ranged.releaseAt)this.ev('bow',{});
         for(let i=0;i<C.ranged.pellets;i++){const acc=h.moving?Math.max(1,h.acc-C.walkPenalty):h.acc;h._accBonus=acc-h.acc;
           const p=this.shoot(h,tg,st.proj,dmg/C.ranged.pellets,{});this.aim(p,h,tg);h._accBonus=0;}};
-      if(rel)setTimeoutSafe(this,rel,fire);else fire();}}
+      const nb=C.ranged.burst||1;for(let b=0;b<nb;b++){const tt=rel+b*(C.ranged.burstGap||.08);if(tt>0)setTimeoutSafe(this,tt,fire);else fire();}}}
   callPal(h,PB){this.pets=this.pets||[];let pal=this.pets.find(p=>p.owner===h&&p.alive);
     if(pal){const amt=pal.max*PB.heal;pal.hp=Math.min(pal.max,pal.hp+amt);this.text(pal.x,this.G-50,'+'+Math.round(amt),'#7dff9a');return;}
     const key='flannel_pal',b=heroBase(key,h.lvl,this.run.team.length);
@@ -1592,6 +1647,31 @@ class Game{
   laneBlocked(l,x0,x1){for(const o of this.obst||[]){if(!o.lanes.includes(l))continue;const [a,b]=this.obSpan(o,l);if(b>x0&&a<x1)return o;}return null;}
   // IF the lane I want is blocked just ahead THEN take the nearest open lane (ties go to whichever way I was already heading)
   freeLane(want,cur,x0,x1){if(!this.laneBlocked(want,x0,x1))return want;let best=null,bd=99;for(let l=0;l<LANES.length;l++){if(this.laneBlocked(l,x0,x1))continue;const d=Math.abs(l-want)+Math.abs(l-cur)*.3;if(d<bd){bd=d;best=l;}}return best==null?want:best;}
+  robotGat(h,dt,C){const G=h.gat,A=G.A;G.t+=dt;G.acc+=dt;h.pauseT=Math.max(h.pauseT||0,.05);
+    const live=this.enemies.filter(e=>!e.dead&&e.x>h.x-6&&e.x-h.x<=A.range);
+    while(G.acc>=1/A.rate&&G.t<A.dur){G.acc-=1/A.rate;if(!live.length)break;const tg=live[Math.floor(this.rng()*live.length)];faceToward(h,tg.x,1);
+      const dmg=(this.rollDice(A.dice)+(h.flatRanged||0)*.25)*(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
+      h._accBonus=A.accPen;const p=this.shoot(h,tg,'gat',dmg,{});this.aim(p,h,tg);h._accBonus=0;p.tgy+=(this.rng()*2-1)*A.spreadGy;p.aimH+=(this.rng()*2-1)*A.spreadH;h.gatFlash=.05;if(this.rng()<.45)this.ev('gun',{});}
+    if(G.t>=A.dur||!live.length&&G.t>.6)h.gat=null;}
+  // Arc_Surge: lightning jumps from the blade's target to up to N more enemies nearby
+  arcChain(h,from){const A=(h.base.char.abilities||[]).find(a=>a.id==='surge');if(!A)return;let cur=from;const done=new Set([from]);const pts=[[from.x,(from.gy||this.G)-12]];
+    for(let i=0;i<A.chains;i++){const nx=this.enemies.filter(e=>!e.dead&&!done.has(e)&&Math.abs(e.x-cur.x)<A.r&&Math.abs((e.gy||this.G)-(cur.gy||this.G))<14).sort((p,q)=>Math.abs(p.x-cur.x)-Math.abs(q.x-cur.x))[0];if(!nx)break;
+      done.add(nx);pts.push([nx.x,(nx.gy||this.G)-12]);this.hitEnemy(nx,this.rollDice(A.dice)*(h.atk/h.base.atk)*h.meleeDmg,h,{});if(!nx.dead)nx.stun=Math.max(nx.stun||0,A.stun*(nx.boss?.3:1));cur=nx;}
+    if(pts.length>1)this.fx.push({k:'bolt',pts,t:0,life:.28,raw:1});}
+  stepRobot(dt,scroll){
+    if(this.missiles&&this.missiles.length){for(const M of this.missiles){M.t+=dt;M.x0-=scroll*dt;M.tx-=scroll*dt;const u=Math.min(1,M.t/M.T);M.x=M.x0+(M.tx-M.x0)*u;M.gyNow=M.gy+(M.tgy-M.gy)*u;M.hgt=(1-u)*23+46*Math.sin(Math.PI*u);
+        M.trail-=dt;if(M.trail<=0){M.trail=.035;this.fx.push({k:'puff',x:M.x,y:M.gyNow-M.hgt,t:0,life:.7+this.rng()*.3,s:.6+this.rng()*.5,raw:1});}
+        if(u>=1&&!M.done){M.done=1;this.fx.push({k:'boom',x:M.x,gy:M.tgy,t:0,life:.8,raw:1,small:1});this.ev('boom',{});this.shake=Math.max(this.shake||0,.25);
+          for(const e of this.enemies){if(e.dead||e.fly)continue;if(Math.abs(e.x-M.x)<=M.A.r+(e.boss?e.w*.5:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-M.tgy)<=8))this.hitEnemy(e,(this.rollDice(M.A.dice)+(M.src.flatRanged||0)*.5)*M.mul,M.src&&M.src.alive?M.src:null,{});}}}
+      this.missiles=this.missiles.filter(M=>!M.done);}
+    if(this.nades&&this.nades.length){for(const N of this.nades){N.t+=dt;N.x1-=scroll*dt;N.x0-=scroll*dt;const u=Math.min(1,N.t/N.T);N.x=N.x0+(N.x1-N.x0)*u;N.gyNow=N.gy0+(N.gy-N.gy0)*u;N.hgt=18*(1-u)+22*Math.sin(Math.PI*u);
+        if(u>=1&&!N.done){N.done=1;(this.clouds=this.clouds||[]).push({x:N.x1,gy:N.gy,r:N.A.r,t:0,life:N.A.dur,A:N.A,seed:Math.floor(this.rng()*999)});this.ev('wind',{});}}
+      this.nades=this.nades.filter(N=>!N.done);}
+    if(this.clouds&&this.clouds.length){for(const S of this.clouds){S.t+=dt;S.x-=scroll*dt;const A=S.A;
+        for(const e of this.enemies){if(e.dead||e.fly||e.boss)continue;if(Math.abs(e.x-S.x)<S.r&&Math.abs((e.gy!=null?e.gy:this.G)-S.gy)<14){e.smokeT=.25;e.slow=Math.max(e.slow||0,A.slow);e.slowT=Math.max(e.slowT||0,.25);}}
+        for(const o of this.alive()){if(Math.abs(this.heroX(o)-S.x)<S.r&&Math.abs((o.gy||this.G)-S.gy)<14)o.smokeT=.25;}}
+      this.clouds=this.clouds.filter(S=>S.t<S.life);}
+    for(const e of this.enemies)if(e.smokeT>0)e.smokeT-=dt;for(const o of this.alive())if(o.smokeT>0)o.smokeT-=dt;}
   stepObstacles(dt,scroll){if(!this.obst)this.obst=[];if(this.obNext==null)this.obNext=60+this.rng()*120;
     for(const o of this.obst)o.x-=scroll*dt;this.obst=this.obst.filter(o=>o.x>-50);
     if(scroll&&!this.exiting&&this.dist>=this.obNext&&!(this.boss&&!this.boss.dead)){this.obNext=this.dist+110+this.rng()*230;
@@ -1620,10 +1700,10 @@ class Game{
 function setTimeoutSafe(g,t,fn){(g.timers=g.timers||[]).push({t,fn});}
 const BIGP={};
 // where shots leave each hero (px ahead of the hero's x, px above the ground), matched to the strike frame
-const MUZZLE={lumberjack:[12,15],druid:[8,22],chibi:[10,15],archer:[17,14],flannel:[11,14],flannel_pal:[9,13],vile:[3,30],thing:[14,30],kykar:[15,46],dragons:[18,38],mathas:[17,33],marina:[11,25],thranduil:[12,34],joel:[11,33],robots:[18,33],blood:[13,46],mech:[20,30],weather:[14,47]};
+const MUZZLE={robot:[10,11],lumberjack:[12,15],druid:[8,22],chibi:[10,15],archer:[17,14],flannel:[11,14],flannel_pal:[9,13],vile:[3,30],thing:[14,30],kykar:[15,46],dragons:[18,38],mathas:[17,33],marina:[11,25],thranduil:[12,34],joel:[11,33],robots:[18,33],blood:[13,46],mech:[20,30],weather:[14,47]};
 const ARC={kunai:16,dart:6};   // how high each kind is tossed above a straight line (ruler units): kunai lobbed, dart a slight drop
-const PSPD={leaf:190,dart:330,kunai:240,yarrow:230,bullet:420,arrow:200,quarrel:215,bolt:150,orb:135,fire:150,shard:160,zap:170,wisp:120,plasma:180,blood:140,shell:160,frost:145,brick:190};   // px/s   // ranged shots don't shove, except the thrown brick (a little)
-const PCOL={skull:'#7dff9a',hex:'#c050ff',bolt:'#ffb040',orb:'#c050ff',arrow:'#e8e0c8',quarrel:'#e8e0c8',fire:'#ff8a1f',shard:'#6ff0ff',zap:'#bfefff',wisp:'#7dff9a',plasma:'#3ff0ff',blood:'#ff2a3a',shell:'#ffd23f',frost:'#9ae6ff',brick:'#c0603a'};
+const PSPD={gat:420,leaf:190,dart:330,kunai:240,yarrow:230,bullet:420,arrow:200,quarrel:215,bolt:150,orb:135,fire:150,shard:160,zap:170,wisp:120,plasma:180,blood:140,shell:160,frost:145,brick:190};   // px/s   // ranged shots don't shove, except the thrown brick (a little)
+const PCOL={gat:'#ffd27a',skull:'#7dff9a',hex:'#c050ff',bolt:'#ffb040',orb:'#c050ff',arrow:'#e8e0c8',quarrel:'#e8e0c8',fire:'#ff8a1f',shard:'#6ff0ff',zap:'#bfefff',wisp:'#7dff9a',plasma:'#3ff0ff',blood:'#ff2a3a',shell:'#ffd23f',frost:'#9ae6ff',brick:'#c0603a'};
 
 // ======================================================================= RUN / PICKS (pure)
 function newRun(team,slot){
@@ -1758,12 +1838,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793871003';const BGI=new Image();BGI.src='crawl_bg.png?v=1793871003';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793871003';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793878638';const BGI=new Image();BGI.src='crawl_bg.png?v=1793878638';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793878638';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793871003';XIMG.wave.src='crawl_wave.png?v=1793871003';XIMG.chibi.src='crawl_chibi.png?v=1793871003';XIMG.flannel.src='crawl_flannel.png?v=1793871003';XIMG.rain.src='crawl_rain.png?v=1793871003';XIMG.druid.src='crawl_druid.png?v=1793871003';XIMG.camp.src='crawl_campfire.png?v=1793871003';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793871003';XIMG.tornado.src='crawl_fx_tornado.png?v=1793871003';XIMG.vine.src='crawl_fx_vine.png?v=1793871003';XIMG.thorn.src='crawl_fx_thorn.png?v=1793871003';
+const XIMG={robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793878638';XIMG.wave.src='crawl_wave.png?v=1793878638';XIMG.chibi.src='crawl_chibi.png?v=1793878638';XIMG.flannel.src='crawl_flannel.png?v=1793878638';XIMG.rain.src='crawl_rain.png?v=1793878638';XIMG.druid.src='crawl_druid.png?v=1793878638';XIMG.camp.src='crawl_campfire.png?v=1793878638';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793878638';XIMG.tornado.src='crawl_fx_tornado.png?v=1793878638';XIMG.vine.src='crawl_fx_vine.png?v=1793878638';XIMG.thorn.src='crawl_fx_thorn.png?v=1793878638';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793871003';XIMG.obst.src='crawl_obst.png?v=1793871003';XIMG.boom.src='crawl_boom.png?v=1793871003';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793878638';XIMG.obst.src='crawl_obst.png?v=1793878638';XIMG.robot.src='crawl_robot.png?v=1793878638';XIMG.boom.src='crawl_boom.png?v=1793878638';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -1913,6 +1993,30 @@ function drawGame(ctx,g,W,oy){
   const rainDraw=()=>{for(const f of g.fx)if(f.k==='stuck'){const k=f.t/f.life;drawUnit(ctx,RAIN.s,0,f.x,f.gy+1,.5,k>.7?(1-k)/.3:1,0,0,false);}
     for(const R of g.rain||[]){if(R.t<0)continue;const k=Math.min(1,R.t/R.T);drawUnit(ctx,RAIN.f,0,R.x,R.gy-(1-k)*90,.5,1,0,0,false);}};
   // Druid effects: Mend sparkle, Bloom vine heart on the healed ally, Thorn Eruption spikes, Cyclone tornadoes
+  // 0.12.17 Moss_Mech effects: arc blade glow and slashes, chain lightning, missiles and their smoke trails, grenades and smoke clouds
+  const zig=(x0,y0,x1,y1,n,amp)=>{ctx.beginPath();ctx.moveTo(x0,y0);for(let i=1;i<n;i++){const k=i/n;ctx.lineTo(x0+(x1-x0)*k+(Math.random()*2-1)*amp*.4,y0+(y1-y0)*k+(Math.random()*2-1)*amp);}ctx.lineTo(x1,y1);ctx.stroke();};
+  const puffAt=(x,y,r,a,shade)=>{ctx.globalAlpha=a;ctx.fillStyle=shade||'#c9d2da';ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.fillStyle='#eef3f6';ctx.beginPath();ctx.arc(x-r*.3,y-r*.35,r*.55,0,7);ctx.fill();ctx.globalAlpha=1;};
+  const robotFx=()=>{
+    for(const h of g.alive())if(h.key==='robot'){const d=(h.face||1),bx=g.heroX(h)-d*-6.5*-1,by=(h.gy||g.G)-8;ctx.save();ctx.globalCompositeOperation='lighter';   // the arc blade hums blue
+      const sx=g.heroX(h)+d*5,sy=(h.gy||g.G)-5.5;glow(ctx,sx,sy,h.surgeT>0?6.5:4.2,'#2aa8ff',h.surgeT>0?.32:.18);
+      if(Math.random()<(h.surgeT>0?.9:.35)){ctx.strokeStyle=h.surgeT>0?'rgba(200,240,255,.95)':'rgba(120,210,255,.8)';ctx.lineWidth=.5;zig(sx-d*2,sy-3,sx+d*(2+Math.random()*3),sy+2+Math.random()*2,3,1.2);}
+      if(h.gatFlash>0){h.gatFlash-=1/60;const mx=g.heroX(h)+d*10.5,my=(h.gy||g.G)-11;glow(ctx,mx,my,3.2,'#ffcc66',.55);glow(ctx,mx,my,1.4,'#fff6d0',.9);}ctx.restore();}
+    for(const f of g.fx){const k=f.t/f.life;
+      if(f.k==='arc'){const d=f.dir,cx=f.x+d*6,cy=f.gy-10,R=f.big?13:10;ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=1-k;ctx.lineCap='round';
+        for(const [w,c] of [[3.2,'rgba(30,140,255,.6)'],[1.3,'rgba(200,245,255,.95)']]){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();const a0=d>0?-1.25:Math.PI+1.25,a1=d>0?1.1:Math.PI-1.1,s=a0+(a1-a0)*Math.min(1,k*2.2);ctx.arc(cx-d*4,cy,R,Math.min(a0,s),Math.max(a0,s));ctx.stroke();}
+        ctx.strokeStyle='rgba(170,230,255,.9)';ctx.lineWidth=.6;zig(cx,cy-8,cx+d*6,cy+6,4,1.6);ctx.restore();continue;}
+      if(f.k==='bolt'){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=1-k;for(const [w,c] of [[2.4,'rgba(40,150,255,.7)'],[.8,'rgba(230,250,255,1)']]){ctx.strokeStyle=c;ctx.lineWidth=w;for(let i=1;i<f.pts.length;i++){const [a,b]=f.pts[i-1],[x,y]=f.pts[i];zig(a,b,x,y,5,2.2);}}
+        for(const [x,y] of f.pts)glow(ctx,x,y,3,'#6fd0ff',.4*(1-k));ctx.restore();continue;}
+      if(f.k==='puff'){const r=(1.2+2.6*k)*f.s;puffAt(f.x-1.5*k,f.y-3*k,r,.55*(1-k),k<.15?'#ffb860':'#aab4bd');continue;}}
+    for(const M of g.missiles||[]){const u=Math.min(1,M.t/M.T),du=.02;const nx=M.x0+(M.tx-M.x0)*Math.min(1,u+du),nh=(1-Math.min(1,u+du))*23+46*Math.sin(Math.PI*Math.min(1,u+du));
+      const y=M.gyNow-M.hgt,ang=Math.atan2(-(nh-M.hgt),nx-M.x);ctx.save();ctx.translate(M.x,y);ctx.rotate(ang);
+      ctx.fillStyle='#2f3a33';ctx.fillRect(-3.5,-1,6,2);ctx.fillStyle='#6f8a63';ctx.fillRect(-3,-1,4.5,1);ctx.fillStyle='#c84a2a';ctx.fillRect(2.5,-1,1.5,2);ctx.fillStyle='#1d2420';ctx.fillRect(-4.5,-1.8,1.5,3.6);   // body, stripe, red nose, fins
+      ctx.globalCompositeOperation='lighter';glow(ctx,-5,0,2.2,'#ff9a30',.7);glow(ctx,-4.6,0,1,'#fff0b0',1);ctx.restore();}
+    for(const N of g.nades||[]){const y=N.gyNow-N.hgt;ctx.save();ctx.translate(N.x,y);ctx.rotate(N.t*14);ctx.fillStyle='#3d4a40';ctx.fillRect(-1.5,-1.5,3,3);ctx.fillStyle='#9aa69a';ctx.fillRect(-1.5,-1.5,1,1);ctx.restore();
+      if(Math.random()<.5)puffAt(N.x,y,.9,.5);}
+    for(const S of g.clouds||[]){const k=S.t/S.life,grow=Math.min(1,S.t/.45),fade=k>.8?(1-k)/.2:1;let sd=S.seed;const rnd=()=>{sd=(sd*9301+49297)%233280;return sd/233280;};
+      for(let i=0;i<26;i++){const a=rnd()*6.28,rr=Math.sqrt(rnd())*S.r*grow,ox=Math.cos(a)*rr+Math.sin(g.t*.8+i)*2,oy=Math.sin(a)*rr*.32-6-rnd()*10*grow+Math.cos(g.t*.6+i)*1.2;
+        const r=(4+rnd()*5)*grow*(k>.8?.7+.3*fade:1);if(k>.8&&rnd()<(1-fade))continue;puffAt(S.x+ox,S.gy+oy,r,.62*fade,i%3?'#b8c2ca':'#9aa6b0');}}};
   const druidFx=()=>{for(const f of g.fx){const k=f.t/f.life;
       if(f.k==='claw'){const d=f.dir,e=1-Math.pow(1-Math.min(1,k/.55),3);const span=Math.max(6,Math.abs(f.tx-f.x));const cx=f.x+d*(span*e),cy=f.gy-11-2*Math.sin(Math.PI*e);
         const s=(.55+.55*e)*(k>.7?1-(k-.7)/.3*.3:1),al=k<.7?1:Math.max(0,1-(k-.7)/.3);ctx.save();ctx.globalAlpha=al;ctx.globalCompositeOperation='lighter';
@@ -1933,7 +2037,7 @@ function drawGame(ctx,g,W,oy){
   const poultices=()=>{for(const h of g.alive())if(h.poulticeT>0){ctx.save();ctx.globalCompositeOperation='lighter';for(let i=0;i<4;i++){const ph=((g.t*.8+i*.25)%1);ctx.fillStyle=`rgba(150,235,130,${.8*(1-ph)})`;ctx.fillRect(g.heroX(h)-5+i*3,(h.gy||g.G)-8-ph*16,1.5,1.5);}ctx.restore();}};
   const quakes=()=>{for(const f of g.fx)if(f.k==='quake'){const k=f.t/f.life;ctx.save();ctx.globalAlpha=1-k;ctx.fillStyle='#8a6a40';
       for(let i=0;i<8;i++){const x=f.x-f.w/2+(i+.5)*f.w/8;ctx.fillRect(x-1,f.gy-1-Math.sin((k+i*.13)*Math.PI)*4,2,2);}ctx.strokeStyle='#c8a060';ctx.beginPath();ctx.moveTo(f.x-f.w/2,f.gy);ctx.lineTo(f.x+f.w/2,f.gy);ctx.stroke();ctx.restore();}};
-  const booms=()=>{for(const f of g.fx){if(f.k!=='boom')continue;const k=f.t/f.life,fr=Math.min(BOOM.n-1,Math.floor(k*BOOM.n));drawUnit(ctx,BOOM,fr,f.x,f.gy+2,.32,k>.85?(1-k)/.15:1,0,0,false);}};
+  const booms=()=>{for(const f of g.fx){if(f.k!=='boom')continue;const k=f.t/f.life,fr=Math.min(BOOM.n-1,Math.floor(k*BOOM.n));drawUnit(ctx,BOOM,fr,f.x,f.gy+2,f.small?.17:.32,k>.85?(1-k)/.15:1,0,0,false);}};
   const drawHero=(h)=>{const G0=h.gy||g.G;ctx.save();shrinkAt(ctx,h.x,G0,HS);drawHero0(h);ctx.restore();};
   const drawHero0=(h)=>{const G=h.gy||g.G;if(!h.alive){return;}
     if(h.bleedT>0){const p=.5+.5*Math.sin(g.t*10);ctx.save();ctx.globalCompositeOperation='lighter';
@@ -1954,7 +2058,10 @@ function drawGame(ctx,g,W,oy){
         shadow(ctx,cx,G+4,7);spr(ctx,'h_'+h.key+'_a',h.animT>0?fa:pf,cx-32,G-60+4-cy,(h.compV||0)<-4&&!h.animT,null,0);}
     }else if(UNITS[h.key]&&UNITS[h.key].idle){shadow(ctx,h.x+lx,G,9);const U=UNITS[h.key],C=h.base.char;let A=U.idle,f=Math.floor(g.t*(h.key==='druid'?5:6))%A.n;
       const mov=h.moving||g.scroll;
-      if(h.dash&&U.runatk){A=U.runatk;f=Math.min(A.n-1,3+Math.floor(h.dash.t/h.dash.T*2));}
+      if(h.gat&&U.ranged){A=U.ranged;f=Math.floor(g.t*24)%A.n;}   // Moss_Mech's gatling: barrels spinning, muzzle flashing
+      else if(h.launchT>0&&U.missile){A=U.missile;f=Math.min(A.n-1,1+Math.floor(g.t*8)%3);}
+      else if(h.throwT>0&&U.throw){A=U.throw;f=Math.min(A.n-1,Math.floor((1-h.throwT/.45)*A.n));}
+      else if(h.dash&&U.runatk){A=U.runatk;f=Math.min(A.n-1,3+Math.floor(h.dash.t/h.dash.T*2));}
       else if(h.animM>0){A=(h.swingAnim&&U[h.swingAnim])||U.melee;const D=h.swingAnim==='attack2'?.36:.45;f=Math.min(A.n-1,Math.floor((1-h.animM/D)*A.n));}
       else if(h.animR>0){A=(h.firedMoving&&U.walkfire)||U.ranged;f=Math.min(A.n-1,Math.floor((1-h.animR/(h.animRT||.5))*A.n));}
       else if((h.casting>0||h.animC>0)&&h.key==='druid'){A=U.ranged;f=1;}   // staff raised, tip glowing
@@ -1973,7 +2080,7 @@ function drawGame(ctx,g,W,oy){
       else if(mov){A=(h.running&&U.run)||U.walk;f=Math.floor(g.t*(h.running?12:8))%A.n;}
       const bob=mov&&A.n===1?-Math.abs(Math.sin(g.t*11))*1.6:0;   // one-frame walk (companion art has no walk row): a little hop
       if(h.whirl){ctx.save();ctx.globalAlpha=.5;ctx.strokeStyle='#e8f0ff';ctx.lineWidth=1.2;for(let i=0;i<2;i++){ctx.beginPath();ctx.ellipse(h.x+lx,G-10,16-i*3,5-i,0,g.t*18+i*2,g.t*18+i*2+2.2);ctx.stroke();}ctx.restore();}   // spin trail
-      drawUnit(ctx,A,f,h.x+lx,G+bob-(h.leapH||0)*1.2,A.pre?ART_SCALE/A.pre/HS:A.art?ART_SCALE/HS:1,null,h.hitFlash,0,(h.face||1)>0);}
+      drawUnit(ctx,A,f,h.x+lx,G+bob-(h.leapH||0)*1.2,A.pre?ART_SCALE/A.pre/HS:A.art?ART_SCALE/HS:(A.sc||1),null,h.hitFlash,0,(h.face||1)>0);}
     else{shadow(ctx,h.x+lx,G,9);spr(ctx,'h_'+h.key,fr,h.x+lx-32,G-60,h.face<0,null,h.hitFlash);}
     ctx.restore();
     if(h.gritT>0){const p=.5+.5*Math.sin(g.t*9),fa=Math.min(1,h.gritT/.5);ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(230,175,90,${(.35+.3*p)*fa})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(Math.round(h.x+lx),G-24,13+p,26+p,0,0,7);ctx.stroke();
@@ -2013,10 +2120,11 @@ function drawGame(ctx,g,W,oy){
     if(F.state==='dying'||F.state==='dead'){ctx.fillStyle='rgba(150,150,160,.25)';for(let i=0;i<3;i++){const ph=((g.t*.4+i*.33)%1);ctx.beginPath();ctx.arc(F.x+Math.sin(ph*6+i)*2,F.gy-6-ph*20,1.5+ph*3,0,7);ctx.fill();}}}
   traps();rainDraw();
   for(const it of items)it[3]();
-  laser();waves();druidFx();quakes();poultices();booms();
+  laser();waves();druidFx();robotFx();quakes();poultices();booms();
   // projectiles
   for(const p of g.proj){const x=Math.round(p.x),y=p.aimed?Math.round(p.y):Math.round(G+(p.y-G)*HS);const c=PCOL[p.kind]||'#ff3a3a';ctx.save();shrinkAt(ctx,x,y,HS);
-    if(p.kind==='leaf'){const d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';   // 0.12.15 nature bolt: a glowing seed with leaves spinning round it and a fading green trail
+    if(p.kind==='gat'){const d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle='rgba(255,210,120,.85)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-d*8,y);ctx.lineTo(x,y);ctx.stroke();ctx.fillStyle='#fff4c8';ctx.fillRect(x-1,y-.5,2,1);ctx.restore();}   // gatling tracer
+    else if(p.kind==='leaf'){const d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';   // 0.12.15 nature bolt: a glowing seed with leaves spinning round it and a fading green trail
       for(let i=1;i<=5;i++){ctx.fillStyle=`rgba(90,255,120,${.38-.065*i})`;const s=1.6-.22*i;ctx.fillRect(x-d*i*2.6-s/2,y-s/2+Math.sin(g.t*20+i)*.5,s,s);}
       glow(ctx,x,y,6,'#5dff6a',.32);glow(ctx,x,y,2.6,'#c8ffb0',.55);ctx.restore();
       ctx.fillStyle='#e8ffd8';ctx.fillRect(x-.75,y-.75,1.5,1.5);
@@ -2193,7 +2301,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.16</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.17</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
