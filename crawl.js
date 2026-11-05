@@ -326,11 +326,11 @@ const CHAR={
 //   what that deck is best at. sl = slider moves (a move that would go below 0 or above 10 doesn't happen). Easy to retune here.
 const INSP={   /* 0.12.4 (Kyle): every bonus doubled. 0.12.34: Herbalist x3 and Scavenger x3, each with one distinct stat and no slider nudge; every other deck has its own stat or passive and its own slider nudge */
  // Kyle
- 'The Grim Throne':{o:'Kyle',why:'Kenrith\'s royal court: the most consistent big threats in the pod',mod:{crit:4},sl:{plan:-2}},
+ 'The Grim Throne':{o:'Kyle',why:'Kenrith\'s royal court: consistent big threats, and nobody haggles like royalty',passive:'haggler',mod:{crit:4}},
  'Felothar':{o:'Kyle',why:'Walls of root and bark: the pod\'s top Survival, and the forest feeds whoever holds behind them',passive:'herbalist',mod:{armor:6}},
  'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up: the pod\'s biggest Finish, built from a pile of spare parts',mod:{meleeDmg:20},sl:{range:2},stash:{parts:6}},
- 'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen',mod:{xp:12},sl:{energy:-2}},
- 'Truly Fantastic':{o:'Kyle',why:'The Thing\'s deep mana pool',mod:{enMax:24},sl:{plan:2}},
+ 'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen, and everyone else\'s hand ends up in yours',passive:'pickpocket',mod:{xp:12}},
+ 'Truly Fantastic':{o:'Kyle',why:'The Thing\'s deep mana pool, and a genius who builds things on the cheap',passive:'haggler',mod:{enMax:24}},
  'Dice Boys Casino':{o:'Kyle',why:'Mr. House runs the casino: the house always has money',passive:'bankroll',sl:{flair:2}},   /* 0.12.42 (Kyle): starting gold instead of energy regen */
  'Tame Depala':{o:'Kyle',why:'Dwarf mechanics who salvage anything with wheels and stand like an anvil',passive:'scavenger',mod:{kbRes:20}},
  "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat',passive:'bounty',sl:{size:2}},
@@ -341,8 +341,8 @@ const INSP={   /* 0.12.4 (Kyle): every bonus doubled. 0.12.34: Herbalist x3 and 
  'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger, and it doesn\'t talk',mod:{stamina:2},sl:{talk:-2}},
  "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward',passive:'onslaught',sl:{aggr:2}},
  // Cheez
- 'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: fast flyers',mod:{move:12},sl:{pace:2}},
- 'Double Dragons':{o:'Cheez',why:'Dragon fire: the pod\'s biggest Threats',mod:{rangedDmg:16},sl:{energy:2}},
+ 'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: fast flyers, and Zada the goblin can talk anyone down',passive:'haggler',mod:{move:12}},
+ 'Double Dragons':{o:'Cheez',why:'Dragon fire, and dragons hoard everything they can get their claws on',passive:'pickpocket',mod:{rangedDmg:16}},
  'Turtle Power':{o:'Cheez',why:'Shells and teamwork',passive:'shell',sl:{self:-2}},
  'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills, and never travels without a snack',passive:'devour',sl:{exec:2},stash:{food:3}},
  'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone',passive:'pickpocket',sl:{self:2}},
@@ -423,6 +423,7 @@ function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.sta
 const INSP_PASSIVE={
  herbalist:['Herbalist','he searches nearby foliage, rocks, stumps and fallen logs for healing herbs (1.5s each; the chance is good and goes up with his Luck and with how Perceptive he is) and carries up to 3. When he or an ally within about 50px is under 80% health, he uses one: it heals 20% of their max HP over 5s, but any damage stops it. He searches whatever is close by without going far out of his way, and goes to hurt allies with herbs.'],
  scavenger:['Scavenger','he searches broken-down cars (2s each; the chance goes up with his Luck and how Perceptive he is). He can turn up a Medkit (heals an ally under 60% for 25% at once), a Battery (+30 energy for an ally running low) or loose scrap worth gold, and carries 2 Medkits and Batteries at most, in any mix. He searches wrecks close by without going far out of his way, and brings supplies to whoever needs them.'],
+ haggler:['Haggler','he talks every builder down: camp upgrades cost 20% less. Doesn\'t stack: more Hagglers on the team still means 20%.'],
  bankroll:['House Money','the house fronts you: the run starts with +50 gold for every hero carrying this deck. Spend it at camp.'],
  bounty:['Bounty Hunter','his first hit on the biggest enemy on the field puts a bounty on it: it is marked (takes 25% more damage from everyone for 8s), and when it dies the party gets +10 gold.'],
  haunt:['Haunted','anything that hits him has a 20% chance to be spooked and back away for 1.5s.'],
@@ -430,7 +431,7 @@ const INSP_PASSIVE={
  onslaught:['Onslaught','after he has been moving for 1s, his next hit deals double damage.'],
  shell:['Shell Up','when he drops under 40% health he pulls into his shell: 70% less damage taken for 3s while he holds still (30s cooldown).'],
  devour:['Devour','every enemy he kills heals him 3% of his max HP and gives him 4 energy.'],
- pickpocket:['Pickpocket','each enemy he hits has a 25% chance to be robbed once: +2 gold.'],
+ pickpocket:['Pickpocket','every enemy he lands a hit on gets its pockets picked: when it dies it is much more likely to drop gold (+60%), food and water (x2), spare parts (x2.5) and items (+50%). A truly Selfish thief (8+) also sometimes helps himself to whatever a nearby ally is carrying...'],
  bodyguard:['Bodyguard','a scripted behavior: he sticks to whichever ally is most hurt and stands by their side, and while he is within reach of them he takes 30% of every hit meant for them.'],
  webs:['Web Shooter','his hits have a 15% chance to web the target: 60% slower for 2s.'],
 };
@@ -768,6 +769,12 @@ const Brain={
     if(!h.medkit&&!h.search&&!h.pet){const look=35+45*trait(h,'perc');const o=(g.obst||[]).find(o=>o.k==='car_ambulance'&&g_free(o,h)&&Math.abs(o.x-g.heroX(h))<look);
       if(o){if(!h.amDecide||h.amDecide.o!==o||g.t>h.amDecide.until){const danger=bb.E.filter(e=>Math.abs(e.x-o.x)<60).length;h.amDecide={o,until:g.t+1.5+Math.random(),go:Math.random()<(danger?.2+.5*aggr:.6+.3*trait(h,'perc'))};}
         if(h.amDecide.go){const runMul=.45+1.4*pace;return {xoff:0,intent:'search',runMul,goTo:{ob:o},reviveLane:g.searchSpot(o,h).lane};}}}
+    /* 0.12.45 thievery: IF I'm a Pickpocket AND truly Selfish (8+) AND nothing is in my face AND an ally nearby carries something good THEN I may sidle over and lift it.
+       More Selfish = more likely; Light-Footed thieves try it more (they don't get caught as much); a Perceptive one spots what's worth taking. */
+    if(insP(h)==='pickpocket'&&selfish>=.75&&!h.pet&&!(bb.heat.get(h)||0)&&(h.thiefCd||0)<=g.t){const goods=o=>(o.defib&&!h.defib)||(o.medkit&&!h.medkit)||((o.kit||[]).length&&(h.kit||[]).length<2)||(o.herbs>0&&(h.herbs||0)<3);
+      const V=g.heroes.filter(o=>o!==h&&o.alive&&goods(o)&&Math.abs(g.heroX(o)-g.heroX(h))<70&&!bb.E.some(e=>Math.abs(e.x-g.heroX(o))<35)).sort((p,q)=>Math.abs(g.heroX(p)-g.heroX(h))-Math.abs(g.heroX(q)-g.heroX(h)))[0];
+      if(V){if(!h.thDecide||h.thDecide.V!==V||g.t>h.thDecide.until)h.thDecide={V,until:g.t+3+Math.random()*2,go:Math.random()<(selfish-.75)*2.4*(.45+.55*(1-trait(h,'noise')))*(.6+.4*trait(h,'perc'))};
+        if(h.thDecide.go)return {xoff:0,intent:'sneak',runMul:.5,goTo:V,reviveLane:V.laneI};}}
     // 0.12.27 Bodyguard (Family Matters, a deck-scripted behavior): IF an ally is hurt (under 90%) THEN stand beside the most hurt one
     if(insP(h)==='bodyguard'){const H=g.alive().filter(o=>o!==h&&!o.pet&&o.hp/o.max<.9).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];if(H&&!(hp<.25)){const runMul=.45+1.4*pace;return {xoff:0,intent:'guard',runMul,goTo:H,reviveLane:H.laneI};}}
     // 0.12.28 Herbalist: IF I have room for herbs AND there's unsearched debris close by AND it isn't swarmed THEN go search it
@@ -926,7 +933,7 @@ const Comms={
     const pool=ctx.variant&&C[ctx.variant]?C[ctx.variant]:C.lines;this.bubble(g,u,this.fill(this.pick(pool),ctx),true);
     if(C.dur)this.broadcast(g,u,type,ctx,C);return true;},
   // every ally hears it: IF it's relevant to them AND they roll under Follows Callouts THEN they take the order
-  broadcast(g,u,type,ctx,C){for(const o of g.alive()){if(o===u||!o.key)continue;const rel=callRelevance(type,o,ctx);if(rel<=0)continue;
+  broadcast(g,u,type,ctx,C){for(const o of g.alive()){if(o===u||!o.key)continue;if(o.robbedBy===u&&o.moods&&o.moods.some(m=>m.name==='robbed'))continue;   /* still sore about the theft: ignores the thief's calls */const rel=callRelevance(type,o,ctx);if(rel<=0)continue;
       const L=trait(o,'listen');const p=(.02+.96*Math.pow(L,1.15))*rel;
       if(Math.random()<p){o.order={type,from:u,tgt:ctx.tgt||null,ally:ctx.ally||null,lane:ctx.lane,x:ctx.x,until:g.t+C.dur*(.5+L),w:L};
         o.thinkT=Math.min(o.thinkT==null?0:o.thinkT,.08+.25*(1-trait(o,'pace')));   // drop what they're doing and rethink right away
@@ -1063,7 +1070,7 @@ class Game{
     {const ip=insP(src);   // inspiration passives that trigger on his hits
      if(ip==='onslaught'&&(src.moveT||0)>1){amt*=2;src.moveT=0;}
      if(ip==='bounty'&&!e.bounty&&!e.dead){const big=this.enemies.filter(o=>!o.dead).reduce((b,o)=>!b||o.max>b.max?o:b,null);if(big===e){e.bounty=src;e.markT=8;e.markAmp=.25;}}
-     if(ip==='pickpocket'&&!e.robbed&&this.rng()<.25){e.robbed=1;this.stageGold+=2;this.text(e.x,e.y-34,'+2','#ffd23f');}
+     if(ip==='pickpocket'&&!e.picked&&!e.boss){e.picked=1;if(this.rng()<.35)this.text(e.x,e.y-34,'$','#ffd23f');}   /* 0.12.45 (Kyle): picked pockets mean better drops when it dies */
      if(ip==='webs'&&!e.boss&&this.rng()<.15){e.slow=Math.max(e.slow||0,.6);e.slowT=Math.max(e.slowT||0,2);e.webT=2;}}
     amt=mitigate(e,amt,opt.type); if(e.shred>0)amt*=1.2;if(e.markT>0)amt*=1+(e.markAmp||.25);   // Pinning_Shot mark
     if(opt.execute&&e.hp<e.max*.3)amt*=2;
@@ -1095,12 +1102,12 @@ class Game{
     if(this.team.devour){this.devourStacks=Math.min(60,this.devourStacks+1);for(const h of this.alive())if(h.spells.some(s=>s.arch==='devour'))this.healHero(h,h.max*(.006+.0025*this.spellRank(h,'devour')),true);}
     if(src&&src.items)this.procs(src,'onkill',e);
     if(!this.demo){const st=this.st;const r=this.rng();
-      const gChance=e.boss?1:e.elite?1:(e.E.goldChance!=null?e.E.goldChance:.12)*((this.mods&&this.mods.gold)||1);if(r<gChance){const piles=e.boss?5:e.elite?2:1;   /* 0.12.38 (Kyle): every gold pile is small, 2-6 gold (bosses drop 5 piles, elites 2) */
+      const PK=e.picked?{g:1.6,s:2,p:2.5,i:1.5}:{g:1,s:1,p:1,i:1};const gChance=e.boss?1:e.elite?1:Math.min(.95,(e.E.goldChance!=null?e.E.goldChance:.12)*((this.mods&&this.mods.gold)||1)*PK.g);if(r<gChance){const piles=e.boss?5:e.elite?2:1;   /* 0.12.38 (Kyle): every gold pile is small, 2-6 gold (bosses drop 5 piles, elites 2) */
         for(let i=0;i<piles;i++)this.loot.push({kind:'gold',x:e.x+(this.rng()*14-7),gy:e.gy,amt:2+Math.floor(this.rng()*5),t:0,big:false});}
       {const m=e.boss?6:e.elite?2:1;   /* 0.12.38 camp supplies off enemies (low odds): food or water 3%, spare parts 4% */
-        if(this.rng()<.03*m*((this.mods&&this.mods.supply)||1))this.loot.push({kind:this.rng()<.5?'water':'food',x:e.x+(this.rng()*10-5),gy:e.gy,amt:1,t:0});
-        if(this.rng()<.04*m*((this.mods&&this.mods.parts)||1))this.loot.push({kind:'parts',x:e.x+(this.rng()*10-5),gy:e.gy,amt:1+(this.rng()<.5?1:0),t:0});}
-      const iChance=e.boss?1:e.elite?.1+.01*st.n:(e.E.itemChance!=null?e.E.itemChance:.004+.0012*st.n);if(this.rng()<iChance){const it=rollItem(this.run,this.rng,e.boss?'U':null,e.boss?'boss':e.elite?'elite':'mob');if(it)this.loot.push({kind:'item',x:e.x+6,item:it,t:0});}}
+        if(this.rng()<.03*m*((this.mods&&this.mods.supply)||1)*PK.s)this.loot.push({kind:this.rng()<.5?'water':'food',x:e.x+(this.rng()*10-5),gy:e.gy,amt:1,t:0});
+        if(this.rng()<.04*m*((this.mods&&this.mods.parts)||1)*PK.p)this.loot.push({kind:'parts',x:e.x+(this.rng()*10-5),gy:e.gy,amt:1+(this.rng()<.5?1:0),t:0});}
+      const iChance=(e.boss?1:e.elite?.1+.01*st.n:(e.E.itemChance!=null?e.E.itemChance:.004+.0012*st.n))*PK.i;if(this.rng()<iChance){const it=rollItem(this.run,this.rng,e.boss?'U':null,e.boss?'boss':e.elite?'elite':'mob');if(it)this.loot.push({kind:'item',x:e.x+6,item:it,t:0});}}
     if(e.boss){this.ev('bossdown',{name:e.B.name});this.shake=1;for(const o of this.enemies)if(!o.dead){o.dead=true;this.fx.push({k:'poof',x:o.x,y:o.y-20,t:0});}}
   }
   spellRank(h,arch){const s=h.spells.find(s=>s.arch===arch);return s?s.r:0;}
@@ -1248,7 +1255,7 @@ class Game{
     Brain.snapshot(this);for(const h of al)h._gt=this.t;Comms.step(this,dt);
     for(const h of al){Brain.tick(h,dt);if(Brain.due(this,h,dt)){const foes=this.enemies.filter(e=>!e.dead&&e.x<this.W+4);
       const pk=Brain.pickTarget(this,h,foes,al,true);const lane=Brain.pickLane(this,h,pk&&pk.tgt,true);const pos=Brain.pickPosition(this,h,pk&&pk.tgt);
-      const gw=pos.goTo&&pos.goTo.ob?OBST[pos.goTo.ob.k]:null;h.plan={tgt:pk&&pk.tgt,why:pos.reviveD?'helping '+Comms.name(pos.reviveD)+' up':pos.intent==='disarm'?'shutting off the car alarm':pos.intent==='search'?'searching the '+(/^car_/.test(pos.goTo.ob.k)?'wreck':'debris'):pos.intent==='herb'?'bringing supplies to '+Comms.name(pos.goTo):pos.intent==='guard'?'guarding '+Comms.name(pos.goTo):pos.intent==='orbit'?(h.dog?'guarding ':'circling ')+Comms.name(h.owner):pos.intent==='hunker'?'taking cover':(pk?pk.why:''),lane:pos.reviveLane!=null?pos.reviveLane:lane,...pos};
+      const gw=pos.goTo&&pos.goTo.ob?OBST[pos.goTo.ob.k]:null;h.plan={tgt:pk&&pk.tgt,why:pos.reviveD?'helping '+Comms.name(pos.reviveD)+' up':pos.intent==='disarm'?'shutting off the car alarm':pos.intent==='search'?'searching the '+(/^car_/.test(pos.goTo.ob.k)?'wreck':'debris'):pos.intent==='herb'?'bringing supplies to '+Comms.name(pos.goTo):pos.intent==='guard'?'guarding '+Comms.name(pos.goTo):pos.intent==='orbit'?(h.dog?'guarding ':'circling ')+Comms.name(h.owner):pos.intent==='hunker'?'taking cover':pos.intent==='sneak'?'eyeing '+Comms.name(pos.goTo)+'\'s pockets':(pk?pk.why:''),lane:pos.reviveLane!=null?pos.reviveLane:lane,...pos};
       if(pos.intent==='hold'&&trait(h,'pace')<.45&&Math.random()<(1-trait(h,'pace'))*.5)h.pauseT=.4+1.6*(1-trait(h,'pace'));}}   // slow-and-steady units stop to think
     // formation
     // formation: everyone heads for their slot at their own pace; while marching, quicker heroes drift ahead and slow ones lag a little
@@ -2067,7 +2074,23 @@ class Game{
     for(const o of this.obst){o.x-=scroll*dt;if(o.alarmT>0){o.alarmT-=dt;o.alarmTick-=dt;   // the alarm keeps pulling zombies in until it runs out or someone shuts it off
         if(o.alarmTick<=0&&o.alarmN>0&&!this.over&&!this.exiting){o.alarmN--;o.alarmTick=o.alarmEvery||1.25;this.spawnEnemy('zombie',{x:this.W+8+this.rng()*24,elite:'roll',alarm:1});}
         if(o.alarmT<=0)o.alarmN=0;}}
+    if(!this.demo)for(const h of this.heroes){if(!h.alive||insP(h)!=='pickpocket'||trait(h,'self')<.75||(h.thiefCd||0)>this.t)continue;const sneaking0=h.plan&&h.plan.intent==='sneak';if(!sneaking0){if((h.thiefChk||0)>this.t)continue;h.thiefChk=this.t+2;}   /* opportunistic check every 2s; a deliberate sneak checks every frame */
+      const sneaking=h.plan&&h.plan.intent==='sneak';if(!sneaking&&this.rng()>.06+.3*(trait(h,'self')-.75))continue;
+      const v=this.heroes.filter(o=>o!==h&&o.alive&&Math.abs(this.heroX(o)-this.heroX(h))<16&&Math.abs((o.gy||this.G)-(h.gy||this.G))<8).find(o=>(o.defib&&!h.defib)||(o.medkit&&!h.medkit)||((o.kit||[]).length&&(h.kit||[]).length<2)||(o.herbs>0&&(h.herbs||0)<3));if(!v)continue;
+      let what;if(v.defib&&!h.defib){v.defib=0;h.defib=1;what='defib';}else if(v.medkit&&!h.medkit){v.medkit=0;h.medkit=1;h.medkitCamp=v.medkitCamp;v.medkitCamp=0;what='medkit';}
+      else if((v.kit||[]).length&&(h.kit||[]).length<2){const it=v.kit.pop();(h.kit=h.kit||[]).push(it);what=it==='bat'?'battery':'medicine';}else{v.herbs--;h.herbs=(h.herbs||0)+1;what='herb';}
+      h.thiefCd=this.t+18+this.rng()*14;this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.9,raw:1,kit:what==='defib'?'defib':what==='battery'?'bat':what==='herb'?null:'med'});
+      const V=Comms.name(v),T=Comms.name(h),r=this.rng();h.thDecide=null;h.plan=null;h.thinkT=0;const caught=this.rng()<Math.min(.95,.2+.5*trait(h,'noise')+.35*trait(v,'perc'));
+      const brag=['Finders keepers.','Mine now.','You weren\'t using that, right?','Sharing is caring. Mostly for me.','I\'ll hold onto this '+what+' for you.','Slick.'];
+      const caughtL=['Hey! Where\'d my '+what+' go?!',T+', did you just...?','Give that back!','I KNOW you took my '+what+'.','Unbelievable.','Check his pockets!'];
+      const reply=['Took what?','Never saw it.','It fell. Into my pocket.','Relax, I\'m holding it for you.','Prove it.','Must\'ve been the zombies.'];
+      if(!caught){if(r<.5)Comms.bubble(this,h,Comms.pick(brag),true);}   /* got away with it: maybe a smug mutter */
+      else{addMood(v,{listen:-3},20,'robbed');v.robbedBy=h;   /* caught: the victim stops listening to the thief's calls for a while */
+        if(r<.5)Comms.bubble(this,v,Comms.pick(caughtL),true);else{Comms.bubble(this,v,Comms.pick(caughtL),true);setTimeoutSafe(this,1.1,()=>{if(h.alive)Comms.bubble(this,h,Comms.pick(reply),true);});}}
+      this.st8(h).steals=(this.st8(h).steals||0)+1;}
     if(!this.demo)for(const h of this.heroes)if(h.alive&&h.courage&&this.rng()<dt*.02)Comms.bubble(this,h,Comms.pick(['*hic*','Who wants some?!','I can take \'em all!','*hic* ...what?']),true);   /* Liquid Courage */
+    /* 0.12.45 (Kyle): a Pickpocket who is truly Selfish (8+) sometimes lifts what a nearby ally is carrying: a medkit, defib, battery or herb.
+     Sometimes the thief brags, sometimes the victim notices, sometimes both. */
     /* 0.12.43 Light-Footed <-> Loud: loud units clanking right past a wreck can set its alarm off, and their racket draws lonely zombies in from off-screen */
     if(!this.demo&&!this.over&&!this.exiting)for(const h of this.alive()){if(!h.key)continue;const nz=trait(h,'noise');if(nz<.3)continue;
       if(h.moving)for(const o of this.obst){if(!/^car_/.test(o.k)||o.alarmed||o.alarmT>0)continue;const l=o.lanes.find(l=>Math.abs(LANES[l]-(h.gy||this.G))<=7);if(l==null)continue;const [a,b]=this.obSpan(o,l);
@@ -2280,7 +2303,8 @@ function upgT(run,id){return (run&&run.upg&&run.upg[id])||0;}
 function lvPtsFree(H){const used=Object.values(H.pts||{}).reduce((a,b)=>a+b,0);return Math.max(0,(H.lvl||1)-1-used);}
 function campOffers(run){const n=3+upgT(run,'radio');const pool=Object.keys(CAMP_UPG).filter(id=>{const t=upgT(run,id),U=CAMP_UPG[id];if(t>=U.tiers.length)return false;const nd=U.needs&&U.needs[t+1];return !nd||upgT(run,nd)>0;});
   const out=[];const bag=pool.slice();while(out.length<n&&bag.length){const i=Math.floor(Math.random()*bag.length);out.push(bag.splice(i,1)[0]);}return out;}
-function upgPrice(run,id){const t=upgT(run,id);return CAMP_UPG[id].tiers[t];}
+function upgPrice(run,id){const t=upgT(run,id);const h=run.haggle||0;return Math.round(CAMP_UPG[id].tiers[t]*(1-h));}
+function haggleOf(s,run){const n=run.team.filter(k=>{const H=s.heroes[k];return H&&H.insp&&INSP[H.insp]&&INSP[H.insp].passive==='haggler';}).length;return n?.2:0;}   /* 0.12.46 (Kyle): 20% off, doesn't stack */
 /* back at camp after a cleared stage: the camp's own systems run once, then the player feeds whoever is still hungry */
 function campArrive(s,run){if(run.campAt===run.stage)return [];run.campAt=run.stage;const log=[];
   run.food=run.food||0;run.water=run.water||0;s.parts=s.parts||0;run.fed={};run.triageN=0;run.brewN=0;run.upgBought=0;run.offers=campOffers(run);run.scoutOffers=scoutRoll(run);run.scoutPick=null;
@@ -2307,12 +2331,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793898428';const BGI=new Image();BGI.src='crawl_bg.png?v=1793898428';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793898428';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793899354';const BGI=new Image();BGI.src='crawl_bg.png?v=1793899354';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793899354';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793898428';XIMG.wave.src='crawl_wave.png?v=1793898428';XIMG.chibi.src='crawl_chibi.png?v=1793898428';XIMG.flannel.src='crawl_flannel.png?v=1793898428';XIMG.rain.src='crawl_rain.png?v=1793898428';XIMG.druid.src='crawl_druid.png?v=1793898428';XIMG.camp.src='crawl_campfire.png?v=1793898428';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793898428';XIMG.tornado.src='crawl_fx_tornado.png?v=1793898428';XIMG.vine.src='crawl_fx_vine.png?v=1793898428';XIMG.thorn.src='crawl_fx_thorn.png?v=1793898428';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793899354';XIMG.wave.src='crawl_wave.png?v=1793899354';XIMG.chibi.src='crawl_chibi.png?v=1793899354';XIMG.flannel.src='crawl_flannel.png?v=1793899354';XIMG.rain.src='crawl_rain.png?v=1793899354';XIMG.druid.src='crawl_druid.png?v=1793899354';XIMG.camp.src='crawl_campfire.png?v=1793899354';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793899354';XIMG.tornado.src='crawl_fx_tornado.png?v=1793899354';XIMG.vine.src='crawl_fx_vine.png?v=1793899354';XIMG.thorn.src='crawl_fx_thorn.png?v=1793899354';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793898428';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793898428';XIMG.obst.src='crawl_obst.png?v=1793898428';XIMG.cars.src='crawl_cars.png?v=1793898428';XIMG.robot.src='crawl_robot.png?v=1793898428';XIMG.cultist.src='crawl_cultist.png?v=1793898428';XIMG.tentacle.src='crawl_tentacle.png?v=1793898428';XIMG.boom.src='crawl_boom.png?v=1793898428';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793899354';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793899354';XIMG.obst.src='crawl_obst.png?v=1793899354';XIMG.cars.src='crawl_cars.png?v=1793899354';XIMG.robot.src='crawl_robot.png?v=1793899354';XIMG.cultist.src='crawl_cultist.png?v=1793899354';XIMG.tentacle.src='crawl_tentacle.png?v=1793899354';XIMG.boom.src='crawl_boom.png?v=1793899354';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2842,7 +2866,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.44</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.46</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -2949,9 +2973,10 @@ function rankStars(r){return r>=CFG.maxRank?'<span class="cc-asc">✦ MAX ✦</s
 function chipFor(e,item,hk){const base=item?shortCard(e.card):sname(hk,e.card);const name=e.r>=CFG.maxRank?`✦ ${esc(maxTitle(e.card,e.arch))}`:esc(base);
   return `<span class="cc-chip ${item?'it':''}" title="${item?esc(e.card):'Inspired by '+esc(e.card)}"><b>${name}</b> · ${item?ITEM[e.arch].label:SPELL[e.arch].label} r${e.r}${(e.augs||[]).map(g=>' +'+AUG[g].name).join('')}${item?' · GS '+gearScore(e):''}${item&&e.proc?' · ✦ '+({onhit:'on hit',oncrit:'on crit',onkill:'on kill',whenhit:'when hit',near:'when close',allylow:'ally low',oncast:'on cast'}[PROCS[e.proc].t]||''):''}</span>`;}
 /* camp panel: supplies, what the camp did on arrival, upgrades (pick 1 of the offers per camp), Triage builds */
-function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=run.food||0;
+function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=run.food||0;run.haggle=haggleOf(s,run);
   const owned=Object.keys(run.upg||{}).filter(id=>run.upg[id]);
-  const sup=`<div class="cc-card"><b>🏕️ Camp</b> <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · ⚙️ <b>${parts}</b> spare parts · 🥫 <b>${Number.isInteger(food)?food:Math.floor(food)+'½'}</b> food · 💧 <b>${run.water||0}</b> water</span>
+  const tent=`<span class="cc-tent" style="cursor:help;font-size:18px;margin-left:6px" data-tiph="${esc('<b>⛺ Every camp upgrade</b><br>'+Object.keys(CAMP_UPG).map(id=>{const U=CAMP_UPG[id],t=upgT(run,id);const mx=U.needs?(Object.keys(U.needs).every(k=>upgT(run,U.needs[k])>0)?U.tiers.length:U.tiers.length-1):U.tiers.length;return `${U.icon} ${U.name}: <b style="color:${t?'#a6ff2e':'#9a90a8'}">${t}/${mx}</b>${U.needs&&mx<U.tiers.length?' <span style="opacity:.6">(+1 with a Radio Tower)</span>':''}`;}).join('<br>')+(run.haggle?`<br><br>🤝 Haggler: upgrades ${Math.round(run.haggle*100)}% off`:''))}">⛺</span>`;
+  const sup=`<div class="cc-card"><b>🏕️ Camp</b>${tent} <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · ⚙️ <b>${parts}</b> spare parts · 🥫 <b>${Number.isInteger(food)?food:Math.floor(food)+'½'}</b> food · 💧 <b>${run.water||0}</b> water</span>
     ${(run.campLog||[]).length?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${run.campLog.map(esc).join(' · ')}</div>`:''}
     ${owned.length?`<div class="cc-chips" style="margin-top:6px">${owned.map(id=>{const U=CAMP_UPG[id],t=run.upg[id];return `<span class="cc-chip" title="${esc(U.txt(t))}">${U.icon} ${esc(U.name)} ${['','I','II','III','IV'][t]}</span>`;}).join('')}</div>`:''}</div>`;
   const offers=(run.offers||[]).filter(id=>upgT(run,id)<CAMP_UPG[id].tiers.length);
@@ -3083,7 +3108,7 @@ function statsBrief(g){const S=g.stats||{};const keys=Object.keys(S).filter(k=>k
   const nm=k=>k==='flannel_pal'?'Traveling_Companion':(heroDef(k)?heroDef(k).name:((CHAR[k]||{}).name||k));
   const best=(f,min)=>{let b=null,bv=min||0;for(const k of keys){const v=f(S[k]);if(v>bv){bv=v;b=k;}}return b?[b,bv]:null;};
   const aw=[['💥 Most damage',best(s=>s.dmg),v=>fmt(Math.round(v))],['💚 Top healer',best(s=>s.heal,1),v=>fmt(Math.round(v))+' healed'],['💀 Most kills',best(s=>s.kills),v=>v+' kills'],
-    ['🎯 Biggest hit',best(s=>s.biggest),v=>Math.round(v)],['🧠 Headshots',best(s=>s.heads),v=>v],['🛟 Revives',best(s=>s.revives),v=>v],['🔍 Searches',best(s=>s.searches),v=>v],['🩸 Took the most',best(s=>s.taken),v=>fmt(Math.round(v))+' dmg']]
+    ['🎯 Biggest hit',best(s=>s.biggest),v=>Math.round(v)],['🧠 Headshots',best(s=>s.heads),v=>v],['🛟 Revives',best(s=>s.revives),v=>v],['🔍 Searches',best(s=>s.searches),v=>v],['🤏 Sticky fingers',best(s=>s.steals||0),v=>v+' stolen from allies'],['🩸 Took the most',best(s=>s.taken),v=>fmt(Math.round(v))+' dmg']]
     .filter(a=>a[1]).map(([t,[k,v],f])=>`<span class="cc-chip" style="margin:2px">${t}: <b>${esc(nm(k))}</b> (${f(v)})</span>`).join('');
   const rows=keys.sort((a,b)=>S[b].dmg-S[a].dmg).map(k=>{const s=S[k];return `<tr><td style="text-align:left">${esc(nm(k))}</td><td>${fmt(Math.round(s.dmg))}</td><td>${(s.dmg/secs).toFixed(1)}</td><td>${fmt(Math.round(s.heal))}</td><td>${s.kills}</td><td>${s.crits}</td><td>${s.heads}</td><td>${fmt(Math.round(s.taken))}</td><td>${s.downs}</td><td>${s.revives}</td><td>${s.searches}</td></tr>`;}).join('');
   return `<div class="cc-card" style="margin-top:8px"><b>📊 Stage stats</b> <span class="cc-sub" style="font-size:11px">${Math.round(secs)}s of fighting</span>
