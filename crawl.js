@@ -2118,12 +2118,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793889717';const BGI=new Image();BGI.src='crawl_bg.png?v=1793889717';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793889717';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793890108';const BGI=new Image();BGI.src='crawl_bg.png?v=1793890108';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793890108';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793889717';XIMG.wave.src='crawl_wave.png?v=1793889717';XIMG.chibi.src='crawl_chibi.png?v=1793889717';XIMG.flannel.src='crawl_flannel.png?v=1793889717';XIMG.rain.src='crawl_rain.png?v=1793889717';XIMG.druid.src='crawl_druid.png?v=1793889717';XIMG.camp.src='crawl_campfire.png?v=1793889717';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793889717';XIMG.tornado.src='crawl_fx_tornado.png?v=1793889717';XIMG.vine.src='crawl_fx_vine.png?v=1793889717';XIMG.thorn.src='crawl_fx_thorn.png?v=1793889717';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793890108';XIMG.wave.src='crawl_wave.png?v=1793890108';XIMG.chibi.src='crawl_chibi.png?v=1793890108';XIMG.flannel.src='crawl_flannel.png?v=1793890108';XIMG.rain.src='crawl_rain.png?v=1793890108';XIMG.druid.src='crawl_druid.png?v=1793890108';XIMG.camp.src='crawl_campfire.png?v=1793890108';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793890108';XIMG.tornado.src='crawl_fx_tornado.png?v=1793890108';XIMG.vine.src='crawl_fx_vine.png?v=1793890108';XIMG.thorn.src='crawl_fx_thorn.png?v=1793890108';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793889717';XIMG.obst.src='crawl_obst.png?v=1793889717';XIMG.cars.src='crawl_cars.png?v=1793889717';XIMG.robot.src='crawl_robot.png?v=1793889717';XIMG.cultist.src='crawl_cultist.png?v=1793889717';XIMG.tentacle.src='crawl_tentacle.png?v=1793889717';XIMG.boom.src='crawl_boom.png?v=1793889717';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793890108';XIMG.obst.src='crawl_obst.png?v=1793890108';XIMG.cars.src='crawl_cars.png?v=1793890108';XIMG.robot.src='crawl_robot.png?v=1793890108';XIMG.cultist.src='crawl_cultist.png?v=1793890108';XIMG.tentacle.src='crawl_tentacle.png?v=1793890108';XIMG.boom.src='crawl_boom.png?v=1793890108';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2133,17 +2133,23 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const fmt=n=>Math.round(n).toLocaleString('en-US');
 // ---------------------------------------------------------------- sound (tiny WebAudio blips)
 let AC=null,muted=false;try{muted=localStorage.getItem('podrundown-crawl-mute')==='1';}catch(e){}
-// ---- 0.12.34 music: four original instrumental tracks made for Crypt Crawl (dark synthwave, two with a synth sax lead).
-//   ♫ button next to the volume cycles them; mute, volume and the chosen track are saved per browser.
-const TRACKS=[{k:'nightshift',name:'Night Shift',info:'88 bpm · sax over a gritty pulse'},{k:'rustbelt',name:'Rust Belt',info:'76 bpm · slow, lonely sax'},
-  {k:'chromehearse',name:'Chrome Hearse',info:'100 bpm · dark lead and arps'},{k:'neongrave',name:'Neon Grave',info:'104 bpm · driving outrun'}];
-let BGM=null,musicMuted=false,musicVol=.45,trackI=0;try{musicMuted=localStorage.getItem('podrundown-crawl-music-mute')==='1';const v=localStorage.getItem('podrundown-crawl-music-vol');if(v!=null)musicVol=+v;
+// ---- 0.12.35 music: one original track (Night Shift, made for the game) + four dark-synth tracks from OpenGameArt (all CC0 / public domain),
+//   streamed from OpenGameArt like the old loop. ⏭ cycles them; a track that won't load is skipped automatically.
+const OGA='https://opengameart.org/sites/default/files/';
+const TRACKS=[{name:'Night Shift',by:'made for Crypt Crawl',info:'gritty pulse + sax',src:['music/nightshift.ogg','music/nightshift.mp3']},
+  {name:'Dark Night',by:'Alex McCulloch (Pro Sensory)',info:'dark synthwave rock',src:[OGA+'dark_night.mp3']},
+  {name:'Nova',by:'SpringySpringo',info:'melancholy dark synthwave',src:[OGA+'nova.mp3']},
+  {name:'Futility Belt',by:'iamoneabe',info:'long darksynth / synthpop',src:[OGA+'futilitybelt.mp3']},
+  {name:'Dark Things',by:'iamoneabe',info:'short dark synth loop',src:[OGA+'dark_things_loop.mp3']}];
+let BGM=null,musicMuted=false,musicVol=.45,trackI=0,trackFails=0;try{musicMuted=localStorage.getItem('podrundown-crawl-music-mute')==='1';const v=localStorage.getItem('podrundown-crawl-music-vol');if(v!=null)musicVol=+v;
   const ti=+localStorage.getItem('podrundown-crawl-music-track');if(ti>=0&&ti<TRACKS.length)trackI=ti;}catch(e){}
-function trackSrc(i){const k=TRACKS[i].k;const a=new Audio();return a.canPlayType('audio/ogg; codecs="vorbis"')?`music/${k}.ogg`:`music/${k}.mp3`;}
-function musicStart(){try{if(!BGM){BGM=new Audio();BGM.loop=true;BGM.preload='auto';BGM.src=trackSrc(trackI);}
+function trackSrc(i){const s=TRACKS[i].src;const a=new Audio();return s.find(x=>!x.endsWith('.ogg')||a.canPlayType('audio/ogg; codecs="vorbis"'))||s[s.length-1];}
+function musicStart(){try{if(!BGM){BGM=new Audio();BGM.loop=true;BGM.preload='auto';
+      BGM.addEventListener('error',()=>{if(++trackFails<TRACKS.length){const T=musicNext(true);if(typeof flash==='function'&&!root.hidden)flash('♫ couldn\'t load that one, now: '+T.name,1800);}});
+      BGM.addEventListener('playing',()=>{trackFails=0;});BGM.src=trackSrc(trackI);}
   BGM.volume=musicVol;if(!musicMuted&&musicVol>0)BGM.play().catch(()=>{});else BGM.pause();}catch(e){}}
-function musicNext(){trackI=(trackI+1)%TRACKS.length;try{localStorage.setItem('podrundown-crawl-music-track',trackI);}catch(_){}
-  try{if(BGM){BGM.pause();BGM.src=trackSrc(trackI);BGM.currentTime=0;}}catch(e){}musicStart();return TRACKS[trackI];}
+function musicNext(auto){trackI=(trackI+1)%TRACKS.length;if(!auto)trackFails=0;try{localStorage.setItem('podrundown-crawl-music-track',trackI);}catch(_){}
+  try{if(BGM){BGM.pause();BGM.src=trackSrc(trackI);BGM.load();}}catch(e){}musicStart();try{const tb=document.querySelector('#cc [data-a="track"]');if(tb)tb.title='Next track (now: '+TRACKS[trackI].name+')';}catch(_){}return TRACKS[trackI];}
 function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 function sfx(k){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
   const tone=(f,d,type,v,f2)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
@@ -2628,7 +2634,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.34</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.35</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -2641,7 +2647,7 @@ function build(){
     if(a==='speed'){CC.speed=CC.speed%3+1;b.textContent=CC.speed+'×';}
     if(a==='brain'){CC.brain=!CC.brain;b.classList.toggle('on',CC.brain);b.style.outline=CC.brain?'2px solid #b6ff00':'';}
     if(a==='music'){musicMuted=!musicMuted;b.textContent=musicMuted?'🎵̸':'🎵';b.style.opacity=musicMuted?.5:1;try{localStorage.setItem('podrundown-crawl-music-mute',musicMuted?'1':'0');}catch(_){}musicStart();}
-    if(a==='track'){const T=musicNext();b.title=`Next track (now: ${T.name})`;flash('♫ '+T.name+' · '+T.info,2200);}
+    if(a==='track'){const T=musicNext();b.title=`Next track (now: ${T.name})`;flash('♫ '+T.name+' · '+T.info+' · '+T.by,2400);}
     if(a==='mute'){muted=!muted;b.textContent=muted?'🔇':'🔊';try{localStorage.setItem('podrundown-crawl-mute',muted?'1':'0');}catch(_){}}
     if(a==='fs'){if(window.PodSideways)PodSideways.goBig(root);setTimeout(layout,120);}
     if(a==='side'){if(window.PodSideways){PodSideways.sidewaysPref(!root.classList.contains('rot-side'));PodSideways.fitSideways(root);}setTimeout(layout,60);}});
