@@ -327,7 +327,7 @@ const INSP={   /* 0.12.4 (Kyle): every bonus doubled. 0.12.34: Herbalist x3 and 
  // Kyle
  'The Grim Throne':{o:'Kyle',why:'Kenrith\'s royal court: the most consistent big threats in the pod',mod:{crit:4},sl:{plan:-2}},
  'Felothar':{o:'Kyle',why:'Walls of root and bark: the pod\'s top Survival, and the forest feeds whoever holds behind them',passive:'herbalist',mod:{armor:6}},
- 'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up: the pod\'s biggest Finish',mod:{meleeDmg:20},sl:{range:2}},
+ 'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up: the pod\'s biggest Finish, built from a pile of spare parts',mod:{meleeDmg:20},sl:{range:2},stash:{parts:6}},
  'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen',mod:{xp:12},sl:{energy:-2}},
  'Truly Fantastic':{o:'Kyle',why:'The Thing\'s deep mana pool',mod:{enMax:24},sl:{plan:2}},
  'Dice Boys Casino':{o:'Kyle',why:'Mr. House runs the casino: the house always has money',passive:'bankroll',sl:{flair:2}},   /* 0.12.42 (Kyle): starting gold instead of energy regen */
@@ -343,7 +343,7 @@ const INSP={   /* 0.12.4 (Kyle): every bonus doubled. 0.12.34: Herbalist x3 and 
  'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: fast flyers',mod:{move:12},sl:{pace:2}},
  'Double Dragons':{o:'Cheez',why:'Dragon fire: the pod\'s biggest Threats',mod:{rangedDmg:16},sl:{energy:2}},
  'Turtle Power':{o:'Cheez',why:'Shells and teamwork',passive:'shell',sl:{self:-2}},
- 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills',passive:'devour',sl:{exec:2}},
+ 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills, and never travels without a snack',passive:'devour',sl:{exec:2},stash:{food:3}},
  'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone',passive:'pickpocket',sl:{self:2}},
  'Blood Suckers':{o:'Cheez',why:'Lifelinking bats that drink deep and forage for anything that keeps the flock alive',passive:'herbalist',mod:{lifesteal:5}},
  'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman strips wrecks for parts to overclock his guns',passive:'scavenger',mod:{rangedSpd:15}},
@@ -412,10 +412,11 @@ const INSP_HELP={acc:'More shots land on the body and head instead of flying ove
   xp:'Levels up faster.',kbRes:'Gets shoved around less by heavy hits.',enMax:'Can store more energy for abilities.',enRegen:'Energy refills faster, so abilities come back sooner.',
   lifesteal:'Heals for part of the damage he deals.',move:'Walks and runs faster.',meleeDmg:'Melee hits deal more damage.',rangedDmg:'Ranged hits deal more damage.',
   meleeSpd:'Swings his melee weapon more often.',rangedSpd:'Shoots and reloads faster.',kb:'Melee hits shove enemies back further.'};
-function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.passive&&INSP_PASSIVE[I.passive])out.push('✦ '+INSP_PASSIVE[I.passive][0]+' (passive): '+INSP_PASSIVE[I.passive][1]);
+function stashText(S){return Object.entries(S).map(([k,v])=>`+${v} ${{gold:'gold',parts:'spare parts',food:'food',water:'water'}[k]}`).join(', ');}
+function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.stash)out.push('🎒 Starting stash: the run starts with '+stashText(I.stash)+' for every hero carrying this deck.');if(I.passive&&INSP_PASSIVE[I.passive])out.push('✦ '+INSP_PASSIVE[I.passive][0]+' (passive): '+INSP_PASSIVE[I.passive][1]);
   for(const [k,v] of Object.entries(I.mod||{})){const [l,u]=INSP_LABEL[k]||[k,''];out.push(`${v>0?'+':''}${v}${u} ${l}: ${INSP_HELP[k]||''}`);}
   for(const [k,v] of Object.entries(I.sl||{})){const S=SLIDERS.find(s=>s[0]===k);if(!S)continue;const side=v>0?S[2]:S[1];
-    out.push(`${side} +${Math.abs(v)}: slides his personality ${Math.abs(v)} step${Math.abs(v)>1?'s':''} toward "${side}" (the ${S[1]} ↔ ${S[2]} slider: ${S[3].toLowerCase()}). If that would go past 0 or 10, it doesn't move.`);}
+    if(false)0;out.push(`${side} +${Math.abs(v)}: slides his personality ${Math.abs(v)} step${Math.abs(v)>1?'s':''} toward "${side}" (the ${S[1]} ↔ ${S[2]} slider: ${S[3].toLowerCase()}). If that would go past 0 or 10, it doesn't move.`);}
   return out;}
 // 0.12.27 (Kyle): more decks give one unique passive instead of a small stat; fewer give two things at once
 const INSP_PASSIVE={
@@ -436,6 +437,7 @@ const insP=u=>u&&u.insp&&INSP[u.insp]&&INSP[u.insp].passive;
 function inspText(name){const I=INSP[name];if(!I)return '';const out=[];if(I.passive&&INSP_PASSIVE[I.passive])out.push('✦ '+INSP_PASSIVE[I.passive][0]);
   for(const [k,v] of Object.entries(I.mod||{})){const [l,u]=INSP_LABEL[k]||[k,''];out.push(`${v>0?'+':''}${v}${u} ${l}`);}
   for(const [k,v] of Object.entries(I.sl||{})){const S=SLIDERS.find(s=>s[0]===k);if(S)out.push(`${v>0?S[2]:S[1]} +${Math.abs(v)}`);}
+  if(I.stash)out.push('🎒 Starts with '+stashText(I.stash));
   return out.join(', ');}
 // ---- 0.12.5 Flannel_Man's companion: about 1/3 of every stat of his that applies (health, armor, dodge, knockback resistance,
 //   damage, accuracy, crit chance, knockback). Speed, timing, range and energy stay the same so she keeps up and can use her brick.
@@ -2048,9 +2050,10 @@ const PSPD={void:165,gat:420,buck:380,leaf:190,dart:330,kunai:240,yarrow:230,bul
 const PCOL={void:'#b05cff',gat:'#ffd27a',buck:'#ffe0a0',skull:'#7dff9a',hex:'#c050ff',bolt:'#ffb040',orb:'#c050ff',arrow:'#e8e0c8',quarrel:'#e8e0c8',fire:'#ff8a1f',shard:'#6ff0ff',zap:'#bfefff',wisp:'#7dff9a',plasma:'#3ff0ff',blood:'#ff2a3a',shell:'#ffd23f',frost:'#9ae6ff',brick:'#c0603a'};
 
 // ======================================================================= RUN / PICKS (pure)
-function newRun(team,slot){if(slot){slot.gold=0;slot.parts=0;for(const k of team){const H=slot.heroes&&slot.heroes[k];if(H&&H.insp&&INSP[H.insp]&&INSP[H.insp].passive==='bankroll')slot.gold+=50;}}   /* 0.12.41 (Kyle): every new run starts broke: gold and spare parts reset to 0 */
+function newRun(team,slot){if(slot){slot.gold=0;slot.parts=0;slot._stash=null;for(const k of team){const H=slot.heroes&&slot.heroes[k];if(H&&H.insp&&INSP[H.insp]&&INSP[H.insp].passive==='bankroll')slot.gold+=50;const St=H&&H.insp&&INSP[H.insp]&&INSP[H.insp].stash;if(St){slot.gold+=St.gold||0;slot.parts+=St.parts||0;slot._stash=slot._stash||{food:0,water:0};slot._stash.food+=St.food||0;slot._stash.water+=St.water||0;}}}   /* 0.12.41 (Kyle): every new run starts broke: gold and spare parts reset to 0 */
   if(slot){slot.partySize=3;team=team.slice(0,3);}
   const run={team:team.slice(),stage:1,prestige:0,score:0,xp:0,lv:0,pending:0,rerolls:1,heroes:{},bag:[]};
+  if(slot&&slot._stash){run.food=slot._stash.food;run.water=slot._stash.water;delete slot._stash;}   /* deck starting stashes */
   for(const k of team){const d=heroDef(k);run.heroes[k]={hpf:1,dead:false,spells:ABILITIES_OFF||!d.spells.length?[]:[{card:d.spells[0].card,arch:d.spells[0].arch,r:1,augs:[]}],items:[]};}
   return run;
 }
@@ -2231,12 +2234,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793897272';const BGI=new Image();BGI.src='crawl_bg.png?v=1793897272';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793897272';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793897354';const BGI=new Image();BGI.src='crawl_bg.png?v=1793897354';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793897354';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793897272';XIMG.wave.src='crawl_wave.png?v=1793897272';XIMG.chibi.src='crawl_chibi.png?v=1793897272';XIMG.flannel.src='crawl_flannel.png?v=1793897272';XIMG.rain.src='crawl_rain.png?v=1793897272';XIMG.druid.src='crawl_druid.png?v=1793897272';XIMG.camp.src='crawl_campfire.png?v=1793897272';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793897272';XIMG.tornado.src='crawl_fx_tornado.png?v=1793897272';XIMG.vine.src='crawl_fx_vine.png?v=1793897272';XIMG.thorn.src='crawl_fx_thorn.png?v=1793897272';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793897354';XIMG.wave.src='crawl_wave.png?v=1793897354';XIMG.chibi.src='crawl_chibi.png?v=1793897354';XIMG.flannel.src='crawl_flannel.png?v=1793897354';XIMG.rain.src='crawl_rain.png?v=1793897354';XIMG.druid.src='crawl_druid.png?v=1793897354';XIMG.camp.src='crawl_campfire.png?v=1793897354';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793897354';XIMG.tornado.src='crawl_fx_tornado.png?v=1793897354';XIMG.vine.src='crawl_fx_vine.png?v=1793897354';XIMG.thorn.src='crawl_fx_thorn.png?v=1793897354';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793897272';XIMG.obst.src='crawl_obst.png?v=1793897272';XIMG.cars.src='crawl_cars.png?v=1793897272';XIMG.robot.src='crawl_robot.png?v=1793897272';XIMG.cultist.src='crawl_cultist.png?v=1793897272';XIMG.tentacle.src='crawl_tentacle.png?v=1793897272';XIMG.boom.src='crawl_boom.png?v=1793897272';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793897354';XIMG.obst.src='crawl_obst.png?v=1793897354';XIMG.cars.src='crawl_cars.png?v=1793897354';XIMG.robot.src='crawl_robot.png?v=1793897354';XIMG.cultist.src='crawl_cultist.png?v=1793897354';XIMG.tentacle.src='crawl_tentacle.png?v=1793897354';XIMG.boom.src='crawl_boom.png?v=1793897354';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
