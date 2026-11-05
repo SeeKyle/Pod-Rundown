@@ -374,7 +374,7 @@ const ABIL_DESC={
   missiles:'Missile_Barrage · 50 energy · 18s. The pod on his back pops open and lobs 6 little missiles high over the field onto the thickest group of enemies: 2d4 each to everything within 9px of where each one lands.',
   smoke:'Smoke_Screen · 35 energy · 16s. Lobs a smoke grenade between a hurt ally and the enemies on them: a thick cloud for 6s (about 180px wide). Enemies inside move 30% slower and miss half their attacks; allies inside dodge 25% of hits.',
   aimed:'Aimed Shot · 45 energy · 14s · 2s cast with a laser sight. Never misses the head box, +5% crit, 2.5x crit damage, pierces one enemy.',
-  trip:'Trip Bomb · 35 energy · 20s · 1s to set. A nail bomb on a tripwire: cross-shaped blast (3d6), knockback, 50% bleed, then a wider shockwave that hits anything the cross missed for half damage and shoves it harder.',
+  trip:'Trip Bomb · 35 energy · 20s · about 3s to set (faster when Techy, Optimal or steady-handed). A nail bomb on a tripwire: cross-shaped blast (3d6), knockback, 50% bleed, then a wider shockwave that hits anything the cross missed for half damage and shoves it harder.',
   grit:'Grit_Teeth · 35 energy · 22s. He grits his teeth and digs in: takes 60% less damage for 7s, and leans hard into melee for that time (his sliders slide toward Slasher and Aggressive), wading in with the crowbar while he tells the others to get behind him.',
   camp:'Set_Camp · 40 energy · 30s · 1.8s to kneel and light it right in front of him. A campfire that blocks nothing: every ally within 250px gets Cozy (+1% max HP and +2 energy per second). It has 5 life; each hit Flannel_Man or his Traveling_Companion takes costs it 1, and at 0 it dies out.',
   pal:'Call Traveling_Companion · 30 energy · 24s. Calls his timid partner: a third of his toughness, a 1d4 pistol that fires every 0.5s with 7 shots before a 5s reload, and a Brick Throw with 75% stun. She circles around him. If she\'s already out, heals her 7%.',
@@ -414,7 +414,7 @@ const INSP_HELP={acc:'More shots land on the body and head instead of flying ove
   lifesteal:'Heals for part of the damage he deals.',move:'Walks and runs faster.',meleeDmg:'Melee hits deal more damage.',rangedDmg:'Ranged hits deal more damage.',
   meleeSpd:'Swings his melee weapon more often.',rangedSpd:'Shoots and reloads faster.',kb:'Melee hits shove enemies back further.'};
 function stashText(S){return Object.entries(S).map(([k,v])=>`+${v} ${{gold:'gold',parts:'spare parts',food:'food',water:'water'}[k]}`).join(', ');}
-function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.perk==='sapper')out.push('🧨 Sapper (perk): spots enemy mines far more easily and defuses them with good odds (about 82% before traits, versus about 30% for anyone else; a failure sets it off). Slow and Steady, Techy, Steady nerves, Optimal and Luck all help. A defused mine is kept as a one-time item 75% of the time (40% for non-Sappers) and planted in front of zombies coming down his lane; otherwise it comes apart into spare parts.');if(I.stash)out.push('🎒 Starting stash: the run starts with '+stashText(I.stash)+' for every hero carrying this deck.');if(I.passive&&INSP_PASSIVE[I.passive])out.push('✦ '+INSP_PASSIVE[I.passive][0]+' (passive): '+INSP_PASSIVE[I.passive][1]);
+function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.perk==='sapper')out.push('🧨 Sapper (perk): spots enemy mines far more easily and defuses them with good odds (about 82% before traits, versus about 30% for anyone else; a failure sets it off). Slow and Steady, Techy, Steady nerves, Optimal and Luck all help. Plants bombs and mines faster (-0.8s), and his own Trip Bomb (Flannel_Man) hits 25% harder. A defused mine is kept as a one-time item 75% of the time (40% for non-Sappers) and planted in front of zombies coming down his lane; otherwise it comes apart into spare parts.');if(I.stash)out.push('🎒 Starting stash: the run starts with '+stashText(I.stash)+' for every hero carrying this deck.');if(I.passive&&INSP_PASSIVE[I.passive])out.push('✦ '+INSP_PASSIVE[I.passive][0]+' (passive): '+INSP_PASSIVE[I.passive][1]);
   for(const [k,v] of Object.entries(I.mod||{})){const [l,u]=INSP_LABEL[k]||[k,''];out.push(`${v>0?'+':''}${v}${u} ${l}: ${INSP_HELP[k]||''}`);}
   for(const [k,v] of Object.entries(I.sl||{})){const S=SLIDERS.find(s=>s[0]===k);if(!S)continue;const side=v>0?S[2]:S[1];
     if(false)0;out.push(`${side} +${Math.abs(v)}: slides his personality ${Math.abs(v)} step${Math.abs(v)>1?'s':''} toward "${side}" (the ${S[1]} ↔ ${S[2]} slider: ${S[3].toLowerCase()}). If that would go past 0 or 10, it doesn't move.`);}
@@ -793,7 +793,7 @@ const Brain={
     if(((insP(h)==='herbalist'&&(h.herbs||0)<3)||(insP(h)==='scavenger'&&(h.kit||[]).length<2))&&!(h.search)){const RE=SEARCH_RE[insP(h)];const look=30+45*trait(h,'perc')+(insP(h)==='scavenger'?20:0);const o=(g.obst||[]).filter(o=>RE.test(o.k)&&g_free(o,h)&&Math.abs(o.x-g.heroX(h))<look).sort((p,q)=>Math.abs(p.x-g.heroX(h))-Math.abs(q.x-g.heroX(h)))[0];
       if(o){const danger=bb.E.filter(e=>Math.abs(e.x-o.x)<35).length;if(!h.srDecide||h.srDecide.o!==o||g.t>h.srDecide.until)h.srDecide={o,until:g.t+1.5+Math.random(),go:Math.random()<(danger?(.15+.5*aggr):.8+.15*trait(h,'perc'))*((bb.heat.get(h)||0)?.25:1)*   /* IF something is on me right now THEN I usually fight first */(/^car_/.test(o.k)&&bb.E.some(e=>Math.abs(e.x-o.x)<80)?(.45+.55*aggr)*(1.3-.6*trait(h,'noise')):1)};   /* IF it's a car AND enemies are around THEN Calculated units hold off (an alarm would bring more) */
         if(h.srDecide.go){const runMul=.45+1.4*pace;return {xoff:0,intent:'search',runMul,goTo:{ob:o},reviveLane:g.searchSpot(o,h).lane};}}}
-    if(h.search)return {xoff:0,intent:'search',runMul:1,goTo:{ob:h.search.o},reviveLane:g.searchSpot(h.search.o,h).lane};
+    if(h.search&&!h.search.trap&&h.search.o&&h.search.o.lanes)return {xoff:0,intent:'search',runMul:1,goTo:{ob:h.search.o},reviveLane:g.searchSpot(h.search.o,h).lane};
     // 0.12.27 Scavenger: IF I'm carrying an herb AND an ally is under 80% (and not already healing) THEN selfless, ally-aware units go to them
     if(insP(h)==='herbalist'&&h.herbs>0){const H=g.alive().filter(o=>o!==h&&!o.pet&&o.hp/o.max<.9-.3*trait(h,'energy')&&!(o.herbT>0)).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
       if(H){if(!h.herbDecide||h.herbDecide.H!==H||g.t>h.herbDecide.until){const danger=bb.E.filter(e=>Math.abs(e.x-g.heroX(H))<35).length;let w=.5+.35*(1-selfish)+.2*A;if(danger)w*=.4+.8*aggr;h.herbDecide={H,until:g.t+1.5+Math.random(),go:Math.random()<Math.min(.95,w)};}
@@ -1642,7 +1642,7 @@ class Game{
     // IF Trip Bomb is ready AND no trap is out AND an enemy is coming (in front, not in my face yet) AND enough energy THEN set one
     if(TB&&!h.cast&&!mt&&h.tbT<=0&&!(this.traps||[]).some(t=>t.owner===h)&&(h.en||0)>=TB.en*(1+.3*trait(h,'energy')-.15)){
       const near=this.enemies.filter(e=>!e.dead&&!e.fly&&!e.boss&&e.x>h.x+40&&e.x<h.x+190).sort((p,q)=>p.x-q.x)[0];
-      if(near){h.setting={t:0,T:TB.cast,near};return;}}
+      if(near){h.setting={t:0,T:plantTime(h),near};return;}}
     // Aimed Shot has a 2s cast: he stands still with a laser on the target, then fires. A foe in crowbar reach breaks the cast
     //   (no energy spent, the cooldown doesn't start). If the target dies mid-cast he swings the laser to the next one in range.
     if(h.cast){const K=h.cast;
@@ -1842,7 +1842,7 @@ class Game{
       enMaxB:100,enRegenB:5,xpBonus:0,lifesteal:0,mvMul:1,meleeDmg:1,rangedDmg:1,meleeSpd:1,rangedSpd:1,kbAdd:0,flatRanged:0,flatMelee:0};
     this.pets.push(pal);this.fx.push({k:'poof',x:pal.x,y:this.G-20,t:0});}
   tripBoom(T){const A=T.A,h=T.owner;T.done=1;this.fx.push({k:'boom',x:T.x+6,gy:T.gy,t:0,life:1.15,raw:1});this.ev('boom',{});this.shake=Math.max(this.shake||0,.55);
-    const base=this.rollDice(A.dice)+(A.flat||0)+((h&&h.flatRanged)||0);const mul=h&&h.base?(h.atk/h.base.atk)*(h.rangedDmg||1):1;
+    const base=this.rollDice(A.dice)+(A.flat||0)+((h&&h.flatRanged)||0);const mul=(h&&h.base?(h.atk/h.base.atk)*(h.rangedDmg||1):1)*(h&&hasPerk(h,'sapper')?1.25:1);   /* 0.12.55: a Sapper's own bomb hits 25% harder */
     for(const e of this.enemies){if(e.dead||e.fly)continue;const dx=Math.abs(e.x-(T.x+6)),dz=Math.abs((e.gy!=null?e.gy:this.G)-T.gy);
       // cross-shaped blast (Kyle): a long arm along the lane (side to side) and a long arm across the lanes (up and down)
       const C2=A.cross;const inRow=dx<=C2.long&&dz<=C2.thin,inCol=dz<=C2.across&&dx<=C2.wide;if(!inRow&&!inCol)continue;
@@ -2043,11 +2043,15 @@ class Game{
         if(this.rng()<(hasPerk(h,'sapper')?.75:.4)){h.mine=(h.mine||0)+1;this.fx.push({k:'herbget',x:h.x,y:(h.gy||this.G)-26,t:0,life:.9,raw:1,kit:'defib'});Comms.bubble(this,h,Comms.pick(['Disarmed. Mine now.','Got it. I\'ll save this for them.','Wire cut. Keeping it.']),true);}   /* 0.12.52 (Kyle): 75% he keeps the mine */
         else{this.gainParts(null,{x:M.x,lanes:[M.l]});Comms.bubble(this,h,Comms.pick(['Fell apart. Parts, at least.','Busted it. Spare parts.','Not usable, but salvageable.']),true);}}}   /* ...25% it comes apart into spare parts */
     // planting a defused mine in front of zombies coming down my lane
-    for(const h of al){if(!(h.mine>0)||(h.mineCd||0)>this.t)continue;const lane=this.enemies.filter(e=>!e.dead&&!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-(h.gy||this.G))<4&&e.x-this.heroX(h)>18&&e.x-this.heroX(h)<75);
-      if(!lane.length||this.enemies.some(e=>!e.dead&&Math.abs(e.x-this.heroX(h))<16))continue;h.mine--;h.mineCd=this.t+1;const gy=h.gy!=null?h.gy:this.G;const l=LANES.reduce((b,y,i)=>Math.abs(y-gy)<Math.abs(LANES[b]-gy)?i:b,0);
+    for(const h of al){const P=h.planting;
+      if(P){if(this.enemies.some(e=>!e.dead&&!e.fly&&Math.abs(e.x-this.heroX(h))<16&&Math.abs((e.gy!=null?e.gy:this.G)-(h.gy||this.G))<4)){h.planting=null;this.text(h.x,this.G-70,'interrupted','#9aa');continue;}
+        P.t+=dt;h.pauseT=Math.max(h.pauseT||0,.1);if(P.t<P.T)continue;h.planting=null;h.mine--;h.mineCd=this.t+1;const gy=h.gy!=null?h.gy:this.G;const l=LANES.reduce((b,y,i)=>Math.abs(y-gy)<Math.abs(LANES[b]-gy)?i:b,0);
       /* 0.12.54 (Kyle): a planted mine is our own rust mine: 4d4, 60px blast, no stage bonus; its punch comes from who set it (Sapper +25%, Techy up to +30%, Optimal up to +10%, a little Luck) */
       const mult=1+(hasPerk(h,'sapper')?.25:0)+.3*trait(h,'tech')+.1*trait(h,'exec')+.004*Math.max(0,(h.luck||0)-10);
-      this.mines.push({x:this.heroX(h)+12,l,gy:LANES[l],t:0,armed:true,spotted:true,chk:0,owner:h,mult,arm:.6});Comms.bubble(this,h,Comms.pick(['Mine down!','Step on this.','Present for you!']),true);}}
+      this.mines.push({x:P.x,l,gy:LANES[l],t:0,armed:true,spotted:true,chk:0,owner:h,mult,arm:.6});Comms.bubble(this,h,Comms.pick(['Mine down!','Step on this.','Present for you!']),true);continue;}
+      /* IF I carry a mine AND zombies are coming down my lane (not in my face yet) THEN kneel and plant it in front of me */
+      if(!(h.mine>0)||(h.mineCd||0)>this.t||h.search||h.setting)continue;const lane=this.enemies.filter(e=>!e.dead&&!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-(h.gy||this.G))<4&&e.x-this.heroX(h)>40&&e.x-this.heroX(h)<190);
+      if(!lane.length||this.enemies.some(e=>!e.dead&&Math.abs(e.x-this.heroX(h))<16))continue;h.planting={t:0,T:plantTime(h),x:this.heroX(h)+12};h.mineCd=this.t+.5;}}
   mineBoom(M){if(!M.armed)return;M.armed=false;this.fx.push({k:'boom',x:M.x,gy:M.gy,t:0,life:1.15,raw:1,small:1});this.fx.push({k:'ring',x:M.x,y:M.gy-2,t:0,r:20,c:'#ff8a5a'});this.ev('boom',{});this.shake=Math.max(this.shake||0,.4);
     /* 0.12.54 (Kyle): 4d4 +5% per stage, blast radius 60 screen px (20 world) as a ground oval (9 deep); full damage in the inner third, 60% out to the edge */
     const R=20,RD=9,dmg=(this.rollDice([4,4]))*(M.owner?M.mult:(1+.05*(this.st.n-1)));const inB=(x,gy)=>{const dx=x-M.x,dz=gy-M.gy;const q=(dx/R)**2+(dz/RD)**2;return q<=1?(q<=1/9?1:.6):0;};
@@ -2359,6 +2363,8 @@ const LVPTS={hp:{name:'Toughness',icon:'❤️',txt:'+4% max HP'},dmg:{name:'Pow
 /* 0.12.53 (Kyle): anyone can try to defuse a mine; a failure sets it off. Sapper makes it far safer, and fiddly-job traits help:
    Slow and Steady (biggest), Techy, Steady nerves, Optimal, and a little Luck. */
 function defuseOdds(h){const sap=hasPerk(h,'sapper');let s=sap?.82:.30;s+=.24*(trait(h,'tech')-.5)+.2*(.5-trait(h,'pace'))+.16*(.5-trait(h,'nerve'))+.12*(trait(h,'exec')-.5)+.006*((h.luck||15)-15);return Math.max(.05,Math.min(.97,s));}
+/* 0.12.55 (Kyle): planting any bomb or mine takes ~3s, shaved by: Sapper -0.8s, Techy up to -0.7s, Optimal up to -0.3s, Slow and Steady up to -0.3s, a little Luck (min 1.2s) */
+function plantTime(h){return Math.max(1.2,3-(hasPerk(h,'sapper')?.8:0)-.7*trait(h,'tech')-.3*trait(h,'exec')-.3*(1-trait(h,'pace'))-.004*Math.max(0,(h.luck||0)-10));}
 function hasPerk(u,p){const I=u&&u.insp&&INSP[u.insp];return !!(I&&I.perk===p);}
 function upgT(run,id){return (run&&run.upg&&run.upg[id])||0;}
 function lvPtsFree(H){const used=Object.values(H.pts||{}).reduce((a,b)=>a+b,0);return Math.max(0,(H.lvl||1)-1-used);}
@@ -2394,12 +2400,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793900893';const BGI=new Image();BGI.src='crawl_bg.png?v=1793900893';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793900893';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793901133';const BGI=new Image();BGI.src='crawl_bg.png?v=1793901133';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793901133';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793900893';XIMG.wave.src='crawl_wave.png?v=1793900893';XIMG.chibi.src='crawl_chibi.png?v=1793900893';XIMG.flannel.src='crawl_flannel.png?v=1793900893';XIMG.rain.src='crawl_rain.png?v=1793900893';XIMG.druid.src='crawl_druid.png?v=1793900893';XIMG.camp.src='crawl_campfire.png?v=1793900893';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793900893';XIMG.tornado.src='crawl_fx_tornado.png?v=1793900893';XIMG.vine.src='crawl_fx_vine.png?v=1793900893';XIMG.thorn.src='crawl_fx_thorn.png?v=1793900893';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793901133';XIMG.wave.src='crawl_wave.png?v=1793901133';XIMG.chibi.src='crawl_chibi.png?v=1793901133';XIMG.flannel.src='crawl_flannel.png?v=1793901133';XIMG.rain.src='crawl_rain.png?v=1793901133';XIMG.druid.src='crawl_druid.png?v=1793901133';XIMG.camp.src='crawl_campfire.png?v=1793901133';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793901133';XIMG.tornado.src='crawl_fx_tornado.png?v=1793901133';XIMG.vine.src='crawl_fx_vine.png?v=1793901133';XIMG.thorn.src='crawl_fx_thorn.png?v=1793901133';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793900893';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793900893';XIMG.obst.src='crawl_obst.png?v=1793900893';XIMG.cars.src='crawl_cars.png?v=1793900893';XIMG.robot.src='crawl_robot.png?v=1793900893';XIMG.cultist.src='crawl_cultist.png?v=1793900893';XIMG.tentacle.src='crawl_tentacle.png?v=1793900893';XIMG.boom.src='crawl_boom.png?v=1793900893';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793901133';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793901133';XIMG.obst.src='crawl_obst.png?v=1793901133';XIMG.cars.src='crawl_cars.png?v=1793901133';XIMG.robot.src='crawl_robot.png?v=1793901133';XIMG.cultist.src='crawl_cultist.png?v=1793901133';XIMG.tentacle.src='crawl_tentacle.png?v=1793901133';XIMG.boom.src='crawl_boom.png?v=1793901133';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2603,7 +2609,8 @@ function drawGame(ctx,g,W,oy){
       if(h.herbs>0){const y=(h.gy||g.G)-30;for(let i=0;i<h.herbs;i++){const x=g.heroX(h)-3+i*3;ctx.fillStyle='#2e7a2a';ctx.fillRect(x,y,2,1.5);ctx.fillStyle='#8fe36a';ctx.fillRect(x,y-.6,1.2,1);}}   // Scavenger: herbs carried
       if(h.herbT>0&&Math.random()<.4){ctx.fillStyle='rgba(140,230,110,.8)';ctx.fillRect(g.heroX(h)-5+Math.random()*10,(h.gy||g.G)-6-Math.random()*16,1,1);}}
     for(const f of g.fx)if(f.k==='herbget'){const k=f.t/f.life;ctx.save();ctx.globalAlpha=1-k;ctx.fillStyle={med:'#f2f2f2',bat:'#7fe0ff',defib:'#f2d23a'}[f.kit]||'#8fe36a';ctx.fillRect(f.x-1,f.y-k*6,3,2);ctx.fillStyle='#2e7a2a';ctx.fillRect(f.x,f.y-k*6+1,1,2);ctx.restore();}
-    for(const h of g.alive())if(h.search){const k=Math.min(1,h.search.t/(h.search.T||1.5)),x=Math.round(g.heroX(h)+8),y0=Math.round((h.gy||g.G)-14),H=12;ctx.fillStyle='#000b';ctx.fillRect(x-1,y0-H-1,4,H+2);const f=Math.round(H*k);const gr=ctx.createLinearGradient(x,0,x+2,0);gr.addColorStop(0,'#e8ecf2');gr.addColorStop(1,'#8a92a0');ctx.fillStyle=gr;ctx.fillRect(x,y0-f,2,f);}   // searching: a silver bar rising beside him
+    for(const h of g.alive()){const A=h.search?[h.search.t,h.search.T||1.5,h.search.trap||h.search.disarm?'#9ad0ff':'#e8ecf2','#8a92a0']:h.setting?[h.setting.t,h.setting.T,'#ffc070','#a06030']:h.planting?[h.planting.t,h.planting.T,'#ffc070','#a06030']:null;if(!A)continue;   /* 0.12.55: one progress bar for every timed action: searching (silver), defusing / alarms (blue), planting (amber) */
+      const k=Math.min(1,A[0]/A[1]),x=Math.round(g.heroX(h)+8),y0=Math.round((h.gy||g.G)-14),H=12;ctx.fillStyle='#000b';ctx.fillRect(x-1,y0-H-1,4,H+2);const f=Math.round(H*k);const gr=ctx.createLinearGradient(x,0,x+2,0);gr.addColorStop(0,A[2]);gr.addColorStop(1,A[3]);ctx.fillStyle=gr;ctx.fillRect(x,y0-f,2,f);}   // searching: a silver bar rising beside him
     for(const h of g.alive())if(h.shellT>0){ctx.save();ctx.globalAlpha=.55;ctx.fillStyle='#3e7a3a';ctx.beginPath();ctx.ellipse(g.heroX(h),(h.gy||g.G)-9,10,10,0,Math.PI,0);ctx.fill();ctx.strokeStyle='#9be07a';ctx.lineWidth=1;ctx.stroke();ctx.restore();}   // Shell Up
     for(const e of g.enemies)if(!e.dead&&e.webT>0){e.webT-=1/60;const y=(e.gy!=null?e.gy:g.G)-10;ctx.save();ctx.strokeStyle='rgba(235,240,255,.7)';ctx.lineWidth=.6;for(let i=0;i<4;i++){const a=i*.8;ctx.beginPath();ctx.moveTo(e.x-6*Math.cos(a),y-6*Math.sin(a));ctx.lineTo(e.x+6*Math.cos(a),y+6*Math.sin(a));ctx.stroke();}ctx.restore();}   // webbed
     for(const h of g.alive())if(h.pactT>0){const gy=h.gy||g.G,p=.5+.5*Math.sin(g.t*8);ctx.save();ctx.globalAlpha=Math.min(1,h.pactT)*(.45+.3*p);ctx.strokeStyle='#d0202a';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(g.heroX(h),gy,9,2.4,0,0,7);ctx.stroke();ctx.restore();}};
@@ -2671,7 +2678,7 @@ function drawGame(ctx,g,W,oy){
       else if(h.camping>0&&U.kneel){A=U.kneel;f=Math.min(A.n-1,Math.floor((1-h.camping/(h.campT0||1.8))/.78*A.n));}   // kneel, flick the lighter
       else if(h.cast){A=U.ranged;f=0;}
       else if(h.setting){A=U.reload;f=Math.min(A.n-1,Math.floor(h.setting.t/h.setting.T*A.n));}   // kneels to set the Trip Bomb   // holding the aim during Aimed Shot's cast
-      else if(h.search&&U.idle){A=U.idle;f=Math.floor(g.t*3)%A.n;rum=h.search;}   /* 0.12.37: rummaging (built from his idle frames, bent over and digging) */
+      else if((h.search||h.planting)&&U.idle&&!(h.setting&&U.reload)){A=U.idle;f=Math.floor(g.t*3)%A.n;rum=h.search||{o:{x:h.planting.x},t:0};}   /* 0.12.37: rummaging (built from his idle frames, bent over and digging) */
       else if(h.hitFlash>0){A=U.hurt;f=Math.min(A.n-1,Math.floor((1-h.hitFlash/.12)*A.n));}
       else if(C&&C.ranged&&U.reload&&h.ammo<=0&&!mov){A=U.reload;f=Math.min(A.n-1,Math.floor((h.reloadT||0)/C.ranged.reload*A.n));}
       else if(mov){A=(h.running&&U.run)||U.walk;f=Math.floor(g.t*(h.running?12:h.key==='lumberjack'?9:8))%A.n;
@@ -2937,7 +2944,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.54</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.55</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
