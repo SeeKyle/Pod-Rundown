@@ -1,0 +1,531 @@
+      <h2>What's new</h2>
+      <h3>🚑 0.12.33: Ambulances and Medkits, a muscle car</h3>
+      <ul><li>A rusted orange <b>muscle car</b> (Kyle's art) joins the wrecks.</li>
+      <li>A wrecked <b>ambulance</b> also joins, the rarest vehicle. It's the white van refit as an ambulance, with grimy off-white paint, a dull red stripe, a chipped red cross on the side and a dirty, cracked light bar.</li>
+      <li><b>Anyone</b> can search an ambulance (2s, once per hero) for a good chance at a <b>Medkit</b>: 60%, plus Luck and Perception, up to 95%. A Scavenger searching one rolls for the Medkit and his own finds.</li>
+      <li>A Medkit is a one-time use: carried as a small white box with a red cross over the hero's head, one per hero. On himself or an ally in melee reach who's under 50%, it heals 35% of their max HP. Carriers take it to badly hurt allies; selfless ones most of all.</li>
+      <li>Behavior: heroes without a Medkit search a nearby ambulance (Perceptive ones spot it from farther) unless enemies are crowding it and they aren't bold. It's still a car, so searching can set its alarm off.</li>
+      <li><b>Parties are 3 heroes again.</b> The cell stranger still turns up to fill a spot if you bring fewer.</li></ul>
+    <h3>🧭 0.12.32: Herbalist and Scavenger decks, alarm stacking</h3>
+      <ul><li><b>Herbalist</b> is on <b>Blood Suckers</b> (+2% life steal) and <b>Thranduil</b> (+4 accuracy).</li>
+      <li><b>Scavenger</b> is on <b>The Last of Us</b> (+2% dodge), <b>Mechanized Mayhem</b> (+6% ranged speed) and <b>Tame Depala</b> (+8% knockback resistance).</li>
+      <li><b>Alarm stacking:</b> if a second car alarm goes off while another is already pulling zombies in, it only adds 1 extra zombie, so two alarms are barely worse than one.</li></ul>
+    <h3>🚨 0.12.30: Car alarms and the Techy slider</h3>
+      <ul><li>Disturbing a wrecked car has a 50% chance to set off its alarm (each car only rolls once). A car is disturbed when a damaging ability's blast lands near it (explosions, ground slams, thorns, falling arrows, Whirl_Wind and so on; the car takes no damage) or when someone starts searching it. A careful search is less likely to set it off: 25%, minus 0.6% per Luck point (about 13% at 20 Luck, never below 5%).</li>
+      <li>Behavior checks: Calculated units think twice before rummaging in a car while enemies are around, since an alarm would bring more. The 🧠 overlay now shows each unit's reason ("shutting off the car alarm", "searching the wreck", "bringing supplies to Jack", "guarding Yumi").</li>
+      <li>The alarm blares with flashing lights for up to 10s and pulls in one zombie about every 1.25s (a little faster on later stages): up to 8, plus 1 per 3 stages, on top of the normal waves. Ignoring it adds roughly one medium cluster, which is survivable, but shutting it off in the first few seconds saves most of them.</li>
+      <li><b>Shutting it off:</b> units treat a blaring alarm as a big threat and rethink at once. Any hero can go to a blaring car and shut the alarm off, and no more zombies come once it's off. It takes 0.7-2.6s standing at the car (the silver bar again); Techy units are fastest.</li>
+      <li><b>New slider: Primitive ↔ Techy.</b> Techy units are much keener to run over and kill an alarm (bold ones even with zombies around it), are faster at it, and find more in wrecked cars as Scavengers. Primitive units mostly leave machines alone and find more herbs as Herbalists.
+        Values: Warhound 10, Flannel 6, Companion 4, Cultist 3, Chibi 2, Jack 2, Yumi 1, Druid 0.</li></ul>
+    <h3>🚗 0.12.29: Wrecked cars and Scavenger</h3>
+      <ul><li><b>Broken-down cars</b> (Kyle's art: an overgrown hatchback, a mossy van, a rusted sedan and a weathered coupe) now turn up as obstacles. They're in the same random pool as rocks and logs, slightly less common than those.</li>
+      <li>They're sized like real cars next to a person (roof about chest-to-head height, the van taller), with smooth edges. Each blocks two lanes along its length, and they're tall enough to stop most shots.</li>
+      <li><b>Scavenger</b>, the new passive on <b>The Last of Us</b> inspiration (replacing its dodge): he searches broken-down cars, taking 2s each. Luck and Perception raise the odds, as with Herbalist.
+        <ul><li>A search can turn up a <b>Medkit</b> (heals an ally under 60% for 25% at once), a <b>Battery</b> (+30 energy for an ally running low on energy) or loose scrap gold.</li>
+        <li>He carries up to 3 Medkits and Batteries, shown as tiny icons over his head, and brings them to whoever needs them.</li>
+        <li>Crates and boxes will join the cars later.</li></ul></li>
+      <li>Cars face either way at random. The white sedan sits in rubble and weeds like the others, and the van is a touch smaller (still the biggest).</li>
+      <li>Searching now shows a silver bar rising beside the hero, for both Herbalist and Scavenger.</li></ul>
+    <h3>🪨 0.12.28: Herbalist</h3>
+      <ul><li>The Blood Suckers passive is now <b>Herbalist</b> (it was Scavenger). He only finds herbs by <b>searching</b> nearby foliage (bushes, the dead tree), rocks, stumps, hollow trunks and fallen logs.</li>
+      <li>Searching takes 1.5s standing beside one (a green bar fills over his head). The chance is good and rises with Luck (1.2% per point) and with the new Perceptive slider (up to +30%, max 95%). Each piece can only be searched once.</li>
+      <li>He searches fairly often but doesn't go far out of his way: only things within 30-75 world px, farther the more Perceptive he is. He skips spots enemies are crowding unless he's bold. Using herbs on hurt allies works the same as before.</li>
+      <li>A wider Scavenger that can search other things (like wrecked cars) is planned for later.</li>
+      <li><b>New slider: Tunnel Vision ↔ Perceptive.</b> Tunnel Vision units lock onto the obvious target (whatever they're already fighting, the nearest). Perceptive units keep looking around:
+        <ul><li>They pick off enemies sneaking onto allies behind the line, and small ones hiding behind big ones.</li>
+        <li>They notice danger zones more often.</li>
+        <li>They call out flankers, open lanes and danger far more.</li>
+        <li>They search farther and find more.</li></ul>
+        Values: Yumi 8, Druid 7, Companion 7, Flannel 6, Warhound 6, Cultist 6, Chibi 3, Jack 2.</li></ul>
+    <h3>🌿 0.12.27: Scavenger</h3>
+      <ul><li>The <b>Blood Suckers</b> inspiration (Cheez's lifelink bats deck) now gives a herb-healing passive instead of life steal (renamed Herbalist in 0.12.28). The +2 Vengeful slider move stays.</li>
+      <li>A Scavenger finds healing herbs: an 18% chance from each enemy that dies near him, plus a few foraged on the march. He holds up to 3, shown as little green leaves over his head.</li>
+      <li>When he or any ally within about 50px is under 80% health, he uses one. It heals 20% of their max HP over 5s, and any hit stops it.</li>
+      <li><b>Inspiration rework:</b> fewer decks give two things at once, and more give one strong boost or a unique passive:
+        <ul><li><b>Bounty Hunter</b> (Life Swappin' Bounty Poppin'): marks the biggest enemy for +25% damage taken; +10 gold when it dies.</li>
+        <li><b>Haunted</b> (House on Haunted Hill): attackers have a 20% chance to get spooked and back off.</li>
+        <li><b>Dark Omen</b> (Mothman Cometh!): one hit every 12s passes straight through.</li>
+        <li><b>Onslaught</b> (Thunder's Decree): after moving for 1s, the next hit deals double damage.</li>
+        <li><b>Shell Up</b> (Turtle Power): under 40% health, 70% less damage for 3s (30s cooldown).</li>
+        <li><b>Devour</b> (Korvold Eats Everything): kills heal 3% and give 4 energy.</li>
+        <li><b>Pickpocket</b> (Armed Robbery): 25% chance per enemy hit to rob it once for +2 gold.</li>
+        <li><b>Bodyguard</b> (Family Matters), the first deck that scripts a behavior: he sticks to the most hurt ally and takes 30% of every hit meant for them while beside them.</li>
+        <li><b>Web Shooter</b> (Cosmic Spider): 15% of hits web the target (60% slower for 2s).</li>
+        <li><b>Single boosts:</b> Felothar is now +6 armor, Dice Boys Casino +2 energy regen, Double Dragons +16% ranged damage and Thranduil +12 accuracy.</li>
+        <li><b>Unchanged:</b> every deck's slider move and the other single-stat decks.</li></ul></li>
+      <li>Behavior: while carrying herbs, he goes looking for hurt allies to patch up. Selfless and ally-aware units do this most; if enemies are on the hurt ally, only the bold go in.</li></ul>
+    <h3>🌀 0.12.26: Whirl_Wind rework, revive timing</h3>
+      <ul><li><b>Lumber_Jack's Whirl_Wind:</b> a slashing wave now whips round him so the reach reads, and the reach is wider (24 world px, about 70px on screen). It lasts up to 5s and hits everything in the circle for 1d4 every second, and each hit refreshes a bleed (6 damage over 3s). He moves at half speed while spinning. He usually spins it out, but breaks off early if he's badly hurt and wants to retreat, or if nothing has been in reach for 1.5s.</li>
+      <li><b>Revive timing:</b> it takes 4s when the Void_Cultist is the one helping (Herald_of_Life_and_Death) and 5s for everyone else. Before, he sped up everyone's revives just by being up.</li>
+      <li>Every hero that gets helped up plays their own get-back-up animation, then returns to their normal animations. This was checked for each hero.</li></ul>
+    <h3>🚶 0.12.25: Lumber_Jack's walk, cultist bolts</h3>
+      <ul><li><b>Lumber_Jack</b> now has a proper walk. It's rebuilt from his sheet's walk cycle with the same smooth edges, and every frame is lined up on his head and body, so he strides along instead of twitching side to side. It also plays a little faster to match his pace.</li>
+      <li><b>Void_Cultist's</b> void bolts now leave from the tip of his dagger hand, higher up, instead of near his hip.</li>
+      <li><b>Revive fix:</b> a revived hero now plays their get-back-up animation once and then returns to their normal animations. Before, they could stay stuck in their death pose while moving around. The Herald crit bonus now also works properly.</li></ul>
+    <h3>🌿 0.12.24: Verdant_Resurgence cooldown</h3>
+      <ul><li>The Druid's <b>Verdant_Resurgence</b> is no longer once per stage. It can trigger again after a 25s internal cooldown.</li>
+      <li>Void_Cultist's void bolts are now 1d4.</li>
+      <li>Void_Cultist is more selfish: Selfless↔Selfish is now 9 (was 7). The Druid stays fully Selfless at 0.</li>
+      <li>Hero card tooltips: the side each slider leans toward is coloured by how hard it leans. A slight lean is a soft green, a heavy lean is bright, bold lime with a glow, and the slider knob takes the same colour. A tiny key under the sliders explains the colours.</li>
+      <li>Blow_Gun's tooltip now reads "1 stack of poison is guaranteed".</li></ul>
+    <h3>🏹 0.12.23: One Nocked, Two in Hand</h3>
+      <ul><li>Yumi_Archer's <b>One Nocked, Two in Hand</b> now rapid-fires 3 full basic shots within 1.5 seconds (one every 0.5s), then he goes back to normal. Each shot is its own target choice (the same enemy or a different one), and the rushed shots are slightly less accurate (-5). It no longer just speeds up his next arrows.</li></ul>
+    <h3>🤝 0.12.22: Downed and Revive</h3>
+      <ul><li><b>Downed, not dead:</b> a hero who runs out of HP falls and stays down, with a green + over them.</li>
+      <li><b>Reviving:</b> an ally who stands on them for 5 seconds helps them back up with 25% HP and 0 energy. The + fills as they work, and it slowly drains if they step away.</li>
+      <li><b>Getting back up:</b> every hero has a rise animation built from their own death frames played backwards (fallen ones rotate back upright), with a moment of safety while they stand.</li>
+      <li><b>In the behavior system:</b> most units go help a downed ally. Selfless, pack-minded and ally-aware units are the keenest; selfish lone wolves less so. If enemies are standing over the body, only the bold go in. The reviver shouts for cover ("Getting Jack up!") and allies who listen protect them.</li>
+      <li>The run is only lost when everyone is down at once.</li>
+      <li><b>Void_Cultist:</b> recoloured in blacks and purples (black hood and mantle, deep purple robe, ashen mask, violet eye) and shrunk to Flannel_Man's size.</li>
+      <li><b>Void_Cultist's eyes</b> are now two small red embers that glow in the dark of his hood.</li>
+      <li><b>Void_Cultist's void bolts</b> are weaker (1d4) but fire about twice as fast as other ranged heroes' attacks (every 0.95s).</li>
+      <li><b>Tentacle:</b> 15% taller, very slightly thinner at the base, and the pale claw tip is gone. Its lash reach now matches its attack animation (35 world px, about 105 screen px). It hits for 2d6 and has 15 HP. There's no timer any more: it withers 5% of max HP a second, enemies standing on it swat at it, and only its 40% life steal keeps it alive. Any number can be out at once (one per cast).</li>
+      <li><b>Energy:</b> every non-passive ability costs 5 more energy (for example 20 → 25, 45 → 50).</li>
+      <li><b>Herald_of_Life_and_Death</b> (Void_Cultist's new passive, replacing Dark_Communion): while he's up, reviving an ally takes 4s instead of 5. Each of his critical hits gives him +1 energy and +1 HP every 0.5s for 5s, and gives every tentacle in play +1 HP every 0.5s for 5s. Tentacle crits don't count.</li></ul>
+    <h3>🕯️ 0.12.21: Void_Cultist</h3>
+      <ul><li><b>Void_Cultist</b> (Kyle's): a new hero, original pixel art. He wears a crimson robe with a tattered swaying hem, a deep navy hood and a bone mask with one burning red eye, and carries a curved ritual dagger. His animations are walk, idle, dagger slash, a void-bolt cast with a violet orb, a two-handed summon pose, hurt, and a death where he crumbles into ash and violet sparks. He fights with void bolts at range and the dagger up close.</li>
+      <li><b>Call_of_the_Deep</b> (45 energy, 7s, cast up to 250px away): a huge dark tentacle (black-violet skin, suckers, a bone hook) tears out of the ground near the enemies for 10s. It can't move, but it wriggles and whips a long way (about 90px) every 1.4s for 1d8 with knockback. It has its own emerge, wriggle, lash, flinch and wilt animations.</li>
+      <li><b>Blood_Pact</b> (20 energy, 20s): he pays 15% of his own HP (never below 40%) to give every ally +20% damage for 6s, shown as red rings under them.</li>
+      <li><b>Spreading_Hex</b> (25 energy, 12s): curses the biggest threat, which rots for 2.5% max HP a second. If it dies cursed, the hex leaps to the nearest enemy, up to 3 times.</li>
+      <li><b>Dread_Chant</b> (30 energy, 16s): when he's swarmed, every non-boss enemy within 180px backs away in terror for 2.5s.</li>
+      <li><b>Dark_Communion</b> (passive): every enemy that dies near him feeds him 6 energy and 2% HP (you'll see a little violet soul fly to him).</li>
+      <li>Personality: hangs back, selfish, vengeful and a showoff, and he only listens to callouts sometimes. His callouts are violet ("From the deep!", "Blood for power!", "Tremble!").</li></ul>
+    <h3>✦ 0.12.20: Five abilities each</h3>
+      <ul><li>Every picked hero now has five abilities. Flannel_Man and Lumber_Jack already had five and are unchanged. Passives show as blue ✦ chips on the party screen, actives as ⚡.</li>
+      <li><b>Chibi_Warrior: Shadow_Clone</b> (decoy, 30 energy, 18s). A see-through copy steps out for 5s. It mirrors every sword hit (+40% on the same target) and soaks 35% of the blows aimed at him.</li>
+      <li><b>Chibi_Warrior: Momentum</b> (passive). Each sword hit within 2s of the last stacks +6% attack speed, up to +30%. A 2s pause resets it.</li>
+      <li><b>Yumi_Archer: Pinning_Shot</b> (root + mark, 25 energy, 12s). An arrow nails the biggest or fastest threat in place for 2.5s and marks it for 6s (red reticle). Marked enemies take 25% more damage from everyone.</li>
+      <li><b>Yumi_Archer: Wind_Reading</b> (passive). Shots at anything more than about 450px away get +15 accuracy and +0.5x crit damage.</li>
+      <li><b>Druid: Verdant_Resurgence</b> (passive, once per stage). When an ally would die, vines catch them: they stay up, can't be hurt for 2s and heal 30% of max HP.</li>
+      <li><b>Warhound: Reactive_Plating</b> (passive). Every 5 hits he takes, his plating vents a shockwave that shoves nearby enemies away and gives him a 12% max-HP shield for 4s.</li></ul>
+    <h3>🦾 0.12.19: Warhound</h3>
+      <ul><li><b>Moss_Mech is now Warhound</b>, using the new sprite Kyle picked: a hunched olive war-walker with brass trim and rivets, a low forward cockpit with a cyan visor slit, twin exhaust stacks that puff smoke when idle, and a red-lit missile rack.</li>
+      <li>He has hydraulic pistons on his legs and a rotary cannon (drum, spinning barrels, muzzle ring) that swings forward to fire. It's drawn at twice the detail of the old robot, so he stands taller than the other heroes. He's drawn about 15% smaller now, resampled smoothly so he doesn't go blocky.</li>
+      <li>His blade arm is longer and bent at the elbow, so the arc blade thrusts forward instead of pointing at the ground.</li>
+      <li><b>Livelier animations:</b> the blade arm swings from the shoulder as he walks, with the cannon arm swinging the other way. He bobs and rocks with every step and lifts his knees higher. His exhaust puffs drift up, and his idle breathes and sways. His slashes lean into a lunge with a forward step, the cannon kicks with each burst, he crouches as the missile rack fires, and his blade arm flops flat when he falls.</li>
+      <li>Same abilities as before: Arc_Surge, Gatling_Arm, Missile_Barrage and Smoke_Screen.</li></ul>
+    <h3>🪓 0.12.18: Smoother Lumber_Jack</h3>
+      <ul><li><b>Lumber_Jack</b> keeps his original flat colours but is rebuilt with smooth edges.</li>
+      <li>Every colour patch and his outline are now traced as clean curves at 8x and averaged back down, instead of being stair-stepped by Scale2x.</li>
+      <li>The white JPEG fringe "spikes" on his silhouette are removed, and he has an even dark outline all the way round.</li></ul>
+    <h3>🤖 0.12.17: Moss_Mech</h3>
+      <ul><li><b>Moss_Mech</b> (Kyle's): a new hero, an original moss-grown green war mech drawn as pixel art from scratch. It has rusty, mossy plating, a cyan visor eye, a blue electric arc blade on its near arm, a gatling on its far arm and a missile pod on its back. Its sheet has walk (8 frames), idle (4), slash (4), gatling fire (4, barrels spinning), pod launch (4), throw (3), hurt (2) and a 5-frame collapse.</li>
+      <li><b>Stats:</b> heavy and slow, with lots of armor (12 Stamina, 12 armor, 60% knockback resistance). The arc blade hits for 1d8, and its basic ranged attack is a 3-round gatling burst (1d4 each).</li>
+      <li><b>Arc_Surge</b> (25 energy, 10s): when 2+ enemies are close, the blade overcharges for 5s. Each blade hit chains lightning to 3 more enemies (1d8 each, plus a short stun).</li>
+      <li><b>Gatling_Arm</b> (35 energy, 14s): when 3+ enemies line up in front, it sprays for 3s at 12 shots a second with -40 accuracy and wild spread, so most shots miss.</li>
+      <li><b>Missile_Barrage</b> (45 energy, 18s): 6 little missiles with smoke trails arc onto the thickest group (2d4 each where they land).</li>
+      <li><b>Smoke_Screen</b> (30 energy, 16s): a grenade drops a 6s cloud between a hurt ally and the enemies on them. Enemies inside are 30% slower and miss half their attacks; allies inside dodge 25% of hits. It also calls hurt allies into the smoke.</li>
+      <li>Personality: slow and steady, team-minded and follows callouts. It has its own teal callouts ("Missiles away!", "Popping smoke!", "Brrrrt!").</li></ul>
+    <h3>🌿 0.12.16: Druid animations and spirit claw, Flannel_Man's Grit_Teeth</h3>
+      <ul><li><b>Druid animations:</b> she has a breathing idle (hair sway, staff glint), a 3-frame swipe, a 3-frame staff-raise cast and a hurt flinch.</li>
+      <li><b>Druid melee:</b> she swipes her hand and a glowing green spirit claw lunges off it into the target and rakes it (reach 26, was 18).</li>
+      <li><b>Druid ranged:</b> her bolt is now a glowing seed with leaves spinning round it and a fading green trail.</li>
+      <li><b>Flannel_Man: Grit_Teeth</b> (30 energy, 22s). When he's hurt with something on him, or 3+ enemies are close, he digs in: 60% less damage for 7s, and his sliders lean hard toward Slasher and Aggressive, so he wades in with the crowbar. He shouts "Get behind me!" and allies who listen drop back behind him.</li></ul>
+    <h3>🪨 0.12.15: Obstacles, the druid's tornado and thorns, ground that stays put</h3>
+      <ul><li><b>Obstacles:</b> rocks (mossy, cracked, swirled, grimy, crumbling, a pile), a hollow trunk, a stump, bushes, a dead tree and a big log lying diagonally across two lanes. They're not common, they're placed a bit randomly, and there are never more than two lanes blocked near each other, so there's always a way around.</li>
+      <li>Everyone walks around them by switching lanes; the behavior system sees blocked lanes when it picks one. Each one's blocking area follows its picture: a rock blocks only under its base, and the log blocks its left end in the near lane and its right end in the far lane.</li>
+      <li>Tall obstacles (rocks, trunk, stump, tree) stop shots that fly low enough to hit them. Bushes don't block shots, and the log only stops very low ones. Lobbed kunai and darts can arc over.</li>
+      <li><b>Cyclone:</b> much slower (20 world px/s, was 55) and it stays in a tighter area close in front of the Druid.</li>
+      <li><b>Thorn Wave:</b> travels 2/3 as far, still bleeds, and now has a 50% chance to add a poison stack to each enemy it hits (undead are immune).</li>
+      <li><b>Bodies stay put:</b> corpses, fallen heroes, stuck arrows, thorns and other marks on the ground now scroll with the ground instead of sliding along with the party.</li>
+      <li><b>Callouts:</b> smaller text. Ability names no longer pop up as text when an ability is used.</li>
+      <li>The 🧠 overlay now starts each unit's tag with its name (the descriptor words like "Loyal Giant-Slayer" are its personality, not a callout).</li></ul>
+    <h3>💬 0.12.14: Clean tooltips</h3>
+      <ul><li>All hover tips now use one clean box that always fits on screen.</li>
+      <li>Hover anywhere on a hero card in party select to see how it fights: its role, personality, play style and every slider drawn as a little meter, with the side it leans toward lit up.</li>
+      <li>Ability chips, stat bars and toolbar buttons use the same box.</li></ul>
+    <h3>📣 0.12.13: Callouts, drastic sliders, strays and more wolves</h3>
+      <ul><li><b>Callouts:</b> heroes now shout short callouts to each other, colour-coded by who's talking (Flannel yellow, Companion red, Chibi blue, Yumi orange, Druid green, Jack purple). There are 16 kinds and about 200 lines: Help!, Heal me!, Focus the wolf!, Behind you!, Fall back!, Push!, They're bunched up!, Big one!, Man down!, Reloading!, Campfire's up!, Top lane!, Move!, I'm tapped out!, Trap's down! and kill calls. Allies answer back too ("On it!", "Nope.").</li>
+      <li><b>Callouts change what allies do:</b> a focus call pulls targets, Help and Reloading make allies cover the caller, Fall back and Push move the line, Bunched up makes them spend energy, a lane call moves them to that lane, Heal me sends the Druid's heals to the caller, Move! makes someone who missed a danger zone dodge late, and losing an ally makes Vengeful units angrier and Forgiving ones more careful.</li>
+      <li><b>Two new sliders:</b> <i>Quiet ↔ Chatty</i> (0 almost never speaks, 10 calls out everything) and <i>Ignores Callouts ↔ Follows Callouts</i> (0 obeys about 2% of the time, 10 about 98%).</li>
+      <li><b>Sliders are much more drastic:</b> 0 and 10 now play very differently. For example, Calculated 0 retreats at 75% HP while Blind Aggression 10 almost never runs. On Track 0 keeps a plan 4-5s while New Plan 10 rethinks several times a second. Stay In Your Lane 0 never leaves its lane while Switch It Up 10 can cross the whole field. Forgiving drops a grudge in 1s while Vengeful holds it for 20s. Squander spends energy the moment it can while Preserve waits until full and then dumps it. Shooter ↔ Slasher spreads further apart, and Sloppy is now really erratic while Optimal is very consistent.</li>
+      <li><b>Strays:</b> a lonely zombie wanders in between cluster waves (2 a stage, more later).</li>
+      <li><b>Difficulty:</b> stage 1 has 2 werewolves, with one more about every 2-3 stages. Each stage is now about 18% harder (+8% enemy HP, +5% damage, +4% more enemies), down from about 25%.</li>
+      <li><b>Speed:</b> heroes walk 15% slower and run 25% slower. Zombies and werewolves move 10% faster.</li></ul>
+    <h3>🪓 0.12.11: Lumber_Jack, Poultice, smarter plans</h3>
+      <ul><li><b>Lumber_Jack:</b> a new character. His low-res sheets were snapped to a clean 16-colour palette, upscaled 4x with Scale2x and smoothed down to everyone's height, so his edges are soft instead of spiky. He swings an axe up close and shoots a hunting bow while he closes in.</li>
+      <li><b>His abilities:</b>
+       <ul><li><b>Whirl_Wind</b> (40 energy, 14s): uses the spinning-attack panels, with the turn-around frames filled in. He spins for 2.4s, drifting forward, and hits everything around him every 0.4s.</li>
+       <li><b>Ground_Chop</b> (25 energy, 9s): a shockwave chop that shoves and stuns.</li>
+       <li><b>Hatchet_Leap</b> (35 energy, 16s): he double-jumps onto an enemy up to 180px away and slams down.</li>
+       <li><b>Timber_Rage</b> (30 energy, 20s): under half health he gets angry, with +30% damage, +20% speed and 25% less damage taken.</li>
+       <li><b>Log_Roll</b> (15 energy, 8s): a dodge roll he can't be hit during.</li></ul></li>
+      <li><b>Poultice</b> (Chibi_Warrior, 20 energy, 15s): a self heal over time. Under 60% health he heals 4% of his max HP every second for 6s.</li>
+      <li><b>Smarter plans:</b> every unit's plan now looks at which abilities are off cooldown and affordable, and how far they reach. With a close-range move ready they push in; with only ranged ones ready they keep their distance; with everything on cooldown and hurt they hang back.</li>
+      <li><b>War Cry</b> now reaches 600px.</li>
+      <li><b>No class positions:</b> there are no fixed melee or ranged spots any more. Everyone rallies around the same point, and the personality (Shooter↔Slasher, Calculated↔Aggressive) plus whatever abilities are ready decide where each unit actually stands. Werewolves hunt whoever is standing furthest back.</li>
+      <li><b>Yumi_Archer's arrows</b> are drawn bigger with a faint streak, and fly a little slower (230 px/s, was 300) so you can follow them.</li>
+      <li><b>Traveling_Companion</b> has a real 6-frame walk now: pistol lowered, legs striding, a little bob.</li></ul>
+      <h3>🔥 0.12.10: Set_Camp, distances fixed</h3>
+      <ul><li><b>Set_Camp</b> (Flannel_Man, 35 energy, 30s cooldown):
+       <ul><li>A new kneel-and-flick-a-lighter animation (1.8s). He lights a campfire right in front of him, which starts small, then burns with sparks drifting up.</li>
+       <li>The fire blocks nothing. Allies within 250px get <b>Cozy</b> (an orange pip): +1% max HP and +2 energy every second.</li>
+       <li>It has 5 life and can't be attacked, but every hit Flannel_Man or his Traveling_Companion takes costs it 1. At 0 it dies down, smokes and leaves charred logs.</li></ul></li>
+      <li><b>Distances</b> are now in screen pixels, as Kyle meant them (the normal game shows 3 screen px per world px). Wave Dash goes about 300px (it was crossing the whole screen), War Cry reaches 800px, and the campfire aura is 250px.</li>
+      <li><b>Party screen:</b> every character's avatar now sits at the top of its card.</li></ul>
+      <h3>🌿 0.12.9: The Druid</h3>
+      <ul><li><b>The Druid:</b> a new character built from Kyle's sprite. Her art was sampled back onto its native 8px pixel grid, so she's crisp. She fires small nature bolts at range and pokes with her staff up close.</li>
+      <li><b>Mend</b> (12 energy, 4s): an instant 12% heal on the most-hurt ally.</li>
+      <li><b>Rejuvenating Bloom</b> (30 energy, 12s): a heal over time on any ally, 5% of max HP every second for 8s, inside a glowing vine heart.</li>
+      <li><b>Thorn Wave</b> (35 energy, 14s): earth thorns erupt one after another along the ground, 200px down her lane. Everything they burst under takes 2d6 and bleeds.</li>
+      <li><b>Cyclone</b> (40 energy, 18s): a tornado wanders around in front of her for 5s, slowly pulling nearby enemies in and grinding down everything inside it.</li>
+      <li><b>Inspiration Decks:</b> most decks now also nudge a personality slider, in either direction, since the low end of a slider isn't worse, just different. For example, Felothar makes you more Calculated, Dice Boys Casino more of a Showoff, Tame Depala Slower and Steadier, and Armed Robbery more Selfish.</li>
+      <li><b>Party screen:</b> abilities now show as small name chips, and hovering one opens a description box. Each character's attack type is shown correctly: Bow + Melee for Yumi_Archer, Sword + Kunai for Chibi_Warrior (the kunai is his ranged attack, not an ability), Staff + Nature Bolts for the Druid.</li></ul>
+      <h3>🎋 0.12.8: Blow_Gun and poison</h3>
+      <ul><li><b>Blow_Gun</b> (Yumi_Archer, 25 energy, 9s cooldown): a new blowing animation. He goes into his full-draw stance with the bow taken out, a single bamboo shoot from his mouth along both arms, and a puff of air as the dart leaves. The poison dart (1d3) has a slight drop.</li>
+      <li><b>Arrow_Rain</b> (Yumi_Archer, 40 energy, 18s cooldown): he looses a volley high into the air, then 16 arrows rain down over 1.4s on the thickest group of enemies in range, about 70px wide and 2 lanes up and down. Each arrow does 1d6 to what it lands on and sticks in the ground for a moment. The falling and stuck arrows are drawn from Kyle's arrow art, rebuilt as clean pixel art.</li>
+      <li><b>Poison stacks:</b> the dart always adds 1 poison stack to a living target, with a 75% chance of a 2nd and a 50% chance of a 3rd.</li>
+      <li><b>Poison</b> (all poison effects share one stack): each stack deals 3% of the target's max HP every 1.5s, and there's no max. Any new stack resets the whole stack to 7.5s. Undead (zombies, the Gravelord, the Countess) are immune. Poisoned enemies show a green pip.</li>
+      <li><b>Music:</b> a grimy synthwave loop plays in Crypt Crawl: "Synthwave House Loop" by Fupi, free on OpenGameArt (CC0), run a touch slow and low. It has its own 🎵 on/off button and a volume slider in the top bar, both saved in your browser.</li>
+      <li><b>Kunai</b> now lob up and drop onto their target. Darts drop a little; bullets and arrows still fly straight.</li></ul>
+      <h3>🏹 0.12.7: Yumi_Archer, and Chibi_Warrior throws kunai</h3>
+      <ul><li><b>Yumi_Archer:</b> a new character, a red-armored longbow archer built from Kyle's sheet. His reds are a shade darker, with a thin bright strip left along the top of each red patch. His art is pre-shrunk and edge-cleaned like Chibi_Warrior's.</li>
+      <li><b>His arrows:</b> each one is his own arrow, cut from his Ranged frames. It leaves from the arrow's tip at the moment he releases in his draw animation.</li>
+      <li><b>His starting stats:</b> 45 HP, 6 armor, 1d10 arrows every 1.7s with 280 range, no reloading, 22 accuracy, 12% crit for 2x, and a 1d8 bow strike up close. His sliders are a patient marksman's: Shooter 0, Optimal 9, Calculated 2.</li>
+      <li><b>One Nocked, Two in Hand</b> (his ability, 30 energy, 14s cooldown): his next 3 arrows come much faster, with a third of the wait between shots and a quicker draw.</li>
+      <li><b>Chibi_Warrior's kunai:</b> a new throwing animation stitched from his Attack 1 wind-up and his Run+Attack throwing arm. He throws a kunai (1d4, 180 range) at enemies he can't reach yet while he closes in.</li></ul>
+      <h3>⚔️ 0.12.6: Chibi_Warrior</h3>
+      <ul><li><b>New character:</b> a sword fighter built from Kyle's sprite sheets. The game uses his Idle, Walk, Run, Attack 1, Attack 2, Run+Attack, Hurt and Dead panels. Jump and Idle 2 aren't used.</li>
+      <li><b>How he fights:</b> a two-hit combo (Attack 1 then Attack 2) when he's standing, and a running slash when he's on the move.</li>
+      <li><b>Sliders:</b> his own, very different from Flannel_Man's. He's bold and reckless (Blind Aggression 8, Slasher 9, Showoff 7). He watches enemies more than friends, picks his own fights and holds grudges.</li>
+      <li><b>Wave Dash</b> (45 energy, 16s cooldown): he rides a blue energy wave up to 400px forward in 0.9s. The wave is Kyle's shape, with lightning crackling around it and see-through layers at its edges. Everything the wave passes through, 2 lanes up and down, takes 1.4x a sword hit and gets shoved. He uses it when at least 2 enemies are in the path.</li>
+      <li><b>War Cry</b> (20 energy, 7s cooldown): every ally within 800px gets +25% damage and +25% attack speed for 7 seconds, shown with an orange buff pip.</li>
+      <li><b>Thicker sword</b> and cleaner edges: the light background halo is stripped from his outline.</li>
+      <li><b>Cleaner art:</b> his frames are pre-shrunk to exactly the size they're drawn at, with the grey background fringe stripped, so he's sharp instead of blurry.</li>
+      <li><b>Enemies come in clusters:</b> instead of a steady flow, each stage sends 7 clusters spread along the way with some randomness. They start at 2 enemies and grow to 6-7 by the last one, and each cluster walks in bunched together. Werewolves still arrive on their own schedule.</li>
+      <li><b>Starting stats</b> (until his character sheet is filled out): 50 HP, 8 armor, 6% dodge and 30% knockback resistance. His sword does 2d6 every 1.1s with 24 reach. 10% crit, walk speed 20. No abilities yet.</li></ul>
+      <h3>🧥 0.12.5: Flannel_Man's Traveling_Companion</h3>
+      <ul><li><b>Call Traveling_Companion</b> (his third ability): 25 energy, a 24s cooldown and a 0.8s whistle. She joins the fight next to him. If she's already out, the whistle heals her for 7% of her max HP instead.</li>
+      <li><b>Her stats:</b> about a third of each of his that applies: health, armor, dodge, knockback resistance, damage, accuracy and crit chance. Speed, attack timing, range and energy stay the same as his, so she keeps up and can use her brick.</li>
+      <li><b>How she fights:</b> a pistol and a knife. She's timid: she hangs back, keeps her distance, sticks to her lane and picks off small enemies next to him. If he goes down, she leaves too.</li>
+      <li><b>Brick Throw</b> (her ability): 20 energy, 9s cooldown. It never misses and always does damage (1.5x her pistol roll), with a 75% chance to stun for 1.2s.</li>
+      <li><b>Her look:</b> Kyle's sprite sheet, recolored with a red jacket, darker brown hair and a longer ponytail. She's a little shorter than Flannel_Man.</li></ul>
+      <h3>🎯 0.12.4: Clean Flannel_Man, headshots, stronger Inspiration Decks</h3>
+      <ul><li><b>Clean Flannel_Man:</b> he's back to his normal in-game size, but drawn from his full-detail art on a sharper game canvas, so he isn't blocky any more. He holds his rifle up while casting Aimed Shot.</li>
+      <li><b>Trip Bomb</b> (his second ability): 30 energy, 20s cooldown. He kneels for 1 second to set a nail bomb on a stake with a tripwire a little ahead in his lane. It arms after 0.6s.
+       <ul><li>The first ground enemy to walk into the wire sets it off.</li>
+       <li>The blast is a cross: 36px each way along the lane and 2 lanes up and down across it. It does 3d6 (plus any flat damage bonuses) at full strength in the middle and half at the ends.</li>
+       <li>It shoves enemies away hard, and its nails make half of them bleed (12 damage over 4s).</li>
+       <li>He only has one out at a time. The explosion animation is the one Kyle sent, with its own boom sound.</li></ul></li>
+      <li><b>Melee timing:</b> his crowbar hit lands 0.15s into the swing instead of the instant it starts.</li>
+      <li><b>Bullets:</b> his shots are the little bullet from his own Ranged animation, not arrows.</li>
+      <li><b>Headshots:</b> a shot that hits inside a target's middle (head) box is a headshot for +50% damage. That multiplies with crits, so a critical headshot from Aimed Shot is 2.5 × 1.5 = 3.75x. Melee can't headshot.</li>
+      <li><b>Inspiration Decks:</b> every bonus is doubled. After you pick one, each part of the bonus is explained in plain words, including what a slider move like "On Track +2" means.</li></ul>
+      <h3>🌲 0.12.3: Flannel_Man, the first real character, plus Inspiration Decks</h3>
+      <ul><li><b>Flannel_Man:</b> every number comes from Kyle's character sheet.
+       <ul><li>40 HP (8 Stamina), 5 armor, 5% dodge and 40% knockback resistance.</li>
+       <li>Crowbar: d12 every 1.5s with 20 reach, and the knockback shoves enemies back.</li>
+       <li>Bolt-action rifle: d8 with 250 range, reloading after every shot (2s).</li>
+       <li>18 Accuracy. Shooting on the move costs 12 accuracy and plays the new walking-fire animation.</li>
+       <li>12% crit for 2x damage, 21 Luck, walk speed 15. He runs at exactly double his walk speed when he charges or retreats.</li>
+       <li><b>Aimed Shot</b> (his first ability): 40 energy, 14s cooldown. It skips the accuracy roll and always lands in the middle (head) box, with +5% crit chance and 2.5x crit damage, and it pierces through one enemy into the next. Damage is the rifle's dice plus any flat damage bonuses, so it grows as those get added. It has a 2-second cast: he stands still and holds a red laser sight on the target. Something reaching crowbar range breaks the cast at no cost. The shot itself is a louder, heavier gunshot than his normal one (his normal shots have a sound now too). He only starts it when he's loaded and standing still.</li>
+       <li>His own animations: idle, walk, run, melee, shoot, reload, hurt, death and walking fire.</li></ul></li>
+      <li><b>Inspiration Decks:</b> on the party screen, pick a player, then one of their decks. Every deck gives a small, unique bonus tied to what that deck does best (the biggest ramp deck gives energy regen, Felothar gives armor, and so on). Slider bonuses that would push a slider past 0 or 10 don't move it.</li>
+      <li><b>Hover a character</b> to see how it fights and its slider bars.</li>
+      <li><b>Energy:</b> base regen is 2.5 every half second.</li>
+      <li><b>Luck</b> is now on a 1–100 scale.</li>
+      <li><b>Enemies:</b> zombies now have 25 HP (was 15) and werewolves 30 HP (was 40). Zombie bleed stays at 20 damage over 5 seconds.</li>
+      <li><b>Runs can be solo.</b> The Spore Runners and Bounty Fiend are retired.</li></ul>
+      <h3>🧠 0.12.2: Crypt Crawl units get personalities, and new aim boxes</h3>
+      <ul><li><b>Behavior AI:</b> every hero and enemy now has 13 personality sliders, each 0–10: Kyle's 10 plus Forgiving↔Vengeful, Pack Hunter↔Lone Wolf and Stoic↔Showoff. A long list of if/then rules uses them to choose who to fight, which lane to use, whether to hold, retreat, kite or charge, when to spend energy and when to show off. The Spore Runners play as a "Frantic Spendthrift" and the Bounty Fiend as a "Giant-Slayer Sharpshooter". Zombies and werewolves have their own values too.</li>
+      <li><b>🧠 button:</b> shows what each unit is thinking: its plan, its target and why.</li>
+      <li><b>Aiming:</b> every target has 3 stacked boxes (top, middle, bottom). A shot rolls a box, then a random height inside it. Zombie: top 40% (over the head), middle 10% (head), bottom 50% (body). The werewolf's boxes change when he rears up to swipe. Each point of Accuracy moves 0.25% of shots from top to bottom and 0.25% from bottom to middle. Shooting while moving costs accuracy; planting your feet adds a little.</li>
+      <li><b>Reflex is gone:</b> the personality decides how a hero handles a marked boss attack. Will it notice the attack, step out or keep swinging, wait until the last second to show off, and step fully clear or come up short? Example: the Bounty Fiend steps out about 93% of the time but slowly. The Spore Runners react only about half the time, but fast.</li>
+      <li><b>Test Power Attack:</b> 30 energy for a 1.8× hit, so the energy sliders do something.</li></ul>
+      <h3>📺 0.12.1: Smarter scoring, a real Pod Sim on an old TV, and seats that face the table</h3>
+      <ul><li><b>Scoring, from Kyle's notes:</b> Suit Up finishers stack with diminishing returns, so Modular Beatdown's Finish drops from 15 to 13. The rest of its Finish is real finishers: damage doublers and extra combats. Recursion stacks with diminishing returns too, so Felothar's Survival goes from 15 to 11. Fogs and damage prevention score higher. Repeatable token makers now count as Survival, since they rebuild after a wipe.</li>
+      <li><b>Commander-aware tags:</b>
+       <ul><li>Kotis gets extra value from double strike (his steal trigger happens twice) and from evasion, because he has to connect.</li>
+       <li>Illuna counts double strikers as mutate bases.</li>
+       <li>Gilgamesh and Korvold value haste givers (an extra trigger the turn they land).</li>
+       <li>Korvold values every free sacrifice outlet.</li>
+       <li>Retagged: Incarnation Technique (demonstrate: two reanimations), Goliath (a turn-7 power-up draws about 3), Spawning Pit, Cursed Recording, Kapsho Kitefins, Surge Conductor, Arcbound Shikari and Havengul Runebinder.</li></ul></li>
+      <li><b>Needs Repair:</b> 4 per deck now, re-picked with Kyle's notes. Each pick is checked against both faces of double-faced cards, so no more suggesting cards you already run. House on Haunted Hill keeps enchantments as enchantments, and Ominous Weather leans toward winter-storm cards.</li>
+      <li><b>Garage:</b> 8 Heavy Hitters and 3 Dreams for every deck, all rewritten from scratch. The Crypt's player blurbs are rewritten too.</li>
+      <li><b>Pod Sim:</b> every game is now played live by the real simulation engine with the real decklists. Big turns show every play, attack and knockout, and knocked-out decks are gone for good. It all plays on a wood-cabinet TV with a VCR deck and VHS-tape deck pickers.</li>
+      <li><b>Life tracker:</b> seats face their edge of the table. 3 players: two stacked plus one on the side. 4: the top two face up. 5: two up, two down, one side. 6: two up, two down, one on each side. Seats are numbered clockwise. The button reads 🎃 Insert Coin for Life Counter.</li>
+      <li><b>Crypt Crawl:</b> trimmed to Kyle's tab and two heroes (The Spore Runners and Bounty Fiend) while the game is rebuilt. Runs in progress were reset.</li></ul>
+      <h3>🃏 0.12.0: Seven new decks, Dice Boys Casino, and four decks retuned</h3>
+      <ul><li><b>New decks:</b> Mothman Cometh! 🦋, Dice Boys Casino 🎰, Build a Scare 👹, Modular Beatdown ⚔️ and Thunder's Decree ⚡ (Kyle), plus Family Matters 🐣 and Cosmic Spider 🕷️ (Leon 🪼). Each one is fully tagged and rated, with its own Rundown and Garage entries, and they all show up on their owner's deck wheel.</li>
+      <li><b>Swaps:</b> The Last of Us (Skullclamp, Grismold, Tom Bert and William, Hansk, Captive Audience, Obsessive Pursuit), Ominous Weather (Cosmic Crucible, Will of the Temur, Interpret the Signs, Sol Ring, Mythic Proportions, Boundless Realms and more), Primary Directive (a 12-card rebuild around Ultron, Mendicant Core and Mechanized Production) and Truly Fantastic (The Ten Rings, Restoration Seminar, Echocasting Symposium).</li>
+      <li><b>Dice Boys Casino:</b> every d20 roller counts as a Mr. House engine (a d20 hits 4+ about 85% of the time), so the dice cards rate higher.</li>
+      <li><b>Pod Sim:</b> re-run for every 4-deck pod across all 25 decks (100 games each), with story lines for every new deck.</li>
+      <li><b>Den of the Dice Boys:</b> the banner up top is now an arcade marquee with chase lights, and it replaces the old Pod Rundown header. The 🎃 Insert Coin for Life Counter button now lives on the banner. Its dice still roll a d20, and the three hidden dice are still out there.</li>
+      <li><b>Needs Repair, rebuilt:</b> every deck's five weak links were hand-picked again from its game plan and its weakest stats. Removal and politics cards are no longer flagged just for being off-plan. Each one now shows four swaps: 🪙 two super budget (under about $2.50), 💵 one medium ($5–20) and 💎 one any-cost pick, backed by each commander's EDHREC inclusion and synergy numbers.</li>
+      <li><b>Equipment and Auras:</b> each one is now tagged by what it actually does. Utility gear (no keyword and a small or no power boost) no longer counts as a finisher, so decks like Modular Beatdown lost a few Finish points.</li>
+      <li><b>The Crypt:</b> each player's "About" blurb is rewritten to cover their new decks.</li>
+      <li>The pod now has 25 decks, so every stat is re-rated against the bigger field: some older decks moved a point or two even though their lists didn't change.</li></ul>
+      <h3>🎲 0.11.0: The Dice Boys move in, smarter aiming, and units that turn around</h3>
+      <ul><li><b>The Dice Boys' Hangout:</b> a new banner up top for the pod. Click its dice to roll a d20, and see if you can find the three hidden dice around the site.</li>
+      <li><b>Deck wheel filter:</b> each player's wheel in The Crypt has a <b>🎛️ Decks on the wheel</b> list. Untick the decks you didn't bring and the wheel only spins those; <b>↺ Reset</b> puts every deck back. Your picks are remembered on this device.</li>
+      <li><b>Player key</b> is just the emoji now (Cheez = 🧀 · Leon = 🪼), and the Top five cards box is gone from the Rundown. Heavy Hitters still lives in the Garage.</li>
+      <li><b>Pod Sim stories</b> are cleaner: the quiet early and middle turns are short, one line per player in turn order, and every turn where someone falls is told play by play, seat by seat.</li>
+      <li><b>Crypt Crawl, aiming:</b> ranged shots now use a reticle laid over the target where it stands. It's 3× the target's height and starts at the feet when close, the waist at medium range and the chest when far. Shots bunch toward its bottom and toward the middle side to side. A miss can still hit whatever body it flies through. Enemy archers will aim the same way, and shots can be set to pierce through several bodies.</li>
+      <li><b>Crypt Crawl, bodies and facing:</b> every hero and monster has a hitbox its own size. Heroes and monsters turn around when their target is behind them (it takes a moment, and they can't swing mid-turn). The werewolf can no longer hit the middle of the line from the far side: it has to turn, walk over and actually reach its target.</li>
+      <li><b>Crypt Crawl, energy:</b> every unit now has an energy bar (100, refilling 10 a second) for the abilities to come. Health bars got a frame with a tick every 10 HP, a yellow energy bar under the heroes' health, and little status pips for bleed, burn, slow, stun, shield and buffs.</li></ul>
+      <h3>📱 Sideways on phones, a bigger-faced life tracker, and longer stages</h3>
+      <ul><li>Crypt Crawl and the life tracker now snap sideways on a phone held upright, filling the screen in landscape (⟳ toggles it). The ⛶ button uses real full screen where the browser allows it (Android) and falls back to the sideways view (iPhone).</li>
+      <li>Life tracker: each panel has its buttons stacked on the left (+5, +1, −1, −5), the name with the life total under it, and the status-bar face filling the rest of the panel. The who-goes-first cards use the classic card back.</li>
+      <li>Crypt Crawl stages last about twice as long (about twice the monsters), each worth about half the XP. The Geode Golem now opens with <b>Seismic Slam</b>, a melee shockwave.</li></ul>
+      <h3>💰 Crypt Crawl: gold, gear score, a boss-time merchant, and a smarter battlefield</h3>
+      <ul><li><b>Gold:</b> monsters sometimes drop gold piles your party scoops up as it walks over them (elites always, bosses a big pile). Gold belongs to the save and is kept even when a run ends.</li>
+      <li><b>Items</b> no longer come from level-ups (those are skills only). They drop rarely: basic monsters only up to Uncommon, elites up to Rare, bosses always drop one; odds improve the deeper you go. After every boss win a <b>🛒 Merchant</b> sets up at camp with better stock (Uncommon or better, a good shot at Rare, Legendary once unlocked), plus restocking and honing (+1 rank). Spare items in the backpack can be sold.</li>
+      <li><b>Gear Score:</b> every item shows a GS from its rank and how deep it was found (deeper items are a little stronger); each hero shows their Gear total at camp.</li>
+      <li><b>Positions:</b> ranged heroes stand 2/10 across the screen, melee heroes 4/10, ranged summons 5/10, melee summons 7/10.</li>
+      <li><b>Summons</b> now swing and shoot with real attack animations, flash when hit, show a small health bar, and take damage: melee monsters attack whatever summon is in their way when no hero is close, and some flyers go after summons.</li>
+      <li><b>Flankers:</b> hounds, wolfmen, ghouls and spiders try to slip past the front line and attack your ranged heroes; melee heroes can turn on monsters behind them and ranged heroes shoot backwards.</li></ul>
+      <h3>⭐ Crypt Crawl: the stranger or a blessing</h3>
+      <ul><li>Every run that clears stage 6 with fewer than 3 heroes meets the mystery stranger: take them into the party, or leave them be for a ⭐ Blessed Upgrade (each option is Uncommon or better, about a 40% shot at Rare each). Leaving them is permanent for that save: it stays a 2-hero party, and later runs that clear stage 6 get the blessing again. Players with no other heroes to add get the blessing automatically (and can still take a third hero later once they have one). Every save, new or old, starts at 2 heroes; the third spot opens only when you save the stranger.</li></ul>
+      <h3>⚠️ Crypt Crawl: telegraphed boss attacks, Reflex, and livelier heroes</h3>
+      <ul><li>Heroes shuffle around on their own like a beat-'em-up (more while standing and fighting), which can carry them clear of danger by luck.</li>
+      <li>Big boss moves now mark the ground first with a pulsing zone: the Gravelord's Grave Slam (green), the Countess's Blood Rain (red, two spots) and the Maw's tentacles (purple). Whoever is still inside when it lands takes the hit.</li>
+      <li>New hero stat <b>Reflex</b> (REF on the hero cards): the chance to notice a marked zone and how fast they step out of it. It comes from the deck's Mana and Politics ratings plus how quick the hero is on their feet. It never guarantees a dodge: the reaction chance has diminishing returns (tops out near 65%), reactions can come late, and a step can come up short. In testing, heroes avoid a hit aimed right at them roughly 30–45% of the time.</li></ul>
+      <h3>🎒 Crypt Crawl: loadouts, a backpack, and summons with personality</h3>
+      <ul><li>Each hero has ability slots (2, then 3 at hero level 5, 4 at level 12), passive slots (1, then 2 at level 8) and 2 item slots. New picks that don't fit go into a shared 6-space backpack; at camp you can move things between the backpack and each hero (skills stay with the hero whose deck they came from; items fit anyone). Bagged gear can still roll upgrades.</li>
+      <li>Parties start with 2 heroes. The first time a save clears stage 6 you free a <b>mystery stranger</b> from the castle cells: pick which of your other heroes it turns out to be, they join the run right away (with 2 bonus upgrades), and that save can bring 3 heroes from then on.</li>
+      <li>Summons: melee summons hang about 3/4 across the screen and charge in; ranged summons hold the middle and shoot. Early summons make one creature and only one per ability is out at a time; higher ranks allow two, then three. Each hero's summon behaves differently on recast: Empower (grows the one out), Mend (heals and refreshes it), Volatile (the old one explodes), Swarm (two smaller ones), or Linger (lasts 18s).</li>
+      <li>Shots leave from each hero's weapon (bow hand, crossbow, staff orb, cannon, breath) in time with the strike frame. Hero cards say which deck inspired them.</li></ul>
+      <h3>🏃 Crypt Crawl: walking speeds, bigger hordes, and saves that survive updates</h3>
+      <ul><li>Heroes walk at their own pace (stone and armor slow, rogues and archers quick): fast ones drift to the front while marching and slow ones lag a little; the party's pace is the team average. Summons sprint ahead to meet monsters before the line and hold them up.</li>
+      <li>About 50% more monsters, mostly melee (a few fewer archers/casters), each a bit squishier and worth about a third less XP. Monsters now arrive as you advance, with only a trickle while you're held up; long stalls make monsters (and bosses after 90s) grow fiercer so fights always end.</li>
+      <li>The scout patrols wider and faster and pounces more often; Brick Toss no longer knocks back but stuns for 0.75s on a 7s cooldown.</li>
+      <li>Saves carry over game updates: hero levels and bests always stay; a run in progress keeps its spells/items, and anything that was changed or removed is swapped for the closest match at the same rank.</li></ul>
+      <h3>🏹 Crypt Crawl: slower, bigger shots and real ability names</h3>
+      <ul><li>Ranged heroes and casters fire about a quarter slower, and every projectile flies slower and is drawn bigger: real arrows, glowing orbs, ice spikes, crystal shards, plasma, lit shells. Multi-shot abilities fire fewer shots, spaced out (Volley 3 arrows, Shard Storm 2 shards, Mortar 2 shells).</li>
+      <li>Spells now have ability names themed on each deck (Grave Smite, Storm Burst, Forge Barrier, Glacial Grip…) instead of creature names; the card that inspired each one shows underneath. Items keep their card names.</li></ul>
+      <h3>🔍 Crypt Crawl: double-detail art, a roaming scout, and depth</h3>
+      <ul><li>All heroes, monsters and bosses now render at double resolution, so faces, belts, straps, pouches, quivers and boot cuffs show up.</li>
+      <li>The Spore Runners' scout is now a companion: she can't be targeted, roams around her partner shooting her bow, now and then pounces onto the front enemy with a knife, and lobs Brick Toss as their signature. She's drawn shorter and he's a bit taller.</li>
+      <li>Monsters stand on slightly different depth lanes, so they don't stack perfectly on top of each other; small creatures take the front lanes.</li></ul>
+      <h3>🗡️ Crypt Crawl: sharper heroes and partners that fight on their own</h3>
+      <ul><li>Every hero and monster was redrawn: more natural proportions, clean three-tone shading with crisp outlines, and new idle, flinch-when-hit and fallen frames (fallen heroes stay on the field, slain monsters drop before fading). Melee swings leave a crescent trail.</li>
+      <li>Every hero now has a built-in ⚡ signature ability on its own cooldown (Royal Cleave, Shield Wall, Rocket Hammer, Volley, Brick Toss, Blizzard…), cast automatically like everything else. The Spore Runners' scout now shoots a bow; the brick is their signature. A ↺ button restarts the current stage from its save point.</li>
+      <li>Partner decks are now two fighters with their own attacks: the ranged partner keeps throwing or casting at range while the melee partner only swings when something is in reach.</li></ul>
+      <h3>🔑 Crypt Crawl: PIN reset + six new monsters</h3>
+      <ul><li>Kyle's saves screen has a PIN reset: it clears a player's PIN on that device (their saves stay) so they can pick a new one. New enemies: ghouls and skull-throwing cultists in the graveyard, haunted knights (armored) and wolfmen in the castle, leeches and bog hags in the abbey.</li></ul>
+      <h3>⚰️ Crypt Crawl: a side-scrolling auto-battler</h3>
+      <ul>
+        <li>A pixel strip above the tabs shows a party marching through the crypt; tap <b>▶ PLAY CRYPT CRAWL</b> to open the full game (works on phones, with a full-screen button).</li>
+        <li>Each player (🎩 Kyle, 🧀 Cheez, 🪼 Leon) has a 4-digit PIN and 3 save slots. Pick up to 3 heroes from your own decks; each deck is an original pixel hero built from its theme, partners fight as a duo, and stats come from the deck's ratings.</li>
+        <li>Heroes walk and fight on their own. Between stages you camp at a save point, spend level-ups (pick 1 of 3: new spells, items, upgrades or augments, rolled Common / Uncommon / Rare), then press Begin. Spells and items are named for real cards in that deck; about half the items carry a "chance on…" or triggered effect.</li>
+        <li>Three biomes (Hollowmere Graveyard, Castle Sanguine, The Drowned Abbey), a boss every third stage, 9 stages, then Prestige to loop with tougher monsters. Hero levels stay with the save (with catch-up XP); the run's loadout is lost when the party falls. Heavy hits knock enemies back.</li>
+      </ul>
+      <h3>🌕 A creepier night sky</h3>
+      <ul><li>The header's green orb is now a pixel-art moon with dithered craters and a sickly glow, ragged clouds drifting across it, a dead branch clawing in from the corner, pixel bats with red eyes flapping across the sky, and rolling ground fog along the bottom.</li></ul>
+      <h3>😬 Real status-bar faces in the life tracker</h3>
+      <ul><li>Each life panel now uses the classic status-bar face sprites: five rows from healthy to beat up as life drops, forward-facing faces show how healthy you are and keep looking around on their own; taking damage snaps the head to the side (plus a shocked face on a big hit: 10 at once, or 5+ in a burst); gaining life grins; at 0 life each knocked-out player gets their own death face, in order: skull and crossbones, pile of bones, rotting zombie, half skull, then a tombstone (Reset starts the order over).</li></ul>
+      <h3>💀 A meaner skeleton</h3>
+      <ul><li>The corner skeleton got redrawn: a real skull with glowing green eye sockets and a hat, a red bandana, an open duster coat over the ribs and spine, bony hands, jeans and boots, on a wooden chair. Same routine: a long drag with a glowing tip, smoke puffs and a ring, head bobbing to the music, then rocking back and tapping his boot.</li></ul>
+      <h3>🃏 Who goes first?</h3>
+      <ul>
+        <li>The life tracker has a <b>🃏 Who goes first?</b> button: one face-down card is dealt to every player from a stack of Treasure tokens (real Treasure token art) plus one Piss Boy. The cards flip, and whoever drew Piss Boy goes first: their panel glows, gets a bouncing crown, a big PISS BOYYYY! banner, a party-popper and party-horn sound (if sound is on) and a burst of confetti.</li>
+      </ul>
+      <h3>⚰️ The Crypt + a life tracker</h3>
+      <ul>
+        <li>The Spinner page is now <b>The Crypt</b>: a tab for each player (🎩 Kyle, 🧀 Cheez, 🪼 Leon, and any new player automatically) with their haunted deck wheel (jack-o'-lantern hub, bone pointer, flickering candle lights, bats on the result), a short write-up of how they play, a 3D coin flip (🎃 heads / 💀 tails) and a dice roller: D4, D6, D8, D10, D12, D20 and D%, 1-12 at a time, as tumbling bone dice (the D6 has skull pips).</li>
+        <li><b>🎃 INSERT COIN</b> at the top now opens a <b>life tracker</b>: 3-6 players, everyone starts at 40, big −10 / −1 / +1 / +10 buttons, a running +/− tally, tap a name to rename it, ⇅ to flip a panel for the player across the table, a full-screen button for phones, and it remembers the game if you close it. Each panel has a pixel-art status-bar face that gets bruised and bloodied as life drops, winces when hit, grins when healed, glances around, and turns into a grey skull at 0.</li>
+        <li>A chill skeleton in shades and a leather jacket kicks back in his chair: in the left margin on wide screens, in the header corner on smaller ones (never over the charts). He takes a drag, blows smoke rings, bobs his head to the music, then rocks the chair and taps his foot.</li>
+      </ul>
+      <h3>🎲 Pod Sim endings come from 306,000 simulated games</h3>
+      <ul>
+        <li>Every possible pod of four (3,060 of them) was played 100 times with the real decklists by a card-level engine: lands, ramp, commanders and tax, casting by mana value, Equipment paying its equip cost (or not, with Bruenor or Kíli), removal and wipes, combat with blocks, and commander damage.</li>
+        <li>Each pod keeps its most common outcomes (who wins, who falls in what order, who knocks them out, on which turn), up to seven per pod. PLAY picks one at random, more likely the more often it happened, and never the same one twice in a row; the story lines are re-rolled every time too. The ending says how often it came up.</li>
+        <li>The engine is rough (it loves Felothar's walls and Depala's Equipment, and undersells The Grim Throne's cheats and House on Haunted Hill's doors), so each winner's chance is scaled so the deck's overall win rate leans toward what its rating says. Matchups still come from the sims.</li>
+        <li>The ending-number buttons are gone: it's a new game every press.</li>
+      </ul>
+      <h3>📐 Rules 0.10.19: blue ratings in every stat</h3>
+      <ul>
+        <li>Every stat (except Mana, which keeps its fixed divide of 4) now rates against the second-best deck = <b>11</b>, so the top one or two decks in each stat show up blue (10+). Totals rise 1.5–5 points: Grim 70 → 75, Vile Smashing 65.5 → 68.5, Felothar 65.5 → 68, Kykar 61 → 66.5.</li>
+        <li>"Me" is now <b>Kyle</b> everywhere on the site (🎩 Kyle on the spinner and the Show filter).</li>
+      </ul>
+      <h3>📜 Pod Sim: story mode with five endings per pod</h3>
+      <ul>
+        <li>The sim now tells the game as a story built from hand-written lines for all 18 decks: their real early plays (cheap rocks, dorks and 1-3 drops), mid-game commanders and engines at the right mana, removal aimed at each other's key cards, deck-vs-deck moments (one-sided wipes vs. tokens, fliers over walls, life swaps on a lifegain deck...), and finishers.</li>
+        <li>Each game runs as an <b>Early game</b> rundown (turns 1-3), a <b>Mid game</b> rundown (turns 4+), then the <b>last three turns played out</b>: swings, blocks, saves, knockouts and the final blow, with an ending title (Flawless Sweep, Comeback, Commander Damage, Speed Run, Last One Standing, Photo Finish).</li>
+        <li>Every pod of four (3,060 of them) has <b>five endings of its own</b>: always the same five for the same four decks, with different winners and stories. Pick 1-5, press PLAY for a random one, or 📜 ALL 5 ENDINGS to see who wins each.</li>
+        <li>No duplicates: picking the same deck twice blasts the screen with old-TV static and swaps one of the copies for a random deck not in the pod.</li>
+      </ul>
+      <h3>🦇 Blood Suckers: Bats are off the chopping block</h3>
+      <ul>
+        <li>Needs Repair never lists a Bat, or a card that makes or cares about Bats, for Blood Suckers. The five picks now are Campaign of Vengeance, Epicure of Blood, Path of Bravery, Diresight and Fracture, each with a budget and an any-cost swap.</li>
+      </ul>
+      <h3>🎃 Spooky retro theme</h3>
+      <ul>
+        <li>The site goes Castlevania × Halloween: acid-wash green and blood red on a midnight stone background, a gothic title, a glowing green moon, flapping bats, a jack-o'-lantern and candles, plus pumpkin, poison-green and violet spinner wheels. The pixel font, scanlines and CRT screen stay.</li>
+      </ul>
+      <h3>🕹️ Pod Sim plays real Magic now + 8-bit wheels</h3>
+      <ul>
+        <li>The sim now shuffles each deck's <b>real list</b> (lands, spells and commanders) and plays it turn by turn: a 7-card opening hand with a free mulligan for 0–1 or 6–7 lands, one land a turn, ramp adding mana, and spells cast only when you can pay their mana value. Commanders come down when affordable, go back to the command zone when removed and cost 2 more each time (commander tax).</li>
+        <li>Creatures have summoning sickness and can't attack the turn they land. Vehicles need crew. Evasion gets damage through, blockers trade or chump, and 21 commander damage knocks a player out. Removal goes after the biggest threat or a commander. Wipes only come out when you're behind (one-sided wipes like Slaughter the Strong keep your own board). Extra combats, damage doublers and overruns work like they should, and Felothar's walls hit for their toughness.</li>
+        <li>Every seat has a 🎲 die to roll a random deck, plus a dropdown to pick one. 🎲 ROLL ALL 4 rerolls the whole pod.</li>
+        <li>The spinner wheels went 8-bit: neon slices with black outlines, pixel lettering, square marquee lights, a pixel pointer and a SPIN button.</li>
+      </ul>
+      <h3>📐 New page: Stat Breakdown</h3>
+      <ul>
+        <li>One tab per stat (plus Ratings math): what it measures, every card formula written out, the deck-level checks, how the rating is worked out, and the whole pod's standings in that stat. Click any deck to open it.</li>
+        <li><b>Needs Repair</b> now only lists cards worth replacing (no more "keep"), and each one has two swaps: 💰 a budget pick and 💎 an any-cost pick, all in the deck's colors and not already in the list.</li>
+      </ul>
+      <h3>🗡️ Rules 0.10.16: pump Equipment and Auras (Suit Up)</h3>
+      <ul>
+        <li>New <b>pump</b> formula for Equipment and Auras that boost one creature. <b>Threats</b>: Board Power on that creature (double strike or power doubling adds its power again). <b>Equipment</b> loses 0.05 per equip mana above 2, but gets +0.15 Survival because it moves to the next creature. <b>Auras</b> count x0.8 (removal takes both cards) unless they protect themselves (Rancor, Demonic Embrace).</li>
+        <li><b>Finish (Suit Up)</b>: when one suited-up creature hits for 6+, the card is also a finisher (x0.5 since it still has to connect). The carrier's power is the deck's usual one: 3 by default, 4 for Depala's pumped Dwarves and Felothar's walls, 5 for Kotis.</li>
+        <li><b>Suit-up stack</b> (deck check): 4+ pump Equipment/Auras plus double strike sources add +0.25 Finish per double strike card (max 6). <b>Free equips</b>: decks with Bruenor, Kíli or other equip-cost cutters get the equip penalty back.</li>
+        <li>Finish bar lowered a bit (second-best deck = 11) as the new finishers join.</li>
+        <li>Moves: <b>Tame Depala 55 → 62</b> (Finish 1 → 7, #14 → #6), <b>Armed Robbery 53 → 60.5</b> (Finish 4 → 11), Felothar 64.5 → 65.5. Most others dropped 1–2 points since the Finish bar moved.</li>
+      </ul>
+      <h3>🕹️ New look + Pod Sim</h3>
+      <ul>
+        <li>The whole site got an 8-bit acid-punk arcade skin: pixel font, neon acid green / hot pink / cyan, pixel grid, CRT scanlines and a glitching title.</li>
+        <li><b>Pod Sim</b> page: pick four decks (or roll a random pod), press PLAY, and watch a made-up game play out turn by turn on a CRT screen, built from each deck's ratings, key cards, commander and win plans. Endings change every run: Flawless Sweep, Comeback, Speed Run, Last One Standing or Time Called. RUN 1,000 GAMES shows who wins most often (seats shuffled). It's a rough model for fun, not a real game engine.</li>
+      </ul>
+      <h3>🎡 New page: Deck Spinner</h3>
+      <ul>
+        <li>One game-show wheel per player, one slice per deck they've added (equal odds). Hit SPIN in the middle of a wheel, or 🎰 SPIN EVERYONE to pick the whole pod's next game at once. New players get a wheel automatically when their first deck goes up.</li>
+        <li>New <b>Show</b> filter above the ratings: All decks, 🎩 Kyle, 🧀 Cheez or 🪼 Leon. It filters the ratings table and the deck tabs (ranks stay pod-wide).</li>
+      </ul>
+      <h3>🧱 Four new decks: Felothar, Thranduil 🪼, A Vile Smashing, Tame Depala</h3>
+      <ul>
+        <li><b>🧪 A Vile Smashing</b> (Ishai + Vial Smasher wheels and burn) lands at <b>66.5</b>, #2 of 18: huge card flow from the wheels, plenty of edicts and wipes.</li>
+        <li><b>🧱 Felothar</b> (Abzan walls that hit for toughness) is <b>64.5</b>, #4: Survival is maxed out from all the recursion, and the power-based wipes are one-sided because the walls have 0 power. On walls, Threats are scored on toughness.</li>
+        <li><b>🧝 Thranduil 🪼</b> (Leon's Sultai Elves) is <b>56.5</b>, #9: top-tier Mana from the Elf dorks, but Reach is 1 (no evasion) and removal is low.</li>
+        <li><b>⚒️ Tame Depala</b> (Boros Dwarves, Vehicles and Equipment) is <b>55.0</b>, #14: strong Threats and Consistency, weak Cards and Mana, and creature removal is low.</li>
+        <li>Each deck got every card's text saved, full tags, Plan Tags (C/T) and synergy groups, two review passes, a Takeaway, land notes and Needs Repair picks with swap ideas.</li>
+        <li>Because ratings are relative, adding four decks moved the divides: the old decks dropped about 1–4 points each (Grim 74.5 → 71, Thing 68.5 → 65.5).</li>
+      </ul>
+      <h3>🔍 Tag audit: every deck, tag by tag</h3>
+      <ul>
+        <li>Checked all 14 decks one tag at a time (ramp, draw, tutors, selection, answers, survival, drain, politics, finish, tokens, team pumps, second life, evasion), matching each card's saved text against its tags. 29 missed tags added; everything else the check flagged was reviewed and is already covered.</li>
+        <li><b>Evasion</b> on creatures that had none: Thrakkus, Ghostly Dancers, Knight of Dusk's Shadow, H.E.R.B.I.E. Scout Unit, Crystal, Cadira, Rat King, Ray Fillet, Ice-Fang Coatl.</li>
+        <li><b>Answers</b>: Niv-Mizzet's pings, Goblin Bombardment (Last of Us and Korvold) and Judith can also kill small creatures.</li>
+        <li><b>Survival</b>: Walking Skyscraper's hexproof (Mech and Primary Directive), Carnage Tyrant's hexproof, Galactus's indestructible, Stormbreath's protection, Gate Colossus coming back.</li>
+        <li><b>Politics</b>: gift cards (Crumb and Get It, Starfall Invocation) and Skyline Despot's monarch.</li>
+        <li><b>Finish</b>: Human Torch spreading his damage to every opponent, The Incredible Hulk's extra combats. <b>Team counters</b>: Unbreakable Formation's addendum (Blood Suckers and Kykar). Plus Lunar Convocation's Bats, Lessons from Life's land drop and Level Up's draw.</li>
+        <li>Totals that moved: Thing 66.5 → 68.5, Turtle 58 → 60.5, Double Dragons 65 → 66, Blood Suckers 55 → 56, Ominous Weather 52 → 53.</li>
+      </ul>
+      <h3>🤖 New deck: Primary Directive 🪼 (Leon's Optimus Prime robots)</h3>
+      <ul>
+        <li>Leon's Jeskai robot deck joins at <b>59</b> (#8 of 14). Leon's decks are marked with 🪼.</li>
+        <li>Cut from the 116-card list to 100, keeping robots first (by artwork), at least 15 ramp and 15 draw, every Iron Man, Master Transmuter, Braided Net, Kappa Cannoneer, all +2/+2 anthems, all recursion, Edgar, Shimmer Dragon, Insight Engine, Promise of Loyalty and Etherium Sculptor. Cuts: Single Combat, Solar Blaze, Page, Loose Leaf, Loreseeker's Stone, Flux Channeler, Ray Fillet, Wave Warrior, Season of Weaving, Wizard's Staff, The Everflowing Well // The Myriad Pools, Clay-Fired Bricks // Cosmium Kiln, Reality Heist, Sentry Bot, Super-Adaptoid, Vision, Spectral Synthezoid, Vulshok Factory, Thopter Shop.</li>
+        <li>76 new cards saved with full text, tagged, Plan-Tagged (C = artifact creatures and counters for Optimus to bolster, T = the artifact engine) and grouped (Robots & artifact creatures, artifact payoffs, counters, Iron Man suits), then reviewed until a pass needed no changes.</li>
+        <li>Flags: removal is low (seven cards, counting Promise of Loyalty), and 8 lands enter tapped.</li>
+      </ul>
+      <h3>📈 Rules 0.10.14: Boosts for the lower decks</h3>
+      <ul>
+        <li><b>Vehicles dodge creature wipes</b> (all decks): every Vehicle gets +0.15 Survival. Mechanized Mayhem runs 18: Survival 2 → 5, total 53 → 56.</li>
+        <li><b>Alpha-strike enablers count as Finish</b>: tapping every blocker (Cone of Cold, Sleep, Icy Blast) and overruns (Become the Avalanche) are one-turn lethal setups. Ominous Weather's Finish 1 → 4, total 49 → 52.</li>
+        <li>Chandra's Ignition now also counts as a Finish in Korvold (a huge Korvold hits each opponent for his power): Finish 3 → 4, total 57 → 58.</li>
+        <li><b>Air density</b> multiplier 0.40 → 0.60: Blood Suckers' Threats 4 → 5, total 54 → 55.</li>
+        <li>None of the top seven decks moved.</li>
+      </ul>
+      <h3>🗡️ Rules 0.10.13: Threats bar a smidgen lower</h3>
+      <ul>
+        <li>The Threats "10" is now set at the second-best deck's points ÷ 10.5 (was ÷ 10), so every deck needs about 5% fewer points per rating point.</li>
+        <li>Moved: Grim 73.5 → 74.5 (Threats 9 → 10), Thing 65.5 → 66.5, Double Dragons 64.5 → 65 (Threats 11 → 12), Mechanized Mayhem 52 → 53. Everyone else stayed put.</li>
+      </ul>
+      <h3>🐲 Rules 0.10.12: Big threats and copy engines</h3>
+      <ul>
+        <li><b>Tall threats</b>: the mana penalty is now −0.08 per mana <b>above 3</b> (was −0.10 per mana above 1). A 4/4 flier for 6 went from 0.15 to 0.41; a 12-power fatty for 7 went from 1.25 to 1.53. Big creatures count for more across the pod, so the deck that sets the Threats "10" moved too.</li>
+        <li><b>Commander copy engine</b> (all decks): if the commander makes a token copy of each creature of a kind that enters, those creatures (its Plan Tag C cards) count their Tall threat ×1.5. Today that's Miirym: every Dragon comes in twice. Double Dragons' Threats 9 → 11.</li>
+        <li>Fixed three missing Tall tags in Double Dragons: Kura, Lozhan and Draconic Muralists.</li>
+        <li>Totals that moved: The Grim Throne 74.5 → 73.5 · Kykar, Zada & Feather 69 → 67 · Truly Fantastic 67.5 → 65.5 · Double Dragons 65 → 64.5 · House on Haunted Hill 61.5 → 59.5 · The Last of Us 60 → 59 · Turtle Power 59 → 58 · Armed Robbery 57 → 56 · Blood Suckers 55 → 54 · Mechanized Mayhem 55 → 52 · Ominous Weather 50 → 49. Card rankings, best/weakest cards and Needs Repair picks were all recomputed.</li>
+      </ul>
+      <h3>🦇 Rules 0.10.11: Quick Air</h3>
+      <ul>
+        <li>Small evasive creatures (too small to count as a Tall threat) now add to <b>Threats</b>: +0.10, +0.05 per power (up to 3), and +0.10 for each mana under 3. A 1-mana 1/1 flier gets +0.35; a 3-mana 2/2 flier gets +0.20.</li>
+        <li><b>Air density</b> (deck check): Threats + 0.40 × (number of small evasive creatures ÷ their average mana value; 0.60 since 0.10.14). Lots of cheap fliers come out in bunches: Blood Suckers' 25 at an average of 2.8 mana gets +3.5; a deck with 4 at 4.5 mana gets +0.4.</li>
+        <li>Biggest change: Blood Suckers' Threats 3 → 5. Double Dragons and Mechanized Mayhem go 8 → 9; everyone else moves a fraction.</li>
+      </ul>
+      <h3>❄️🦇🐲🐉 Rules 0.10.10: Four new decks + Needs Repair fixes</h3>
+      <ul>
+        <li><b>New decks:</b> Ominous Weather ❄️ (Isu snow tap-down, 50), Blood Suckers 🦇 🧀 (Zoraline Bat lifedrain, 53), Double Dragons 🐲 🧀 (Miirym Dragon copies, 64) and Korvold Eats Everything 🐉 🧀 (Korvold sacrifice, 57). That's 13 decks.</li>
+        <li>227 new cards saved with their full text, then tagged, Plan-Tagged (C/T) and grouped, then reviewed card by card until a pass needed no changes. Each deck has its own synergy groups: snow permanents and tap-downs; Bats and life-gain drains; Dragons and Dragon payoffs; sacrifice outlets, death payoffs and tokens.</li>
+        <li>Snow-Covered basics now count as basic lands.</li>
+        <li><b>Needs Repair</b> in the Garage now gives a <b>🛠️ Fix</b> for every card it shows: a swap that fits the deck's colors and plan, or a reason to keep it.</li>
+        <li>With 13 decks, the second-best deck in each stat (which sets "10") changed, so the old decks moved a little: Grim 74.5, Kykar 69, Thing 67.5.</li>
+      </ul>
+      <h3>👑 Rules 0.10.9: Commander engines</h3>
+      <ul>
+        <li>A <b>cheat effect on a commander</b> (or secret commander) is the deck's planned strategy and always on hand, so it now counts toward <b>Consistency</b> instead of Mana. This applies to every deck. Right now it moves Dr. Eggman's free drops and Marina Vendrell's ETB.</li>
+        <li>Cheats now carry <b>odds</b>: 100% when you decide, <b>50% when an opponent picks</b> (villainous choices, punishers). The value is scaled by the odds.</li>
+        <li>A commander cheat that <b>repeats every turn</b> also boosts Hit-Rate: every card it can put into play (its Plan Tag C cards) gets <b>+0.5 × odds</b> extra weight. Eggman (repeats every turn, 50%) gives +0.25 to each Robot, Construct and Vehicle.</li>
+        <li>Changes: Mechanized Mayhem Mana 10 → 7, Consistency 8 → 9, Threats 7 → 8, total 54 → 56. House on Haunted Hill Mana 12 → 11, Consistency 8 → 9, total 63 → 63.5.</li>
+      </ul>
+      <h3>🔗 Rules 0.10.8: Synergy groups</h3>
+      <ul>
+        <li>Each deck has 3–5 <b>synergy groups</b>, both creature types and non-creature themes (e.g. Grim: craft types, huge creatures, graveyard; Thing: noncreature spells, counters, extra combats, spell payoffs, trigger copiers, extra-draw package; Marina: Rooms, Curses, enchantment payoffs, Spirits; Mech: Robots &amp; Constructs, Vehicles, artifact payoffs; Kotis: auras &amp; equipment, mutate, combat-damage triggers, casting opponents' cards; Joel: Fungus &amp; Saprolings, death triggers, sac outlets; Turtle: tokens, counters, Food, Ninjas &amp; Turtles; Kykar: instants &amp; sorceries, spell payoffs, spells that target your own creature, fliers; Mathas: life payment, life swaps, bounty, pillowfort).</li>
+        <li>Every card in a group gets a tiny bonus: <b>+0.005 per other card in the group</b>, max +0.15 per group, max 2 groups per card. Each group pays into the stat where it lands (types and tokens → Threats, death triggers → Reach, Curses and pillowfort → Politics, Rooms and enchantress → Cards, artifact payoffs → Mana…).</li>
+        <li>Then every deck got two more card-by-card passes over Plan Tags and group fits: fixes include Silver Surfer (finds Galactus), Condemn and the wipes for Mathas's bounties, Enchantress's Presence and Sanctum Weaver as enchantress cards, Felix and Baleful Eidolon for Kotis, Rites of Flourishing in Thing's extra-draw package, and Aqueous Form's scry cut down (it was over-scored).</li>
+      </ul>
+      <h3>🧩 Rules 0.10.7: Plan Tag</h3>
+      <ul>
+        <li><b>Plan Tag</b> replaces Feeds the Plan and the hand-picked plan lists. Every card is checked from its own text: <b>C</b> = works alongside the commander (Robots, Constructs and Vehicles for Dr. Eggman; Dinosaurs, Merfolk, Pirates, Vampires and changelings for The Grim Captain; noncreature spells for The Thing and Kykar; auras and equipment for Kotis; tokens for Leonardo and Joel; bounty and removal for Mathas; Rooms and enchantments for Marina). <b>T</b> = fits the deck's main plan beyond the commander (big-creature cheat, spell payoffs, life as a resource, enchantress and Curses, artifact payoffs, mutate, aristocrat drains, go-wide pumps, spellslinger pings).</li>
+        <li><b>Card value:</b> +0.15 (or +0.25 if it does it every turn), +0.05 more with both tags. It goes where the synergy really lands, often a weak stat: The Thing's spells → Threats, Kykar's spells → Mana (Spirits sacrifice for red), Kotis's gear → Threats, Eggman's Robots → Mana (free to put in), Joel's tokens → Cards and the drain pile → Reach, Mathas's bounties → Cards. Otherwise the card's best stat.</li>
+        <li><b>Hit-Rate</b> now uses the tags: both tags 1, one tag 0.5, plus tutors and selection; 3 × the odds of seeing two in your first 10 cards + 1 × the odds of three.</li>
+        <li><b>Plan B</b> counts T-tagged cards (they work without the commander): 1.5 × the odds of seeing two in 10 cards.</li>
+        <li>Swing's mana penalty is now −0.07 per mana above 3.</li>
+      </ul>
+      <h3>🔄 Rules 0.10.6: Swing Factor</h3>
+      <p>New <b>Swing</b> tag in <b>Threats</b> for cards that can suddenly flip the standing of a game: Small (one player's spot flips) 0.25, Medium (a player's life or board turns around) 0.5, Large (the whole table resets) 0.75; +0.5 if repeatable, +0.25 at instant speed, −0.05 per mana above 3 (−0.07 from 0.10.7). Examples: Axis of Mortality and Soul Conduit (life swaps), Reverse the Sands, Tragic Arrogance, Quietus Spike, White Sun's Twilight, Rise and Shine. Life Swappin' Threats 1 → 3.</p>
+      <h3>📖 Rules 0.10.5: full card-text review</h3>
+      <p>Every card was re-read from its saved official text and missing tags were added. New: <b>Rebound</b> counts its free second cast at ×0.8 (Recurring Insight, Invisible Force Field, It's Clobberin' Time!). Biggest fixes: Sorcerer Class level 3 burns every opponent per spell, Secret Arcade turns every permanent into an enchantment for the enchantress engines, Tendershoot Dryad's city's blessing makes Saprolings 3/3, Tezzeret's Gatebreaker digs 5, Altar of the Wretched crafts a huge creature and comes back from the graveyard, Majestic Metamorphosis with Zada turns the team into 4/4 fliers, Jinnie Fay turns every token (even Food and Treasure) into a 2/2 or 3/1, plus Maskwood Nexus, Mirror Entity and Taurean Mauler now feed the Throne's craft. About 35 cards changed.</p>
+      <h3>🎯 Rules 0.10.4: Hit-Rate, Plan B and token saturation</h3>
+      <ul>
+        <li><b>Plan cards:</b> every deck has 16–22 hand-picked cards that make it do its thing (Grim's fatties and cheat engines, The Thing's draw engines, Mathas's swap pieces, Turtle's token engines…). Each one is also marked for how well it works without the commander.</li>
+        <li><b>Hit-Rate (Consistency):</b> plan cards + tutors (+1 each) + selection cards (+0.5) + plan cards with Second Life (+0.25, you can use them twice). The odds of seeing at least one in your first 10 cards ×3, plus the odds of seeing two ×1.</li>
+        <li><b>Plan B (Consistency):</b> the odds of seeing a plan card that still works without the commander, ×1.5.</li>
+        <li><b>Answer on time (Interaction):</b> the odds of holding an answer by turn 4 (10 cards), +1 at 100%.</li>
+        <li><b>Closer on time (Finish):</b> the odds of seeing a finisher by turn 7 (13 cards), +0.75 at 100%.</li>
+        <li><b>Fix:</b> the Threat variety check now counts only real threat kinds (Tall, Wide, Board Power, noncreature threats, commander), not the new Body and Feeds the Plan bonuses.</li>
+        <li><b>Wide saturation (Threats):</b> once a deck has 10 points of token makers, the rest count half. You can only cast so many token makers in a game. Turtle 15 → 13; Joel and Mech didn't move.</li>
+      </ul>
+      <h3>⚰️ Rules 0.10.3: Second Life (graveyard abilities)</h3>
+      <p>Cards that do something again from the graveyard now score that second use: flashback, encore, recasting from the graveyard, and "exile this card from your graveyard" abilities that hand keywords or abilities to another creature. The graveyard effect is scored with the normal formulas at ×0.6 (it has to get there, and you pay again; ×0.4 if it also costs a card), plus 0.15 Cards for the extra use. Symbiote Spider-Man 0.29 → 1.18 (Find New Host gives its dig to a 12-power trampler), Scavenged Brawler 0.73 → 1.0, Seize the Day 0.65 → 1.25, Desperate Ravings 0.9 → 1.39.</p>
+      <h3>🩸 Rules 0.10.2: bloodthirst and cheaper tutors (trial)</h3>
+      <ul>
+        <li><b>Bloodthirst</b> creatures are scored at the size they usually enter: power + the counters (X = the deck's usual damage on its own turn), ×0.75 because you have to deal damage first. Indoraptor in the Grim Throne goes from 0.23 to 1.68 (counted as a 9-power menace).</li>
+        <li><b>Tutor cost penalty</b> is now −0.25 per mana above 1 (was −0.5), on trial. Search for Glory 0.19 → 0.71, Micromancer 0 → 0.58, Buried Alive → 1.09.</li>
+      </ul>
+      <h3>🔧 Rules 0.10.1: lifting the weakest cards</h3>
+      <ul>
+        <li><b>Graveyard tutors:</b> cards that put what you want into your graveyard (Buried Alive) now count like hand tutors, +0.25 for each extra card they find.</li>
+        <li><b>Feeds the Plan:</b> +0.15 (or +0.25 if it happens every turn) when a card triggers the commander or a core engine, added to whatever that card is best at: cheap noncreature spells for The Thing and Kykar, tokens for Leonardo, tokens and bodies for Joel's drain, artifacts for Mech, enchantments for Marina, auras and equipment for Kotis, life payments for Mathas, and graveyard fuel for the Throne.</li>
+        <li><b>Body floor:</b> a creature scoring under 0.5 now counts its body: a little Threats for its power and a little Survival for its toughness.</li>
+        <li><b>Later wipes</b> are worth 60% of their value instead of losing a flat chunk.</li>
+        <li><b>Growers:</b> creatures that grow every turn score at their grown size, like the other growers already did. Michelangelo went from 0.65 to 1.7: he grows each turn, has trample, and his Food token triggers Leonardo. Monastery Swiftspear, Frolicking Familiar, Crackdown Construct and Tempest Hart got the same fix.</li>
+        <li><b>Politics:</b> single-target removal adds +0.10 (Direction: you choose who loses something, up to 8 cards), counterspells add +0.15 (Deals, up to 5), and the rating now uses the <b>square root</b> of Politics points. The low decks moved up (Kykar 1→6, Turtle 1→4) and Life Swappin' came down from 15 to 12.</li>
+        <li><b>Mana divide is fixed at 4.00</b> instead of following the second-highest deck, so more than one deck with heavy ramp can pass 10. Truly Fantastic, Marina and Turtle are now 10+.</li>
+        <li><b>🔧 Needs Repair</b> moved to the Garage and replaces the old "Weak spots &amp; fixes" box. It picks each deck's five weakest links from three things at once: our score, how often EDHREC decks play the card, and my read of the card in that deck.</li>
+      </ul>
+      <h3>🔄 Rules 0.10: rebuilt from the ground up</h3>
+      <p>Every old tag and score was thrown out. The pod is now these 9 decks, and every card was re-tagged with the new formulas over several review passes. Each formula starts from a small base value and adds or subtracts for things like mana value, instant speed, repeatable (engine) and conditions. Old totals aren't shown because the two systems don't compare.</p>
+      <h3>🧮 How a rating is made</h3>
+      <ul>
+        <li>Each card's tags add points to one or more stats. Deck-level checks (below) add or subtract a little.</li>
+        <li><b>Divide number:</b> in each stat, the <b>second-highest deck</b> is set to 10 and everyone else is scaled to match. A deck can go past 10 (max 15), but points above 10 count half in the group totals.</li>
+        <li><b>Groups:</b> Engine (Mana, Cards, Consistency), Offense (Threats, Finish, Reach) and Defense (Interaction, Survival, Politics) are each out of 30. Total is out of 90.</li>
+        <li><b>Commanders</b> score like any other card. There's no commander multiplier any more.</li>
+      </ul>
+      <h3>📐 The nine stats</h3>
+      <ul>
+        <li>⚡ <b>Mana</b>: Ramp (lasting ×0.75, temporary ×0.5, +0.25 for putting a land out), Mana Boost, Cheat (skipping costs), Lands (only nonbasics with extra value score). Deck check: land count, how many lands enter untapped, color fixing, and a land-drop simulation.</li>
+        <li>🃏 <b>Cards</b>: 0.25 base per card drawn, +0.75 for engines, −0.50 for "this turn only".</li>
+        <li>🎯 <b>Consistency</b>: Tutors and card selection (scry, dig, loot), plus <b>Hit-Rate</b> (the odds of seeing your plan cards in your first 10 cards) and <b>Plan B</b> (the odds of seeing plan cards that still work without your commander).</li>
+        <li>🗡️ <b>Threats</b>: Tall (big creatures, scaled by power and effective MV), Wide (tokens and engines), Board Power (anthems; capped at 20 boosted power so a single overrun can't explode). Deck check: threat variety.</li>
+        <li>🏁 <b>Finish</b> (was Clock): cards that end games: bursts, extra combats, extra turns, alternate wins.</li>
+        <li>🥷 <b>Reach</b>: evasion (flying, trample, unblockable) on your creatures, cards that give evasion, and drain/burn that skips combat.</li>
+        <li>✨ <b>Interaction</b>: removal, counters, wipes and denial, all ×0.45. Modal cards score every mode. The first wipe in a deck scores full; later wipes count less. Deck check: does it answer creatures, artifacts, enchantments, planeswalkers, graveyards and spells?</li>
+        <li>🔰 <b>Survival</b>: blockers, damage prevention, recursion, rebuilding and protection.</li>
+        <li>🗣️ <b>Politics</b>: three levers, <b>Deals</b> (group hug, monarch, votes), <b>Deterrents</b> (taxes, pillowfort, punishers) and <b>Direction</b> (goad, redirecting). Decks that pull all three levers get a bonus; very salty decks get nudged down. Single-target removal and counterspells add a little, and the rating uses the square root of the points (0.10.1).</li>
+      </ul>
+      <h3>🤔 Calls I made while you were away</h3>
+      <ul>
+        <li>Divide = the second-highest deck in each stat, so one outlier deck can't squash everyone else.</li>
+        <li>Ratings are capped at 15, and Board Power is capped at 20 boosted power.</li>
+        <li>The commanders' text gets no multiplier; they score like any card.</li>
+        <li>New deck icons: 💰 Life Swappin', 🥚 Mechanized Mayhem, 🪶 Kykar, Zada &amp; Feather.</li>
+        <li>X spells use a sensible X for each deck's mana (listed in each takeaway).</li>
+      </ul>
+      <h3>⚠️ Still to do</h3>
+      <ul>
+        <li>Kykar and The Last of Us are low on answers: fewer than 8 interaction cards each.</li>
+      </ul>
