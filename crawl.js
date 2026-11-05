@@ -1039,7 +1039,7 @@ class Game{
     if(src&&src.lifesteal>0&&src.alive){const b0=src.hp;src.hp=Math.min(src.max,src.hp+amt*src.lifesteal);if(src.key)this.st8(src).heal+=src.hp-b0;}
     if(!ABILITIES_OFF&&src&&src.style&&src.style.leech)this.healHero(this.weakest(),amt*src.style.leech*.5,true);
     if(src&&src.items&&src.items.length)this.procs(src,crit?'oncrit':'onhit',e);
-    if(e.hp<=0)this.kill(e,src);
+    if(e.hp<=0){if(opt.blast)e._blast={x:opt.bx!=null?opt.bx:(src?src.x:e.x-20)};this.kill(e,src);}
     return amt;
   }
   kill(e,src){
@@ -1050,7 +1050,11 @@ class Game{
     const pts=Math.round((e.boss?e.B.pts:e.E.pts*(e.elite?3:1))*(1+.4*(this.st.n-1))*(1+this.run.prestige)*(src?src.scoreM:1));
     this.stageScore+=pts;this.gainXp(xp);
     this.fx.push({k:'poof',x:e.x,y:e.y-(e.fly?0:20),t:0,big:!!e.boss||e.elite});
-    if(!e.boss)this.fx.push({k:'corpse',gy:e.gy,type:e.type,skin:e.skin,x:e.x,y:e.y,fly:e.fly,elite:e.elite,lane:e.lane||0,t:0,life:1.3});
+    if(!e.boss&&e._blast&&/^zombie/.test(e.type)){   /* 0.12.40 (Kyle): blown up by an explosion -> it bursts into gibs instead of falling over */
+      const dir=e.x>=e._blast.x?1:-1;const G0=e.gy!=null?e.gy:this.G;const P=[];for(let i=0;i<16;i++){const a=-Math.PI/2+(this.rng()-.5)*2.2;const sp=40+this.rng()*70;
+        P.push({x:e.x+(this.rng()-.5)*4,h:4+this.rng()*10,vx:Math.cos(a)*sp*.6+dir*(20+this.rng()*35),vh:-Math.sin(a)*sp*.9,s:i<4?2.2:i<10?1.5:1,c:i%5===0?'#d8d0c0':i%3===0?'#5a7060':['#7a1010','#a01818','#4a0c0c'][i%3],rot:this.rng()*6});}
+      this.fx.push({k:'gibs',x:e.x,gy:G0,t:0,life:2.6,raw:1,P,dir});this.fx.push({k:'blood',raw:1,x:e.x,y:G0-12,gy:G0,dir,n:22,big:true,seed:this.rng()*1000,t:0,life:.9});this.shake=Math.max(this.shake||0,.15);}
+    else if(!e.boss)this.fx.push({k:'corpse',gy:e.gy,type:e.type,skin:e.skin,x:e.x,y:e.y,fly:e.fly,elite:e.elite,lane:e.lane||0,t:0,life:1.3});
     if(this.team.devour){this.devourStacks=Math.min(60,this.devourStacks+1);for(const h of this.alive())if(h.spells.some(s=>s.arch==='devour'))this.healHero(h,h.max*(.006+.0025*this.spellRank(h,'devour')),true);}
     if(src&&src.items)this.procs(src,'onkill',e);
     if(!this.demo){const st=this.st;const r=this.rng();
@@ -1767,14 +1771,14 @@ class Game{
     for(const e of this.enemies){if(e.dead||e.fly)continue;const dx=Math.abs(e.x-(T.x+6)),dz=Math.abs((e.gy!=null?e.gy:this.G)-T.gy);
       // cross-shaped blast (Kyle): a long arm along the lane (side to side) and a long arm across the lanes (up and down)
       const C2=A.cross;const inRow=dx<=C2.long&&dz<=C2.thin,inCol=dz<=C2.across&&dx<=C2.wide;if(!inRow&&!inCol)continue;
-      const fall=1-.5*Math.min(1,Math.min(inRow?dx/C2.long:9,inCol?dz/C2.across:9));const dealt=this.hitEnemy(e,base*mul*fall,h&&h.alive?h:null,{});   // AoE: full damage in the middle, half at the edge
+      const fall=1-.5*Math.min(1,Math.min(inRow?dx/C2.long:9,inCol?dz/C2.across:9));const dealt=this.hitEnemy(e,base*mul*fall,h&&h.alive?h:null,{blast:1});   // AoE: full damage in the middle, half at the edge
       if(dealt&&!e.dead){const res=e.boss?.9:((e.E&&e.E.kbRes)||0);e.kbv=Math.max(e.kbv||0,A.kb/100*40*8*(1-res)*fall);e.kbDir=e.x>=T.x?1:-1;
         if(this.rng()<A.bleed.chance){e.bleedT=A.bleed.dur;e.bleedDps=A.bleed.dmg/A.bleed.dur;}}
       e._tripHit=T;}
     /* 0.12.38 (Kyle): shockwave. A wider ring around the cross: anything it reaches that the cross missed takes half damage and a heavier shove (no bleed) */
     const SW=A.shock;if(SW){this.fx.push({k:'ring',x:T.x+6,y:T.gy-4,t:0,r:SW.r,c:'#ffd9a0'});
       for(const e of this.enemies){if(e.dead||e.fly||e._tripHit===T)continue;const dx=Math.abs(e.x-(T.x+6)),dz=Math.abs((e.gy!=null?e.gy:this.G)-T.gy);
-        if((dx/SW.r)**2+(dz/SW.depth)**2>1)continue;const dealt=this.hitEnemy(e,base*mul*.5,h&&h.alive?h:null,{});
+        if((dx/SW.r)**2+(dz/SW.depth)**2>1)continue;const dealt=this.hitEnemy(e,base*mul*.5,h&&h.alive?h:null,{blast:1});
         if(dealt&&!e.dead){const res=e.boss?.9:((e.E&&e.E.kbRes)||0);e.kbv=Math.max(e.kbv||0,A.kb*SW.kbMul/100*40*8*(1-res));e.kbDir=e.x>=T.x?1:-1;}}}}
   addPoison(e,n){if(!e||e.dead||n<=0)return 0;if(isUndead(e)){this.text(e.x,e.y-(e.boss?100:44),'IMMUNE','#9aa');return 0;}
     e.poison=(e.poison||0)+n;e.poisonT=POISON.dur;if(e.poisonTick==null)e.poisonTick=0;this.text(e.x,e.y-(e.boss?100:46),'POISON x'+e.poison,'#7dff6a');return n;}
@@ -1984,7 +1988,7 @@ class Game{
     if(this.missiles&&this.missiles.length){for(const M of this.missiles){M.t+=dt;M.x0-=scroll*dt;M.tx-=scroll*dt;const u=Math.min(1,M.t/M.T);M.x=M.x0+(M.tx-M.x0)*u;M.gyNow=M.gy+(M.tgy-M.gy)*u;M.hgt=(1-u)*23+46*Math.sin(Math.PI*u);
         M.trail-=dt;if(M.trail<=0){M.trail=.035;this.fx.push({k:'puff',x:M.x,y:M.gyNow-M.hgt,t:0,life:.7+this.rng()*.3,s:.6+this.rng()*.5,raw:1});}
         if(u>=1&&!M.done){M.done=1;this.fx.push({k:'boom',x:M.x,gy:M.tgy,t:0,life:.8,raw:1,small:1});this.ev('boom',{});this.shake=Math.max(this.shake||0,.25);
-          for(const e of this.enemies){if(e.dead||e.fly)continue;if(Math.abs(e.x-M.x)<=M.A.r+(e.boss?e.w*.5:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-M.tgy)<=8))this.hitEnemy(e,(this.rollDice(M.A.dice)+(M.src.flatRanged||0)*.5)*M.mul,M.src&&M.src.alive?M.src:null,{});}}}
+          for(const e of this.enemies){if(e.dead||e.fly)continue;if(Math.abs(e.x-M.x)<=M.A.r+(e.boss?e.w*.5:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-M.tgy)<=8))this.hitEnemy(e,(this.rollDice(M.A.dice)+(M.src.flatRanged||0)*.5)*M.mul,M.src&&M.src.alive?M.src:null,{blast:1});}}}
       this.missiles=this.missiles.filter(M=>!M.done);}
     if(this.nades&&this.nades.length){for(const N of this.nades){N.t+=dt;N.x1-=scroll*dt;N.x0-=scroll*dt;const u=Math.min(1,N.t/N.T);N.x=N.x0+(N.x1-N.x0)*u;N.gyNow=N.gy0+(N.gy-N.gy0)*u;N.hgt=18*(1-u)+22*Math.sin(Math.PI*u);
         if(u>=1&&!N.done){N.done=1;(this.clouds=this.clouds||[]).push({x:N.x1,gy:N.gy,r:N.A.r,t:0,life:N.A.dur,A:N.A,seed:Math.floor(this.rng()*999)});this.ev('wind',{});}}
@@ -2226,12 +2230,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793896976';const BGI=new Image();BGI.src='crawl_bg.png?v=1793896976';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793896976';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793897224';const BGI=new Image();BGI.src='crawl_bg.png?v=1793897224';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793897224';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793896976';XIMG.wave.src='crawl_wave.png?v=1793896976';XIMG.chibi.src='crawl_chibi.png?v=1793896976';XIMG.flannel.src='crawl_flannel.png?v=1793896976';XIMG.rain.src='crawl_rain.png?v=1793896976';XIMG.druid.src='crawl_druid.png?v=1793896976';XIMG.camp.src='crawl_campfire.png?v=1793896976';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793896976';XIMG.tornado.src='crawl_fx_tornado.png?v=1793896976';XIMG.vine.src='crawl_fx_vine.png?v=1793896976';XIMG.thorn.src='crawl_fx_thorn.png?v=1793896976';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793897224';XIMG.wave.src='crawl_wave.png?v=1793897224';XIMG.chibi.src='crawl_chibi.png?v=1793897224';XIMG.flannel.src='crawl_flannel.png?v=1793897224';XIMG.rain.src='crawl_rain.png?v=1793897224';XIMG.druid.src='crawl_druid.png?v=1793897224';XIMG.camp.src='crawl_campfire.png?v=1793897224';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793897224';XIMG.tornado.src='crawl_fx_tornado.png?v=1793897224';XIMG.vine.src='crawl_fx_vine.png?v=1793897224';XIMG.thorn.src='crawl_fx_thorn.png?v=1793897224';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793896976';XIMG.obst.src='crawl_obst.png?v=1793896976';XIMG.cars.src='crawl_cars.png?v=1793896976';XIMG.robot.src='crawl_robot.png?v=1793896976';XIMG.cultist.src='crawl_cultist.png?v=1793896976';XIMG.tentacle.src='crawl_tentacle.png?v=1793896976';XIMG.boom.src='crawl_boom.png?v=1793896976';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793897224';XIMG.obst.src='crawl_obst.png?v=1793897224';XIMG.cars.src='crawl_cars.png?v=1793897224';XIMG.robot.src='crawl_robot.png?v=1793897224';XIMG.cultist.src='crawl_cultist.png?v=1793897224';XIMG.tentacle.src='crawl_tentacle.png?v=1793897224';XIMG.boom.src='crawl_boom.png?v=1793897224';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2596,6 +2600,9 @@ function drawGame(ctx,g,W,oy){
     else drawProj(ctx,p,x,y,c,g.t);ctx.restore();}
   // fx
   for(const f of g.fx){const k=f.t/.6;ctx.save();if(f.x!=null&&!f.raw)shrinkAt(ctx,f.x,G,HS);
+    if(f.k==='gibs'){const tt=f.t,a=tt>1.8?Math.max(0,1-(tt-1.8)/.8):1;ctx.save();ctx.globalAlpha=a;   /* 0.12.40 zombie gibs: chunks fly, bounce once, settle, fade */
+      for(const q of f.P){const T=Math.min(tt,2.2);let hh=q.h+q.vh*T-140*T*T,x=q.x+q.vx*Math.min(T,(q.vh+Math.sqrt(q.vh*q.vh+560*q.h))/280);if(hh<0)hh=0;
+        ctx.fillStyle=q.c;const s=q.s;ctx.fillRect(Math.round(x*2)/2-s/2,Math.round((f.gy-hh)*2)/2-s/2,s,s*(hh>0?1:.6));}ctx.restore();}
     if(f.k==='blood'){const L=f.life,tt=f.t;let sd=f.seed;const rnd=()=>{sd=(sd*9301+49297)%233280;return sd/233280;};
       for(let i=0;i<f.n;i++){const a=(rnd()-.5)*1.6-(.35);const sp=(f.big?34:24)*(.4+rnd());const vx=Math.cos(a)*sp*f.dir,vy=Math.sin(a)*sp-10*rnd();
         const gy=f.gy+(rnd()*4-2);let x=f.x+vx*tt,y=f.y+vy*tt+60*tt*tt;
@@ -2759,7 +2766,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.39</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.40</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
