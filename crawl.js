@@ -104,7 +104,7 @@ const SIG={
   marina:{name:'Lantern Haunt',cd:9,txt:'Lets the lantern ghost out to fight for 9s (one at a time).',fn:(g,h,a)=>{g.addMinion(h,h.max*.3,a*.6,9,'spirit','sig',1);return true;}},
   korvold:{name:'Gorge',cd:6,txt:'Bites the front enemy for 260% and heals for 30% of it.',fn:(g,h,a)=>g.sigFront(h,a*2.6,{heal:.3})},
   thranduil:{name:'Volley',cd:6,txt:'Looses 3 heavy arrows at random enemies for 115% each.',fn:(g,h,a)=>g.sigMulti(h,'arrow',a*1.15,3)},
-  archer:{name:'One Nocked, Two in Hand · Blow_Gun',cd:14,txt:'Blow_Gun (25 energy, 9s cooldown): puffs a poison dart that always adds 1 poison stack to a living target (75% chance of a 2nd, 50% of a 3rd); each stack deals 3% of max HP every 1.5s for 7.5s, and any new stack resets the timer. Undead are immune. One Nocked, Two in Hand (30 energy, 14s cooldown): he nocks one arrow and holds two more ready, his next 3 arrows fly much faster (a third of the usual wait, quicker draw). Longbow shots (1d10) and a close-range bow strike (1d8).',fn:()=>false},
+  archer:{name:'Arrow_Rain · One Nocked, Two in Hand · Blow_Gun',cd:14,txt:'Arrow_Rain (40 energy, 18s cooldown): looses a volley into the air and 16 arrows rain down on the thickest group of enemies (1d6 each, about 70px wide and 2 lanes up and down). Blow_Gun (25 energy, 9s cooldown): puffs a poison dart that always adds 1 poison stack to a living target (75% chance of a 2nd, 50% of a 3rd); each stack deals 3% of max HP every 1.5s for 7.5s, and any new stack resets the timer. Undead are immune. One Nocked, Two in Hand (30 energy, 14s cooldown): he nocks one arrow and holds two more ready, his next 3 arrows fly much faster (a third of the usual wait, quicker draw). Longbow shots (1d10) and a close-range bow strike (1d8).',fn:()=>false},
   chibi:{name:'Wave Dash · War Cry',cd:10,txt:'Wave Dash (45 energy, 16s cooldown): rides a blue energy wave up to 400px forward, hitting everything it passes through (2 lanes up and down) for 1.4x a sword hit. War Cry (20 energy, 7s cooldown): every ally within 800px gets +25% damage and attack speed for 7s. Sword combo: Attack 1, Attack 2, and a running slash, plus a kunai throw (1d4) at enemies he can\'t reach yet.',fn:()=>false},
   flannel:{name:'Aimed Shot · Trip Bomb · Traveling_Companion',cd:14,txt:'Call Traveling_Companion (25 energy, 24s cooldown, 0.8s whistle): calls his Traveling_Companion, a timid partner who hangs back, with a third of his stats and her own Brick Throw (never misses, 75% stun). If she is already out, she heals 7% of her max HP instead. Trip Bomb (30 energy, 20s cooldown, 1s to set): a nail bomb on a tripwire that blows up the first enemy to walk into it, hurting everything around it (area damage, knockback, 50% bleed). Aimed Shot (40 energy, 14s cooldown, 2s cast with a laser sight): a carefully aimed rifle shot that always goes to the middle (head) box, with +5% crit chance and 2.5x crit damage. Pierces through one enemy.',fn:()=>false},   // runs from Game.gunner (CHAR abilities), shown here
   joel:{name:'Brick Toss',cd:7,txt:'The scout lobs a brick for 200% that stuns the target for 0.75s.',fn:(g,h,a)=>g.sigShot(h,'brick',a*2,{stun:.75})},
@@ -378,6 +378,10 @@ CHAR.archer={name:'Yumi_Archer',flatHp:0,stamina:9,hpPerStamina:5,armorPts:6,dod
   abilities:[{id:'rapid',name:'One Nocked, Two in Hand',en:30,cd:14,shots:3,every:.3,anim:.4},
     // Blow_Gun: he puts a bamboo blowgun to his lips (0.7s) and puffs a poison dart (1d3). It always applies 1 poison stack to a
     //   non-undead target, with a 75% chance for a 2nd and a 50% chance for a 3rd. 25 energy, 9s cooldown. Picks living targets.
+    // Arrow_Rain: 0.6s to loose a volley high into the air, then 16 arrows rain down over 1.4s on the thickest group of enemies in
+    //   range (about 70px wide, 2 lanes up and down). Each arrow hits what it lands on for 1d6 (+flat) and sticks in the ground.
+    //   40 energy, 18s cooldown.
+    {id:'rain',name:'Arrow_Rain',en:40,cd:18,cast:.6,count:16,over:1.4,fall:.35,spread:36,lanes:12,dice:[1,6],range:280,hitR:5},
     {id:'blowgun',name:'Blow_Gun',en:25,cd:9,anim:.7,releaseAt:.42,dice:[1,3],extra:[.75,.5],range:220}]};
 const PAL_FRAC=1/3;
 CHAR.flannel_pal=(()=>{const C=CHAR.flannel,f=PAL_FRAC;return {name:'Traveling_Companion',flatHp:C.flatHp*f,stamina:C.stamina*f,hpPerStamina:C.hpPerStamina,armorPts:Math.round(C.armorPts*f),
@@ -957,6 +961,11 @@ class Game{
     }
     this.enemies=this.enemies.filter(e=>!e.dead||e.boss);
     if(this.t>180&&!this.boss){for(const e of this.enemies)if(!e.dead)e.dmg*=1+.01*dt;}   // stage dragging on: monsters grow fierce
+    // ---- Arrow_Rain arrows in the air: drop, then hit whatever they land on and stick in the ground
+    if(this.rain&&this.rain.length){for(const R of this.rain){R.t+=dt;R.x-=scroll*dt;if(R.t>=R.T&&!R.landed){R.landed=1;
+        for(const e of this.enemies){if(e.dead||e.fly)continue;if(Math.abs(e.x-R.x)<=R.A.hitR+(e.boss?e.w:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-R.gy)<=4))this.hitEnemy(e,R.dmg,R.src&&R.src.alive?R.src:null,{});}
+        this.fx.push({k:'stuck',x:R.x,gy:R.gy,t:0,life:2,raw:1});}}
+      this.rain=this.rain.filter(R=>!R.landed);}
     // ---- traps (Trip Bomb): arm, wait for a ground enemy to walk into the wire, then blow
     if(this.traps&&this.traps.length){for(const T of this.traps){T.t+=dt;T.x-=scroll*dt;const A=T.A;
         if(T.t<A.arm)continue;if(T.t>A.life||T.x<-20){T.done=1;continue;}
@@ -1088,6 +1097,17 @@ class Game{
       // IF One Nocked, Two in Hand is ready AND an enemy is in bow range AND I'm not already rapid-firing THEN nock up
       if(h.raT<=0&&!(h.rapid>0)&&!mt&&tgt&&Math.abs(tgt.x-h.x)<=C.ranged.range&&(h.en||0)>=RA.en*(1+.3*trait(h,'energy')-.15)&&spendEnergy(h,RA.en)){
         h.raT=RA.cd*(1-(h.cdr||0));h.rapid=RA.shots;this.text(h.x,this.G-72,'ONE NOCKED, TWO IN HAND!','#ffd23f');this.ev('shout',{});}}
+    const AR=(C.abilities||[]).find(a=>a.id==='rain');if(AR){if(h.arT==null)h.arT=AR.cd*.25;if(h.arT>0)h.arT-=dt;
+      if(h.volley){h.volley-=dt;h.pauseT=Math.max(h.pauseT||0,.05);if(h.volley<=0)h.volley=0;return;}
+      // IF Arrow_Rain is ready AND 2+ enemies are bunched up in range THEN rain on the thickest group
+      if(h.arT<=0&&!mt&&(h.en||0)>=AR.en){const foes=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-h.x)<=AR.range);
+        let best=null,bn=0;for(const e of foes){const n=foes.filter(o=>Math.abs(o.x-e.x)<=AR.spread&&Math.abs((o.gy||this.G)-(e.gy||this.G))<=AR.lanes).length;if(n>bn){bn=n;best=e;}}
+        if(best&&bn>=2&&spendEnergy(h,AR.en)){h.arT=AR.cd*(1-(h.cdr||0));h.volley=AR.cast;h.volleyT0=AR.cast;faceToward(h,best.x,1);this.text(h.x,this.G-70,'ARROW_RAIN','#ffd23f');
+          const cx=best.x,cgy=best.gy!=null?best.gy:this.G,mul=(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
+          setTimeoutSafe(this,AR.cast,()=>{this.ev('bow',{});this.rain=this.rain||[];
+            for(let i=0;i<AR.count;i++){const at=AR.over*i/AR.count+this.rng()*.08;const gy=Math.max(LANES[0],Math.min(LANES[LANES.length-1],cgy+(this.rng()*2-1)*AR.lanes));
+              this.rain.push({x:cx+(this.rng()*2-1)*AR.spread,gy,t:-at,T:AR.fall,dmg:(this.rollDice(AR.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*mul,src:h,A:AR});}});
+          return;}}}
     const BG=(C.abilities||[]).find(a=>a.id==='blowgun');if(BG){if(h.bgT==null)h.bgT=BG.cd*.2;if(h.bgT>0)h.bgT-=dt;
       if(h.blowing){h.blowing-=dt;h.pauseT=Math.max(h.pauseT||0,.05);if(h.blowing<=0)h.blowing=0;return;}
       // IF Blow_Gun is ready AND a living (not undead) enemy is in range AND not in my face THEN poison it
@@ -1362,8 +1382,9 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793866795';const BGI=new Image();BGI.src='crawl_bg.png?v=1793866795';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793866795';const XIMG={flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793866795';XIMG.wave.src='crawl_wave.png?v=1793866795';XIMG.chibi.src='crawl_chibi.png?v=1793866795';XIMG.flannel.src='crawl_flannel.png?v=1793866795';XIMG.pal.src='crawl_pal.png?v=1793866795';XIMG.boom.src='crawl_boom.png?v=1793866795';
+const IMG=new Image();IMG.src='crawl.png?v=1793866908';const BGI=new Image();BGI.src='crawl_bg.png?v=1793866908';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793866908';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const XIMG={rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793866908';XIMG.wave.src='crawl_wave.png?v=1793866908';XIMG.chibi.src='crawl_chibi.png?v=1793866908';XIMG.flannel.src='crawl_flannel.png?v=1793866908';XIMG.rain.src='crawl_rain.png?v=1793866908';XIMG.pal.src='crawl_pal.png?v=1793866908';XIMG.boom.src='crawl_boom.png?v=1793866908';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -1503,6 +1524,9 @@ function drawGame(ctx,g,W,oy){
         ctx.strokeStyle=k%2?'rgba(170,230,255,.9)':'rgba(255,255,255,.95)';ctx.lineWidth=.5;zap(cx,cy,4+Math.random()*6,Math.random()*6.28);}
       for(let k=0;k<2;k++){const tx=h.x-s*(4+Math.random()*24);ctx.strokeStyle='rgba(140,210,255,.8)';ctx.lineWidth=.5;zap(tx,G0-2-Math.random()*6,3+Math.random()*4,-Math.PI/2+(Math.random()-.5));}   // along the tail
       if(Math.random()<.5)glow(ctx,h.x+s*(14+Math.random()*8),G0-6-Math.random()*24,2.5,'#e8fbff',.6);ctx.restore();}};
+  // Arrow_Rain: arrows falling out of the sky, and the ones stuck in the ground
+  const rainDraw=()=>{for(const f of g.fx)if(f.k==='stuck'){const k=f.t/f.life;drawUnit(ctx,RAIN.s,0,f.x,f.gy+1,.5,k>.7?(1-k)/.3:1,0,0,false);}
+    for(const R of g.rain||[]){if(R.t<0)continue;const k=Math.min(1,R.t/R.T);drawUnit(ctx,RAIN.f,0,R.x,R.gy-(1-k)*90,.5,1,0,0,false);}};
   const booms=()=>{for(const f of g.fx){if(f.k!=='boom')continue;const k=f.t/f.life,fr=Math.min(BOOM.n-1,Math.floor(k*BOOM.n));drawUnit(ctx,BOOM,fr,f.x,f.gy+2,.32,k>.85?(1-k)/.15:1,0,0,false);}};
   const drawHero=(h)=>{const G0=h.gy||g.G;ctx.save();shrinkAt(ctx,h.x,G0,HS);drawHero0(h);ctx.restore();};
   const drawHero0=(h)=>{const G=h.gy||g.G;if(!h.alive){return;}
@@ -1527,6 +1551,7 @@ function drawGame(ctx,g,W,oy){
       if(h.dash&&U.runatk){A=U.runatk;f=Math.min(A.n-1,3+Math.floor(h.dash.t/h.dash.T*2));}
       else if(h.animM>0){A=(h.swingAnim&&U[h.swingAnim])||U.melee;const D=h.swingAnim==='attack2'?.36:.45;f=Math.min(A.n-1,Math.floor((1-h.animM/D)*A.n));}
       else if(h.animR>0){A=(h.firedMoving&&U.walkfire)||U.ranged;f=Math.min(A.n-1,Math.floor((1-h.animR/(h.animRT||.5))*A.n));}
+      else if(h.volley>0&&U.ranged){A=U.ranged;f=Math.min(2,Math.floor((1-h.volley/(h.volleyT0||.6))*3));}   // draws and looses high
       else if(h.blowing>0&&U.blowgun){A=U.blowgun;f=Math.min(A.n-1,Math.floor((1-h.blowing/(h.blowT0||.7))*A.n));}
       else if(h.cast){A=U.ranged;f=0;}
       else if(h.setting){A=U.reload;f=Math.min(A.n-1,Math.floor(h.setting.t/h.setting.T*A.n));}   // kneels to set the Trip Bomb   // holding the aim during Aimed Shot's cast
@@ -1562,7 +1587,7 @@ function drawGame(ctx,g,W,oy){
   // draw heroes and enemies back-to-front by lane so units in the far lane sit behind the near ones
   const items=[...hs.filter(h=>h.alive).map(h=>[h.gy||G,0,h.x,()=>drawHero(h)]),...es.map(e=>[e.boss?G-.5:(e.gy!=null&&!e.fly?e.gy:G+e.lane-5),1,-e.x,()=>drawEnemy(e)])]
     .sort((a,b)=>a[0]-b[0]||a[1]-b[1]||a[2]-b[2]);
-  traps();
+  traps();rainDraw();
   for(const it of items)it[3]();
   laser();waves();booms();
   // projectiles
