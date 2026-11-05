@@ -203,6 +203,12 @@ function heroDef(key){return DATA.heroes.find(h=>h.key===key);}
 const ABILITIES_OFF=true;
 // Lanes: feet rows units can stand on (190 = the original ground). Units drift between them so they can pass each other.
 const LANES=[188,194,200,206,212],LANE_SPD=26;
+// 0.12.14 (Kyle) obstacles: rocks, stumps, bushes, a dead tree and a big log lying diagonally across two lanes. Not many, a bit random.
+//   Units walk around them (lane change). Tall ones (blk > 0, in hitbox units like body heights) stop shots that fly low enough.
+//   Never more than 2 lanes blocked near each other at once, so there's always a way around.
+const OBST={"rock_moss": {"x": 0, "y": 33, "fw": 44, "fh": 36, "lanes": 1, "blk": 34, "foot": [[-7.98, 7.98]]}, "rock_pile": {"x": 46, "y": 39, "fw": 32, "fh": 30, "lanes": 1, "blk": 26, "foot": [[-5.7, 5.7]]}, "rock_crack": {"x": 80, "y": 35, "fw": 32, "fh": 34, "lanes": 1, "blk": 32, "foot": [[-5.7, 5.7]]}, "rock_swirl": {"x": 114, "y": 37, "fw": 30, "fh": 32, "lanes": 1, "blk": 30, "foot": [[-5.32, 5.32]]}, "rock_dirt": {"x": 146, "y": 37, "fw": 30, "fh": 32, "lanes": 1, "blk": 30, "foot": [[-5.38, 4.88]]}, "rock_crumble": {"x": 178, "y": 41, "fw": 30, "fh": 28, "lanes": 1, "blk": 24, "foot": [[-5.32, 5.32]]}, "log_big": {"x": 210, "y": 35, "fw": 80, "fh": 34, "lanes": 2, "blk": 14, "foot": [[-19.5, 6.5], [-10.0, 20.0]]}, "trunk": {"x": 292, "y": 29, "fw": 29, "fh": 40, "lanes": 1, "blk": 40, "foot": [[-5.528, 2.5279999999999996]]}, "stump": {"x": 323, "y": 37, "fw": 18, "fh": 32, "lanes": 1, "blk": 30, "foot": [[-3.16, 2.16]]}, "bush_a": {"x": 343, "y": 49, "fw": 22, "fh": 20, "lanes": 1, "blk": 0, "foot": [[-3.04, 3.04]]}, "bush_b": {"x": 367, "y": 47, "fw": 23, "fh": 22, "lanes": 1, "blk": 0, "foot": [[-3.7199999999999998, 3.12]]}, "deadtree": {"x": 392, "y": 0, "fw": 43, "fh": 69, "lanes": 1, "blk": 52, "foot": [[-9.12, -2.2800000000000002]]}};
+const OBST_POOL=[['rock_moss',3],['rock_pile',3],['rock_crack',3],['rock_swirl',2],['rock_dirt',3],['rock_crumble',3],['log_big',2],['trunk',2],['stump',3],['bush_a',2],['bush_b',2],['deadtree',1]];
+const GROUND_FX=new Set(['corpse','stuck','thorn','poof','boom','quake','mend','spark','blood','splat','scorch','ring']);
 // Units are drawn at half size (the world reads bigger); heights for aiming/hitboxes are in 'ruler units' = full-size sprite pixels
 const UNIT_SCALE=.5;
 // ---- Aiming (Kyle): a shot's height above the target's feet, in ruler units:
@@ -358,8 +364,8 @@ const ABIL_DESC={
   roll:'Log_Roll · 15 energy · 8s. When he\'s hurt and cornered, rolls back about 90px and can\'t be hit during the roll.',
   mend:'Mend · 12 energy · 4s. Instantly heals the most-hurt ally for 12% of their max HP.',
   bloom:'Rejuvenating Bloom · 30 energy · 12s. Wraps an ally in a healing vine heart: 5% of max HP every second for 8s.',
-  thorns:'Thorn Wave · 35 energy · 14s. A wave of earth thorns erupts along the ground 200px down her lane: 2d6 to everything it bursts under, plus bleed (12 over 4s).',
-  cyclone:'Cyclone · 40 energy · 18s. A tornado wanders around in front of her for 5s, slowly pulling nearby enemies toward it and dealing small steady damage (1d3 every 0.5s) to everything inside.'};
+  thorns:'Thorn Wave · 35 energy · 14s. A wave of earth thorns erupts along the ground 400px down her lane: 2d6 to everything it bursts under, plus bleed (12 over 4s) and a 50% chance of a poison stack (undead are immune).',
+  cyclone:'Cyclone · 40 energy · 18s. A slow tornado wanders close in front of her for 5s, slowly pulling nearby enemies toward it and dealing small steady damage (1d3 every 0.5s) to everything inside.'};
 const BEHAVIOR={
   lumberjack:'Big, stubborn brawler. Wades into the thick of it with his axe and goes for the biggest enemy, holding a grudge against whatever hit him. Shoots his hunting bow while he closes in, spins into crowds, leaps onto targets, chops the ground to stun, gets angry when he\'s hurt, and rolls out of trouble.',
   druid:'Selfless healer. Hangs back near her friends and watches their health more than the enemies: patches up whoever is hurt worst, wraps allies in healing vines, and pokes at range with nature bolts. When enemies bunch up she drops thorns on them or sends a tornado down the lane.',
@@ -435,10 +441,10 @@ CHAR.druid={name:'Druid',role:'Staff + Nature Bolts',flatHp:0,stamina:7,hpPerSta
     {id:'bloom',name:'Rejuvenating Bloom',en:30,cd:12,pct:.05,tick:1,dur:8,under:.9},
     // Thorn Wave (Kyle): a wave of earth thorns erupts along the ground down her lane, one after another for 200px over 1.2s.
     //   Every enemy a thorn bursts under takes 2d6 (+flat) and bleeds (12 over 4s). 35 energy, 14s cooldown.
-    {id:'thorns',name:'Thorn Wave',en:35,cd:14,dice:[2,6],dist:200,dur:1.2,step:12,depth:6,bleed:{dmg:12,dur:4},cast:.5},
+    {id:'thorns',name:'Thorn Wave',en:35,cd:14,dice:[2,6],dist:133,dur:.8,poisonCh:.5,step:12,depth:6,bleed:{dmg:12,dur:4},cast:.5},
     // Cyclone (Kyle): a tornado that lasts 5s, wandering around sporadically in front of her. It slowly pulls nearby enemies
     //   (within 40px) toward it and deals small, steady damage to everything inside it (1d3 +flat every 0.5s). 40 energy, 18s cooldown.
-    {id:'cyclone',name:'Cyclone',en:40,cd:18,dist:220,dur:5,dice:[1,3],every:.5,pullR:40,pull:16,inR:12,depth:6,spd:55,cast:.5}]};
+    {id:'cyclone',name:'Cyclone',en:40,cd:18,dist:140,dur:5,dice:[1,3],every:.5,pullR:40,pull:16,inR:12,depth:6,spd:20,wander:28,cast:.5}]};
 // 0.12.11 Lumber_Jack (Claude's starting numbers): a burly axeman with a hunting bow. Sturdy, hits hard up close.
 CHAR.lumberjack={name:'Lumber_Jack',role:'Axe + Bow',combo:0,flatHp:0,stamina:11,hpPerStamina:5,armorPts:7,dodge:.03,kbRes:.45,
   melee:{dice:[1,10],every:1.3,reach:22,kb:25,hitAt:.2},
@@ -588,6 +594,7 @@ const Brain={
       if(l===cur)sc+=3*(1-roam)+.6*commit-1.2*roam*roam;   // IF I stay put by nature THEN my lane wins ties
       if(isHero){const O=Comms.ord(u,g,['lane','flank','help']);const ol=O?(O.type==='lane'?O.lane:O.type==='flank'?(O.tgt&&O.tgt.laneI):(O.from&&O.from.laneI)):null;if(ol!=null&&l===ol)sc+=2+4*O.w;}   // IF called to a lane THEN go there
       sc-=Math.abs(l-cur)*(.8-.75*roam);
+      {const ux=isHero?g.heroX(u):u.x;if(g.laneBlocked(l,isHero?ux-8:ux-50,isHero?ux+50:ux+8))sc-=6;}   // IF an obstacle sits in this lane just ahead THEN don't pick it
       if(tgt&&tgt.laneI!=null){if(l===tgt.laneI)sc+=melee?2.4:.8;}   // melee has to share a lane with what it hits
       const foesHere=bb.E.filter(e=>e.laneI===l).length,friendsHere=(isHero?bb.H:bb.E).filter(o=>o!==u&&o.laneI===l).length;
       sc+=foesHere*(isHero?(aggr-.5):0)*1.6;   // IF careful THEN avoid crowded enemy lanes; IF reckless THEN wade in
@@ -904,7 +911,7 @@ class Game{
     if(h.shield>0){const s=Math.min(h.shield,amt);h.shield-=s;amt-=s;if(h.thorns&&from&&!from.dead)this.hitEnemy(from,s*.3,null,{nocrit:1,sure:1});}
     if(amt<=0)return false;
     h.hp-=amt;h.hitFlash=.12;this.text(h.x+4,this.G-52,Math.round(amt),'#ff5a5a');
-    {const F=this.camp;if(F&&(F.state==='burn'||F.state==='start')&&(h===F.owner||h.owner===F.owner)){F.life--;this.text(F.x,this.G-30,'fire '+Math.max(0,F.life)+'/'+F.A.life,'#ffb040');if(F.life<=0){F.state='dying';F.dT=0;this.text(F.x,this.G-40,'THE FIRE DIES','#9aa');}}}
+    {const F=this.camp;if(F&&(F.state==='burn'||F.state==='start')&&(h===F.owner||h.owner===F.owner)){F.life--;if(F.life<=0){F.state='dying';F.dT=0;this.text(F.x,this.G-40,'THE FIRE DIES','#9aa');}}}
     this.splatter(h,amt,-1,false);
     this.procs(h,'whenhit',from,amt);
     if(h.hp/h.max<.35)for(const o of this.alive())this.procs(o,'allylow',null,0,h);
@@ -1047,9 +1054,11 @@ class Game{
     if(this.boss&&this.boss.dead&&!this.over&&!this.demo&&!this.exiting){this.exiting=true;this.exitT=0;}
     if(this.exiting&&!this.over){const al2=this.alive();if(!this.loot.length&&al2.every(h=>h.x>this.W+24)||this.exitT>12){this.over='clear';this.ev('clear');return;}}
     // heroes
+    this.stepObstacles(dt,scroll);
     for(const [i,h] of this.heroes.entries()){if(h.laneI==null){h.laneI=[2,1,3][i%3];h.gy=LANES[h.laneI];}}
     for(const h of al){
-      if(h.plan&&h.plan.lane!=null&&h.plan.lane!==h.laneI&&Math.abs(h.gy-LANES[h.laneI])<1)h.laneI+=Math.sign(h.plan.lane-h.laneI);
+      {const hx=h.x,want=this.freeLane(h.plan&&h.plan.lane!=null?h.plan.lane:h.laneI,h.laneI,hx-8,hx+(scroll?55:14));   // walk around obstacles
+       if(want!==h.laneI&&Math.abs(h.gy-LANES[h.laneI])<1)h.laneI+=Math.sign(want-h.laneI);}
       {const ty=LANES[h.laneI];h.gy+=Math.sign(ty-h.gy)*Math.min(Math.abs(ty-h.gy),LANE_SPD*1.4*dt);}
       regenEnergy(h,dt);h.walkT+=dt*(scroll?(MOVE[h.key]||26)/26:0);if(h.animT>0)h.animT-=dt;if(h.hitFlash>0)h.hitFlash-=dt;if(h.buffT>0)h.buffT-=dt;
       if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}
@@ -1059,7 +1068,7 @@ class Game{
       for(const it of h.items)if(it.cd>0)it.cd-=dt;
       if(this.enemies.some(e=>!e.dead&&e.x-h.x<36))this.procs(h,'near');
       // signature ability
-      const SG=ABILITIES_OFF?null:SIG[h.key];if(SG){h.sigT=(h.sigT==null?SG.cd*.5:h.sigT)-dt;if(h.sigT<=0){const ok=SG.fn(this,h,h.atk*h.pow);h.sigT=ok?SG.cd*(1-h.cdr):.6;if(ok){this.text(h.x,this.G-74,SG.name,'#ffd23f');this.procs(h,'oncast');}}}
+      const SG=ABILITIES_OFF?null:SIG[h.key];if(SG){h.sigT=(h.sigT==null?SG.cd*.5:h.sigT)-dt;if(h.sigT<=0){const ok=SG.fn(this,h,h.atk*h.pow);h.sigT=ok?SG.cd*(1-h.cdr):.6;if(ok){this.procs(h,'oncast');}}}
       // spells
       for(const s of h.spells){if(SPELL[s.arch].passive)continue;s.cdT-=dt;if(s.cdT<=0){const ok=this.cast(h,s);s.cdT=ok?SPELL[s.arch].cd*(1-h.cdr):.5;}}
       // basic attack
@@ -1161,8 +1170,8 @@ class Game{
             if(far&&this.rng()<.1){const alt=[e.laneI-1,e.laneI+1].filter(l=>l>=0&&l<LANES.length);e.laneI=alt[Math.floor(this.rng()*alt.length)];const t2=nearestIn(al.filter(h=>h.laneI===e.laneI));if(t2)e.target=t2;}   // random drift
             else if(this.rng()<.02){const c=nearestIn(al);if(c&&c!==e.target)e.target=c;}}   // rare: go after someone closer
           const T=e.target;
-          const wantL=e.plan&&e.plan.lane!=null?e.plan.lane:T.laneI;
-          if(e.plan||e.E.backline||!far||!inLane.length||T.laneI!==e.laneI){if(Math.abs(e.gy-LANES[e.laneI])<1&&wantL!==e.laneI)e.laneI+=Math.sign(wantL-e.laneI);}   // head for the chosen lane
+          const wantL0=e.plan&&e.plan.lane!=null?e.plan.lane:T.laneI;const wantL=this.freeLane(wantL0,e.laneI,e.x-45,e.x+6);const dodgeOb=wantL!==wantL0||!!this.laneBlocked(e.laneI,e.x-45,e.x+6);
+          if(dodgeOb||e.plan||e.E.backline||!far||!inLane.length||T.laneI!==e.laneI){if(Math.abs(e.gy-LANES[e.laneI])<1&&wantL!==e.laneI)e.laneI+=Math.sign(wantL-e.laneI);}   // head for the chosen lane
           const ty=LANES[e.laneI];e.gy+=Math.sign(ty-e.gy)*Math.min(Math.abs(ty-e.gy),LANE_SPD*dt);e.y=e.gy;
           // queue politely behind a zombie already hitting this hero in this lane
           const front=this.enemies.filter(o=>o!==e&&!o.dead&&o.laneI===e.laneI&&o.x<e.x&&Math.abs(o.gy-e.gy)<3).reduce((b,o)=>!b||o.x>b.x?o:b,null);
@@ -1212,12 +1221,12 @@ class Game{
     if(this.thornWaves&&this.thornWaves.length){for(const W of this.thornWaves){W.t+=dt;W.x0-=scroll*dt;const A=W.A,N=Math.floor(A.dist/A.step);
         while(W.n<N&&W.t>=A.dur*W.n/N){const x=W.x0+W.n*A.step;W.n++;this.fx.push({k:'thorn',x:x+(this.rng()*4-2),gy:W.gy+(this.rng()*2-1),v:Math.floor(this.rng()*4),t:0,life:1,raw:1});
           for(const e of this.enemies){if(e.dead||e.fly||W.hit.has(e))continue;if(Math.abs(e.x-x)<=A.step*.75+(e.boss?e.w:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-W.gy)<=A.depth)){W.hit.add(e);
-            this.hitEnemy(e,(this.rollDice(A.dice)+W.flat)*W.mul,W.src&&W.src.alive?W.src:null,{});if(!e.dead){e.bleedT=A.bleed.dur;e.bleedDps=A.bleed.dmg/A.bleed.dur;}}}}
+            this.hitEnemy(e,(this.rollDice(A.dice)+W.flat)*W.mul,W.src&&W.src.alive?W.src:null,{});if(!e.dead){e.bleedT=A.bleed.dur;e.bleedDps=A.bleed.dmg/A.bleed.dur;if(A.poisonCh&&this.rng()<A.poisonCh)this.addPoison(e,1);}}}}
         if(W.n>=N)W.done=1;}
       this.thornWaves=this.thornWaves.filter(W=>!W.done);}
     // ---- Cyclones: wander sporadically, pull nearby enemies in, and grind down whatever is inside them
     if(this.cyclones&&this.cyclones.length){for(const T of this.cyclones){T.t+=dt;const A=T.A;T.x-=scroll*dt;
-        T.wT=(T.wT||0)-dt;if(T.wT<=0){const o=T.src&&T.src.alive?T.src.x:T.x0;T.tx=Math.max(o+30,Math.min(Math.min(this.W-14,o+A.dist),T.x+(this.rng()*2-1)*70));
+        T.wT=(T.wT||0)-dt;if(T.wT<=0){const o=T.src&&T.src.alive?T.src.x:T.x0;T.tx=Math.max(o+30,Math.min(Math.min(this.W-14,o+A.dist),T.x+(this.rng()*2-1)*(A.wander||70)));
           T.tgy=Math.max(LANES[0],Math.min(LANES[LANES.length-1],T.gy+(this.rng()*2-1)*7));T.wT=.4+this.rng()*.6;}   // a new random heading every 0.4-1s
         const dx=T.tx-T.x;T.x+=Math.sign(dx)*Math.min(Math.abs(dx),A.spd*dt*(.6+this.rng()*.8));T.gy+=Math.sign(T.tgy-T.gy)*Math.min(Math.abs(T.tgy-T.gy),10*dt);
         T.tick=(T.tick||0)+dt;const ticking=T.tick>=A.every;if(ticking)T.tick-=A.every;
@@ -1243,6 +1252,8 @@ class Game{
         p.x+=(p.dir||1)*p.spd*dt;const u=Math.min(1.6,Math.abs(p.x-p.x0)/p.dist);const h0=p.h0==null?28:p.h0;
         p.gy=p.gy0+(p.tgy-p.gy0)*u;p.h=h0+(p.aimH-h0)*u+(p.arc||0)*4*u*(1-u);   // lobbed things (kunai, darts) rise then drop onto the targetp.y=p.gy-p.h*UNIT_SCALE;
         if(p.h<=0||p.x>this.W+20||p.x<-20||p.t>4){p.dead=true;if(p.h<=0)this.fx.push({k:'spark',x:p.x,y:p.gy,t:0,c:'#8a6a4a'});continue;}
+        {const ob=(this.obst||[]).find(o=>{if(!(o.blk>0&&p.h<=o.blk))return false;const l=o.lanes.find(l=>Math.abs(LANES[l]-p.gy)<=3.5);if(l==null)return false;const [a,b]=this.obSpan(o,l);return p.x>=a&&p.x<=b;});   // tall obstacles stop low shots
+         if(ob){p.dead=true;this.fx.push({k:'spark',x:p.x,y:p.gy-p.h*UNIT_SCALE,t:0,c:'#b0a090'});continue;}}
         if(p.foes==='heroes'){   // an enemy's aimed shot: any hero body it passes through takes it
           for(const o of this.alive()){if(p.hit.has(o))continue;const hb=hbOf(o);
             if(Math.abs((o.gy||this.G)-p.gy)<=depthHalf(hb)&&Math.abs(p.x-this.heroX(o))<=hb.w*UNIT_SCALE/2&&p.h>=0&&p.h<=hb.h){p.hit.add(o);this.hurtHero(o,p.dmg*(isHead(o,p.h)?HEADSHOT.mul:1),p.src);
@@ -1280,7 +1291,10 @@ class Game{
       if(p.t>4)p.dead=true;}
     this.proj=this.proj.filter(p=>!p.dead);
     // fx + text
-    for(const x of this.fx)x.t+=dt;this.fx=this.fx.filter(x=>x.t<(x.life||.6));
+    // 0.12.14 (Kyle): nothing lying on the ground slides along with the party: bodies, stuck arrows, thorns, scorch marks scroll with the ground
+    for(const h of this.alive())this.obClamp(h,true);for(const e of this.enemies)if(!e.dead)this.obClamp(e,false);
+    for(const x of this.fx){x.t+=dt;if(scroll&&GROUND_FX.has(x.k))x.x-=scroll*dt;}this.fx=this.fx.filter(x=>x.t<(x.life||.6));
+    if(scroll)for(const h of this.heroes.concat(this.pets||[]))if(!h.alive&&h.x!=null)h.x-=scroll*dt;   // fallen heroes stay where they fell
     for(const x of this.texts){x.t+=dt;x.y-=dt*14;}this.texts=this.texts.filter(x=>x.t<.9);
     if(this.shake>0)this.shake-=dt;
   }
@@ -1306,14 +1320,14 @@ class Game{
     // IF War Cry is ready AND a fight is close AND I'm not already fired up THEN shout
     if(SA&&h.shT<=0&&!(h.shoutT>.5)&&(h.en||0)>=SA.en&&this.enemies.some(e=>!e.dead&&Math.abs(e.x-h.x)<150)&&spendEnergy(h,SA.en)){
       h.shT=SA.cd*(1-(h.cdr||0));for(const o of this.alive())if(Math.abs(this.heroX(o)-this.heroX(h))<=SA.range){o.shoutT=SA.dur;o.shoutB={dmg:SA.dmg,spd:SA.spd};o.buffT=Math.max(o.buffT||0,SA.dur);}
-      this.text(h.x,this.G-74,'WAR CRY!','#ffd23f',true);this.fx.push({k:'ring',x:h.x,y:this.G-14,r:46,t:0,c:'#ffd23f'});this.ev('shout',{});}
+      this.fx.push({k:'ring',x:h.x,y:this.G-14,r:46,t:0,c:'#ffd23f'});this.ev('shout',{});}
     // IF Wave Dash is ready AND an enemy is in my lane a short way ahead (not in my face) THEN dash through the line
     if(DA&&h.daT<=0&&(h.en||0)>=DA.en*(1+.3*trait(h,'energy')-.15)){
       const inPath=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=DA.depth&&e.x-h.x>14&&e.x-h.x<Math.min(DA.dist,this.W-h.x));
       // IF at least 2 enemies are in the wave's path (or 1 if it's the last one around) THEN ride the wave through them
       if((inPath.length>=DA.minHits||(inPath.length&&this.enemies.filter(e=>!e.dead).length===1))&&spendEnergy(h,DA.en)){h.daT=DA.cd*(1-(h.cdr||0));h.face=1;
         const dmg=(this.rollDice(C.melee.dice)+(C.melee.flat||0)+(h.flatMelee||0))*(C.melee.dmgMul||1)*DA.dmgMul*(h.atk/h.base.atk)*h.meleeDmg*(h.cryDmg||1);
-        h.dash={t:0,T:DA.dur,x0:h.x,x1:Math.min(this.W-12,h.x+DA.dist),hit:new Set(),dmg,A:DA,trail:[]};this.text(h.x,this.G-70,'WAVE DASH!','#7fd8ff');this.ev('dash',{});return;}}
+        h.dash={t:0,T:DA.dur,x0:h.x,x1:Math.min(this.W-12,h.x+DA.dist),hit:new Set(),dmg,A:DA,trail:[]};this.ev('dash',{});return;}}
     const tgt=mt||(C.ranged?(this.isMeleeHero(h)?(findT('melee'),findT('ranged')):findT('ranged')):(findT('melee'),null));const rd=faceToward(h,tgt?tgt.x:h.x+10,dt);if(!rd||!tgt)return;
     if(mt){if(h.mT>=C.melee.every){h.mT=0;h.combo=(h.combo||0)+1;h.swingAnim=!C.combo?null:(h.moving?'runatk':(h.combo%2?'attack1':'attack2'));h.animM=h.swingAnim==='attack2'?.36:.45;h.animT=0;const roll=(this.rollDice(C.melee.dice)+(C.melee.flat||0)+(h.flatMelee||0))*(C.melee.dmgMul||1)*(h.atk/h.base.atk)*h.meleeDmg*(h.cryDmg||1);
         setTimeoutSafe(this,C.melee.hitAt||.15,()=>{if(!h.alive||mt.dead)return;   // the blow lands a moment into the swing (Kyle: very slight delay)
@@ -1324,35 +1338,35 @@ class Game{
     // ---- Set_Camp (Flannel_Man)
     const CA=(C.abilities||[]).find(a=>a.id==='camp');if(CA){if(h.caT==null)h.caT=CA.cd*.1;if(h.caT>0)h.caT-=dt;
       if(h.camping){h.camping-=dt;h.pauseT=Math.max(h.pauseT||0,.05);if(h.camping<=0){h.camping=0;
-          this.camp={x:h.x+(h.face<0?-11:11),gy:h.gy,life:CA.life,t:0,A:CA,owner:h,state:'start'};Comms.onCamp(this,h,this.camp.x);this.text(h.x+16,this.G-40,'CAMPFIRE','#ffb040');this.ev('camp',{});}
+          this.camp={x:h.x+(h.face<0?-11:11),gy:h.gy,life:CA.life,t:0,A:CA,owner:h,state:'start'};Comms.onCamp(this,h,this.camp.x);this.ev('camp',{});}
         return;}
       // IF there's no fire going AND nothing is right on top of us AND Set_Camp is ready THEN kneel and light one
       const close=this.enemies.some(e=>!e.dead&&Math.abs(e.x-h.x)<70);
-      if(h.caT<=0&&!mt&&!close&&!(this.camp&&this.camp.state!=='dead')&&(h.en||0)>=CA.en&&spendEnergy(h,CA.en)){h.caT=CA.cd*(1-(h.cdr||0));h.camping=CA.cast;h.campT0=CA.cast;this.text(h.x,this.G-70,'SET_CAMP','#ffb040');return;}}
+      if(h.caT<=0&&!mt&&!close&&!(this.camp&&this.camp.state!=='dead')&&(h.en||0)>=CA.en&&spendEnergy(h,CA.en)){h.caT=CA.cd*(1-(h.cdr||0));h.camping=CA.cast;h.campT0=CA.cast;return;}}
     // ---- Call Companion (Flannel_Man)
     const PB=(C.abilities||[]).find(a=>a.id==='pal');if(PB){if(h.palT==null)h.palT=PB.cd*.15;if(h.palT>0)h.palT-=dt;}
     if(h.calling){const S=h.calling;if(mt){h.calling=null;this.text(h.x,this.G-70,'interrupted','#9aa');}
       else{S.t+=dt;h.pauseT=Math.max(h.pauseT||0,.1);if(S.t>=S.T){h.calling=null;if(spendEnergy(h,PB.en)){h.palT=PB.cd*(1-(h.cdr||0));this.callPal(h,PB);}}return;}}
     if(PB&&!h.cast&&!h.setting&&!mt&&h.palT<=0&&(h.en||0)>=PB.en){const pal=(this.pets||[]).find(p=>p.owner===h&&p.alive);
       // IF she isn't out AND there's a fight THEN call her; IF she's out but hurt THEN patch her up
-      if((!pal&&this.enemies.some(e=>!e.dead))||(pal&&pal.hp<pal.max*.93)){h.calling={t:0,T:PB.cast};this.text(h.x,this.G-70,pal?'hang in there!':'whistles...','#7dff9a');return;}}
+      if((!pal&&this.enemies.some(e=>!e.dead))||(pal&&pal.hp<pal.max*.93)){h.calling={t:0,T:PB.cast};return;}}
     // ---- Brick Throw (the companion): never misses, always hurts, usually stuns
     const BB=(C.abilities||[]).find(a=>a.id==='brick');if(BB){if(h.brT==null)h.brT=BB.cd*.3;if(h.brT>0)h.brT-=dt;
       if(h.brT<=0&&!mt&&tgt&&Math.abs(tgt.x-h.x)<=BB.range&&(h.en||0)>=BB.en*(1+.3*trait(h,'energy')-.15)&&spendEnergy(h,BB.en)){h.brT=BB.cd*(1-(h.cdr||0));h.animM=.45;
         const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(C.ranged.dmgMul||1)*BB.dmgMul*(h.atk/h.base.atk)*h.rangedDmg;
-        h._forceBox='bot';const p=this.shoot(h,tgt,'brick',dmg,{});p.sure=1;p.stunCh=BB.stunCh;p.stunT=BB.stunT;p.spd=170;this.aim(p,h,tgt);h._forceBox=null;this.text(h.x,this.G-60,'BRICK!','#c8603a');return;}}
+        h._forceBox='bot';const p=this.shoot(h,tgt,'brick',dmg,{});p.sure=1;p.stunCh=BB.stunCh;p.stunT=BB.stunT;p.spd=170;this.aim(p,h,tgt);h._forceBox=null;return;}}
     // ---- Trip Bomb
     const TB=(C.abilities||[]).find(a=>a.id==='trip');if(TB){if(h.tbT==null)h.tbT=TB.cd*.25;if(h.tbT>0)h.tbT-=dt;}
     if(h.setting){const S=h.setting;if(mt){h.setting=null;this.text(h.x,this.G-70,'interrupted','#9aa');}
       else{S.t+=dt;h.pauseT=Math.max(h.pauseT||0,.1);
         if(S.t>=S.T){h.setting=null;if(spendEnergy(h,TB.en)){h.tbT=TB.cd*(1-(h.cdr||0));const foe=S.near;
           const x=Math.max(h.x+16,Math.min(h.x+46,foe&&!foe.dead?foe.x-16:h.x+34));
-          (this.traps=this.traps||[]).push({x,gy:h.gy!=null?h.gy:this.G,t:0,A:TB,owner:h});Comms.onTrap(this,h,x);this.text(x,this.G-40,'TRIP BOMB','#ffd23f');}}
+          (this.traps=this.traps||[]).push({x,gy:h.gy!=null?h.gy:this.G,t:0,A:TB,owner:h});Comms.onTrap(this,h,x);}}
         return;}}
     // IF Trip Bomb is ready AND no trap is out AND an enemy is coming (in front, not in my face yet) AND enough energy THEN set one
     if(TB&&!h.cast&&!mt&&h.tbT<=0&&!(this.traps||[]).some(t=>t.owner===h)&&(h.en||0)>=TB.en*(1+.3*trait(h,'energy')-.15)){
       const near=this.enemies.filter(e=>!e.dead&&!e.fly&&!e.boss&&e.x>h.x+40&&e.x<h.x+190).sort((p,q)=>p.x-q.x)[0];
-      if(near){h.setting={t:0,T:TB.cast,near};this.text(h.x,this.G-70,'setting a trap...','#ffd23f');return;}}
+      if(near){h.setting={t:0,T:TB.cast,near};return;}}
     // Aimed Shot has a 2s cast: he stands still with a laser on the target, then fires. A foe in crowbar reach breaks the cast
     //   (no energy spent, the cooldown doesn't start). If the target dies mid-cast he swings the laser to the next one in range.
     if(h.cast){const K=h.cast;
@@ -1360,20 +1374,20 @@ class Game{
       else{if(!K.tgt||K.tgt.dead){K.tgt=findT('ranged');if(!K.tgt){h.cast=null;return;}}
         K.t+=dt;h.pauseT=Math.max(h.pauseT||0,.1);
         if(K.t>=K.T){h.cast=null;if(!spendEnergy(h,AB.en))return;
-          h.abT=AB.cd*(1-(h.cdr||0));h.rT=0;h.ammo-=1;h.animR=.5;h.firedMoving=false;this.text(h.x,this.G-70,AB.name.toUpperCase(),'#ffd23f');this.ev('gun',{big:1});this.shake=Math.max(this.shake||0,.2);
+          h.abT=AB.cd*(1-(h.cdr||0));h.rT=0;h.ammo-=1;h.animR=.5;h.firedMoving=false;this.ev('gun',{big:1});this.shake=Math.max(this.shake||0,.2);
           const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(h.atk/h.base.atk)*h.rangedDmg;
           h._forceBox=AB.box;const p=this.shoot(h,K.tgt,st.proj,dmg,{pierce:AB.pierce||0});p.critAdd=AB.critAdd;p.critMul=AB.critMul;this.aim(p,h,K.tgt);h._forceBox=null;}
         return;}}
     // IF Aimed Shot is ready AND loaded AND standing still AND enough energy (Preserve-minded units keep a cushion) THEN start the cast
-    if(AB&&!mt&&h.abT<=0&&h.ammo>0&&!h.moving&&h.rT>=.5&&(h.en||0)>=AB.en*(1+.4*trait(h,'energy')-.2)){h.cast={t:0,T:AB.cast||2,tgt};this.text(h.x,this.G-70,'aiming...','#ff5a5a');return;}
+    if(AB&&!mt&&h.abT<=0&&h.ammo>0&&!h.moving&&h.rT>=.5&&(h.en||0)>=AB.en*(1+.4*trait(h,'energy')-.2)){h.cast={t:0,T:AB.cast||2,tgt};return;}
     const RA=(C.abilities||[]).find(a=>a.id==='rapid');if(RA){if(h.raT==null)h.raT=RA.cd*.3;if(h.raT>0)h.raT-=dt;
       // IF One Nocked, Two in Hand is ready AND an enemy is in bow range AND I'm not already rapid-firing THEN nock up
       if(h.raT<=0&&!(h.rapid>0)&&!mt&&tgt&&Math.abs(tgt.x-h.x)<=C.ranged.range&&(h.en||0)>=RA.en*(1+.3*trait(h,'energy')-.15)&&spendEnergy(h,RA.en)){
-        h.raT=RA.cd*(1-(h.cdr||0));h.rapid=RA.shots;this.text(h.x,this.G-72,'ONE NOCKED, TWO IN HAND!','#ffd23f');this.ev('shout',{});}}
+        h.raT=RA.cd*(1-(h.cdr||0));h.rapid=RA.shots;this.ev('shout',{});}}
     // ---- Poultice (Chibi_Warrior): self heal over time when he's hurt
     const PO=AB_x(C,'poultice');if(PO){if(h.poT==null)h.poT=PO.cd*.2;if(h.poT>0)h.poT-=dt;
       if(h.poT<=0&&h.hp/h.max<PO.under&&!(h.hotT>0)&&(h.en||0)>=PO.en&&spendEnergy(h,PO.en)){h.poT=PO.cd*(1-(h.cdr||0));h.hotT=PO.dur;h.hotTick=0;h.hotAmt=h.max*PO.pct;h.hotEvery=PO.tick;h.poulticeT=PO.dur;
-        this.text(h.x,this.G-66,'POULTICE','#9ae08a');this.ev('heal',{});}}
+        this.ev('heal',{});}}
     if(h.poulticeT>0)h.poulticeT-=dt;
     // ---- Lumber_Jack abilities
     const WH=AB_x(C,'whirl'),CP=AB_x(C,'chop'),LP=AB_x(C,'leap'),RG=AB_x(C,'rage'),RL=AB_x(C,'roll');
@@ -1396,17 +1410,17 @@ class Game{
         return;}
       const en=h.en||0,hp=h.hp/h.max,close=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-h.x)<=24&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=6);
       // IF hurt AND something is in my face AND Log_Roll is ready THEN roll back out of it (can't be hit while rolling)
-      if(RL&&h.rlT<=0&&hp<.4&&close.length&&en>=RL.en&&spendEnergy(h,RL.en)){h.rlT=RL.cd;h.rolling={t:0,x0:h.x,x1:Math.max(8,h.x-(h.face<0?-RL.dist:RL.dist))};h.invulnT=RL.dur;this.text(h.x,this.G-66,'LOG_ROLL','#c8a060');return;}
+      if(RL&&h.rlT<=0&&hp<.4&&close.length&&en>=RL.en&&spendEnergy(h,RL.en)){h.rlT=RL.cd;h.rolling={t:0,x0:h.x,x1:Math.max(8,h.x-(h.face<0?-RL.dist:RL.dist))};h.invulnT=RL.dur;return;}
       // IF under half health AND Timber_Rage is ready THEN get angry
-      if(RG&&h.rgT<=0&&hp<RG.under&&en>=RG.en&&this.enemies.some(e=>!e.dead&&Math.abs(e.x-h.x)<120)&&spendEnergy(h,RG.en)){h.rgT=RG.cd;h.rageT=RG.dur;h.rageAnim=.7;this.text(h.x,this.G-72,'TIMBER_RAGE!','#ff4a3a',true);this.ev('shout',{});}
+      if(RG&&h.rgT<=0&&hp<RG.under&&en>=RG.en&&this.enemies.some(e=>!e.dead&&Math.abs(e.x-h.x)<120)&&spendEnergy(h,RG.en)){h.rgT=RG.cd;h.rageT=RG.dur;h.rageAnim=.7;this.ev('shout',{});}
       // IF 2+ enemies are around me AND Whirl_Wind is ready THEN spin
-      if(WH&&h.whT<=0&&close.length>=2&&en>=WH.en&&spendEnergy(h,WH.en)){h.whT=WH.cd;h.whirl={t:0,tick:WH.every*.5};this.text(h.x,this.G-70,'WHIRL_WIND','#c8a060');this.ev('whoosh',{});return;}
+      if(WH&&h.whT<=0&&close.length>=2&&en>=WH.en&&spendEnergy(h,WH.en)){h.whT=WH.cd;h.whirl={t:0,tick:WH.every*.5};this.ev('whoosh',{});return;}
       // IF an enemy is in my lane a little ahead (inside the shockwave) AND Ground_Chop is ready THEN chop
       const ahead=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x-h.x>0&&e.x-h.x<=CP.dist&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=CP.depth);
-      if(CP&&h.cpT<=0&&ahead.length&&en>=CP.en&&spendEnergy(h,CP.en)){h.cpT=CP.cd;h.chopping=CP.cast;h.chopT0=CP.cast;h.face=1;this.text(h.x,this.G-70,'GROUND_CHOP','#c8a060');return;}
+      if(CP&&h.cpT<=0&&ahead.length&&en>=CP.en&&spendEnergy(h,CP.en)){h.cpT=CP.cd;h.chopping=CP.cast;h.chopT0=CP.cast;h.face=1;return;}
       // IF a big target is 24-60px away (too far to swing, close enough to jump) AND Hatchet_Leap is ready THEN leap onto it
       const lt=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-h.x)>=LP.min&&Math.abs(e.x-h.x)<=LP.range).sort((p,q)=>(q.max-p.max))[0];
-      if(LP&&h.lpT<=0&&lt&&en>=LP.en&&spendEnergy(h,LP.en)){h.lpT=LP.cd;h.leap={t:0,x0:h.x,x1:lt.x-(lt.x>h.x?10:-10)};faceToward(h,lt.x,1);h.laneI=lt.laneI!=null?lt.laneI:h.laneI;this.text(h.x,this.G-70,'HATCHET_LEAP','#c8a060');return;}}
+      if(LP&&h.lpT<=0&&lt&&en>=LP.en&&spendEnergy(h,LP.en)){h.lpT=LP.cd;h.leap={t:0,x0:h.x,x1:lt.x-(lt.x>h.x?10:-10)};faceToward(h,lt.x,1);h.laneI=lt.laneI!=null?lt.laneI:h.laneI;return;}}
     // ---- Druid abilities
     const AB_=id=>(C.abilities||[]).find(a=>a.id===id);const MD=AB_('mend'),BL=AB_('bloom'),TH=AB_('thorns'),CY=AB_('cyclone');
     if(MD||BL||TH||CY){for(const [A,k] of [[MD,'mdT'],[BL,'blT'],[TH,'thT'],[CY,'cyT']])if(A){if(h[k]==null)h[k]=A.cd*.2;if(h[k]>0)h[k]-=dt;}
@@ -1419,21 +1433,21 @@ class Game{
       // IF an ally is under 90% AND not already blooming AND Bloom is ready THEN wrap them in a healing vine heart
       const bt=allies.filter(o=>!(o.hotT>0)&&o.hp/o.max<BL.under).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
       if(BL&&h.blT<=0&&bt&&(h.en||0)>=BL.en&&spendEnergy(h,BL.en)){h.blT=BL.cd*(1-(h.cdr||0));bt.hotT=BL.dur;bt.hotTick=0;bt.hotAmt=bt.max*BL.pct;bt.hotEvery=BL.tick;bt.hotFx=0;
-        this.text(this.heroX(bt),this.G-62,'BLOOM','#7dff9a');this.ev('heal',{});h.animC=.35;}
+        this.ev('heal',{});h.animC=.35;}
       // IF 2+ enemies are down my lane (or something big) AND Thorn Wave is ready THEN send thorns rolling along the ground
       if(TH&&h.thT<=0&&!mt&&(h.en||0)>=TH.en){const lane=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>h.x&&e.x-h.x<=TH.dist&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=TH.depth);
-        if((lane.length>=2||lane.some(e=>e.boss))&&spendEnergy(h,TH.en)){h.thT=TH.cd*(1-(h.cdr||0));h.casting=TH.cast;h.castT0=TH.cast;this.text(h.x,this.G-70,'THORN WAVE','#c8a060');
+        if((lane.length>=2||lane.some(e=>e.boss))&&spendEnergy(h,TH.en)){h.thT=TH.cd*(1-(h.cdr||0));h.casting=TH.cast;h.castT0=TH.cast;
           setTimeoutSafe(this,TH.cast,()=>{this.ev('thorns',{});(this.thornWaves=this.thornWaves||[]).push({x0:h.x+8,gy:h.gy,t:0,n:0,A:TH,src:h,mul,hit:new Set(),flat:(C.ranged.flat||0)+(h.flatRanged||0)});});return;}}
       // IF Cyclone is ready AND 2+ enemies are down my lane (or something big) THEN send a tornado along it
       if(CY&&h.cyT<=0&&!mt&&(h.en||0)>=CY.en){const lane=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>h.x&&e.x-h.x<=CY.dist&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=CY.depth);
-        if((lane.length>=2||lane.some(e=>e.boss))&&spendEnergy(h,CY.en)){h.cyT=CY.cd*(1-(h.cdr||0));h.casting=CY.cast;h.castT0=CY.cast;this.text(h.x,this.G-70,'CYCLONE','#9ad8ff');
+        if((lane.length>=2||lane.some(e=>e.boss))&&spendEnergy(h,CY.en)){h.cyT=CY.cd*(1-(h.cdr||0));h.casting=CY.cast;h.castT0=CY.cast;
           setTimeoutSafe(this,CY.cast,()=>{this.ev('wind',{});(this.cyclones=this.cyclones||[]).push({x:h.x+24,x0:h.x,gy:h.gy,t:0,A:CY,src:h,mul});});return;}}}
     const AR=(C.abilities||[]).find(a=>a.id==='rain');if(AR){if(h.arT==null)h.arT=AR.cd*.25;if(h.arT>0)h.arT-=dt;
       if(h.volley){h.volley-=dt;h.pauseT=Math.max(h.pauseT||0,.05);if(h.volley<=0)h.volley=0;return;}
       // IF Arrow_Rain is ready AND 2+ enemies are bunched up in range THEN rain on the thickest group
       if(h.arT<=0&&!mt&&(h.en||0)>=AR.en){const foes=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-h.x)<=AR.range);
         let best=null,bn=0;for(const e of foes){const n=foes.filter(o=>Math.abs(o.x-e.x)<=AR.spread&&Math.abs((o.gy||this.G)-(e.gy||this.G))<=AR.lanes).length;if(n>bn){bn=n;best=e;}}
-        if(best&&bn>=2&&spendEnergy(h,AR.en)){h.arT=AR.cd*(1-(h.cdr||0));h.volley=AR.cast;h.volleyT0=AR.cast;faceToward(h,best.x,1);this.text(h.x,this.G-70,'ARROW_RAIN','#ffd23f');
+        if(best&&bn>=2&&spendEnergy(h,AR.en)){h.arT=AR.cd*(1-(h.cdr||0));h.volley=AR.cast;h.volleyT0=AR.cast;faceToward(h,best.x,1);
           const cx=best.x,cgy=best.gy!=null?best.gy:this.G,mul=(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
           setTimeoutSafe(this,AR.cast,()=>{this.ev('bow',{});this.rain=this.rain||[];
             for(let i=0;i<AR.count;i++){const at=AR.over*i/AR.count+this.rng()*.08;const gy=Math.max(LANES[0],Math.min(LANES[LANES.length-1],cgy+(this.rng()*2-1)*AR.lanes));
@@ -1444,7 +1458,7 @@ class Game{
       // IF Blow_Gun is ready AND a living (not undead) enemy is in range AND not in my face THEN poison it
       const live=!mt&&this.enemies.filter(e=>!e.dead&&!isUndead(e)&&Math.abs(e.x-h.x)<=BG.range).sort((p,q)=>(q.max-p.max)||(Math.abs(p.x-h.x)-Math.abs(q.x-h.x)))[0];
       if(h.bgT<=0&&live&&(h.en||0)>=BG.en&&spendEnergy(h,BG.en)){h.bgT=BG.cd*(1-(h.cdr||0));h.blowing=BG.anim;h.blowT0=BG.anim;faceToward(h,live.x,1);
-        this.text(h.x,this.G-70,'BLOW_GUN','#7dff6a');
+        
         setTimeoutSafe(this,BG.releaseAt,()=>{if(!h.alive)return;const tg=live.dead?this.enemies.find(e=>!e.dead&&!isUndead(e)):live;if(!tg)return;this.ev('bow',{});
           const mz=MUZZLE[h.key];MUZZLE[h.key]=[12,12];const p=this.shoot(h,tg,'dart',this.rollDice(BG.dice)*(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1),{});MUZZLE[h.key]=mz;
           p.poison=BG.extra;this.aim(p,h,tg);});
@@ -1466,7 +1480,7 @@ class Game{
       atkT:0,anim:0,animT:0,walkT:0,shield:0,shieldT:0,buffT:0,lowT:0,nearT:0,hitFlash:0,alt:0,face:1,
       max:b.hp,hp:b.hp,atk:b.atk,aspd:1,crit:b.crit,acc:b.acc,dr:0,armor:0,cdr:0,dodge:b.dodge,luck:0,scoreM:1,pow:1,reach:1,critMul:b.critMul,armorPts:b.armorPts,kbRes:b.kbRes,
       enMaxB:100,enRegenB:5,xpBonus:0,lifesteal:0,mvMul:1,meleeDmg:1,rangedDmg:1,meleeSpd:1,rangedSpd:1,kbAdd:0,flatRanged:0,flatMelee:0};
-    this.pets.push(pal);this.fx.push({k:'poof',x:pal.x,y:this.G-20,t:0});this.text(pal.x,this.G-56,'TRAVELING_COMPANION!','#7dff9a');}
+    this.pets.push(pal);this.fx.push({k:'poof',x:pal.x,y:this.G-20,t:0});}
   tripBoom(T){const A=T.A,h=T.owner;T.done=1;this.fx.push({k:'boom',x:T.x+6,gy:T.gy,t:0,life:1.15,raw:1});this.ev('boom',{});this.shake=Math.max(this.shake||0,.55);
     const base=this.rollDice(A.dice)+(A.flat||0)+((h&&h.flatRanged)||0);const mul=h&&h.base?(h.atk/h.base.atk)*(h.rangedDmg||1):1;
     for(const e of this.enemies){if(e.dead||e.fly)continue;const dx=Math.abs(e.x-(T.x+6)),dz=Math.abs((e.gy!=null?e.gy:this.G)-T.gy);
@@ -1480,7 +1494,7 @@ class Game{
   rollDice([n,d]){let r=0;for(let i=0;i<n;i++)r+=1+Math.floor(this.rng()*d);return r;}
   // 0.12.2 test move for the energy sliders (until real abilities come back): a Power Attack costs 30 energy and hits x1.8
   powerMul(u){if(this.demo||!Brain.energyCall(u))return 1;if(!spendEnergy(u,30)){u.burst=0;return 1;}if(u.burst>0)u.burst--;
-    const x=u.key?this.heroX(u):u.x;this.text(x,(u.key?this.G:u.y)-66,'POWER!','#ff8a1f');return 1.8;}
+    const x=u.key?this.heroX(u):u.x;return 1.8;}
   basic(h,tgt,kind,mult){
     const st=h.style;kind=kind||st.atk;const [nd,ds]=h.base.dice||[2,4];let roll=0;for(let i=0;i<nd;i++)roll+=1+Math.floor(this.rng()*ds);const A=roll*(h.atk/h.base.atk);   // basic attack: a fresh 2d4 every swing/shot (item/team damage bonuses still apply)
     const M=mult==null?1:mult;
@@ -1558,7 +1572,24 @@ class Game{
     if(z.missed)Comms.onDanger(this,z,z.missed);
     return z;}
   hurtMinion(m,amt,from){if(!m||m.dead)return;m.hp-=amt;m.hitFlash=.12;this.text(m.x,this.G-40,Math.round(amt),'#ffb0b0');}
-  heroX(h){return h.x+(h.dodgeX||0)+(h.wanderX||0);}   // where a hero actually stands right now
+  heroX(h){return h.x+(h.dodgeX||0)+(h.wanderX||0);}
+  obHw(o){return Math.max(3,OBST[o.k].fw*.5*.5*.8);}   // half-width in world px (sheet is 2 px per world px)
+  // each obstacle's footprint follows its picture: a rock blocks only under its base; the diagonal log blocks its left end in the near lane and its right end in the far lane
+  obSpan(o,l){const F=OBST[o.k].foot;const i=o.lanes.length===2?(l===Math.max(...o.lanes)?0:1):0;const f=F[i]||F[0];return [o.x+f[0],o.x+f[1]];}
+  laneBlocked(l,x0,x1){for(const o of this.obst||[]){if(!o.lanes.includes(l))continue;const [a,b]=this.obSpan(o,l);if(b>x0&&a<x1)return o;}return null;}
+  // IF the lane I want is blocked just ahead THEN take the nearest open lane (ties go to whichever way I was already heading)
+  freeLane(want,cur,x0,x1){if(!this.laneBlocked(want,x0,x1))return want;let best=null,bd=99;for(let l=0;l<LANES.length;l++){if(this.laneBlocked(l,x0,x1))continue;const d=Math.abs(l-want)+Math.abs(l-cur)*.3;if(d<bd){bd=d;best=l;}}return best==null?want:best;}
+  stepObstacles(dt,scroll){if(!this.obst)this.obst=[];if(this.obNext==null)this.obNext=60+this.rng()*120;
+    for(const o of this.obst)o.x-=scroll*dt;this.obst=this.obst.filter(o=>o.x>-50);
+    if(scroll&&!this.exiting&&this.dist>=this.obNext&&!(this.boss&&!this.boss.dead)){this.obNext=this.dist+110+this.rng()*230;
+      const tot=OBST_POOL.reduce((s,p)=>s+p[1],0);let r=this.rng()*tot,k='rock_crack';for(const [n,w] of OBST_POOL){if((r-=w)<0){k=n;break;}}const D=OBST[k];
+      const x=this.W+40;const near=this.obst.filter(o=>Math.abs(o.x-x)<90);const used=new Set(near.flatMap(o=>o.lanes));
+      for(let tries=0;tries<8;tries++){const l=Math.floor(this.rng()*(LANES.length-D.lanes+1));const lanes=D.lanes===2?[l,l+1]:[l];const all=new Set([...used,...lanes]);
+        if(all.size>2)continue;const arr=[...all].sort();if(arr.length===2&&arr[1]-arr[0]>1&&near.length)continue;   // never two lanes walled off side by side plus another
+        this.obst.push({k,x:x+this.rng()*20,lanes,blk:D.blk});break;}}}
+  // keep bodies out of obstacles: IF a unit ends up inside one in its lane THEN push it out the near side
+  obClamp(u,isHero){if(!this.obst||!this.obst.length||u.fly||u.boss)return;const gy=u.gy;if(gy==null)return;
+    for(const o of this.obst){const l=o.lanes.find(l=>Math.abs(LANES[l]-gy)<3.5);if(l==null)continue;const pad=isHero?3:2;const [a,b]=this.obSpan(o,l);if(u.x>a-pad&&u.x<b+pad)u.x=(u.x-(a+b)/2)>=0?b+pad:a-pad;}}   // where a hero actually stands right now
   stepZones(dt){
     // beat-'em-up shuffle: everyone drifts a little on their own (bigger while standing and fighting) — can carry them clear of danger by luck
     for(const h of this.heroes){if(!h.alive)continue;const ph=(h.key.length*1.7)%6.3;const amp=this.scroll?3:7;
@@ -1714,12 +1745,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793870129';const BGI=new Image();BGI.src='crawl_bg.png?v=1793870129';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793870129';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793870658';const BGI=new Image();BGI.src='crawl_bg.png?v=1793870658';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793870658';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793870129';XIMG.wave.src='crawl_wave.png?v=1793870129';XIMG.chibi.src='crawl_chibi.png?v=1793870129';XIMG.flannel.src='crawl_flannel.png?v=1793870129';XIMG.rain.src='crawl_rain.png?v=1793870129';XIMG.druid.src='crawl_druid.png?v=1793870129';XIMG.camp.src='crawl_campfire.png?v=1793870129';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793870129';XIMG.tornado.src='crawl_fx_tornado.png?v=1793870129';XIMG.vine.src='crawl_fx_vine.png?v=1793870129';XIMG.thorn.src='crawl_fx_thorn.png?v=1793870129';
+const XIMG={obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793870658';XIMG.wave.src='crawl_wave.png?v=1793870658';XIMG.chibi.src='crawl_chibi.png?v=1793870658';XIMG.flannel.src='crawl_flannel.png?v=1793870658';XIMG.rain.src='crawl_rain.png?v=1793870658';XIMG.druid.src='crawl_druid.png?v=1793870658';XIMG.camp.src='crawl_campfire.png?v=1793870658';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793870658';XIMG.tornado.src='crawl_fx_tornado.png?v=1793870658';XIMG.vine.src='crawl_fx_vine.png?v=1793870658';XIMG.thorn.src='crawl_fx_thorn.png?v=1793870658';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793870129';XIMG.boom.src='crawl_boom.png?v=1793870129';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793870658';XIMG.obst.src='crawl_obst.png?v=1793870658';XIMG.boom.src='crawl_boom.png?v=1793870658';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -1946,7 +1977,8 @@ function drawGame(ctx,g,W,oy){
     if(e.burnT>0){ctx.fillStyle=Math.random()<.5?'#ffb040':'#ff5a1a';ctx.fillRect(Math.round(e.x-3+Math.random()*6),Math.round(y+10+Math.random()*12),1,2);}
     if(e.hp<e.max||e.bleedT>0||e.burnT>0||e.slow>0||e.stun>0)plate(ctx,e,e.x,y-2,e.elite?20:14,false,e.elite?'#ffb020':'#e8303a');};
   // draw heroes and enemies back-to-front by lane so units in the far lane sit behind the near ones
-  const items=[...hs.filter(h=>h.alive).map(h=>[h.gy||G,0,h.x,()=>drawHero(h)]),...es.map(e=>[e.boss?G-.5:(e.gy!=null&&!e.fly?e.gy:G+e.lane-5),1,-e.x,()=>drawEnemy(e)])]
+  const drawOb=o=>{const D=OBST[o.k];const gy=LANES[Math.max(...o.lanes)];ctx.save();shadow(ctx,o.x,gy,Math.max(5,D.fw*.22));drawUnit(ctx,{fw:D.fw,fh:D.fh,n:1,ax:D.fw/2,ay:D.fh-1,x:D.x,y:D.y,img:'obst'},0,o.x,gy+1,.5,null,0,0,false);ctx.restore();};
+  const items=[...(g.obst||[]).map(o=>[LANES[Math.max(...o.lanes)]+.2,-1,o.x,()=>drawOb(o)]),...hs.filter(h=>h.alive).map(h=>[h.gy||G,0,h.x,()=>drawHero(h)]),...es.map(e=>[e.boss?G-.5:(e.gy!=null&&!e.fly?e.gy:G+e.lane-5),1,-e.x,()=>drawEnemy(e)])]
     .sort((a,b)=>a[0]-b[0]||a[1]-b[1]||a[2]-b[2]);
   // campfire (drawn behind the units) with sparks drifting up while it burns
   if(g.camp){const F=g.camp;let fr=0;if(F.state==='start')fr=1+Math.min(2,Math.floor(F.t/.3));else if(F.state==='burn')fr=4+Math.floor(g.t*8)%4;else if(F.state==='dying')fr=8+Math.min(2,Math.floor((F.dT||0)/.4));else fr=11;
@@ -1998,15 +2030,15 @@ function drawGame(ctx,g,W,oy){
     const tag=(u,x,y,lines,c)=>{lines=lines.filter(Boolean);const w=Math.max(...lines.map(l=>ctx.measureText(l).width))+4;ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(Math.round(x-w/2),Math.round(y-6*lines.length-1),Math.round(w),6*lines.length+2);
       ctx.fillStyle=c;lines.forEach((l,i)=>ctx.fillText(l,Math.round(x),Math.round(y-6*(lines.length-1-i))));};
     const nm=t=>!t?'nobody':t.key?(heroDef(t.key)||{name:t.key}).name.split(' ').slice(-1)[0]:(t.type||'foe');
-    for(const h of g.alive()){const P=h.plan;if(!P)continue;tag(h,g.heroX(h),(h.gy||G)-Math.max(60,hbOf(h).h*UNIT_SCALE+14),[personaTitle(h),`${P.intent.toUpperCase()} → ${nm(P.tgt)}`,P.why,...(h.dangerT>g.t?[h.dangerWhy]:[]),h.pauseT>0?'(thinking...)':h.burst>0?'BURST!':''],'#b6ff00');}
+    for(const h of g.alive()){const P=h.plan;if(!P)continue;tag(h,g.heroX(h),(h.gy||G)-Math.max(60,hbOf(h).h*UNIT_SCALE+14),[`${(heroDef(h.key)||{name:h.key}).name} · ${personaTitle(h)}`,`${P.intent.toUpperCase()} → ${nm(P.tgt)}`,P.why,...(h.dangerT>g.t?[h.dangerWhy]:[]),h.pauseT>0?'(thinking...)':h.burst>0?'BURST!':''],'#b6ff00');}
     for(const e of g.enemies){if(e.dead||!e.plan)continue;tag(e,e.x,(e.gy||G)-(e.type==='werewolf'?40:52),[`${e.retreatT>0?'BACK OFF':'HUNT'} → ${nm(e.plan.tgt)}`,e.plan.why,e.pauseT>0?'(shambling...)':''],'#ff9a9a');}
     ctx.restore();}
   // 0.12.13 callouts: short shouts above the speaker's head, in that hero's colour
-  if(g.calls&&g.calls.length){ctx.save();ctx.font='bold 6px monospace';ctx.textAlign='center';ctx.textBaseline='bottom';const seen=new Set();
+  if(g.calls&&g.calls.length){ctx.save();ctx.font='bold 4px monospace';ctx.textAlign='center';ctx.textBaseline='bottom';const seen=new Set();
     for(let i=g.calls.length-1;i>=0;i--){const c=g.calls[i];if(seen.has(c.u))continue;seen.add(c.u);const u=c.u;if(!u.alive)continue;
       const x=Math.max(30,Math.min(g.W-30,g.heroX(u))),y=(u.gy||G)-Math.max(56,hbOf(u).h*UNIT_SCALE+10)-(CC.brain?32:0)-Math.min(3,c.t*8);
-      const k=c.t<.12?c.t/.12:c.t>c.life-.35?Math.max(0,(c.life-c.t)/.35):1;ctx.globalAlpha=k;const w=ctx.measureText(c.s).width+6;
-      ctx.fillStyle='rgba(8,6,14,.78)';ctx.fillRect(Math.round(x-w/2),Math.round(y-8),Math.round(w),9);ctx.fillStyle=c.c;ctx.fillRect(Math.round(x-w/2),Math.round(y),Math.round(w),1);
+      const k=c.t<.12?c.t/.12:c.t>c.life-.35?Math.max(0,(c.life-c.t)/.35):1;ctx.globalAlpha=k;const w=ctx.measureText(c.s).width+4;
+      ctx.fillStyle='rgba(8,6,14,.78)';ctx.fillRect(Math.round(x-w/2),Math.round(y-5.5),Math.round(w),6);ctx.fillStyle=c.c;ctx.fillRect(Math.round(x-w/2),Math.round(y),Math.round(w),1);
       ctx.beginPath();ctx.moveTo(x-2,y+1);ctx.lineTo(x+2,y+1);ctx.lineTo(x,y+3);ctx.fill();ctx.fillText(c.s,Math.round(x),Math.round(y));}
     ctx.restore();ctx.globalAlpha=1;}
   for(const t of g.texts){const a=1-t.t/.9;ctx.globalAlpha=Math.max(0,a);ptext(ctx,t.s,t.x,Math.round(G+(t.y-G)*HS),t.c,t.big?2:1);ctx.globalAlpha=1;}
@@ -2133,7 +2165,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.14</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.15</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
