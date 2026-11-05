@@ -1163,7 +1163,7 @@ class Game{
     if(h.hp<=0)this.heroDown(h);
     return true;
   }
-  heroDown(h){if(this.tryResurge(h))return;for(const o of this.alive())if(o!==h&&Math.abs(this.heroX(o)-this.heroX(h))<90)Brain.panic(this,o,'down');if(h.key&&!this.demo)this.st8(h).downs++;if(!h.pet){h.downed=1;h.revT=0;h.downT=this.t;}/* 0.12.22: downed, not dead: an ally can help them up */if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
+  heroDown(h){if(this.tryResurge(h))return;h.leap=null;h.leapH=0;h.whirl=null;h.dash=null;h.rolling=null;   /* no frozen mid-move poses */for(const o of this.alive())if(o!==h&&Math.abs(this.heroX(o)-this.heroX(h))<90)Brain.panic(this,o,'down');if(h.key&&!this.demo)this.st8(h).downs++;if(!h.pet){h.downed=1;h.revT=0;h.downT=this.t;}/* 0.12.22: downed, not dead: an ally can help them up */if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
     if(!h.pet){for(const p of this.pets||[])if(p.owner===h&&p.alive&&!p.dog){p.alive=false;this.fx.push({k:'poof',x:p.x,y:this.G-20,t:0});}}   // she leaves when he goes down
     if(!this.aliveHeroes().length){this.over='defeat';this.ev('defeat');}}
   procs(h,trig,e,amt,ally){
@@ -1306,6 +1306,7 @@ class Game{
       {const hx=h.x,want=this.freeLane(h.plan&&h.plan.lane!=null?h.plan.lane:h.laneI,h.laneI,hx-8,hx+(scroll?55:14));   // walk around obstacles
        if(want!==h.laneI&&Math.abs(h.gy-LANES[h.laneI])<1)h.laneI+=Math.sign(want-h.laneI);}
       {const ty=LANES[h.laneI];h.gy+=Math.sign(ty-h.gy)*Math.min(Math.abs(ty-h.gy),LANE_SPD*1.4*dt);}
+      if(h.leap){h.leap.age=(h.leap.age||0)+dt;if(h.leap.age>1.2){h.x=h.leap.x1;h.leap=null;h.leapH=0;}}   /* 0.12.50 (Kyle): a leap always lands, even if the fight around him ends mid-air */
       regenEnergy(h,dt);if(h.critRegenT>0){h.critRegenT-=dt;h.en=Math.min(h.enMax||100,(h.en||0)+2*dt);h.hp=Math.min(h.max,h.hp+2*dt);}/* Herald: +1 energy and +1 HP every 0.5s */if(h.riseT>0){h.riseT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);}h.walkT+=dt*(scroll?(MOVE[h.key]||26)/26:0);if(h.animT>0)h.animT-=dt;if(h.hitFlash>0)h.hitFlash-=dt;if(h.buffT>0)h.buffT-=dt;
       if(h.shellT>0){h.shellT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);}
       if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}
@@ -2334,12 +2335,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1793899551';const BGI=new Image();BGI.src='crawl_bg.png?v=1793899551';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793899551';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1793899817';const BGI=new Image();BGI.src='crawl_bg.png?v=1793899817';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1793899817';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793899551';XIMG.wave.src='crawl_wave.png?v=1793899551';XIMG.chibi.src='crawl_chibi.png?v=1793899551';XIMG.flannel.src='crawl_flannel.png?v=1793899551';XIMG.rain.src='crawl_rain.png?v=1793899551';XIMG.druid.src='crawl_druid.png?v=1793899551';XIMG.camp.src='crawl_campfire.png?v=1793899551';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793899551';XIMG.tornado.src='crawl_fx_tornado.png?v=1793899551';XIMG.vine.src='crawl_fx_vine.png?v=1793899551';XIMG.thorn.src='crawl_fx_thorn.png?v=1793899551';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1793899817';XIMG.wave.src='crawl_wave.png?v=1793899817';XIMG.chibi.src='crawl_chibi.png?v=1793899817';XIMG.flannel.src='crawl_flannel.png?v=1793899817';XIMG.rain.src='crawl_rain.png?v=1793899817';XIMG.druid.src='crawl_druid.png?v=1793899817';XIMG.camp.src='crawl_campfire.png?v=1793899817';XIMG.lumberjack.src='crawl_lumberjack.png?v=1793899817';XIMG.tornado.src='crawl_fx_tornado.png?v=1793899817';XIMG.vine.src='crawl_fx_vine.png?v=1793899817';XIMG.thorn.src='crawl_fx_thorn.png?v=1793899817';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793899551';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793899551';XIMG.obst.src='crawl_obst.png?v=1793899551';XIMG.cars.src='crawl_cars.png?v=1793899551';XIMG.robot.src='crawl_robot.png?v=1793899551';XIMG.cultist.src='crawl_cultist.png?v=1793899551';XIMG.tentacle.src='crawl_tentacle.png?v=1793899551';XIMG.boom.src='crawl_boom.png?v=1793899551';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1793899817';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1793899817';XIMG.obst.src='crawl_obst.png?v=1793899817';XIMG.cars.src='crawl_cars.png?v=1793899817';XIMG.robot.src='crawl_robot.png?v=1793899817';XIMG.cultist.src='crawl_cultist.png?v=1793899817';XIMG.tentacle.src='crawl_tentacle.png?v=1793899817';XIMG.boom.src='crawl_boom.png?v=1793899817';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2615,7 +2616,7 @@ function drawGame(ctx,g,W,oy){
       else if(h.hitFlash>0){A=U.hurt;f=Math.min(A.n-1,Math.floor((1-h.hitFlash/.12)*A.n));}
       else if(C&&C.ranged&&U.reload&&h.ammo<=0&&!mov){A=U.reload;f=Math.min(A.n-1,Math.floor((h.reloadT||0)/C.ranged.reload*A.n));}
       else if(mov){A=(h.running&&U.run)||U.walk;f=Math.floor(g.t*(h.running?12:h.key==='lumberjack'?9:8))%A.n;
-        if(h.running&&!U.run&&A.n>1){f=Math.floor(g.t*15)%A.n;runLean=((h.face||1)>0?1:-1)*.11;runBob=-Math.abs(Math.sin(g.t*15*Math.PI*2/A.n))*1.4;}}   /* 0.12.38: no run row (druid): her walk played fast, leaning into it with a bounce */
+        if(h.running&&!U.run&&A.n>1){f=Math.floor(g.t*15)%A.n;runLean=((h.face||1)>0?1:-1)*.06;runBob=-Math.abs(Math.sin(g.t*15*Math.PI*2/A.n))*.7;}}   /* 0.12.38: no run row (druid): her walk played fast, leaning into it with a bounce */
       const bob=(mov&&A.n===1?-Math.abs(Math.sin(g.t*11))*1.6:0)+runBob;if(runLean&&!riseRot)riseRot=runLean;   // one-frame walk (companion art has no walk row): a little hop
       if(h.whirl){ctx.save();const sp=g.t*16;   // 0.12.26: a wider slashing wave whips round him while he spins, so the reach reads
         ctx.globalCompositeOperation='lighter';
@@ -2869,7 +2870,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.49</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.50</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
