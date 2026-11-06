@@ -1,4 +1,29 @@
       <h2>What's new</h2>
+      <h3>💣 0.12.58: Proximity_Bomb, a fixed Lumber_Jack, stricter camp, smarter screen</h3>
+      <ul><li>💣 <b>Proximity_Bomb</b> (Flannel_Man, replaces Trip Bomb). It has three ways to use it on one shared 10s cooldown:
+        <ul><li>Throw it overhand onto a bunch 80-150px out.</li>
+        <li>Toss it underhand: it lobs about 125 screen px in a low arc, lands, and rolls about 75 more.</li>
+        <li>Plant it (about 3s kneeling) in front of zombies coming down his lane.</li></ul>
+        Wherever it stops, it arms and blows when a zombie gets close. The new toss and throw animations are built from his own frames, using the ball from his bomb art.</li>
+      <li><b>Screen movement:</b> the screen only moves on when more than half of the standing party is past the middle, and never while anyone is down. With nothing near, ranged heroes no longer hang far back.</li>
+      <li><b>Stuck actions fixed:</b> if a search, alarm, mine or plant slides off screen (or he gets dragged to the edge), he drops it, bar and all, and picks something new.</li>
+      <li><b>Lumber_Jack:</b> stronger axe (1d12 every 1.2s).
+        <ul><li><b>Log_Roll</b> reworked: he kicks a log down his lane that bowls zombies over (1d8, knockback, trip).</li>
+        <li><b>Ground_Chop</b> now throws a visible line of rock spikes.</li>
+        <li><b>Timber_Rage</b> glows brown-orange with flying wood chips.</li></ul></li>
+      <li><b>Chibi_Warrior</b> is about 20% weaker (2d5 every 1.2s).</li>
+      <li><b>Warhound:</b> no food or water needed (that makes up for not running). Herbs, medkits and healing magic don't work on him; <b>Nano-tech_Repair_Bots</b> replace Reactive_Plating (he stops for 2.5s and rebuilds 30% HP). He talks like a machine now.</li>
+      <li><b>Druid:</b> a real run animation, and a proper staff swing for her bolt, which now leaves from the staff head.</li>
+      <li><b>Guard Dog:</b> a new trotting walk, and he's much more aggressive (bites harder and faster, chases anything near the party).</li>
+      <li><b>Food AND water:</b> every unit wants both. Each one missing is -10% HP next stage (-20% for neither).</li>
+      <li>Camp upgrades cost <b>twice the gold</b>.</li>
+      <li><b>Every deck now gives 3 things.</b></li>
+      <li><b>Anyone can search anything:</b> debris for herbs, cars for parts and supplies. Without the Herbalist or Scavenger perk it's slow and rarely pays off.</li>
+      <li><b>Revives are more careful:</b> each zombie standing on the body cuts the odds hard.</li>
+      <li><b>Zombies:</b> they reach the big Warhound properly, swing at heroes one lane up or down, and wander lanes (7% every 1.5s).</li>
+      <li><b>Enemy mines</b> trip at a slightly wider range, and defusing happens from just outside it, so trying is safe.</li>
+      <li><b>Hardcore:</b> every area attack can hit allies (Whirl_Wind, Ground_Chop, Hatchet_Leap, Log_Roll, Arrow_Rain, Thorn_Wave, Cyclone, Wave Dash, bombs, missiles).</li>
+      <li><b>Same team again</b> is a full restart: levels, XP and stat points reset.</li></ul>
       <h3>🔥 0.12.57: campfire camp screen</h3>
       <ul><li>Camp now opens on your <b>party resting around a roaring campfire at night</b>, playing their normal idle animations. The fire flickers warm light over them, with stars overhead and the stage's own scenery behind. Everything else on the camp screen (Skills, feeding, stat points, upgrades, Triage, Watchtower, Still) sits underneath as before.</li>
       <li><b>PWR and SPD bars on the party screen now mean something.</b> They were built from an old flat attack stat that every hero now shares, so every bar showed the same 25%. PWR is now basic-attack damage per second (dice, flat bonus, pellets, crit) and SPD is basic attacks per second. Both are scaled against the best hero in the roster, and hovering shows the real numbers.</li></ul>
