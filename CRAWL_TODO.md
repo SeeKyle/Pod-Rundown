@@ -1,6 +1,6 @@
 # Crypt Crawl — work queue for unattended sessions
 
-The site is live at **0.12.62** (https://seekyle.github.io/Pod-Rundown/). Kyle (the owner) is on vacation.
+The site is live at **0.12.63** (https://seekyle.github.io/Pod-Rundown/). Kyle (the owner) is on vacation.
 This file lists everything he asked for that is NOT done yet. Work top to bottom, tick items off
 (change `[ ]` to `[x]`), and push this file back to the `crawl-dev` branch after every release so the
 next session knows where to resume.
@@ -58,12 +58,12 @@ next session knows where to resume.
 ## 1. Queue (Kyle's requests, oldest first — all NOT yet done)
 
 ### Camp & meta
-- [ ] **Camp background**: use Kyle's cabin-at-night image (pod2/assets/kyle/camp_cabin_night.png) as the camp-screen background (the campfire scene
+- [x] **Camp background**: use Kyle's cabin-at-night image (pod2/assets/kyle/camp_cabin_night.png) as the camp-screen background (the campfire scene
       area / panel backdrop). Edit it so the campfire is roaring (animated flame frames over the fire pit) and the light sparkles (flicker glow + embers).
-- [ ] **Cozy buff** (shared definition): lasts 10s; +0.25 Life and +0.25 Energy every 0.5s; +10% MELEE attack speed and +10% movement speed.
+- [x] **Cozy buff** (shared definition): lasts 10s; +0.25 Life and +0.25 Energy every 0.5s; +10% MELEE attack speed and +10% movement speed.
       Flannel_Man's campfire ability applies Cozy in a 400 screen-px radius and keeps refreshing it for anyone who stays in range.
       Add a camp building upgrade that gives every unit Cozy at the start of each stage.
-- [ ] **Remove the Radio Tower** building (the one that lets upgrades go to tier 4+; Generator tier IV needs it — drop tier IV).
+- [x] **Remove the Radio Tower** building (the one that lets upgrades go to tier 4+; Generator tier IV needs it — drop tier IV).
       Fix the ⛺ tent tooltip: remove "(+1 with a radio tower)" next to Generator and make the tooltip list the real upgrades/tiers
       generated from CAMP_UPG (so it stays right when upgrades change). Make the tent icon obviously hoverable (pulse/“hover me” hint)
       and add a dismissable camp help popup (“don't show again”, stored in localStorage) explaining the tent tooltip and other camp features.
@@ -79,13 +79,13 @@ next session knows where to resume.
 - [ ] **Retry system**: a run starts with 1 retry (max 1, doesn't stack). On a stage loss you may retry that stage once: snapshot
       everything at stage start (each hero's HP, energy, items, herbs, kit, buffs/debuffs, gold, supplies, parts, run state) and restore it.
       Beating the stage on the next attempt gives the retry back. Dying again after using it = run over (full reset, as now).
-- [ ] **Car alarms scarier**; stopping an alarm takes 5s; Wire Cutters upgrade makes the fix faster only (not shorter alarms) and costs 125g
+- [x] **Car alarms scarier**; stopping an alarm takes 5s; Wire Cutters upgrade makes the fix faster only (not shorter alarms) and costs 125g
       (set after the doubling of camp costs).
 - [ ] **Car lights**: on each car sprite find the real headlight/taillight pixels and make alarms flash those spots with light rays
       (not big circles at the ends). **Add Kyle's van** (pod2/assets/kyle/van_overgrown.png — cut it from the grey bg) as a new wrecked vehicle.
 - [ ] **Combat stats**: companions' and summons' damage counts for their owner in the end-of-stage stats (Traveling_Companion → Flannel_Man,
       tentacles → Cultist, turrets/buildings → Engineer…). Only the Guard Dog (kennel) keeps its own line.
-- [ ] **Character select**: actives first, passive last on every card (see rules). Warhound's weapon line must read "Targeted Lazer + Flamethrower".
+- [ ] **Character select**: (actives-first DONE in 0.12.63) Warhound's weapon line must read "Targeted Lazer + Flamethrower".
 - [ ] **Cast bars and reload bars** for every unit that reloads or casts.
 
 ### Flannel_Man
@@ -103,9 +103,9 @@ next session knows where to resume.
         decide "quick results" (toss/throw) vs "invest in future damage" (place) from the situation and his sliders. Choose better than before.
 - [ ] **Rust mine & Proximity Bomb trigger zone**: 40 px wide + 20 px wide in the lanes above/below (as above). Spotting enemy mines a bit harder
       and checked slightly less often. Set safe-defuse range so defusers never trip it.
-- [ ] **True_Grit** (replaces Grit): 15s CD, lasts 8s, -50% damage taken, +25% move speed, sets Calculated/Aggression AND Shooter/Slasher sliders
+- [x] **True_Grit** (replaces Grit): 15s CD, lasts 8s, -50% damage taken, +25% move speed, sets Calculated/Aggression AND Shooter/Slasher sliders
       to 10 for the duration. Flannel_Man's base sliders: Calculated/Aggression 3, Shooter/Slasher 4.
-- [ ] **Aimed Shot**: killing an enemy with it halves its remaining CD.
+- [x] **Aimed Shot**: killing an enemy with it halves its remaining CD.
 - [ ] **Elite Survivors** passive (replaces Call Traveling_Companion): the companion starts each stage beside him, Flannel_Man has the Scavenger
       perk built in, and both get +10% dodge while within 150 px of each other.
 - [ ] **Brick toss** (Traveling_Companion): a bit more arc, 20% slower projectile, looks like a brick (ref uploads/388903a3 — make it less tall).
@@ -126,7 +126,7 @@ next session knows where to resume.
       the stealth lasts 5s after leaving the smoke; re-entering refreshes it.
 - [ ] **Stealth AI (general)**: an if/then rule for any stealthed unit — they know they're safer until they break it and act accordingly
       (e.g. reposition, revive, set up). Build it generic for future stealth sources.
-- [ ] **Missile_Barrage**: 3 missiles that spread out a bit more, same damage, 15s CD, 45 energy.
+- [x] **Missile_Barrage**: 3 missiles that spread out a bit more, same damage, 15s CD, 45 energy.
 - [ ] **Remove Gatling_Arm**. Add a jetpack to his sprite. New passive **Tactical_Retreat**: when he drops under 30% HP he blasts up in an arc on a
       blue-flame jetpack (recolor one of Kyle's campfire flames blue) with a blue shield effect, flies back to 100 px from the left edge and slowly
       lands; while flying all damage taken is capped at 5 per hit; effects end on landing. Internal CD 40s. The flight takes about the same time
@@ -138,13 +138,13 @@ next session knows where to resume.
 
 ### Yumi_Archer
 - [ ] **Pinning_Shot**: bigger arrow with a motion trail; looks pinned into the target's legs/ground; auto-aimed (ignores accuracy).
-- [ ] **One Nocked, Two in Hand**: 3 shots over 1s (was 1.5s), 40 energy, 10s CD; can't crit; built-in passive: whenever she lands a crit,
+- [x] **One Nocked, Two in Hand**: 3 shots over 1s (was 1.5s), 40 energy, 10s CD; can't crit; built-in passive: whenever she lands a crit,
       its remaining CD is halved.
-- [ ] **Blow_Gun**: add 1d4 base damage on top of the poison; if it hits a poison-immune target, its remaining CD is halved; nicer tiny dart
+- [ ] **Blow_Gun**: (1d4 + immune-halves-CD DONE 0.12.63) still to do: nicer tiny dart
       (about 4x2 px, ref: dart images eb69cbf7 / 62228cc4 / 131f51f6 — draw your own).
 
 ### Chibi_Warrior
-- [ ] Kunai toss a little slower, with a 50% chance to apply (or refresh) a poison stack.
+- [x] Kunai toss a little slower, with a 50% chance to apply (or refresh) a poison stack.
 
 ### Void_Cultist (rework, keep tentacle basics)
 - [ ] No energy costs; abilities cost life (choose sensible amounts/percentages) except Syphon_Life which is free.
