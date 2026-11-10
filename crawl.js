@@ -317,11 +317,14 @@ const CHAR={
       // Set_Camp: he kneels, flicks a lighter and starts a campfire (1.8s). The fire doesn't block anything; every ally within 250 screen px
       //   (83 world px) gets COZY: +1% max HP and +2 energy every second. The fire has 5 life and can't be attacked, but each time Flannel_Man or
       //   his Traveling_Companion takes damage from an attack it loses 1; at 0 it breaks and dies out. 35 energy, 30s cooldown.
-      {id:'camp',name:'Set_Camp',en:40,cd:30,cast:1.8,life:5,radius:83,hp:.01,en2:2},
+      // 0.12.63 (Kyle): the fire gives COZY to every ally within 400 screen px (133 world) and keeps refreshing it while they stay (see COZY).
+      {id:'camp',name:'Set_Camp',en:40,cd:30,cast:1.8,life:5,radius:133},
       // Grit_Teeth (Kyle, 0.12.15): he sets his jaw and digs in: 60% less damage taken for 7s, and for that time his personality slides
       //   hard toward close fighting (Shooter->Slasher +6, Aggressive +3), so the behavior system walks him up into crowbar range. He
       //   shouts for the squishier allies to get behind him. IF hurt (under 60%) with something on him, OR 3+ enemies close, THEN use it. 30 energy, 22s cooldown.
-      {id:'grit',name:'Grit_Teeth',en:35,cd:22,dur:7,dr:.6,under:.6},
+      // 0.12.63 (Kyle) True_Grit (was Grit_Teeth): 15s CD, lasts 8s: 50% less damage taken, +25% move speed, and his Careful/Reckless and
+      //   Sharpshooter/Brawler sliders go to 10 for the duration (all-in, up close). IF hurt with something on him, OR 3+ close, THEN use it.
+      {id:'grit',name:'True_Grit',en:35,cd:15,dur:8,dr:.5,under:.6,move:.25},
       {id:'pal',name:'Call Traveling_Companion',en:30,cd:24,cast:.8,heal:.07},
       // 0.12.59 (Kyle) Proximity_Bomb: one bomb, same blast shape every way, three activations on one shared 10s cooldown:
       //   OVERHAND THROW: a big arc ~117-133px out (350-400 screen px); it blows the moment it lands: 4d4.
@@ -381,18 +384,18 @@ const ABIL_DESC={
   nano:'Nano-tech_Repair_Bots · 30 energy · 18s. A machine can\'t be bandaged or healed with herbs and spells, so when he drops under 55% he stops for 2.5s and a cloud of repair bots rebuilds 30% of his max HP.',
   surge:'Arc_Surge · 30 energy · 10s. Overcharges the arc blade for 5s: every blade hit also chains lightning to up to 3 more enemies within 40px (1d8 each) and stuns each one for 0.4s.',
   gatling:'Gatling_Arm · 40 energy · 14s. Spins up the gatling on his far arm and hoses the field for 3s: 10 shots in 2 seconds, 1d3 each, at -10 accuracy with a wild spread. Every shot leaves from a slightly different height and picks its own target.',
-  missiles:'Missile_Barrage · 50 energy · 18s. The pod on his back pops open and lobs 6 little missiles high over the field onto the thickest group of enemies: 2d4 each to everything within 9px of where each one lands.',
+  missiles:'Missile_Barrage · 45 energy · 15s. The pod on his back pops open and lobs 3 missiles high over the fight onto a group, spread wide; each one 2d4 in a small blast.',
   smoke:'Smoke_Screen · 35 energy · 16s. Lobs a smoke grenade between a hurt ally and the enemies on them: a thick cloud for 6s (about 180px wide). Enemies inside move 30% slower and miss half their attacks; allies inside dodge 25% of hits.',
-  aimed:'Aimed Shot · 45 energy · 14s · 2s cast with a laser sight. Never misses the head box, +5% crit, 2.5x crit damage, pierces one enemy.',
+  aimed:'Aimed Shot · 45 energy · 14s · 2s cast with a laser sight. Never misses the head box, +5% crit, 2.5x crit damage, pierces. If the shot kills, what\'s left of its cooldown is halved.',
   trip:'Proximity_Bomb · 35 energy · 10s, one cooldown for three activations, same blast every time. OVERHAND THROW: a big arc about 350-400px out, blows on impact (4d4). CAREFUL ROLL: tossed underhand about 75px, rolls another 50-75px; a zombie meeting it mid-roll sets it off early (3d4, and what\'s left of the cooldown is halved), otherwise it stops and activates with a red glow (6d4). SET IT UP: about 3s kneeling (faster when Techy, Optimal or steady-handed), planted well down the trail, activated (6d4). If a bomb of his is left behind off screen, what\'s left of the cooldown is halved. The blast: cross-shaped blast (3d6), knockback, 50% bleed, then a wider shockwave that hits anything the cross missed for half damage and shoves it harder.',
-  grit:'Grit_Teeth · 35 energy · 22s. He grits his teeth and digs in: takes 60% less damage for 7s, and leans hard into melee for that time (his sliders slide toward Slasher and Aggressive), wading in with the crowbar while he tells the others to get behind him.',
-  camp:'Set_Camp · 40 energy · 30s · 1.8s to kneel and light it right in front of him. A campfire that blocks nothing: every ally within 250px gets Cozy (+1% max HP and +2 energy per second). It has 5 life; each hit Flannel_Man or his Traveling_Companion takes costs it 1, and at 0 it dies out.',
+  grit:'True_Grit · 35 energy · 15s. For 8s he takes 50% less damage, moves 25% faster, and goes all in: his Careful/Reckless and Sharpshooter/Brawler sliders both jump to 10, so he wades in with the crowbar.',
+  camp:'Set_Camp · 40 energy · 30s · 1.8s to kneel and light it right in front of him. Every ally within 400px gets COZY and keeps it refreshed while they stay close: for 10s, +0.25 life and +0.25 energy every 0.5s, +10% melee attack speed and +10% move speed. The fire has 5 life; each attack that hurts Flannel_Man or his companion takes 1 off it.',
   pal:'Call Traveling_Companion · 30 energy · 24s. Calls his timid partner: a third of his toughness, a 1d4 pistol that fires every 0.5s with 7 shots before a 5s reload, and a Brick Throw with 75% stun. She circles around him. If she\'s already out, heals her 7%.',
   dash:'Wave Dash · 50 energy · 16s. Rides a blue energy wave about 300px forward; everything it passes through (about 1.5 lanes each way) takes a normal sword hit (2d5 base); War Cry, damage buffs and crits apply as usual.',
   shout:'War Cry · 25 energy · 7s. Every ally within 600px gets +25% damage and attack speed for 7s.',
   rain:'Arrow_Rain · 45 energy · 18s. 16 arrows rain down on the thickest group of enemies (1d6 each).',
-  rapid:'One Nocked, Two in Hand · 35 energy · 14s. He nocks one arrow and holds two more, then rapid-fires all 3 as basic shots within 1.5 seconds, each at the same or a different target, with slightly lower accuracy (-5).',
-  blowgun:'Blow_Gun · 30 energy · 9s. A poison dart: 1 stack of poison is guaranteed, with a 75% chance of a 2nd and 50% of a 3rd. Each stack: 3% max HP every 1.5s for 7.5s. Undead are immune.',
+  rapid:'One Nocked, Two in Hand · 40 energy · 10s. She rapid-fires 3 arrows within 1 second, each at the same or a different target (-5 accuracy). These can\'t crit, but any crit she lands at any time halves what\'s left of this cooldown.',
+  blowgun:'Blow_Gun · 30 energy · 9s. A dart that hits for 1d4 on its own plus poison (1 stack guaranteed, 75% for a 2nd, 50% for a 3rd) on the living. Undead are immune to the poison, but hitting one halves what\'s left of the cooldown.',
   poultice:'Poultice · 25 energy · 15s. When he\'s under 60% health he slaps a herbal poultice on: heals himself 4% of max HP every second for 6s.',
   whirl:'Whirl_Wind · 45 energy · 14s. Spins with his axe for up to 5s at half speed, trailing a slashing wave: every second it hits everything within about 70px for 1d4 and makes it bleed (6 over 3s). He can break it off early to escape, but usually spins it out.',
   chop:'Ground_Chop · 30 energy · 9s. A huge overhead chop into the ground: a shockwave 120px ahead for 2d6 that shoves and stuns for 0.8s.',
@@ -494,14 +497,14 @@ CHAR.archer={name:'Yumi_Archer',role:'Bow + Melee',flatHp:0,stamina:9,hpPerStami
   ranged:{dice:[1,10],flat:0,every:1.7,range:280,clip:0,reload:0,pellets:1,anim:.8,releaseAt:.55},
   acc:22,walkPenalty:15,crit:.12,critMul:2,luck:18,xp:0,run:2,turn:.25,enMax:100,enRegen:5,
   // One Nocked, Two in Hand (Kyle's name, with the archery spelling 'nocked'): his next 3 arrows come much faster (time between shots x0.3, quicker draw). 30 energy, 14s cooldown.
-  abilities:[{id:'rapid',name:'One Nocked, Two in Hand',en:35,cd:14,shots:3,accPen:5},   // 0.12.23: 3 basic shots in 1.5s
+  abilities:[{id:'rapid',name:'One Nocked, Two in Hand',en:40,cd:10,shots:3,accPen:5,over:1},   // 0.12.63 (Kyle): 3 shots in 1s, 40 energy, 10s, can't crit; any crit she lands halves its remaining cooldown   // 0.12.23: 3 basic shots in 1.5s
     // Blow_Gun: he puts a bamboo blowgun to his lips (0.7s) and puffs a poison dart (1d3). It always applies 1 poison stack to a
     //   non-undead target, with a 75% chance for a 2nd and a 50% chance for a 3rd. 25 energy, 9s cooldown. Picks living targets.
     // Arrow_Rain: 0.6s to loose a volley high into the air, then 16 arrows rain down over 1.4s on the thickest group of enemies in
     //   range (about 70px wide, 2 lanes up and down). Each arrow hits what it lands on for 1d6 (+flat) and sticks in the ground.
     //   40 energy, 18s cooldown.
     {id:'rain',name:'Arrow_Rain',en:45,cd:18,cast:.6,count:16,over:1.4,fall:.35,spread:36,lanes:12,dice:[1,6],range:280,hitR:5},
-    {id:'blowgun',name:'Blow_Gun',en:30,cd:9,anim:.7,releaseAt:.42,dice:[1,3],extra:[.75,.5],range:220},
+    {id:'blowgun',name:'Blow_Gun',en:30,cd:9,anim:.7,releaseAt:.42,dice:[1,3],extra:[.75,.5],range:220,base:[1,4]},   // 0.12.63 (Kyle): +1d4 hit damage on top of the poison; hitting a poison-immune target halves its remaining cooldown
     // 0.12.20 Pinning_Shot (root + mark, new): an arrow that nails the target to the ground for 2.5s and MARKS it for 6s: marked enemies
     //   take 25% more damage from everyone. IF the biggest (or fastest) enemy in range isn't marked yet. 25 energy, 12s.
     {id:'pin',name:'Pinning_Shot',en:30,cd:12,root:2.5,mark:6,amp:.25,range:280,anim:.5,releaseAt:.3,dice:[1,8]},
@@ -561,7 +564,7 @@ CHAR.robot={name:'Warhound',role:'Arc Blade + Flamethrower',combo:0,flatHp:0,sta
     // Gatling_Arm: IF 3+ enemies are in front within range AND nothing is in blade reach THEN spray for 3s at 12/s, 1d3, accuracy -40. 35 energy, 14s.
     {id:'gatling',name:'Gatling_Arm',en:40,cd:14,dur:2,rate:5,dice:[1,3],range:210,accPen:-10,spreadH:10,spreadGy:4,startH:7,min:3},   /* 0.12.38 (Kyle): 10 shots in 2s at -10 accuracy, each from a slightly different height, each picks its own target */
     // Missile_Barrage: IF 3+ enemies are bunched (or a boss is up) 40-260px out THEN 6 missiles arc onto them, 2d4 within 9px each. 45 energy, 18s.
-    {id:'missiles',name:'Missile_Barrage',en:50,cd:18,n:6,gap:.14,fly:.95,range:260,min:40,r:9,dice:[2,4],spread:14},
+    {id:'missiles',name:'Missile_Barrage',en:45,cd:15,n:3,gap:.18,fly:.95,range:260,min:40,r:9,dice:[2,4],spread:24},   // 0.12.63 (Kyle): 3 missiles, wider spread, 45 energy, 15s
     // Smoke_Screen: IF an ally under 50% has enemies on them (or I'm swarmed by 3+) THEN smoke the spot for 6s. 30 energy, 16s.
     // 0.12.20 Reactive_Plating (passive, new): every 5 hits he takes, the plating vents: a shockwave shoves everything within 30px away
     //   and he gets a shield worth 12% of max HP for 4s. Can vent at most once every 4s.
@@ -654,14 +657,14 @@ const SLIDERS=[
 ];
 const PERSONA={   // starting values (Kyle's test numbers: middling with a few extremes, and very different between the two heroes)
  cultist:{aggr:4,aware:4,pace:4,lane:4,self:9,range:2,plan:5,energy:3,size:7,exec:6,grudge:8,pack:4,flair:8,talk:7,listen:3,perc:6,tech:3,nerve:3,noise:7,cover:3},   // Void_Cultist: hangs back, selfish, theatrical
- robot:{aggr:6,aware:6,pace:2,lane:3,self:3,range:6,plan:2,energy:4,size:7,exec:6,grudge:4,pack:6,flair:2,talk:4,listen:7,perc:6,tech:10,nerve:1,noise:10,cover:2},   // Moss_Mech: slow, steady, team-minded
+ robot:{aggr:6,aware:6,pace:2,lane:3,self:3,range:5,plan:2,energy:4,size:7,exec:6,grudge:4,pack:6,flair:2,talk:4,listen:7,perc:6,tech:10,nerve:1,noise:10,cover:2},   // Moss_Mech: slow, steady, team-minded
  lumberjack:{aggr:7,aware:4,pace:6,lane:5,self:6,range:7,plan:5,energy:4,size:8,exec:4,grudge:8,pack:4,flair:6,talk:7,listen:1,perc:2,tech:2,nerve:4,noise:8,cover:1},   // Lumber_Jack: big, angry, goes for the big ones
  druid:{aggr:2,aware:9,pace:4,lane:3,self:0,range:2,plan:4,energy:4,size:5,exec:6,grudge:2,pack:6,flair:3,talk:6,listen:8,perc:7,tech:0,nerve:5,noise:1,cover:6},   // Druid: selfless healer
  archer:{aggr:2,aware:5,pace:3,lane:3,self:5,range:0,plan:2,energy:7,size:7,exec:9,grudge:4,pack:7,flair:2,talk:2,listen:7,perc:8,tech:1,nerve:2,noise:1,cover:7},   // Yumi_Archer: patient marksman
  chibi:{aggr:8,aware:3,pace:7,lane:6,self:6,range:9,plan:6,energy:3,size:6,exec:5,grudge:7,pack:3,flair:7,talk:9,listen:2,perc:3,tech:2,nerve:3,noise:2,cover:2},   // Chibi_Warrior: bold front-liner
  dog:{aggr:7,aware:9,pace:7,lane:6,self:1,range:10,plan:3,energy:5,size:3,exec:5,grudge:9,pack:1,flair:3,talk:6,listen:9,perc:9,tech:0,nerve:3,noise:4,cover:0},   // Guard Dog: loyal, alert, bites what comes near his people
  flannel_pal:{aggr:1,aware:9,pace:4,lane:2,self:5,range:1,plan:3,energy:6,size:2,exec:6,grudge:3,pack:2,flair:0,talk:3,listen:10,perc:7,tech:4,nerve:9,noise:2,cover:9},   // the companion (timid): hangs back, keeps her distance, picks off small ones next to him
- flannel:{aggr:4,aware:7,pace:5,lane:4,self:1,range:7,plan:3,energy:4,size:8,exec:7,grudge:8,pack:6,flair:1,talk:5,listen:6,perc:6,tech:6,nerve:2,noise:3,cover:8},   // Flannel_Man (Kyle's sheet)
+ flannel:{aggr:3,aware:7,pace:5,lane:4,self:1,range:4,plan:3,energy:4,size:8,exec:7,grudge:8,pack:6,flair:1,talk:5,listen:6,perc:6,tech:6,nerve:2,noise:3,cover:8},   // Flannel_Man (Kyle's sheet)
  joel:   {aggr:6,aware:7,pace:8,lane:7,self:3,range:7,plan:7,energy:2,size:3,exec:4,grudge:3,pack:2,flair:8,talk:8,listen:3,perc:5,tech:5},   // The Spore Runners
  mathas: {aggr:3,aware:2,pace:3,lane:2,self:8,range:1,plan:2,energy:9,size:10,exec:9,grudge:9,pack:9,flair:1,talk:1,listen:1,perc:4,tech:6},  // Bounty Fiend
  zombie: {aggr:10,aware:1,pace:1,lane:3,self:9,range:10,plan:2,energy:5,size:5,exec:1,grudge:6,pack:6,flair:2},
@@ -701,6 +704,14 @@ function robotize(s){if(/^[A-Z0-9 :.,'\-?]+$/.test(s))return s;let t=' '+s+' ';
   for(const [r,w] of R)t=t.replace(r,w);
   t=t.trim().replace(/\*[^*]*\*/g,'').replace(/[!]+/g,'.').replace(/\?+/g,'?').replace(/\.\.\.+/g,'.').replace(/\s+/g,' ').toUpperCase().trim();if(!/[.?]$/.test(t))t+='.';
   const pre=Math.random();return (pre<.18?'ALERT: ':pre<.3?'*BEEP* ':pre<.38?'QUERY: ':'')+t;}
+/* 0.12.63 (Kyle): ability lists always show the actives first and the passive last, on every character card */
+/* 0.12.63: temporary move-speed buffs (True_Grit +25%, Cozy +10%) */
+/* 0.12.63 (Kyle) COZY: lasts 10s; +0.25 life and +0.25 energy every 0.5s; +10% melee attack speed and +10% move speed.
+   Set_Camp keeps refreshing it for anyone in range; the Hearth camp upgrade gives it to everyone at the start of a stage. */
+const COZY={dur:10,hp:.5,en:.5,melee:.1,move:.1};
+function giveCozy(o){o.cozyT=Math.max(o.cozyT||0,COZY.dur);}
+function dynMv(h){let m=1;if(h.gritT>0)m+=h.gritMv||0;if(h.cozyT>0)m+=.1;return m;}
+function abOrder(L){L=L||[];return [...L.filter(a=>!a.passive),...L.filter(a=>a.passive)];}
 function fleshy(u){return !(u&&u.key==='robot');}
 function g_free(o,h){return !o.looted&&!(o.searchBy&&o.searchBy!==h&&o.searchBy.alive&&o.searchBy.search&&o.searchBy.search.o===o);}
 const Brain={
@@ -1121,7 +1132,7 @@ class Game{
   hitEnemy(e,amt,src,opt){
     if(e.dead||amt<=0)return 0;opt=opt||{};if(opt.fire&&e.E&&e.E.fireImmune){if(!opt.quiet&&this.rng()<.3)this.text(e.x,e.y-40,'immune','#9ab');return 0;}if(src&&src.key){e.lastHitBy=src;e.grudgeT=1+14*trait(e,'grudge');}
     if(!opt.sure&&e.E&&e.E.dodge&&this.rng()<e.E.dodge){this.text(e.x,e.y-30,'miss','#9aa');this.failAct(src);return 0;}
-    let crit=false;if(src&&!opt.nocrit&&this.rng()<src.crit+(opt.critAdd||0)+.01*(src.inevN||0)){amt*=(opt.critMul||src.critMul||1.75);crit=true;if(src.inevN){src.luck-=2*src.inevN*(hasPerk(src,'superlucky')?2:1);src.inevN=0;}
+    let crit=false;if(src&&!opt.nocrit&&this.rng()<src.crit+(opt.critAdd||0)+.01*(src.inevN||0)){amt*=(opt.critMul||src.critMul||1.75);crit=true;if(src.raT>0&&src.key==='archer')src.raT*=.5;   /* One Nocked passive: any crit halves its remaining cooldown */if(src.inevN){src.luck-=2*src.inevN*(hasPerk(src,'superlucky')?2:1);src.inevN=0;}
       const HR=!opt.fromTent&&src.base&&src.base.char&&(src.base.char.abilities||[]).find(a=>a.id==='herald');if(HR){src.critRegenT=HR.critT;for(const T of this.tentacles||[])T.heraldT=HR.critT;}}   // Herald: his crits (not his tentacles') feed him and every tentacle he has out   // Herald: crits feed energy
     if(opt.head){amt*=HEADSHOT.mul;this.text(e.x,e.y-(e.fly?24:54),'HEADSHOT!','#ff6040',false);   /* 0.12.36 (Kyle): half the old size */}
     {const ip=insP(src);   // inspiration passives that trigger on his hits
@@ -1200,7 +1211,8 @@ class Game{
     if(h.cloneT>0&&from&&from.E&&this.rng()<(h.cloneDecoy||.35)){this.fx.push({k:'spark',x:h.x-(h.face||1)*10,y:this.G-22,t:0,c:'#9ad8ff'});return false;}   // Shadow_Clone soaks it
     if(h.smokeT>0&&this.rng()<.25){this.text(h.x,this.G-52,'dodge','#c8d0d8');return false;}   // ...and heroes inside the smoke are harder to hit
     if(h.invulnT>0){this.text(h.x,this.G-52,'miss','#9ae6ff');return false;}
-    amt=mitigate(h,amt,'physical');if(from&&from.boss&&insP(h)==='mountain')amt*=.9;if(h.rageT>0)amt*=.75;if(h.shellT>0)amt*=.3;if(amt>0&&h.herbT>0)h.herbT=0;   // a hit stops a herb healif(h.gritT>0)amt*=1-(h.gritDR||0);   // Grit_Teeth
+    amt=mitigate(h,amt,'physical');if(from&&from.boss&&insP(h)==='mountain')amt*=.9;if(h.rageT>0)amt*=.75;if(h.shellT>0)amt*=.3;if(amt>0&&h.herbT>0)h.herbT=0;   // a hit stops a herb heal
+    if(h.gritT>0)amt*=1-(h.gritDR||0);   // True_Grit (0.12.63: this was hidden inside the comment above, so Grit never actually reduced damage)
     if(h.shield>0){const s=Math.min(h.shield,amt);h.shield-=s;amt-=s;if(h.thorns&&from&&!from.dead)this.hitEnemy(from,s*.3,null,{nocrit:1,sure:1});}
     if(amt<=0)return false;
     {const was=h.hp/h.max;h.hp-=amt;if(h.key&&was>=.35&&h.hp/h.max<.35)Brain.panic(this,h,'hurt');
@@ -1328,7 +1340,7 @@ class Game{
       if(lost){h.search=null;h.defuse=null;h.planting=null;h.setting=null;h.tossing=null;h.plan=null;h.thinkT=0;h.pauseT=0;if(S&&S.o&&S.o.searchBy===h)S.o.searchBy=null;}}}
   step(dt){
     if(this.over)return;this.t+=dt;
-    const T=this;const al=this.alive();this.dropLost();
+    const T=this;const al=this.alive();this.dropLost();if(!this._hearth){this._hearth=1;if(!this.demo&&this.run&&upgT(this.run,'hearth'))for(const h of al)giveCozy(h);}   /* Hearth camp upgrade: everyone starts the stage Cozy */
     for(const t of this.timers||[])t.t-=dt;
     if(this.timers){for(const t of this.timers.filter(t=>t.t<=0))t.fn();this.timers=this.timers.filter(t=>t.t>0);}
     // 0.12.2 behavior AI: everyone reads the same snapshot of the battlefield, then each hero thinks on its own clock
@@ -1343,7 +1355,7 @@ class Game{
     al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;let tx=this.exiting?this.W+60:(h.plan&&h.plan.reviveD&&!h.plan.reviveD.alive?h.plan.reviveD.x:h.plan&&h.plan.goTo&&h.plan.goTo.mine?h.plan.goTo.mine.x-9:h.plan&&h.plan.goTo&&h.plan.goTo.ob?(()=>{const o=h.plan.goTo.ob;if(/search|disarm/.test(h.plan.intent))return this.searchSpot(o,h).x;const [a,b]=this.obSpan(o,o.lanes[0]);return h.x<(a+b)/2?a-6:b+6;})():h.plan&&h.plan.goTo&&h.plan.goTo.alive?this.heroX(h.plan.goTo)+(h.plan.goTo.x<h.x?8:-8):this.home(h)+drift+(h.plan?(this._clear?Math.max(-6,h.plan.xoff):h.plan.xoff):0));tx=Math.max(8,Math.min(this.W-8,tx));   /* 0.12.58: with nothing near, nobody hangs far back (the march needs the party up front) */
       if(!this.exiting&&trait(h,'range')>.55&&!(h.plan&&(h.plan.intent==='retreat'||h.plan.reviveD||h.plan.goTo))){const foe=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&e.gy!=null&&Math.abs(e.gy-(h.gy||190))<4&&e.x>h.x&&e.x-h.x<90).reduce((b,e)=>!b||e.x<b.x?e:b,null);if(foe)tx=Math.max(tx,Math.min(this.home(h)+28,foe.x-12));}   // push forward into the fight
       const x0=h.x;const C=h.base.char;const rm=C?((h.plan&&/retreat|charge|kite|cover|regroup|gather|revive|herb|guard|search|disarm|hunker|defuse/.test(h.plan.intent))||this.exiting?C.run:1):(h.plan?h.plan.runMul:1);h.running=C?rm>1:false;
-      const d=tx-h.x,st=mv*(h.mvMul||1)*(h.whirl?.5:1)*(this.exiting&&!C?2.6:1.6)*rm*(rm>1?.75:.85)*dt;/* 0.12.13 (Kyle): walking 15% slower, running 25% slower */if(!(h.pauseT>0)||this.exiting)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;h.moveT=h.moving?(h.moveT||0)+dt:0;});
+      const d=tx-h.x,st=mv*(h.mvMul||1)*dynMv(h)*(h.whirl?.5:1)*(this.exiting&&!C?2.6:1.6)*rm*(rm>1?.75:.85)*dt;/* 0.12.13 (Kyle): walking 15% slower, running 25% slower */if(!(h.pauseT>0)||this.exiting)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;h.moveT=h.moving?(h.moveT||0)+dt:0;});
     const f=this.front();if(!f)return;
     // blocking: walk unless something is close
     const near=this.enemies.filter(e=>!e.dead&&!e.fly).reduce((m,e)=>Math.min(m,e.x-(e.boss?e.w:0)-(e.ranged?40:0)),1e9);
@@ -1552,7 +1564,7 @@ class Game{
     // ---- Campfire: grows, burns (cozy aura), breaks after 5 hits on Flannel_Man / his companion, then dies out
     if(this.camp){const F=this.camp;F.t+=dt;F.x-=scroll*dt;
       if(F.state==='start'&&F.t>=.9){F.state='burn';}
-      if(F.state==='burn'){for(const o of this.alive())if(Math.abs(this.heroX(o)-F.x)<=F.A.radius){o.cozyT=.6;this.healHero(o,o.max*F.A.hp*dt,true,F.owner);o.en=Math.min(o.enMax||100,(o.en||0)+F.A.en2*dt);}}
+      if(F.state==='burn'){for(const o of this.alive())if(Math.abs(this.heroX(o)-F.x)<=F.A.radius)giveCozy(o);}
       if(F.state==='dying'){F.dT=(F.dT||0)+dt;if(F.dT>=1.2)F.state='dead';}
       if(F.state==='dead'){F.deadT=(F.deadT||0)+dt;if(F.deadT>5)this.camp=null;}
       if(this.camp&&F.x<-30)this.camp=null;}
@@ -1628,8 +1640,11 @@ class Game{
           else{const hb=HITBOX[e.type]||{w:16,h:44};const hbT=(e.type==='werewolf'&&aimPose(e)===AIM_BOXES.werewolf.tall)?{w:hb.w,h:66}:hb;const lift=e.leapA?Math.sin(Math.PI*Math.min(1,e.leapA.t/e.leapA.dur))*28:0;const sc=(e.E.scale||1)*(e.elite?1.1:1);
             ok=Math.abs((e.gy!=null?e.gy:this.G)-p.gy)<=depthHalf(hb)*sc&&Math.abs(p.x-e.x)<=hb.w*sc*UNIT_SCALE/2&&p.h>=lift&&p.h<=lift+hbT.h*sc;if(ok)p.headNow=isHead(e,p.h-lift);}
           if(!ok)continue;
-          p.hit.add(e);const big=BIGP[p.kind]||0;p.opt.onHit?p.opt.onHit(e,p.dmg,0):this.hitEnemy(e,p.dmg,p.src,{kb:big,critAdd:p.critAdd,critMul:p.critMul,head:!!p.headNow&&!e.fly&&!e.boss,sure:p.sure});p.headNow=false;
+          p.hit.add(e);const big=BIGP[p.kind]||0;p.opt.onHit?p.opt.onHit(e,p.dmg,0):this.hitEnemy(e,p.dmg,p.src,{kb:big,critAdd:p.critAdd,critMul:p.critMul,head:!!p.headNow&&!e.fly&&!e.boss,sure:p.sure,nocrit:p.nocrit});p.headNow=false;
+          if(p.aimedBy&&e.dead&&p.aimedBy.abT>0){p.aimedBy.abT*=.5;p.aimedBy=null;}   /* 0.12.63 (Kyle): an Aimed Shot kill halves what's left of its cooldown */
+          if(p.blowBy&&isUndead(e)&&p.blowBy.bgT>0){p.blowBy.bgT*=.5;p.blowBy=null;}   /* Blow_Gun into a poison-immune target: remaining cooldown halved */
           if(p.poison&&!e.dead){let n=1;for(const ch of p.poison)if(this.rng()<ch)n++;this.addPoison(e,n);}
+          if(p.kind==='kunai'&&!e.dead&&!isUndead(e)&&this.rng()<.5)this.addPoison(e,1);   /* 0.12.63 (Kyle): kunai have a 50% chance to add/refresh a poison stack */
           if(p.stunCh&&!e.dead&&this.rng()<p.stunCh){e.stun=Math.max(e.stun||0,p.stunT*(e.boss?.3:1));this.text(e.x,e.y-(e.fly?20:48),'STUNNED','#ffffff');}
           this.fx.push({k:'spark',x:p.x,y:p.y,t:0,c:PCOL[p.kind]||'#fff'});
           if(p.pierce>0)p.pierce--;else{p.dead=true;break;}}
@@ -1668,7 +1683,8 @@ class Game{
   gunner(h,dt,f,findT){const AB_x=(C,id)=>(C.abilities||[]).find(a=>a.id===id);const C=h.base.char;const st=h.style;
     if(h.shoutT>0)h.shoutT-=dt;const cry=h.shoutT>0?h.shoutB:null;if(h.mom&&this.t-(h.momT||0)>2)h.mom=0;if(h.cloneT>0)h.cloneT-=dt;
     const spdB=(cry?1+cry.spd:1)*(h.rageT>0?1.2:1)*(1+(h.mom||0)*(h.momPer||0));h.cryDmg=(cry?1+cry.dmg:1)*(h.pactT>0?1+(h.pactDmg||.2):1);if(h.pactT>0)h.pactT-=dt;
-    h.mT=(h.mT||0)+dt*h.meleeSpd*spdB;h.rT=(h.rT||0)+dt*h.rangedSpd*spdB;if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
+    if(h.cozyT>0){h.cozyT-=dt;h._cozyAcc=(h._cozyAcc||0)+dt;while(h._cozyAcc>=.5){h._cozyAcc-=.5;this.healHero(h,.25,true,h);h.en=Math.min(h.enMax||100,(h.en||0)+.25);}}
+    h.mT=(h.mT||0)+dt*h.meleeSpd*spdB*(h.cozyT>0?1+COZY.melee:1);h.rT=(h.rT||0)+dt*h.rangedSpd*spdB;if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
     if(h.ammo==null)h.ammo=C.ranged?(C.ranged.clip||Infinity):0;   // clip 0 = never reloads
     if(C.ranged&&h.ammo<=0&&C.ranged.clip>0){if(!h.reloadT&&C.ranged.reload>=1.5)Comms.onReload(this,h);h.reloadT=(h.reloadT||0)+dt*h.rangedSpd*spdB;if(h.reloadT>=C.ranged.reload){h.reloadT=0;h.ammo=C.ranged.clip;}}
     const reachPx=ENEMY_BODY+C.melee.reach*UNIT_SCALE;   // same body gap the zombies measure from, so a 20 reach out-reaches a 12 reach zombie
@@ -1711,7 +1727,7 @@ class Game{
     const GR=(C.abilities||[]).find(a=>a.id==='grit');if(GR){if(h.grT==null)h.grT=GR.cd*.2;if(h.grT>0)h.grT-=dt;if(h.gritT>0)h.gritT-=dt;
       const close=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-h.x)<45).length,hf=h.hp/h.max,onMe=(this.bb&&this.bb.heat.get(h))||0;
       if(h.grT<=0&&!(h.gritT>0)&&!h.camping&&(h.en||0)>=GR.en&&((hf<GR.under&&(close>=1||onMe>=1))||close>=3)&&spendEnergy(h,GR.en)){
-        h.grT=GR.cd*(1-(h.cdr||0));h.gritT=GR.dur;h.gritDR=GR.dr;addMood(h,{range:6,aggr:3},GR.dur,'grit');h.thinkT=0;
+        h.grT=GR.cd*(1-(h.cdr||0));h.gritT=GR.dur;h.gritDR=GR.dr;h.gritMv=GR.move||0;addMood(h,{range:10,aggr:10},GR.dur,'grit');h.thinkT=0;
         this.fx.push({k:'ring',x:h.x,y:this.G-14,r:30,t:0,c:'#e0b060'});this.ev('shout',{});Comms.say(this,h,'tank',{ally:h},trait(h,'talk')>.2);}}
     const CA=(C.abilities||[]).find(a=>a.id==='camp');if(CA){if(h.caT==null)h.caT=CA.cd*.1;if(h.caT>0)h.caT-=dt;
       if(h.camping){h.camping-=dt;h.pauseT=Math.max(h.pauseT||0,.05);if(h.camping<=0){h.camping=0;
@@ -1770,7 +1786,7 @@ class Game{
         if(K.t>=K.T){h.cast=null;if(!spendEnergy(h,AB.en))return;
           h.abT=AB.cd*(1-(h.cdr||0));h.rT=0;h.ammo-=1;h.animR=.5;h.firedMoving=false;this.ev('gun',{big:1});this.shake=Math.max(this.shake||0,.2);
           const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(h.atk/h.base.atk)*h.rangedDmg;
-          h._forceBox=AB.box;const p=this.shoot(h,K.tgt,st.proj,dmg,{pierce:AB.pierce||0});p.critAdd=AB.critAdd;p.critMul=AB.critMul;this.aim(p,h,K.tgt);h._forceBox=null;}
+          h._forceBox=AB.box;const p=this.shoot(h,K.tgt,st.proj,dmg,{pierce:AB.pierce||0});p.critAdd=AB.critAdd;p.critMul=AB.critMul;p.aimedBy=h;this.aim(p,h,K.tgt);h._forceBox=null;}
         return;}}
     // IF Aimed Shot is ready AND loaded AND standing still AND enough energy (Preserve-minded units keep a cushion) THEN start the cast
     if(AB&&!mt&&h.abT<=0&&h.ammo>0&&!h.moving&&h.rT>=.5&&(h.en||0)>=AB.en*(1+.4*trait(h,'energy')-.2)){h.cast={t:0,T:AB.cast||2,tgt};return;}
@@ -1780,12 +1796,12 @@ class Game{
         h.raT=RA.cd*(1-(h.cdr||0));h.volley3={left:RA.shots,t:0,tgt};this.ev('shout',{});}}
     // 0.12.23 (Kyle): One Nocked, Two in Hand = 3 real basic shots rapid-fired inside 1.5s (one every 0.5s), then back to normal
     if(h.volley3&&RA){const V=h.volley3;V.t-=dt;h.pauseT=Math.max(h.pauseT||0,.05);
-      if(V.t<=0&&V.left>0){V.left--;V.t=1.5/RA.shots;h.rT=0;h.animR=.42;h.animRT=.42;h.firedMoving=false;
+      if(V.t<=0&&V.left>0){V.left--;V.t=RA.over/RA.shots;h.rT=0;h.animR=.42;h.animRT=.42;h.firedMoving=false;
         const inR=this.liveE().filter(e=>Math.abs(e.x-h.x)<=C.ranged.range);const pk=inR.length?Brain.pickTarget(this,h,inR,this.alive(),true):null;const tg0=pk&&pk.tgt;   /* each shot is its own choice through the behavior system: same target or a different one */
         if(tg0){faceToward(h,tg0.x,1);const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(C.ranged.dmgMul||1)*(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
           setTimeoutSafe(this,.2,()=>{if(!h.alive)return;const tg=tg0.dead?this.liveE().sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x))[0]:tg0;if(!tg)return;this.ev('bow',{});
             const WR=(C.abilities||[]).find(a=>a.id==='wind');const far=WR&&Math.abs(tg.x-h.x)>WR.far;h._accBonus=(far?WR.acc:0)-(RA.accPen||0);   /* rushed shots: slightly less accurate */
-            const p=this.shoot(h,tg,st.proj,dmg,{});this.aim(p,h,tg);h._accBonus=0;if(far)p.critMul=(h.critMul||1.75)+WR.critMul;});}}
+            const p=this.shoot(h,tg,st.proj,dmg,{});p.nocrit=1;this.aim(p,h,tg);h._accBonus=0;if(far)p.critMul=(h.critMul||1.75)+WR.critMul;});}}
       if(V.left<=0&&V.t<=0)h.volley3=null;
       return;}
     // ---- Poultice (Chibi_Warrior): self heal over time when he's hurt
@@ -1926,12 +1942,13 @@ class Game{
     const BG=(C.abilities||[]).find(a=>a.id==='blowgun');if(BG){if(h.bgT==null)h.bgT=BG.cd*.2;if(h.bgT>0)h.bgT-=dt;
       if(h.blowing){h.blowing-=dt;h.pauseT=Math.max(h.pauseT||0,.05);if(h.blowing<=0)h.blowing=0;return;}
       // IF Blow_Gun is ready AND a living (not undead) enemy is in range AND not in my face THEN poison it
-      const live=!mt&&this.enemies.filter(e=>!e.dead&&!isUndead(e)&&Math.abs(e.x-h.x)<=BG.range).sort((p,q)=>(q.max-p.max)||(Math.abs(p.x-h.x)-Math.abs(q.x-h.x)))[0];
+      /* 0.12.63: prefers the living (poison works on them) but will dart an undead too now that the dart does 1d4 on its own; an immune hit refunds half the cooldown */
+      const live=!mt&&this.enemies.filter(e=>!e.dead&&Math.abs(e.x-h.x)<=BG.range).sort((p,q)=>((isUndead(p)?1:0)-(isUndead(q)?1:0))||(q.max-p.max)||(Math.abs(p.x-h.x)-Math.abs(q.x-h.x)))[0];
       if(h.bgT<=0&&live&&(h.en||0)>=BG.en&&spendEnergy(h,BG.en)){h.bgT=BG.cd*(1-(h.cdr||0));h.blowing=BG.anim;h.blowT0=BG.anim;faceToward(h,live.x,1);
         
-        setTimeoutSafe(this,BG.releaseAt,()=>{if(!h.alive)return;const tg=live.dead?this.enemies.find(e=>!e.dead&&!isUndead(e)):live;if(!tg)return;this.ev('bow',{});
-          const mz=MUZZLE[h.key];MUZZLE[h.key]=[12,12];const p=this.shoot(h,tg,'dart',this.rollDice(BG.dice)*(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1),{});MUZZLE[h.key]=mz;
-          p.poison=BG.extra;this.aim(p,h,tg);});
+        setTimeoutSafe(this,BG.releaseAt,()=>{if(!h.alive)return;const tg=live.dead?this.enemies.find(e=>!e.dead&&Math.abs(e.x-h.x)<=BG.range):live;if(!tg)return;this.ev('bow',{});
+          const mz=MUZZLE[h.key];MUZZLE[h.key]=[12,12];const p=this.shoot(h,tg,'dart',(this.rollDice(BG.base)+(isUndead(tg)?0:this.rollDice(BG.dice)))*(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1),{});MUZZLE[h.key]=mz;
+          p.poison=isUndead(tg)?null:BG.extra;if(isUndead(tg))p.blowBy=h;this.aim(p,h,tg);});
         return;}}
     const rap=false;
     if(C.ranged&&h.ammo>0&&h.rT>=C.ranged.every*(rap?RA.every:1)){
@@ -2134,7 +2151,7 @@ class Game{
         if(tg!==h&&Math.random()<.5)Comms.bubble(this,h,Comms.pick(['Here, chew this.','Herb for you!','Hold still.','This\'ll help.','Eat up!']));}}}
   stepDisarm(dt){for(const h of this.alive()){const P=h.plan;if(!P||P.intent!=='disarm'||!P.goTo||!P.goTo.ob)continue;const o=P.goTo.ob;
       if(!(o.alarmT>0)||!this.atSpot(h,o)){if(h.search&&h.search.disarm)h.search=null;continue;}
-      const need=(2.6-1.9*trait(h,'tech'))*[1,.7,.4][upgT(this.run,'cutters')];if(!h.search||!h.search.disarm)h.search={o,t:0,T:need,disarm:1};const S=h.search;h.x-=(this.scroll||0)*dt;if(!h.moving)S.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);
+      const need=5*(1.15-.3*trait(h,'tech'))*[1,.7,.45][upgT(this.run,'cutters')];   /* 0.12.63 (Kyle): shutting an alarm off takes about 5s (Techy a bit less; Wire Cutters 30%/55% faster) */if(!h.search||!h.search.disarm)h.search={o,t:0,T:need,disarm:1};const S=h.search;h.x-=(this.scroll||0)*dt;if(!h.moving)S.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);
       if(S.t>=need){o.alarmT=0;o.alarmN=0;h.search=null;h.plan=null;h.thinkT=0;this.fx.push({k:'ring',x:o.x,y:LANES[o.lanes[0]]-10,t:0,r:10,c:'#c8d0d8'});Comms.bubble(this,h,Comms.pick(['Alarm\'s off!','Got it!','Quiet, you.','Wires cut!','Silenced!']));}}}
   /* 0.12.51 (Kyle) ENEMY TRAPS: rusted scrap mines on tripwires, 1-3 per stage, dropped in random lanes ahead.
      IF a unit ahead of one rolls under its Perception (Sapper perk helps) THEN it's spotted: marked, called out, and units path around it.
@@ -2252,7 +2269,7 @@ class Game{
       o.alarmed=this.rng()<chance;if(o.alarmed)this.carAlarm(o);}}
   // 0.12.38: 30s, one zombie every 2s (was 10s / ~1.25s) (a little faster on later stages), up to 8 (+1 per
   //   3 stages). Ignoring it adds about one medium cluster - survivable - but shutting it off in the first few seconds saves most of them.
-  carAlarm(o){const other=(this.obst||[]).some(q=>q!==o&&q.alarmT>0&&q.alarmN>0);o.alarmT=[30,22,15][upgT(this.run,'cutters')];o.alarmN=other?1:99;   /* 0.12.38 (Kyle): blares up to 30s, a zombie from off-screen every 2s until shut off; a second alarm at the same time only adds 1 */o.alarmEvery=2;o.alarmTick=.6;this.ev('shout',{});this.shake=Math.max(this.shake||0,.2);
+  carAlarm(o){const other=(this.obst||[]).some(q=>q!==o&&q.alarmT>0&&q.alarmN>0);o.alarmT=30;o.alarmN=other?1:99;   /* 0.12.38 (Kyle): blares up to 30s, a zombie from off-screen every 2s until shut off; a second alarm at the same time only adds 1 */o.alarmEvery=1.6;o.alarmTick=.4;o.alarmScare=1;this.ev('shout',{});this.shake=Math.max(this.shake||0,.45);   /* 0.12.63 (Kyle): scarier: a zombie every 1.6s, the first almost at once, and a harder jolt */
     const sp=this.alive().filter(h=>h.key).sort((p,q)=>Math.abs(p.x-o.x)-Math.abs(q.x-o.x))[0];if(sp){Comms.bubble(this,sp,Comms.pick(['Car alarm!','Shut it off!','Great, now they heard us!','Here they come!','Who touched the car?!']));
       for(const o2 of this.alive())if(o2!==sp&&Math.random()<.4+.5*trait(o2,'listen'))o2.alDecide=null,o2.thinkT=Math.min(o2.thinkT||1,.1);}   // everyone rethinks right away
     for(const h of this.alive())if(Math.abs(this.heroX(h)-o.x)<140)Brain.panic(this,h,'alarm');
@@ -2314,7 +2331,7 @@ const BIGP={};
 // where shots leave each hero (px ahead of the hero's x, px above the ground), matched to the strike frame
 const MUZZLE={cultist:[10,11],robot:[13,17],lumberjack:[12,15],druid:[14,16],chibi:[10,15],archer:[17,16],flannel:[11,14],flannel_pal:[9,13],vile:[3,30],thing:[14,30],kykar:[15,46],dragons:[18,38],mathas:[17,33],marina:[11,25],thranduil:[12,34],joel:[11,33],robots:[18,33],blood:[13,46],mech:[20,30],weather:[14,47]};
 const ARC={kunai:16,dart:6};   // how high each kind is tossed above a straight line (ruler units): kunai lobbed, dart a slight drop
-const PSPD={void:165,gat:420,buck:380,leaf:190,dart:330,kunai:240,yarrow:230,bullet:420,arrow:200,quarrel:215,bolt:150,orb:135,fire:150,shard:160,zap:170,wisp:120,plasma:180,blood:140,shell:160,frost:145,brick:190};   // px/s   // ranged shots don't shove, except the thrown brick (a little)
+const PSPD={void:165,gat:420,buck:380,leaf:190,dart:330,kunai:200,yarrow:230,bullet:420,arrow:200,quarrel:215,bolt:150,orb:135,fire:150,shard:160,zap:170,wisp:120,plasma:180,blood:140,shell:160,frost:145,brick:190};   // px/s   // ranged shots don't shove, except the thrown brick (a little)
 const PCOL={void:'#b05cff',gat:'#ffd27a',buck:'#ffe0a0',skull:'#7dff9a',hex:'#c050ff',bolt:'#ffb040',orb:'#c050ff',arrow:'#e8e0c8',quarrel:'#e8e0c8',fire:'#ff8a1f',shard:'#6ff0ff',zap:'#bfefff',wisp:'#7dff9a',plasma:'#3ff0ff',blood:'#ff2a3a',shell:'#ffd23f',frost:'#9ae6ff',brick:'#c0603a'};
 
 // ======================================================================= RUN / PICKS (pure)
@@ -2461,17 +2478,18 @@ const CAMP_UPG={
   smoker:{name:'Smokehouse',icon:'🍖',tiers:[125],txt:()=>'Smoked rations go further: one food feeds two units.'},
   cots:{name:'Med Cots',icon:'🛏️',tiers:[100,175,275],txt:t=>`Everyone rests up: +${[10,20,30][t-1]}% HP when you get back to camp.`},
   bench:{name:'Weapon Bench',icon:'🔧',tiers:[100,200,325],txt:t=>`+${t} damage on every basic attack, melee and ranged.`},
-  gen:{name:'Generator',icon:'🔋',tiers:[100,175,275,400],needs:{4:'radio'},txt:t=>`Everyone regains energy faster: +${[.25,.5,.75,1][t-1]} energy per second.${t===4?' (Tier IV runs off the Radio Tower.)':''}`},
+  gen:{name:'Generator',icon:'🔋',tiers:[100,175,275],txt:t=>`Everyone regains energy faster: +${[.25,.5,.75][t-1]} energy per second.`},   // 0.12.63: no tier IV (Radio Tower removed)
   dummy:{name:'Training Dummy',icon:'🎯',tiers:[100,175,275],txt:t=>`+${[10,20,30][t-1]}% XP for everyone.`},
   shrine:{name:'Lucky Shrine',icon:'🍀',tiers:[100,200],txt:t=>`+${[5,10][t-1]} Luck for everyone (better odds when searching).`},
   board:{name:'Bounty Board',icon:'📌',tiers:[100,175,275],txt:t=>`Gold piles are worth ${[25,50,75][t-1]}% more.`},
   yard:{name:'Scrap Yard',icon:'⚙️',tiers:[100,175],txt:t=>`+${t} spare part${t>1?'s':''} each time you get back.`},
-  cutters:{name:'Wire Cutters',icon:'✂️',tiers:[100,175],txt:t=>`Car alarms shut off ${[30,60][t-1]}% faster and give up after ${[22,15][t-1]}s instead of 30s.`},
+  cutters:{name:'Wire Cutters',icon:'✂️',tiers:[100,175],txt:t=>`Shutting a car alarm off is ${[30,55][t-1]}% faster (normally about 5s).`},
   lamp:{name:"Scavenger's Lamp",icon:'🔦',tiers:[100,175],txt:t=>`Searching takes ${[25,40][t-1]}% less time.`},
   kennel:{name:'Guard Dog Kennel',icon:'🐕',tiers:[125,200,300],txt:t=>t===1?'A German Shepherd joins every stage. He guards whoever is in the most trouble and bites anything that gets close. Only ever one dog.':`Your dog gets tougher and bites harder: +${[0,25,50][t-1]}% HP, +${[0,15,30][t-1]}% damage, a little quicker.`},
   tower:{name:'Watchtower',icon:'🗼',tiers:[100,175,275],txt:t=>['Scouts the road ahead: each camp, pick 1 of 2 reports to shape the next stage (more ambulances, more loot, fewer zombies...).','3 reports to pick from.','3 reports, and every one is 50% stronger.'][t-1]},
   still:{name:'Moonshine Still',icon:'🫙',tiers:[100,175],txt:t=>`Brew Liquid Courage from ${t===1?2:1} food (${t===1?1:2} per camp). Whoever drinks it fights the next stage with +20% damage, -10 accuracy and steadier nerves. *hic*`},
-  radio:{name:'Radio Tower',icon:'📻',tiers:[125,225],txt:t=>`You hear about more: ${t===1?4:5} upgrade offers each camp instead of 3.`},
+  // 0.12.63 (Kyle): Radio Tower removed
+  hearth:{name:'Hearth',icon:'🔥',tiers:[90],txt:t=>`Everyone sets out warm: each stage starts with COZY (10s: +0.25 life and energy every 0.5s, +10% melee attack speed and move speed).`},
 };
 const SCOUT={amb:{name:'Ambulance Route',icon:'🚑',txt:s=>`Ambulances are ${Math.round(1+3*s)}x as likely to turn up.`},
   cars:{name:'Wreck Yard',icon:'🚗',txt:s=>`${Math.round(100*s)}% more wrecked cars (more loot, more alarms).`},
@@ -2494,10 +2512,10 @@ function defuseOdds(h){const sap=hasPerk(h,'sapper');let s=sap?.82:.30;s+=.24*(t
 /* 0.12.55 (Kyle): planting any bomb or mine takes ~3s, shaved by: Sapper -0.8s, Techy up to -0.7s, Optimal up to -0.3s, Slow and Steady up to -0.3s, a little Luck (min 1.2s) */
 function plantTime(h){return Math.max(1.2,3-(hasPerk(h,'sapper')?.8:0)-.7*trait(h,'tech')-.3*trait(h,'exec')-.3*(1-trait(h,'pace'))-.004*Math.max(0,(h.luck||0)-10));}
 function hasPerk(u,p){const I=u&&u.insp&&INSP[u.insp];return !!(I&&I.perk===p);}
-for(const U of Object.values(CAMP_UPG))U.tiers=U.tiers.map(x=>x*2);   /* 0.12.58 (Kyle): every camp upgrade costs twice the gold */
+for(const U of Object.values(CAMP_UPG))U.tiers=U.tiers.map(x=>x*2);CAMP_UPG.cutters.tiers=[125,225];   /* Wire Cutters only shortens the fix now, so it's cheaper (Kyle) */   /* 0.12.58 (Kyle): every camp upgrade costs twice the gold */
 function upgT(run,id){return (run&&run.upg&&run.upg[id])||0;}
 function lvPtsFree(H){const used=Object.values(H.pts||{}).reduce((a,b)=>a+b,0);return Math.max(0,(H.lvl||1)-1-used);}
-function campOffers(run){const n=3+upgT(run,'radio');const pool=Object.keys(CAMP_UPG).filter(id=>{const t=upgT(run,id),U=CAMP_UPG[id];if(t>=U.tiers.length)return false;const nd=U.needs&&U.needs[t+1];return !nd||upgT(run,nd)>0;});
+function campOffers(run){const n=3;const pool=Object.keys(CAMP_UPG).filter(id=>{const t=upgT(run,id),U=CAMP_UPG[id];if(t>=U.tiers.length)return false;const nd=U.needs&&U.needs[t+1];return !nd||upgT(run,nd)>0;});
   const out=[];const bag=pool.slice();while(out.length<n&&bag.length){const i=Math.floor(Math.random()*bag.length);out.push(bag.splice(i,1)[0]);}return out;}
 function upgPrice(run,id){const t=upgT(run,id);const h=run.haggle||0;return Math.round(CAMP_UPG[id].tiers[t]*(1-h));}
 function resourcefulOf(s,run){return run.team.some(k=>{const H=s.heroes[k];return H&&H.insp&&INSP[H.insp]&&INSP[H.insp].passive==='resourceful';});}
@@ -2532,12 +2550,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794335447';const BGI=new Image();BGI.src='crawl_bg.png?v=1794335447';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794335447';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794336235';const BGI=new Image();BGI.src='crawl_bg.png?v=1794336235';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794336235';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794335447';XIMG.wave.src='crawl_wave.png?v=1794335447';XIMG.chibi.src='crawl_chibi.png?v=1794335447';XIMG.flannel.src='crawl_flannel.png?v=1794335447';XIMG.rain.src='crawl_rain.png?v=1794335447';XIMG.druid.src='crawl_druid.png?v=1794335447';XIMG.camp.src='crawl_campfire.png?v=1794335447';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794335447';XIMG.tornado.src='crawl_fx_tornado.png?v=1794335447';XIMG.vine.src='crawl_fx_vine.png?v=1794335447';XIMG.thorn.src='crawl_fx_thorn.png?v=1794335447';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794336235';XIMG.wave.src='crawl_wave.png?v=1794336235';XIMG.chibi.src='crawl_chibi.png?v=1794336235';XIMG.flannel.src='crawl_flannel.png?v=1794336235';XIMG.rain.src='crawl_rain.png?v=1794336235';XIMG.druid.src='crawl_druid.png?v=1794336235';XIMG.camp.src='crawl_campfire.png?v=1794336235';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794336235';XIMG.tornado.src='crawl_fx_tornado.png?v=1794336235';XIMG.vine.src='crawl_fx_vine.png?v=1794336235';XIMG.thorn.src='crawl_fx_thorn.png?v=1794336235';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794335447';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794335447';XIMG.obst.src='crawl_obst.png?v=1794335447';XIMG.cars.src='crawl_cars.png?v=1794335447';XIMG.robot.src='crawl_robot.png?v=1794335447';XIMG.cultist.src='crawl_cultist.png?v=1794335447';XIMG.tentacle.src='crawl_tentacle.png?v=1794335447';XIMG.boom.src='crawl_boom.png?v=1794335447';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794336235';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794336235';XIMG.obst.src='crawl_obst.png?v=1794336235';XIMG.cars.src='crawl_cars.png?v=1794336235';XIMG.robot.src='crawl_robot.png?v=1794336235';XIMG.cultist.src='crawl_cultist.png?v=1794336235';XIMG.tentacle.src='crawl_tentacle.png?v=1794336235';XIMG.boom.src='crawl_boom.png?v=1794336235';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2655,7 +2673,7 @@ function plate(ctx,u,x,y,w,hero,col){if(PLATE_OFF)return;x=Math.round(x-w/2);y=M
 function drawGame(ctx,g,W,oy){
   const RR=ctx.canvas.width/W;ctx.setTransform(RR,0,0,RR,0,0);ctx.imageSmoothingEnabled=false;ctx.save();
   if(g.shake>0)ctx.translate(Math.round((Math.random()-.5)*4*g.shake),Math.round((Math.random()-.5)*3*g.shake));
-  drawBG(ctx,g,W,oy);ctx.translate(0,-oy);const G=g.G;
+  if(g.bgImg){ctx.imageSmoothingEnabled=true;ctx.drawImage(g.bgImg,0,0,W,ctx.canvas.height/RR);ctx.imageSmoothingEnabled=false;}else drawBG(ctx,g,W,oy);ctx.translate(0,-oy);const G=g.G;
   for(const l of g.loot||[]){const x=Math.round(l.x),y=(l.gy||G)-1;ctx.save();shrinkAt(ctx,x,y+1,HS);
     if(l.kind==='gold'){const n=l.big?7:4;ctx.fillStyle='#7a5a10';ctx.fillRect(x-n,y-2,n*2,2);ctx.fillStyle='#d9a836';for(let i=0;i<n;i++)ctx.fillRect(x-n+1+i*2,y-3-(i%2),2,2);ctx.fillStyle='#ffe27a';ctx.fillRect(x-1,y-5,2,2);
       if(Math.floor(g.t*4+l.x)%3===0){ctx.fillStyle='#ffffff';ctx.fillRect(x+2,y-7,1,1);}}
@@ -3020,6 +3038,9 @@ const CSS=`
 .cc-main{position:relative;flex:1;display:flex;flex-direction:column;min-height:0;align-items:center}
 .cc-info{display:flex;gap:10px;align-items:center;width:100%;padding:4px 10px;font-size:12px;flex-wrap:wrap;box-sizing:border-box}
 .cc-info b{color:#ffd23f;font-weight:600}.cc-xp{flex:1;min-width:90px;height:6px;background:#1e1228;border:1px solid #3a2450;border-radius:3px;overflow:hidden}.cc-xp i{display:block;height:100%;background:#a6ff2e}
+@keyframes ccTentPulse{0%,100%{box-shadow:0 0 0 #a6ff2e00}50%{box-shadow:0 0 10px #a6ff2e88}}
+.cc-help{background:#140c1c;border:1px solid #a6ff2e66;border-radius:10px;padding:8px 12px;margin:6px 0 10px;font-size:12px;line-height:1.45;color:#e8dff5}
+.cc-help b{color:#a6ff2e}
 canvas.cc-fire{display:block;width:100%;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:10px;border:1px solid #3a2a1a;box-shadow:0 0 30px rgba(255,120,40,.18);margin:6px 0 10px}
 #cc-cv{image-rendering:pixelated;image-rendering:crisp-edges;background:#000;display:block;flex:0 0 auto}
 .cc-cvw{position:relative;overflow:hidden;flex:0 0 auto;max-width:100%}
@@ -3104,7 +3125,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.62</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.63</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -3217,7 +3238,7 @@ function showTeam(){
   const P=showPanel(`<div class="cc-h">PICK YOUR PARTY</div><p class="cc-sub">Up to 3 heroes from your decks. Fewer heroes = each one is stronger. Lower-level heroes earn catch-up XP.</p>
     <div class="cc-heroes">${mine.map(h=>{const st=STYLE[h.key];const H=s.heroes[h.key],L=H.lvl;const tip=[h.name,'',BEHAVIOR[h.key]||h.blurb||'','',...personaLines({key:h.key,insp:H.insp})].join('\n');
       const sp=h.spells[0];return `<div class="cc-hw"><button class="cc-hero" data-k="${h.key}" aria-pressed="false" data-tiph="${esc(howTip(h.key,H.insp))}"><span class="ord"></span><span class="por" data-por="${h.key}"></span><div class="nm">${h.icon} ${esc(h.name)}</div>${h.deck?`<div class="dk">Built from deck: <b>${esc(h.deck)}</b></div>`:''}<div class="dk">${(CHAR[h.key]&&CHAR[h.key].role)||ROLE[st.atk]}${st.tank?' · Tank':''}${st.companion?' · with companion':''}</div>
-      <div class="lv">LV ${L}</div><div class="dk">🧠 Personality: <b>${esc(personaTitle({key:h.key,insp:H.insp}))}</b> <span style="opacity:.7">(hover the card for how it fights)</span></div>${statBars(h.key,L)}<div class="cc-abl">${((CHAR[h.key]||{}).abilities||[]).map(a=>`<span class="cc-ab${a.passive?' pas':''}" tabindex="0" data-tiph="${esc('<div class=tt-h>'+(a.passive?'✦ ':'⚡ ')+esc(a.name)+(a.passive?' <span style=opacity:.7>(passive)</span>':'')+'</div>'+esc(ABIL_DESC[a.id]||a.name))}">${a.passive?'✦':'⚡'} ${esc(a.name)}</span>`).join('')||'<span class="dk" style="opacity:.6">No abilities yet</span>'}</div>${sp?`<div class="dk" style="margin-top:2px">Starts with ${esc(sp.name||shortCard(sp.card))} (${SPELL[sp.arch].label})</div>`:''}</button>
+      <div class="lv">LV ${L}</div><div class="dk">🧠 Personality: <b>${esc(personaTitle({key:h.key,insp:H.insp}))}</b> <span style="opacity:.7">(hover the card for how it fights)</span></div>${statBars(h.key,L)}<div class="cc-abl">${abOrder((CHAR[h.key]||{}).abilities).map(a=>`<span class="cc-ab${a.passive?' pas':''}" tabindex="0" data-tiph="${esc('<div class=tt-h>'+(a.passive?'✦ ':'⚡ ')+esc(a.name)+(a.passive?' <span style=opacity:.7>(passive)</span>':'')+'</div>'+esc(ABIL_DESC[a.id]||a.name))}">${a.passive?'✦':'⚡'} ${esc(a.name)}</span>`).join('')||'<span class="dk" style="opacity:.6">No abilities yet</span>'}</div>${sp?`<div class="dk" style="margin-top:2px">Starts with ${esc(sp.name||shortCard(sp.card))} (${SPELL[sp.arch].label})</div>`:''}</button>
       <div class="cc-insp" data-ik="${h.key}"><div class="cc-sub" style="margin:4px 0 2px;font-size:10px">✨ INSPIRATION DECK</div>
         <select data-ip><option value="">Pick a player…</option>${Object.keys(PLAYER_ICON).map(p=>`<option value="${p}"${H.insp&&INSP[H.insp]&&INSP[H.insp].o===p?' selected':''}>${PLAYER_ICON[p]} ${p}</option>`).join('')}</select>
         <select data-id ${H.insp?'':'disabled'}></select><div class="cc-ibx"></div></div></div>`;}).join('')}</div>
@@ -3242,7 +3263,7 @@ function chipFor(e,item,hk){const base=item?shortCard(e.card):sname(hk,e.card);c
 /* camp panel: supplies, what the camp did on arrival, upgrades (pick 1 of the offers per camp), Triage builds */
 function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=run.food||0;run.haggle=haggleOf(s,run);run.resource=resourcefulOf(s,run);
   const owned=Object.keys(run.upg||{}).filter(id=>run.upg[id]);
-  const tent=`<span class="cc-tent" style="cursor:help;font-size:18px;margin-left:6px" data-tiph="${esc('<b>⛺ Every camp upgrade</b><br>'+Object.keys(CAMP_UPG).map(id=>{const U=CAMP_UPG[id],t=upgT(run,id);const mx=U.needs?(Object.keys(U.needs).every(k=>upgT(run,U.needs[k])>0)?U.tiers.length:U.tiers.length-1):U.tiers.length;return `${U.icon} ${U.name}: <b style="color:${t?'#a6ff2e':'#9a90a8'}">${t}/${mx}</b>${U.needs&&mx<U.tiers.length?' <span style="opacity:.6">(+1 with a Radio Tower)</span>':''}`;}).join('<br>')+(run.haggle?`<br><br>🤝 Haggler: upgrades ${Math.round(run.haggle*100)}% off`:'')+(run.resource?`<br>🧰 Resourceful: you can pay in spare parts`:''))}">⛺</span>`;
+  const tent=`<span class="cc-tent" style="cursor:help;font-size:18px;margin-left:6px;display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border:1px dashed #a6ff2e88;border-radius:10px;animation:ccTentPulse 2.2s ease-in-out infinite" data-tiph="${esc('<b>⛺ Every camp upgrade</b><br>'+Object.keys(CAMP_UPG).map(id=>{const U=CAMP_UPG[id],t=upgT(run,id);const mx=U.needs?(Object.keys(U.needs).every(k=>upgT(run,U.needs[k])>0)?U.tiers.length:U.tiers.length-1):U.tiers.length;return `${U.icon} ${U.name}: <b style="color:${t?'#a6ff2e':'#9a90a8'}">${t}/${mx}</b> <span style="opacity:.6">(${U.tiers.map(g=>Math.round(g*(1-(run.haggle||0)))+'g').join(' / ')})</span>`;}).join('<br>')+(run.haggle?`<br><br>🤝 Haggler: upgrades ${Math.round(run.haggle*100)}% off`:'')+(run.resource?`<br>🧰 Resourceful: you can pay in spare parts`:''))}">⛺<span style="font-size:10px;color:#a6ff2e">ⓘ</span></span>`;
   const sup=`<div class="cc-card"><b>🏕️ Camp</b>${tent} <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · ⚙️ <b>${parts}</b> spare parts · 🥫 <b>${Number.isInteger(food)?food:Math.floor(food)+'½'}</b> food · 💧 <b>${run.water||0}</b> water</span>
     ${(run.campLog||[]).length?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${run.campLog.map(esc).join(' · ')}</div>`:''}
     ${owned.length?`<div class="cc-chips" style="margin-top:6px">${owned.map(id=>{const U=CAMP_UPG[id],t=run.upg[id];return `<span class="cc-chip" title="${esc(U.txt(t))}">${U.icon} ${esc(U.name)} ${['','I','II','III','IV'][t]}</span>`;}).join('')}</div>`:''}</div>`;
@@ -3260,23 +3281,24 @@ function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=r
   return sup+up+tri+tower+still;}
 /* 0.12.57 (Kyle): the camp screen opens on the party resting around a roaring fire at night (Diablo-style),
    idling with their normal animations, the fire flickering light over them. Everything else on the camp screen stays below it. */
-function campScene(host,run){const W=200,H=96;const c=document.createElement('canvas');c.className='cc-fire';c.width=W*RES;c.height=H*RES;host.appendChild(c);
+const CAMPBG=new Image();CAMPBG.src='crawl_campbg.png';   /* 0.12.63 (Kyle): his cabin-at-night painting is the camp backdrop */
+function campScene(host,run){const W=171,H=96;const c=document.createElement('canvas');c.className='cc-fire';c.width=W*RES;c.height=H*RES;host.appendChild(c);
   const x=c.getContext('2d');let g;try{const r2=newRun(run.team.slice(),null);r2.stage=run.stage;r2.prestige=run.prestige||0;g=new Game({run:r2,slot:null,demo:true,W});}catch(e){c.remove();return;}
   g.enemies=[];g.obst=[];g.mines=[];g.loot=[];g.minions=[];g.proj=[];g.fx=[];g.texts=[];
-  const fx=W/2,fgy=LANES[2];g.camp={x:fx,gy:fgy,t:1,life:99,state:'burn',A:{}};
-  const spots=[[fx-26,LANES[3],1],[fx+27,LANES[3],-1],[fx-9,LANES[0],1]];
+  const fx=90,fgy=CFG.H-H+80;g.camp={x:fx,gy:fgy,t:1,life:99,state:'burn',A:{}};g.bgImg=CAMPBG;   // the painting's fire pit
+  const spots=[[fx-30,fgy+7,1],[fx+30,fgy+7,-1],[fx-14,fgy-6,1]];
   g.heroes.forEach((h,i)=>{const s=spots[i]||spots[0];h.x=s[0];h.gy=s[1];h.face=s[2];h.alive=true;h.moving=false;h.hp=h.max;h.en=h.enMax||100;h.wanderX=0;h.dodgeX=0;h.plan=null;});
-  const stars=[...Array(26)].map(()=>[Math.random()*W,Math.random()*H*.45,Math.random()]);
+  const stars=[...Array(34)].map(()=>[60+Math.random()*60,30+Math.random()*50,Math.random()]);   // embers drifting up from the fire
   let last=performance.now();
   const frame=now=>{if(!c.isConnected)return;requestAnimationFrame(frame);const dt=Math.min(.05,(now-last)/1000);if(dt<1/31)return;last=now;
     g.t+=dt;g.camp.t+=dt;for(const h of g.heroes){h.walkT=(h.walkT||0);h.animT=0;h.hitFlash=0;}
-    if(!(IMG.complete&&BGI.complete))return;PLATE_OFF=true;try{drawGame(x,g,W,CFG.H-H);}catch(e){PLATE_OFF=false;return;}PLATE_OFF=false;
+    if(!(IMG.complete&&CAMPBG.complete))return;PLATE_OFF=true;try{drawGame(x,g,W,CFG.H-H);}catch(e){PLATE_OFF=false;return;}PLATE_OFF=false;
     const RR=c.width/W;x.setTransform(RR,0,0,RR,0,0);
-    x.globalCompositeOperation='source-over';x.fillStyle='rgba(4,2,14,.5)';x.fillRect(0,0,W,H);   // night
-    for(const [sx,sy,tw] of stars){x.globalAlpha=.35+.35*Math.sin(g.t*1.5+tw*9);x.fillStyle='#cfd8ff';x.fillRect(sx,sy,.6,.6);}x.globalAlpha=1;
+    x.globalCompositeOperation='source-over';x.fillStyle='rgba(4,2,14,.18)';x.fillRect(0,0,W,H);   // the painting is already night: only a light shade
+    for(const s of stars){const life=(g.t*.35+s[2])%1;const ex=fx+(s[0]-90)*.35*life+Math.sin(g.t*3+s[2]*20)*2,ey=(fgy-(CFG.H-H))-6-life*55;x.globalAlpha=(1-life)*(.5+.5*Math.sin(g.t*14+s[2]*30));x.fillStyle=life<.3?'#fff2b0':'#ff9a40';x.fillRect(ex,ey,.8,.8);}x.globalAlpha=1;   // sparkling embers
     const fy=fgy-(CFG.H-H)-6,fl=1+.07*Math.sin(g.t*11)+.05*Math.sin(g.t*17.3);
     x.globalCompositeOperation='lighter';
-    let gr=x.createRadialGradient(fx,fy,1,fx,fy,62*fl);gr.addColorStop(0,'rgba(255,160,60,.55)');gr.addColorStop(.35,'rgba(255,110,30,.22)');gr.addColorStop(1,'rgba(255,80,20,0)');x.fillStyle=gr;x.fillRect(0,0,W,H);
+    let gr=x.createRadialGradient(fx,fy,1,fx,fy,78*fl);gr.addColorStop(0,'rgba(255,160,60,.6)');gr.addColorStop(.35,'rgba(255,110,30,.22)');gr.addColorStop(1,'rgba(255,80,20,0)');x.fillStyle=gr;x.fillRect(0,0,W,H);
     gr=x.createRadialGradient(fx,fy+2,0,fx,fy+2,14*fl);gr.addColorStop(0,'rgba(255,230,150,.7)');gr.addColorStop(1,'rgba(255,140,40,0)');x.fillStyle=gr;x.fillRect(fx-20,fy-20,40,40);
     x.globalCompositeOperation='source-over';
     gr=x.createLinearGradient(0,0,W,0);gr.addColorStop(0,'rgba(4,2,10,.75)');gr.addColorStop(.25,'rgba(4,2,10,0)');gr.addColorStop(.75,'rgba(4,2,10,0)');gr.addColorStop(1,'rgba(4,2,10,.75)');x.fillStyle=gr;x.fillRect(0,0,W,H);   // vignette
@@ -3287,13 +3309,15 @@ function showCamp(){
   const btn=(attrs,label,title)=>`<button class="cc-mini" ${attrs} ${title?`title="${esc(title)}"`:''}>${label}</button>`;
   const P=showPanel(`<div class="cc-h">STAGE ${run.stage}${run.prestige?' · ★'+run.prestige:''}${run.hardcore?' <span style="color:#ff5a5a;font-size:12px">☠ HARDCORE</span>':''}${run.dnd?' <span style="color:#c8a0ff;font-size:12px">🎲 D&amp;D</span>':''}</div><div class="cc-h2">${esc(st.biome.name)}${st.boss?` — ${esc(CFG.bosses[st.boss].name)} awaits`:''}</div>
     <div class="cc-firehost"></div>
+    ${(()=>{try{if(localStorage.getItem('cc-camphelp')==='off')return '';}catch(e){}return `<div class="cc-help" data-camphelp>🏕️ <b>Camp tips</b> · Hover the pulsing <b>⛺ ⓘ</b> next to the title to see every camp upgrade, its tiers and prices. Hover ability and deck chips under 📜 <b>Skills</b> for details. Feed and water everyone before you leave, or they start the next stage weaker. Anything with a dotted underline or ⓘ has more info on hover.
+      <div style="margin-top:6px;display:flex;gap:8px"><button class="cc-btn" data-helpx="once" style="padding:2px 10px">Got it</button><button class="cc-btn" data-helpx="off" style="padding:2px 10px;opacity:.75">Don't show again</button></div></div>`;})()}
     <p class="cc-sub">Score ${fmt(run.score)} · save point. ${run.pending?`<b style="color:#a6ff2e">⬆ ${run.pending} upgrade${run.pending>1?'s':''} waiting</b>`:'No upgrades waiting.'}</p>
     <div class="cc-load">${run.team.map(k=>{const d=heroDef(k),hv=run.heroes[k],L=s.heroes[k],cap=slotCaps(L.lvl);
       const act=hv.spells.map((e,i)=>[e,i]).filter(([e])=>!SPELL[e.arch].passive),pas=hv.spells.map((e,i)=>[e,i]).filter(([e])=>SPELL[e.arch].passive);
       const row=(lbl,list,n,c,slotName)=>`<div class="cc-slotrow"><span class="cc-sub" style="font-size:11px;margin:0">${lbl} ${n}/${c}</span><div class="cc-chips">${list.map(([e,i])=>`<span class="cc-chipw">${chipFor(e,slotName==='item',k)}${btn(`data-un="${k}|${slotName}|${i}"`,'↓','Move to backpack')}</span>`).join('')}</div></div>`;
       return `<div class="cc-card cc-lh"><span data-por="${k}"></span><div style="flex:1;min-width:0"><b>${d.icon} ${esc(d.name)}</b> <span class="cc-sub" style="font-size:11px">LV ${L.lvl} · Gear ${heroGear(hv)} · ${hv.dead?'fallen (revives at 25%)':Math.round((hv.hpf==null?1:hv.hpf)*100)+'% HP'}</span>
         ${ABILITIES_OFF?'':`<div class="cc-chips"><span class="cc-chip" title="${esc(SIG[k].txt)}" style="border-color:#ffd23f"><b>⚡ ${esc(SIG[k].name)}</b> · signature</span></div>`+row('Abilities',act,act.length,cap.active,'spell')+row('Passives',pas,pas.length,cap.passive,'spell')}
-        ${(()=>{const C=CHAR[k]||{};const ab=(C.abilities||[]).map(A=>['⚔',A.name||A.id,ABIL_DESC[A.id]||'']);const dk=L.insp?deckSkills(L.insp):[];   /* 0.12.56 (Kyle): Skills tab: his own abilities plus what his deck gives him; hover any for the details */
+        ${(()=>{const C=CHAR[k]||{};const ab=abOrder(C.abilities).map(A=>[A.passive?'✦':'⚔',A.name||A.id,ABIL_DESC[A.id]||'']);const dk=L.insp?deckSkills(L.insp):[];   /* 0.12.56 (Kyle): Skills tab: his own abilities plus what his deck gives him; hover any for the details */
           const chip=([ic,n,d],col)=>`<span class="cc-chip" style="cursor:help;border-color:${col}" data-tiph="${esc('<div class="tt-h">'+esc(n.replace(/_/g,' '))+'</div><div class="tt-b">'+esc(d)+'</div>')}">${ic} ${esc(n.replace(/_/g,' '))}</span>`;
           return `<details class="cc-skills" style="margin-top:4px"><summary class="cc-sub" style="font-size:11px;margin:0;cursor:pointer">📜 Skills</summary><div class="cc-chips" style="margin-top:4px">${ab.map(x=>chip(x,'#7fd0ff')).join('')}${dk.map(x=>chip(x,'#c8a0ff')).join('')||(L.insp?'':'<span class="cc-sub" style="font-size:11px;margin:0">No deck inspiration</span>')}</div>${L.insp?`<div class="cc-sub" style="font-size:10px;margin:3px 0 0;opacity:.75">✨ ${esc(L.insp)}${inspText(L.insp)?': '+esc(inspText(L.insp)):''}</div>`:''}</details>`;})()}
         ${hungry.has(k)?(()=>{const f=fedOf(run,k),m=missingOf(run,k);const fc=upgT(run,'smoker')?.5:1;
@@ -3318,7 +3342,7 @@ function showCamp(){
             ${who.filter(k=>run.team.includes(k)).map(k=>btn(`data-eq="${bi}|${k}"`,'↑ '+esc(heroDef(k).name.split(' ').slice(-1)[0]),'Equip on '+heroDef(k).name)).join('')}${isItem?btn(`data-dis="${bi}"`,'Sell +'+(12*(e.r||1))+'g','Sell'):btn(`data-dis="${bi}"`,'✕','Discard')}</div>`;}).join(''):'<span class="cc-sub" style="font-size:12px;margin:0">Empty. New picks that don\'t fit a slot land here.</span>'}</div></div></div></div>
     <div class="cc-row" style="margin-top:14px">${run.pending?`<button class="cc-btn go" data-pick>CHOOSE UPGRADES (${run.pending})</button>`:`<button class="cc-btn go" data-begin>BEGIN STAGE ${run.stage} ▶</button>`}
       <button class="cc-btn" data-quit>Save & exit</button></div><p class="cc-sub" id="cc-campmsg" style="margin-top:8px"></p>`);
-  P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por,56)));{const fh=P.querySelector('.cc-firehost');if(fh)campScene(fh,run);}
+  P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por,56)));{const fh=P.querySelector('.cc-firehost');if(fh)campScene(fh,run);}P.querySelectorAll('[data-helpx]').forEach(x=>x.onclick=()=>{if(x.dataset.helpx==='off'){try{localStorage.setItem('cc-camphelp','off');}catch(e){}}const el=P.querySelector('[data-camphelp]');if(el)el.remove();});
   const msg=t=>{const m=P.querySelector('#cc-campmsg');if(m)m.textContent=t;};
   P.querySelectorAll('[data-un]').forEach(b=>b.onclick=()=>{const [k,sl,i]=b.dataset.un.split('|');if(unequip(run,k,sl,+i)){persist();showCamp();}else msg(run.bag.length>=BAG_SIZE?'Backpack is full.':'Each hero keeps at least one skill equipped.');});
   P.querySelectorAll('[data-eq]').forEach(b=>b.onclick=()=>{const [bi,k]=b.dataset.eq.split('|');if(equip(run,s,+bi,k)){persist();showCamp();}else msg('No free slot of that kind on '+heroDef(k).name+'. Move something to the backpack first.');});
