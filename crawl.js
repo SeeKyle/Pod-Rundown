@@ -332,7 +332,17 @@ const CHAR={
       //     THEN it blows early for 3d4 AND the cooldown is cut in half; ELSE it stops, and a moment later ACTIVATES (red glow): then 6d4.
       //   SET IT UP: kneel ~3s and plant it further down the trail; a planted bomb is activated: 6d4.
       //   IF one of his bombs is left behind off screen (the party moved on) THEN the cooldown is cut in half.
-      {id:'trip',name:'Proximity_Bomb',en:35,cd:10,cast:1,arm:.6,lob:{dist:25,h:7,dur:.6,roll:[17,25],rollSpd:30,settle:.5},hurl:{min:117,max:133,h:42,dur:.95},dice4:[4,4],diceRoll:[3,4],diceLive:[6,4],dice:[3,6],flat:0,depth:12,cross:{long:36,thin:4,across:14,wide:12},shock:{r:56,depth:20,kbMul:1.6},kb:45,bleed:{chance:.5,dmg:12,dur:4},life:40}]},
+      // 0.12.64 (Kyle's hard stats, screen px / 3 = world px): 40 energy, 10s.
+      //   Trigger: 40px wide in its own lane (+-6.7), 20px wide one lane up and one down (+-3.3).
+      //   Blast: 100px wide in its own lane (+-16.7), 40px wide one lane up/down (+-6.7).
+      //   OVERHAND: 1s cast (can walk), lands exactly where he picks 300-450px (100-150) away, blows on impact: 2d4+6, lanes up/down 60px wide (+-10).
+      //   UNDERHAND: 0.5s cast (can walk), lands 100px (33) ahead, rolls 50px (17), then 0.5s to truly activate (flashing).
+      //     Tripped before that: 2d4+2 and 2s back on the cooldown. Activated: 2d4+6.
+      //   PLACE: 3s kneeling (no moving), put 5px (1.7) in front, active at once: 6d4+2, blast +20px wide (+-20) and +10px in the side lanes (+-8.3).
+      //   Left behind off screen: what's left of the cooldown is halved.
+      {id:'trip',name:'Proximity_Bomb',en:40,cd:10,arm:0,trig:{w0:6.7,w1:3.3},blast:{w0:16.7,w1:6.7},
+        hurl:{min:100,max:150,h:42,dur:.95,cast:1,dmg:[[2,4],6],w1:10},lob:{dist:33,h:7,dur:.55,roll:16.7,rollSpd:26,settle:.5,cast:.5,early:[[2,4],2],live:[[2,4],6],refund:2},
+        place:{cast:3,off:1.7,dmg:[[6,4],2],w0:20,w1:8.3},kb:45,bleed:{chance:.5,dmg:12,dur:4},life:40}]},
 };
 
 // ---- 0.12.3 Inspiration Decks (Kyle): pick a player, then one of their decks. Each deck gives one small, unique bonus tied to
@@ -387,7 +397,7 @@ const ABIL_DESC={
   missiles:'Missile_Barrage · 45 energy · 15s. The pod on his back pops open and lobs 3 missiles high over the fight onto a group, spread wide; each one 2d4 in a small blast.',
   smoke:'Smoke_Screen · 35 energy · 16s. Lobs a smoke grenade between a hurt ally and the enemies on them: a thick cloud for 6s (about 180px wide). Enemies inside move 30% slower and miss half their attacks; allies inside dodge 25% of hits.',
   aimed:'Aimed Shot · 45 energy · 14s · 2s cast with a laser sight. Never misses the head box, +5% crit, 2.5x crit damage, pierces. If the shot kills, what\'s left of its cooldown is halved.',
-  trip:'Proximity_Bomb · 35 energy · 10s, one cooldown for three activations, same blast every time. OVERHAND THROW: a big arc about 350-400px out, blows on impact (4d4). CAREFUL ROLL: tossed underhand about 75px, rolls another 50-75px; a zombie meeting it mid-roll sets it off early (3d4, and what\'s left of the cooldown is halved), otherwise it stops and activates with a red glow (6d4). SET IT UP: about 3s kneeling (faster when Techy, Optimal or steady-handed), planted well down the trail, activated (6d4). If a bomb of his is left behind off screen, what\'s left of the cooldown is halved. The blast: cross-shaped blast (3d6), knockback, 50% bleed, then a wider shockwave that hits anything the cross missed for half damage and shoves it harder.',
+  trip:'Proximity_Bomb · 40 energy · 10s. One bomb, three ways out. It goes off when a zombie comes within 40px in its lane (20px one lane up or down); the blast covers 100px of its lane and 40px of the lanes above and below. OVERHAND (1s, can walk): thrown exactly where he picks 300-450px away, blows on impact for 2d4+6 (60px into the side lanes). UNDERHAND (0.5s, can walk): lands 100px ahead and rolls 50px, then takes 0.5s to truly activate; tripped before that it does 2d4+2 and gives 2s back on the cooldown, activated it does 2d4+6. PLACE (3s kneeling): set 5px in front, active at once, 6d4+2 with a wider blast. A bomb left behind off screen halves what\'s left of the cooldown.',
   grit:'True_Grit · 35 energy · 15s. For 8s he takes 50% less damage, moves 25% faster, and goes all in: his Careful/Reckless and Sharpshooter/Brawler sliders both jump to 10, so he wades in with the crowbar.',
   camp:'Set_Camp · 40 energy · 30s · 1.8s to kneel and light it right in front of him. Every ally within 400px gets COZY and keeps it refreshed while they stay close: for 10s, +0.25 life and +0.25 energy every 0.5s, +10% melee attack speed and +10% move speed. The fire has 5 life; each attack that hurts Flannel_Man or his companion takes 1 off it.',
   pal:'Call Traveling_Companion · 30 energy · 24s. Calls his timid partner: a third of his toughness, a 1d4 pistol that fires every 0.5s with 7 shots before a 5s reload, and a Brick Throw with 75% stun. She circles around him. If she\'s already out, heals her 7%.',
@@ -710,6 +720,9 @@ function robotize(s){if(/^[A-Z0-9 :.,'\-?]+$/.test(s))return s;let t=' '+s+' ';
    Set_Camp keeps refreshing it for anyone in range; the Hearth camp upgrade gives it to everyone at the start of a stage. */
 const COZY={dur:10,hp:.5,en:.5,melee:.1,move:.1};
 function giveCozy(o){o.cozyT=Math.max(o.cozyT||0,COZY.dur);}
+/* 0.12.64 (Kyle): proximity zone shared by Proximity_Bomb and the enemy rust mines: half-width w0 in its own lane, w1 one lane up or down */
+function bombTrig(g,x,gy,Z,who){Z=Z||{w0:6.7,w1:3.3};for(const e of (who||g.enemies)){if(e.dead||e.fly)continue;const ex=e.key?g.heroX(e):e.x,dz=Math.abs(((e.gy!=null?e.gy:g.G))-gy),dx=Math.abs(ex-x)-(e.boss?e.w*.5:0);
+    if((dz<=3.5&&dx<=Z.w0)||(dz>3.5&&dz<=11.5&&dx<=Z.w1))return e;}return null;}
 function dynMv(h){let m=1;if(h.gritT>0)m+=h.gritMv||0;if(h.cozyT>0)m+=.1;return m;}
 function abOrder(L){L=L||[];return [...L.filter(a=>!a.passive),...L.filter(a=>a.passive)];}
 function fleshy(u){return !(u&&u.key==='robot');}
@@ -1604,15 +1617,13 @@ class Game{
     if(this.traps&&this.traps.length){for(const T of this.traps){T.t+=dt;T.x-=scroll*dt;const A=T.A;
         if(T.fly){const F=T.fly;F.t+=dt;F.x0-=scroll*dt;F.x1-=scroll*dt;const k=Math.min(1,F.t/F.T);T.x=F.x0+(F.x1-F.x0)*k;T.air=Math.sin(Math.PI*k)*F.h;T.spin=(T.spin||0)+dt*14;
           if(k>=1){T.fly=null;T.air=0;if(T.impact){this.tripBoom(T);continue;}T.t=0;this.fx.push({k:'ring',x:T.x,y:T.gy-1,t:0,r:5,c:'#b0a080'});}continue;}   /* overhand: blows on impact; underhand: lands and rolls */
-        const near=()=>this.enemies.find(e=>!e.dead&&!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-T.gy)<=A.depth&&e.x<=T.x+14&&e.x>=T.x-6);
-        if(T.rollLeft>0){const L=A.lob,v=L.rollSpd*Math.max(.25,T.rollLeft/T.roll0);const s=Math.min(T.rollLeft,v*dt);T.x+=s;T.rollLeft-=s;T.spin=(T.spin||0)+s*.6;
-          if(near()){T.early=1;T.dice=A.diceRoll;if(T.owner&&T.owner.tbT>0)T.owner.tbT*=.5;this.tripBoom(T);continue;}   /* caught one mid-roll: 3d4, cooldown halved */
-          if(T.rollLeft<=.05){T.rollLeft=0;T.settleT=0;}continue;}
-        if(T.how==='toss'&&!T.live){T.settleT=(T.settleT||0)+dt;if(T.settleT>=A.lob.settle){T.live=1;T.dice=A.diceLive;T.t=A.arm;this.fx.push({k:'ring',x:T.x,y:T.gy-3,t:0,r:6,c:'#ff4030'});}continue;}   /* stopped: a moment later it activates (6d4) */
-        if(T.t<A.arm)continue;if(T.x<-6&&!T.done){T.done=1;if(T.owner&&T.owner.tbT>0)T.owner.tbT*=.5;continue;}   /* 0.12.59 (Kyle): left behind off screen: cooldown halved */
+        const near=()=>bombTrig(this,T.x,T.gy,A.trig);
+        if(T.rollLeft>0){const Lb=A.lob,v=Lb.rollSpd*Math.max(.3,T.rollLeft/T.roll0);const s=Math.min(T.rollLeft,v*dt);T.x+=s;T.rollLeft-=s;T.spin=(T.spin||0)+s*.6;
+          if(T.rollLeft<=.05){T.rollLeft=0;T.settleT=0;}}
+        if(T.how==='toss'&&!T.live){if(near()){T.early=1;if(T.owner&&T.owner.tbT>0)T.owner.tbT=Math.max(0,T.owner.tbT-A.lob.refund);this.tripBoom(T);continue;}   /* tripped before it truly activated: 2d4+2, 2s back on the cooldown */
+          if(!(T.rollLeft>0)){T.settleT=(T.settleT||0)+dt;if(T.settleT>=A.lob.settle){T.live=1;T.dice=A.lob.live[0];T.flat=A.lob.live[1];this.fx.push({k:'ring',x:T.x,y:T.gy-3,t:0,r:6,c:'#ff4030'});}}continue;}   /* truly activated: 2d4+6 */if(T.x<-6&&!T.done){T.done=1;if(T.owner&&T.owner.tbT>0)T.owner.tbT*=.5;continue;}   /* 0.12.59 (Kyle): left behind off screen: cooldown halved */
         if(T.t>A.life){T.done=1;continue;}
-        const hit=this.enemies.find(e=>!e.dead&&!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-T.gy)<=A.depth&&e.x<=T.x+14&&e.x>=T.x-6);
-        if(hit)this.tripBoom(T);}
+        if(near())this.tripBoom(T);}
       this.traps=this.traps.filter(T=>!T.done);}
     // projectiles
     for(const p of this.proj){p.t+=dt;
@@ -1750,33 +1761,33 @@ class Game{
         h._forceBox='bot';const p=this.shoot(h,tgt,'brick',dmg,{});p.sure=1;p.stunCh=BB.stunCh;p.stunT=BB.stunT;p.spd=170;this.aim(p,h,tgt);h._forceBox=null;return;}}
     // ---- Trip Bomb
     const TB=(C.abilities||[]).find(a=>a.id==='trip');if(TB){if(h.tbT==null)h.tbT=TB.cd*.25;if(h.tbT>0)h.tbT-=dt;}
+    /* 0.12.64 Proximity_Bomb casts. PLACE: kneel 3s, no moving (a hit on him in crowbar range breaks it). TOSS / THROW: he keeps walking while the cast fills. */
     if(h.setting){const S=h.setting;if(mt){h.setting=null;this.text(h.x,this.G-70,'interrupted','#9aa');}
       else{S.t+=dt;h.pauseT=Math.max(h.pauseT||0,.1);
-        if(S.t>=S.T){h.setting=null;if(spendEnergy(h,TB.en)){h.tbT=TB.cd*(1-(h.cdr||0));const foe=S.near;
-          const x=Math.max(h.x+32,Math.min(h.x+80,foe&&!foe.dead?foe.x-24:h.x+60));   /* 0.12.59 (Kyle): set it well down the trail, in the path of what's coming */
-          (this.traps=this.traps||[]).push({x,gy:h.gy!=null?h.gy:this.G,t:0,A:TB,owner:h,how:'plant',live:1,dice:TB.diceLive});Comms.onTrap(this,h,x);}}
+        if(S.t>=S.T){h.setting=null;if(spendEnergy(h,TB.en)){h.tbT=TB.cd*(1-(h.cdr||0));const P=TB.place;
+          (this.traps=this.traps||[]).push({x:h.x+(h.face<0?-P.off:P.off),gy:h.gy!=null?h.gy:this.G,t:0,A:TB,owner:h,how:'plant',live:1,dice:P.dmg[0],flat:P.dmg[1],blast:{w0:P.w0,w1:P.w1}});Comms.onTrap(this,h,h.x);}}
         return;}}
-    /* toss / throw in progress: the bomb leaves his hand partway through the animation */
-    if(h.tossing){const K=h.tossing;K.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);
-      if(!K.out&&K.t>=K.rel){K.out=1;if(spendEnergy(h,TB.en)){h.tbT=TB.cd*(1-(h.cdr||0));const gy=K.gy,x0=h.x+(h.face<0?-8:8);
+    if(h.tossing){const K=h.tossing;K.t+=dt;   // no pauseT: he can move while it winds up
+      if(K.t>=K.T){h.tossing=null;if(spendEnergy(h,TB.en)){h.tbT=TB.cd*(1-(h.cdr||0));const gy=K.gy,x0=h.x+(h.face<0?-8:8);
           const T={x:x0,gy,t:0,A:TB,owner:h,how:K.kind,air:0};
-          if(K.kind==='toss'){const L=TB.lob;T.fly={t:0,T:L.dur,x0,x1:x0+L.dist,h:L.h};T.rollLeft=L.roll[0]+this.rng()*(L.roll[1]-L.roll[0]);T.roll0=T.rollLeft;T.dice=TB.diceRoll;}
-          else{const H=TB.hurl;const tx=Math.max(x0+H.min,Math.min(x0+H.max,K.tx));T.fly={t:0,T:H.dur,x0,x1:tx,h:H.h};T.rollLeft=0;T.impact=1;T.dice=TB.dice4;}
-          (this.traps=this.traps||[]).push(T);this.ev('whoosh',{});if(Math.random()<.6)Comms.bubble(this,h,K.kind==='toss'?Comms.pick(['Bowling!','Rolling one in!','Fire in the hole!']):Comms.pick(['Catch!','Heads up!','Present for you!']),true);}}
-      if(K.t>=K.T)h.tossing=null;return;}
-    /* 0.12.58 Proximity_Bomb: three ways out, one shared 10s cooldown.
-       IF a bunch (2+ close together) or a big one is 80-150px out THEN THROW it overhand onto them (bolder units like this more)
-       ELSE IF zombies are 45-95px out in my lane or next to it THEN TOSS it underhand: it lands short and rolls into their path
-       ELSE IF one is coming down my lane further out AND it's calm around me THEN PLANT it (Calculated units like this more) */
-    if(TB&&!h.cast&&!mt&&h.tbT<=0&&!(this.traps||[]).some(t=>t.owner===h)&&(h.en||0)>=TB.en*(1+.3*trait(h,'energy')-.15)){
+          if(K.kind==='toss'){const Lb=TB.lob;T.fly={t:0,T:Lb.dur,x0,x1:x0+Lb.dist,h:Lb.h};T.rollLeft=Lb.roll;T.roll0=Lb.roll;T.dice=Lb.early[0];T.flat=Lb.early[1];}
+          else{const H=TB.hurl;const tx=Math.max(h.x+H.min,Math.min(h.x+H.max,K.tx));T.fly={t:0,T:H.dur,x0,x1:tx,h:H.h};T.rollLeft=0;T.impact=1;T.dice=H.dmg[0];T.flat=H.dmg[1];T.blast={w0:TB.blast.w0,w1:H.w1};}
+          (this.traps=this.traps||[]).push(T);this.ev('whoosh',{});if(Math.random()<.55)Comms.bubble(this,h,K.kind==='toss'?Comms.pick(['Rolling one in!','Fire in the hole!','Bowling!']):Comms.pick(['Catch!','Heads up!','Present for you!']),true);}}}
+    /* 0.12.64 Proximity_Bomb choice (Kyle): he knows PLACING is the strongest (6d4+2, wider) but slow (3s on his knees), tossing/throwing is quick.
+       IF a zombie is close or on him THEN he can't afford to kneel: quick only.
+       IF a bunch / a big one sits 100-150px out THEN THROW it right on them (2d4+6 on impact) when he wants quick results.
+       IF zombies are 25-60px ahead in his lane THEN TOSS it so it lands short and rolls into them.
+       IF the nearest threat is still far (>70px) THEN he invests: PLACE it (Careful and Calculated lean this way).
+       IF nothing is near at all THEN he randomly scouts a spot to place or to toss for later. */
+    if(TB&&!h.cast&&!h.setting&&!h.tossing&&!mt&&h.tbT<=0&&!(this.traps||[]).some(t=>t.owner===h)&&(h.en||0)>=TB.en*(1+.3*trait(h,'energy')-.15)){
       const hx=h.x,gy0=h.gy!=null?h.gy:this.G,live=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x<this.W-4);
-      const H=TB.hurl;let best=null;for(const e of live){const d=e.x-hx;if(d<H.min-14||d>H.max+16)continue;const n=live.filter(o=>Math.abs(o.x-e.x)<16&&Math.abs((o.gy||this.G)-(e.gy||this.G))<10).length;const sc=n+(e.boss||e.max>=40?2:0);if(sc>=2&&(!best||sc>best.sc))best={e,sc};}
-      const nearLane=live.filter(e=>e.x-hx>=34&&e.x-hx<=80&&Math.abs((e.gy!=null?e.gy:this.G)-gy0)<=9);
-      const aggr=trait(h,'aggr'),plan=trait(h,'plan');
-      if(best&&Math.random()<.55+.4*aggr){h.tossing={t:0,T:.7,rel:.42,kind:'throw',tx:best.e.x-6,gy:best.e.gy!=null?best.e.gy:gy0};h.face=1;return;}
-      if(nearLane.length&&Math.random()<.5+.3*aggr+.15*nearLane.length){h.tossing={t:0,T:.6,rel:.3,kind:'toss',gy:gy0};h.face=1;return;}
-      const near=live.filter(e=>!e.boss&&e.x>hx+70&&e.x<hx+200).sort((p,q)=>p.x-q.x)[0];   /* only worth setting when they're still well out: time to kneel, and room to put it down the trail */
-      if(near&&!live.some(e=>Math.abs(e.x-hx)<45)&&Math.random()<.4+.5*plan){h.setting={t:0,T:plantTime(h),near};return;}}
+      const H=TB.hurl;let best=null;for(const e of live){const d=e.x-hx;if(d<H.min||d>H.max)continue;const n=live.filter(o=>Math.abs(o.x-e.x)<16&&Math.abs((o.gy||this.G)-(e.gy||this.G))<10).length;const sc=n+(e.boss||e.max>=40?2:0);if(!best||sc>best.sc)best={e,sc,n};}
+      const near1=live.reduce((m,e)=>Math.min(m,Math.abs(e.x-hx)),999),inLane=live.filter(e=>e.x-hx>=25&&e.x-hx<=60&&Math.abs((e.gy!=null?e.gy:this.G)-gy0)<=9);
+      const aggr=trait(h,'aggr'),plan=trait(h,'plan'),wantQuick=near1<45||(h.hp/h.max<.5)||aggr>.65;
+      if(best&&best.sc>=2&&(wantQuick||near1<70||Math.random()<.5)){const cx=live.filter(o=>Math.abs(o.x-best.e.x)<16).reduce((s,o)=>s+o.x,0)/Math.max(1,best.n);h.tossing={t:0,T:H.cast,kind:'throw',tx:cx-4,gy:best.e.gy!=null?best.e.gy:gy0};return;}
+      if(inLane.length&&near1>=18){h.tossing={t:0,T:TB.lob.cast,kind:'toss',gy:gy0};return;}
+      if(near1>70&&near1<260&&!wantQuick&&Math.random()<.35+.4*(1-aggr)+.2*plan){h.setting={t:0,T:TB.place.cast};return;}
+      if(!live.length&&this._clear&&Math.random()<dt*.25){if(Math.random()<.5)h.setting={t:0,T:TB.place.cast};else h.tossing={t:0,T:TB.lob.cast,kind:'toss',gy:gy0};return;}}
     // Aimed Shot has a 2s cast: he stands still with a laser on the target, then fires. A foe in crowbar reach breaks the cast
     //   (no energy spent, the cooldown doesn't start). If the target dies mid-cast he swings the laser to the next one in range.
     if(h.cast){const K=h.cast;
@@ -1980,20 +1991,20 @@ class Game{
       max:b.hp,hp:b.hp,atk:b.atk,aspd:1,crit:b.crit,acc:b.acc,dr:0,armor:0,cdr:0,dodge:b.dodge,luck:0,scoreM:1,pow:1,reach:1,critMul:b.critMul,armorPts:b.armorPts,kbRes:b.kbRes,
       enMaxB:100,enRegenB:5,xpBonus:0,lifesteal:0,mvMul:1,meleeDmg:1,rangedDmg:1,meleeSpd:1,rangedSpd:1,kbAdd:0,flatRanged:0,flatMelee:0};
     this.pets.push(pal);this.fx.push({k:'poof',x:pal.x,y:this.G-20,t:0});}
-  tripBoom(T){const A=T.A,h=T.owner;T.done=1;this.fx.push({k:'boom',x:T.x+6,gy:T.gy,t:0,life:1.15,raw:1});this.ev('boom',{});this.shake=Math.max(this.shake||0,.55);
-    const base=this.rollDice(T.dice||A.dice)+(A.flat||0)+((h&&h.flatRanged)||0);const mul=(h&&h.base?(h.atk/h.base.atk)*(h.rangedDmg||1):1)*(h&&hasPerk(h,'sapper')?1.25:1);   /* 0.12.55: a Sapper's own bomb hits 25% harder */
-    for(const e of this.enemies){if(e.dead||e.fly)continue;const dx=Math.abs(e.x-(T.x+6)),dz=Math.abs((e.gy!=null?e.gy:this.G)-T.gy);
-      // cross-shaped blast (Kyle): a long arm along the lane (side to side) and a long arm across the lanes (up and down)
-      const C2=A.cross;const inRow=dx<=C2.long&&dz<=C2.thin,inCol=dz<=C2.across&&dx<=C2.wide;if(!inRow&&!inCol)continue;
-      const fall=1-.5*Math.min(1,Math.min(inRow?dx/C2.long:9,inCol?dz/C2.across:9));const dealt=this.hitEnemy(e,base*mul*fall,h&&h.alive?h:null,{blast:1});   // AoE: full damage in the middle, half at the edge
+  tripBoom(T){const A=T.A,h=T.owner;T.done=1;this.fx.push({k:'boom',x:T.x,gy:T.gy,t:0,life:1.15,raw:1});this.ev('boom',{});this.shake=Math.max(this.shake||0,.55);
+    const base=this.rollDice(T.dice||[2,4])+(T.flat||0)+((h&&h.flatRanged)||0);const mul=(h&&h.base?(h.atk/h.base.atk)*(h.rangedDmg||1):1)*(h&&hasPerk(h,'sapper')?1.25:1);   /* 0.12.55: a Sapper's own bomb hits 25% harder */
+    for(const e of this.enemies){if(e.dead||e.fly)continue;const dx=Math.abs(e.x-T.x),dz=Math.abs((e.gy!=null?e.gy:this.G)-T.gy);
+      // 0.12.64 (Kyle): blast covers its own lane wide and the lanes just above and below narrower
+      const BW=T.blast||A.blast;const own=dz<=3.5,side=dz>3.5&&dz<=11.5;const lim=own?BW.w0:side?BW.w1:-1;if(dx>lim)continue;
+      const fall=1-.45*Math.min(1,dx/Math.max(1,lim));const dealt=this.hitEnemy(e,base*mul*fall,h&&h.alive?h:null,{blast:1});   // AoE: full damage in the middle, half at the edge
       if(dealt&&!e.dead){const res=e.boss?.9:((e.E&&e.E.kbRes)||0);e.kbv=Math.max(e.kbv||0,A.kb/100*40*8*(1-res)*fall);e.kbDir=e.x>=T.x?1:-1;
         if(this.rng()<A.bleed.chance){e.bleedT=A.bleed.dur;e.bleedDps=A.bleed.dmg/A.bleed.dur;}}
       e._tripHit=T;}
-    if(this.hardcore)for(const o of this.alive()){const dx=Math.abs(this.heroX(o)-(T.x+6)),dz=Math.abs((o.gy||this.G)-T.gy);const C2=A.cross;const inR=dx<=C2.long&&dz<=C2.thin,inC=dz<=C2.across&&dx<=C2.wide;
-      if(inR||inC){this.hurtHero(o,base*mul*.8,null);this.st8(h||o).ff=(this.st8(h||o).ff||0)+1;}}   /* Hardcore: your own bomb hurts your people too */
+    if(this.hardcore)for(const o of this.alive()){const dx=Math.abs(this.heroX(o)-T.x),dz=Math.abs((o.gy||this.G)-T.gy);const BW=T.blast||A.blast;const lim=dz<=3.5?BW.w0:dz<=11.5?BW.w1:-1;
+      if(dx<=lim){this.hurtHero(o,base*mul*.8,null);this.st8(h||o).ff=(this.st8(h||o).ff||0)+1;}}   /* Hardcore: your own bomb hurts your people too */
     /* 0.12.38 (Kyle): shockwave. A wider ring around the cross: anything it reaches that the cross missed takes half damage and a heavier shove (no bleed) */
     const SW=A.shock;if(SW){this.fx.push({k:'ring',x:T.x+6,y:T.gy-4,t:0,r:SW.r,c:'#ffd9a0'});
-      for(const e of this.enemies){if(e.dead||e.fly||e._tripHit===T)continue;const dx=Math.abs(e.x-(T.x+6)),dz=Math.abs((e.gy!=null?e.gy:this.G)-T.gy);
+      for(const e of this.enemies){if(e.dead||e.fly||e._tripHit===T)continue;const dx=Math.abs(e.x-T.x),dz=Math.abs((e.gy!=null?e.gy:this.G)-T.gy);
         if((dx/SW.r)**2+(dz/SW.depth)**2>1)continue;const dealt=this.hitEnemy(e,base*mul*.5,h&&h.alive?h:null,{blast:1});
         if(dealt&&!e.dead){const res=e.boss?.9:((e.E&&e.E.kbRes)||0);e.kbv=Math.max(e.kbv||0,A.kb*SW.kbMul/100*40*8*(1-res));e.kbDir=e.x>=T.x?1:-1;}}}}
   addPoison(e,n){if(!e||e.dead||n<=0)return 0;if(isUndead(e)){this.text(e.x,e.y-(e.boss?100:44),'IMMUNE','#9aa');return 0;}
@@ -2164,10 +2175,10 @@ class Game{
       this.mines.push({x:this.W+30,l,gy:LANES[l],t:0,armed:true,spotted:false,chk:0});}
     const al=this.alive().filter(h=>!h.pet||h.dog);
     for(const M of this.mines){M.x-=scroll*dt;M.t+=dt;if(!M.armed)continue;
-      if(M.owner){if(M.t<M.arm)continue;if(this.enemies.some(e=>!e.dead&&!e.fly&&!e.boss&&Math.abs(e.x-M.x)<=5&&Math.abs((e.gy!=null?e.gy:this.G)-M.gy)<=3))this.mineBoom(M);continue;}
-      if(!M.spotted){M.chk-=dt;if(M.chk<=0){M.chk=.5;for(const h of al){const d=M.x-this.heroX(h);if(d<-10||d>75)continue;const sp=(hasPerk(h,'sapper')?.3:0)+trait(h,'perc');
-          if(this.rng()<.2*(.35+1.3*sp)){M.spotted=true;M.by=h;this.fx.push({k:'ring',x:M.x,y:M.gy-3,t:0,r:8,c:'#ff4a3a'});Comms.bubble(this,h,Comms.pick(['Trap!','Mine, watch it!','Tripwire!','Careful, mine!']),true);for(const o of al)o.thinkT=Math.min(o.thinkT||1,.1);break;}}}}
-      for(const h of al){if(Math.abs((h.gy||this.G)-M.gy)>3||Math.abs(this.heroX(h)-M.x)>7||h.leap)continue;   /* 0.12.58 (Kyle): trips at 7px (was 4) */
+      if(M.owner){if(M.t<M.arm)continue;if(bombTrig(this,M.x,M.gy))this.mineBoom(M);continue;}   /* 0.12.64: same proximity zone as the Proximity_Bomb */
+      if(!M.spotted){M.chk-=dt;if(M.chk<=0){M.chk=.8;   /* 0.12.64 (Kyle): checked less often (0.5s -> 0.8s) and harder to spot */for(const h of al){const d=M.x-this.heroX(h);if(d<-10||d>75)continue;const sp=(hasPerk(h,'sapper')?.3:0)+trait(h,'perc');
+          if(this.rng()<.14*(.3+1.2*sp)){M.spotted=true;M.by=h;this.fx.push({k:'ring',x:M.x,y:M.gy-3,t:0,r:8,c:'#ff4a3a'});Comms.bubble(this,h,Comms.pick(['Trap!','Mine, watch it!','Tripwire!','Careful, mine!']),true);for(const o of al)o.thinkT=Math.min(o.thinkT||1,.1);break;}}}}
+      for(const h of al){if(h.leap||bombTrig(this,M.x,M.gy,null,[h])!==h)continue;   /* 0.12.64 (Kyle): 40px wide in its lane, 20px wide one lane up/down (defusers work from 27px out, safely outside it) */
         if(h.defuse&&h.defuse.M===M)continue;
         if(!M.spotted&&!M.dodged){M.dodged=1;if(this.rng()<.15+.6*trait(h,'perc')){M.spotted=true;h.x-=6;h.pauseT=Math.max(h.pauseT||0,.3);Comms.bubble(this,h,Comms.pick(['Whoa! Trap!','Nearly stepped on that!','MINE!']),true);continue;}}
         if(!M.spotted||this.rng()<dt*2){this.mineBoom(M);break;}}}
@@ -2550,12 +2561,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794336235';const BGI=new Image();BGI.src='crawl_bg.png?v=1794336235';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794336235';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794336432';const BGI=new Image();BGI.src='crawl_bg.png?v=1794336432';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794336432';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794336235';XIMG.wave.src='crawl_wave.png?v=1794336235';XIMG.chibi.src='crawl_chibi.png?v=1794336235';XIMG.flannel.src='crawl_flannel.png?v=1794336235';XIMG.rain.src='crawl_rain.png?v=1794336235';XIMG.druid.src='crawl_druid.png?v=1794336235';XIMG.camp.src='crawl_campfire.png?v=1794336235';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794336235';XIMG.tornado.src='crawl_fx_tornado.png?v=1794336235';XIMG.vine.src='crawl_fx_vine.png?v=1794336235';XIMG.thorn.src='crawl_fx_thorn.png?v=1794336235';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794336432';XIMG.wave.src='crawl_wave.png?v=1794336432';XIMG.chibi.src='crawl_chibi.png?v=1794336432';XIMG.flannel.src='crawl_flannel.png?v=1794336432';XIMG.rain.src='crawl_rain.png?v=1794336432';XIMG.druid.src='crawl_druid.png?v=1794336432';XIMG.camp.src='crawl_campfire.png?v=1794336432';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794336432';XIMG.tornado.src='crawl_fx_tornado.png?v=1794336432';XIMG.vine.src='crawl_fx_vine.png?v=1794336432';XIMG.thorn.src='crawl_fx_thorn.png?v=1794336432';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794336235';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794336235';XIMG.obst.src='crawl_obst.png?v=1794336235';XIMG.cars.src='crawl_cars.png?v=1794336235';XIMG.robot.src='crawl_robot.png?v=1794336235';XIMG.cultist.src='crawl_cultist.png?v=1794336235';XIMG.tentacle.src='crawl_tentacle.png?v=1794336235';XIMG.boom.src='crawl_boom.png?v=1794336235';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794336432';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794336432';XIMG.obst.src='crawl_obst.png?v=1794336432';XIMG.cars.src='crawl_cars.png?v=1794336432';XIMG.robot.src='crawl_robot.png?v=1794336432';XIMG.cultist.src='crawl_cultist.png?v=1794336432';XIMG.tentacle.src='crawl_tentacle.png?v=1794336432';XIMG.boom.src='crawl_boom.png?v=1794336432';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3125,7 +3136,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.63</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.64</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
