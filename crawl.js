@@ -35,10 +35,11 @@ const CFG={
               itemChance:.04,goldChance:.175,goldAmt:[2,6],stack:true,xp:2,pts:10,cost:1.2,animAtk:.6,hitAt:.38,skins:['zombie','zombie_f','zombie_b']},
     // 0.12.62 (Kyle) Fireman_Zombie: a zombie in turnout gear. A touch slower than a normal zombie, 1.25x the life, triple the armor,
     //   hits slightly harder, and can't be burned (fire and burn damage do nothing to him). Swings a heavy gloved arm.
-    fireman: {undead:1,scale:.88,aimScale:.88,hp:31,dmgDie:7,spd:8.3,atk:1.25,reach:12,armorPts:9,kbRes:.45,bleed:{chance:.25,dmg:20,dur:5},fireImmune:1,name:'Fireman_Zombie',
-              itemChance:.05,goldChance:.2,goldAmt:[3,7],stack:true,xp:3,pts:14,cost:1.6,animAtk:.6,hitAt:.4,skins:['zombie_fire']},
+    // 0.12.65 (Kyle): now 4x a zombie's health (100) and armor (12) at 2/5 its speed
+    fireman: {undead:1,scale:.88,aimScale:.88,hp:100,dmgDie:7,spd:3.5,atk:1.25,reach:12,armorPts:12,kbRes:.6,bleed:{chance:.25,dmg:20,dur:5},fireImmune:1,name:'Fireman_Zombie',
+              itemChance:.05,goldChance:.2,goldAmt:[3,7],stack:true,xp:5,pts:30,cost:3.2,animAtk:.6,hitAt:.4,skins:['zombie_fire']},
     // Kyle's werewolf, the first fast enemy: zombie stats except 30 HP (0.12.3, was 40) and fast; hunts the back-line heroes first
-    werewolf:{hp:30,dmgDie:6,spd:44,atk:1.25,reach:12,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
+    werewolf:{hp:38,dmgDie:7,spd:44,atk:1.2,reach:12,armorPts:4,   /* 0.12.65: a bit sturdier and meaner (was 30 HP, 1d6, 3 armor) */kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
               itemChance:.04,goldChance:.175,goldAmt:[2,6],xp:3,pts:16,cost:2.2,animAtk:.7,hitAt:.45,backline:true,fps:12,scale:.77,
               leap:{dmg:10,gap:20,dur:.5,cd:8}},   // jumping attack: bounds over a 20px gap and lands for 10 damage
   },
@@ -55,9 +56,10 @@ const CFG={
       rate:1.5*(0.62+0.061*(n-1))*(1+0.3*P),   // spawn budget per second
       // 0.12.13 (Kyle): each stage ~10-20% harder on average (was ~25%): +8% enemy HP, +5% damage and +4% more enemies per stage
       //   = about 1.08*1.05*1.04 = +18% total threat per stage (plus the extra werewolves and strays).
-      hpMul:Math.pow(1.08,n-1)*Math.pow(2.2,P),
-      dmgMul:Math.pow(1.05,n-1)*Math.pow(1.8,P),
-      countMul:1+.04*(n-1),
+      // 0.12.65 (Kyle): enemies get +3% health, armor and damage per stage (rounded down), nothing else
+      hpMul:Math.pow(1.03,n-1)*Math.pow(2.2,P),
+      dmgMul:Math.pow(1.03,n-1)*Math.pow(1.8,P),
+      countMul:1+.04*(n-1),   // more enemies per stage stays (that is numbers, not stats)
       xpMul:1+0.19*(n-1)+P*2.4};
   },
 };
@@ -139,7 +141,7 @@ function mitigate(target,amt,type){
   type=type||'physical';
   const armor=target.armor!=null?target.armor:((target.E&&target.E.armor)||(target.B&&target.B.armor)||0);
   const res=(target.resist||(target.E&&target.E.resist)||(target.B&&target.B.resist)||{})[type]||0;
-  const pts=(target.E&&target.E.armorPts)||(target.B&&target.B.armorPts)||target.armorPts||0;
+  const pts=target.E&&target.armorPts!=null?target.armorPts:((target.E&&target.E.armorPts)||(target.B&&target.B.armorPts)||target.armorPts||0);   /* enemies carry their own stage-scaled armor */
   return Math.max(1,amt*(1-Math.min(.75,armor))*(1-armorReduction(pts))*(1-res));
 }
 
@@ -296,7 +298,7 @@ function regenEnergy(u,dt){const M=ENERGY.max(u);if(u.en==null)u.en=M;u.enMax=M;
 function spendEnergy(u,c){if((u.en||0)<c)return false;u.en-=c;return true;}
 // Werewolves come in a set number per stage (Kyle: 1 on stage 1, 2 on stage 3), spread along the stage instead of from the random pool
 const CLUSTERS={count:7,first:2,last:[6,7]};   // Kyle: first cluster 2, last cluster 6-7
-const WOLVES_PER_STAGE=n=>Math.min(7,2+Math.floor((n-1)*.4));   // 0.12.13 (Kyle): 2 on stage 1, then one more about every 2-3 stages (2,2,2,3,3,4,4,4,5...)
+const WOLVES_PER_STAGE=n=>Math.min(9,3+Math.floor((n-1)*.5));   // 0.12.65 (Kyle: too weak / too few): 3 on stage 1, one more about every 2 stages   // 0.12.13 (Kyle): 2 on stage 1, then one more about every 2-3 stages (2,2,2,3,3,4,4,4,5...)
 const STRAYS_PER_STAGE=n=>2+Math.floor((n-1)/3);   // 0.12.13 (Kyle): a lonely zombie here or there between cluster waves
 const ENEMY_BODY=9;   // px between a melee enemy's centre and the front hero's centre before reach is added
 const HERO_FLAT_HP=0,HP_PER_STAMINA=5,HERO_DICE=[2,4],HERO_BASE_CRIT=.1;   // basic attack = 2d4; every hero starts at 10% crit
@@ -823,7 +825,7 @@ const Brain={
     //   THEN hang back until they come back.
     // 0.12.22 revive: IF an ally is downed THEN most units go help them up. Selfless and pack-minded units are keenest; IF enemies are
     //   standing over the body THEN only the bold (Blind Aggression) still go in. The decision sticks for ~2s so they don't dither.
-    {const D=g.heroes.filter(o=>!o.alive&&o.downed&&o!==h).sort((p,q)=>Math.abs(p.x-g.heroX(h))-Math.abs(q.x-g.heroX(h)))[0];
+    {const D=g.heroes.concat((g.pets||[]).filter(p=>p.dog)).filter(o=>!o.alive&&o.downed&&o!==h).sort((p,q)=>Math.abs(p.x-g.heroX(h))-Math.abs(q.x-g.heroX(h)))[0];
      if(D&&!h.pet){if(!h.revDecide||h.revDecide.D!==D||g.t>h.revDecide.until){const danger=bb.E.filter(e=>Math.abs(e.x-D.x)<40).length,swarm=bb.E.filter(e=>Math.abs(e.x-D.x)<22).length;const lone=trait(h,'pack');
          let w=.62+.3*(1-selfish)+.18*(1-lone)+.12*A-.12*(hp<.35?1:0);if(danger)w*=(.35+.85*aggr)*(1.25-.6*trait(h,'nerve'));   /* 0.12.58 (Kyle): more careful: IF the body is swarmed THEN each zombie right on it cuts the odds hard; 3+ and only the reckless try */if(swarm)w*=Math.pow(.5+.25*aggr,swarm)*(h.defib?1.5:1);   /* Steady units still go in under fire, Panicky ones balk */w=Math.max(.05,Math.min(.97,w));
          h.revDecide={D,until:g.t+1.6+Math.random()*.8,go:Math.random()<(h.defib?Math.min(.97,w+.45):w)};}   /* IF I carry a Defibrillator THEN I go for the downed ally far more readily (it is instant) */
@@ -1124,9 +1126,9 @@ class Game{
   // ---------------------------------------------------------------- spawning
   spawnEnemy(type,opt){
     const E=CFG.enemies[type];const st=this.st;const elite=(!opt||opt.elite==='roll')&&this.rng()<.07+.01*st.n;
-    const hp=E.hp*st.hpMul*(elite?2.6:1);
+    const hp=Math.floor(E.hp*st.hpMul)*(elite?2.6:1);
     const e={type,E,x:this.W+10+this.rng()*20,y:E.fly?this.G-70+this.rng()*36:this.G,hp,max:hp,dmg:(E.dmg||E.dmgDie/2+.5)*st.dmgMul*(elite?1.5:1),dmgMul:st.dmgMul*(elite?1.5:1),skin:E.skins?E.skins[Math.floor(this.rng()*E.skins.length)]:type,atkT:this.rng()*.5,
-      walkT:this.rng(),anim:0,animT:0,slow:0,slowT:0,stun:0,burn:0,burnT:0,shred:0,elite,fly:!!E.fly,ranged:!!E.ranged,hitFlash:0,phase:this.rng()*6,target:null};
+      walkT:this.rng(),anim:0,animT:0,slow:0,slowT:0,stun:0,burn:0,burnT:0,shred:0,elite,armorPts:Math.floor((E.armorPts||0)*Math.pow(1.03,(st.n||1)-1)),fly:!!E.fly,ranged:!!E.ranged,hitFlash:0,phase:this.rng()*6,target:null};
     if(opt)Object.assign(e,opt);
     this.enemies.push(e);return e;
   }
@@ -1203,7 +1205,7 @@ class Game{
     for(const h of al){const H=this.slot.heroes[h.key];const cu=Math.min(5,1+.4*Math.max(0,ref-H.lvl));H.xp+=xp*1.5*h.base.xpm*(1+(h.xpBonus||0)+[0,.1,.2,.3][upgT(this.run,'dummy')])*cu/al.length;
       while(H.xp>=needHeroXp(H.lvl)){H.xp-=needHeroXp(H.lvl);H.lvl++;this.ev('herolevel',{key:h.key,lvl:H.lvl});this.text(h.x,this.G-70,'LV '+H.lvl,'#7dff9a',true);}}
   }
-  healHero(h,amt,quiet,by){if(!h||!h.alive||amt<=0)return;if(!fleshy(h)&&!this._mech)return;   /* 0.12.58: herbs, medkits and healing magic do nothing for the Warhound */{const M=by||this._healBy;if(M&&hasPerk(M,'medicine'))amt*=1.3;}/* 0.12.56 Medicine Man: heals he gives +30% */const before=h.hp;h.hp=Math.min(h.max,h.hp+amt);{const B=by||this._healBy||h;if(B&&B.key&&!this.demo)this.st8(B).heal+=h.hp-before;}if(!quiet&&h.hp-before>=1)this.text(h.x,this.G-56,'+'+Math.round(h.hp-before),'#7dff9a');}
+  healHero(h,amt,quiet,by){if(!h||!h.alive||amt<=0||h.dog)return;if(!fleshy(h)&&!this._mech)return;   /* 0.12.58: herbs, medkits and healing magic do nothing for the Warhound */{const M=by||this._healBy;if(M&&hasPerk(M,'medicine'))amt*=1.3;}/* 0.12.56 Medicine Man: heals he gives +30% */const before=h.hp;h.hp=Math.min(h.max,h.hp+amt);{const B=by||this._healBy||h;if(B&&B.key&&!this.demo)this.st8(B).heal+=h.hp-before;}if(!quiet&&h.hp-before>=1)this.text(h.x,this.G-56,'+'+Math.round(h.hp-before),'#7dff9a');}
   weakest(){const a=this.alive().filter(fleshy);return a.length?a.reduce((m,h)=>h.hp/h.max<m.hp/m.max?h:m,a[0]):null;}
   // hit visual: a spray of blood thrown away from the blow, drops falling to the ground and leaving a fading spatter
   splatter(u,amt,dir,crit){if(this.demo&&this.rng()<.5)return;const boss=!!u.boss;const gy=u.gy!=null&&!u.fly?u.gy:this.G;
@@ -1212,7 +1214,11 @@ class Game{
   // Bleed: damage over time that ignores armor; reapplying refreshes it (doesn't stack)
   bleed(h,total,dur){const fresh=!(h.bleedT>0);h.bleedT=dur;h.bleedDps=total/dur;h.bleedTick=h.bleedTick||0;if(fresh)this.text(h.x,this.G-66,'BLEED','#ff3a4a');}
   hurtHero(h,amt,from){
-    if(!h||!h.alive)return;if(from&&from.E){h.lastHitBy=from;h.grudgeT=1+19*trait(h,'grudge');}   // Forgiving forgets in a second; Vengeful holds it 20s
+    if(!h||!h.alive)return;
+    /* 0.12.65 (Kyle) Guard Dog: no HP, he can take 5 hits (6 with a Tier III Kennel) before he goes down; one hit comes back every 15s (10s at Tier III).
+       He can't be healed, but anyone can help him up (dogs never help others up: no hands). */
+    if(h.dog){if(this.rng()<h.dodge){this.text(h.x,this.G-30,'dodge','#9ae6ff');return false;}if(h.invulnT>0)return false;h.hits=(h.hits||0)-1;h.hitFlash=.12;h.hitRegT=0;h.hp=h.max*Math.max(0,h.hits)/h.hitsMax;
+      if(h.hits<=0){h.alive=false;h.downed=1;h.revT=0;h.downT=this.t;h.hp=0;h.plan=null;this.fx.push({k:'poof',x:h.x,y:this.G-14,t:0});Comms.bubble(this,h,'*yelp*',true);if(this.slot)this.st8(h).downs++;}return true;}if(from&&from.E){h.lastHitBy=from;h.grudgeT=1+19*trait(h,'grudge');}   // Forgiving forgets in a second; Vengeful holds it 20s
     if(this.rng()<h.dodge){this.text(h.x,this.G-52,'dodge','#9ae6ff');return false;}
     if(from&&from.smokeT>0&&this.rng()<.5){this.text(h.x,this.G-52,'miss','#c8d0d8');return false;}   // Smoke_Screen: blinded attackers miss half the time
     if(!this._bgRedirect&&from){const bg=this.alive().find(o=>o!==h&&insP(o)==='bodyguard'&&Math.abs(this.heroX(o)-this.heroX(h))<14&&Math.abs((o.gy||this.G)-(h.gy||this.G))<6);
@@ -1353,7 +1359,9 @@ class Game{
       if(lost){h.search=null;h.defuse=null;h.planting=null;h.setting=null;h.tossing=null;h.plan=null;h.thinkT=0;h.pauseT=0;if(S&&S.o&&S.o.searchBy===h)S.o.searchBy=null;}}}
   step(dt){
     if(this.over)return;this.t+=dt;
-    const T=this;const al=this.alive();this.dropLost();if(!this._hearth){this._hearth=1;if(!this.demo&&this.run&&upgT(this.run,'hearth'))for(const h of al)giveCozy(h);}   /* Hearth camp upgrade: everyone starts the stage Cozy */
+    const T=this;const al=this.alive();this.dropLost();for(const p of this.pets||[])if(p.dog&&!p.alive&&p.downed){p.x-=(this.scroll||0)*dt;if(p.x<-10)p.downed=0;}   /* a downed dog is left behind if nobody helps him up before he slides off screen */
+    for(const p of this.pets||[])if(p.dog&&p.alive&&p.hits<p.hitsMax){p.hitRegT=(p.hitRegT||0)+dt;if(p.hitRegT>=p.hitRegEvery){p.hitRegT=0;p.hits++;p.hp=p.max*p.hits/p.hitsMax;}}   /* dog: one hit back every 15s (10s at Kennel III) */
+    if(!this._hearth){this._hearth=1;if(!this.demo&&this.run&&upgT(this.run,'hearth'))for(const h of al)giveCozy(h);}   /* Hearth camp upgrade: everyone starts the stage Cozy */
     for(const t of this.timers||[])t.t-=dt;
     if(this.timers){for(const t of this.timers.filter(t=>t.t<=0))t.fn();this.timers=this.timers.filter(t=>t.t>0);}
     // 0.12.2 behavior AI: everyone reads the same snapshot of the battlefield, then each hero thinks on its own clock
@@ -1554,7 +1562,7 @@ class Game{
             else if(e.retreatT>0)e.x+=Math.sign(stopX-e.x)*Math.min(Math.abs(stopX-e.x),e.E.spd*.6*sp*dt);}   // backing offe.moving=Math.abs(e.x-x0)>.05||Math.abs(e.gy-LANES[e.laneI])>.5;
           if(!inRange)e.atkT=Math.min(e.E.atk,e.atkT+dt);
           else{e.atkT+=dt;if(e.atkT>=e.E.atk){e.atkT=0;e.anim=1;e.animT=e.E.animAtk||.3;
-            const blow=()=>{if(e.dead||e.stun>0||!V.alive||Math.abs(e.gy-(V.gy||this.G))>(V===T?3:10)||Math.abs(e.x-this.heroX(V))>Rch+bodyT(V)+2)return;/* no swinging at thin air */const d=e.E.dmgDie?(1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul:e.dmg;const took=this.hurtHero(V,d,e);
+            const blow=()=>{if(e.dead||e.stun>0||!V.alive||Math.abs(e.gy-(V.gy||this.G))>(V===T?3:10)||Math.abs(e.x-this.heroX(V))>Rch+bodyT(V)+2)return;/* no swinging at thin air */const d=e.E.dmgDie?Math.max(1,Math.floor((1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul)):e.dmg;const took=this.hurtHero(V,d,e);
               const B=e.E.bleed;if(B&&took&&V.alive&&this.rng()<B.chance)this.bleed(V,B.dmg*e.dmgMul,B.dur);};
             if(e.E.hitAt)setTimeoutSafe(this,e.E.hitAt,blow);else blow();}}
         }else{
@@ -1566,7 +1574,7 @@ class Game{
         if(useR&&!inRange)e.atkT=Math.min(e.E.atk,e.atkT+dt);   // keeps its swing ready while stepping back in
         if(inRange){e.atkT+=dt;if(e.atkT>=e.E.atk){e.atkT=0;e.anim=1;e.animT=e.E.animAtk||.3;
           const heroClose=e.x-f.x<30;
-          const blow=()=>{if(e.dead||e.stun>0)return;const F=this.front();if(wall&&!wall.dead&&(!heroClose||bx>blockX))this.hurtMinion(wall,e.dmg,e);else if(tank&&tank.taunt&&!tank.dead)this.hurtMinion(tank,e.dmg,e);else if(F){const d=e.E.dmgDie?(1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul:e.dmg;const took=this.hurtHero(F,d,e);if(e.E.leech)e.hp=Math.min(e.max,e.hp+d*e.E.leech);
+          const blow=()=>{if(e.dead||e.stun>0)return;const F=this.front();if(wall&&!wall.dead&&(!heroClose||bx>blockX))this.hurtMinion(wall,e.dmg,e);else if(tank&&tank.taunt&&!tank.dead)this.hurtMinion(tank,e.dmg,e);else if(F){const d=e.E.dmgDie?Math.max(1,Math.floor((1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul)):e.dmg;const took=this.hurtHero(F,d,e);if(e.E.leech)e.hp=Math.min(e.max,e.hp+d*e.E.leech);
             const B=e.E.bleed;if(B&&took&&F.alive&&this.rng()<B.chance)this.bleed(F,B.dmg*e.dmgMul,B.dur);}};
           if(e.E.hitAt)setTimeoutSafe(this,e.E.hitAt,blow);else blow();}}
         }
@@ -1976,9 +1984,9 @@ class Game{
           else if(C.ranged.spread&&i>0){p.tgy+=(this.rng()*2-1)*2;}}};
       const nb=C.ranged.burst||1;for(let b=0;b<nb;b++){const tt=rel+b*(C.ranged.burstGap||.08);if(tt>0)setTimeoutSafe(this,tt,fire);else fire();}}}
   /* 0.12.44 Guard Dog Kennel: one dog, out from the start of every stage; each Kennel tier makes him a bit tougher and harder-biting */
-  spawnDog(t){this.pets=this.pets||[];if(this.pets.some(p=>p.key==='dog'&&p.alive))return;const lv=Math.max(1,Math.round(this.heroes.reduce((s,h)=>s+(h.lvl||1),0)/Math.max(1,this.heroes.length)));
-    const key='dog',b=heroBase(key,lv,this.run.team.length);const hm=[1,1.25,1.5][t-1],dm=[1,1.15,1.3][t-1];const h0=this.heroes[0];
-    const dg={key,def:{key,name:'Guard_Dog'},style:STYLE[key],lvl:lv,base:b,spells:[],items:[],alive:true,owner:h0,pet:1,dog:1,x:(h0?h0.x:60)-10,gy:(h0&&h0.gy)||LANES[2],laneI:h0&&h0.laneI!=null?h0.laneI:2,
+  spawnDog(t,i){this.pets=this.pets||[];if(!i&&t>=4&&!this._dog2){this._dog2=1;this.spawnDog(t,1);}if(!i&&this.pets.some(p=>p.key==='dog'&&!p.second))return;const lv=Math.max(1,Math.round(this.heroes.reduce((s,h)=>s+(h.lvl||1),0)/Math.max(1,this.heroes.length)));
+    const key='dog',b=heroBase(key,lv,this.run.team.length);const hm=1,dm=[1,1.2,1.3,1.4][t-1];const h0=this.heroes[i?Math.min(1,this.heroes.length-1):0];
+    const hitsMax=t>=3?6:5;const dg={key,def:{key,name:i?'Guard_Dog 2':'Guard_Dog'},style:STYLE[key],lvl:lv,base:b,spells:[],items:[],alive:true,owner:h0,pet:1,dog:1,second:!!i,hits:hitsMax,hitsMax,hitRegEvery:t>=3?10:15,hitRegT:0,x:(h0?h0.x:60)-10-(i?14:0),gy:(h0&&h0.gy)||LANES[2],laneI:h0&&h0.laneI!=null?h0.laneI:2,
       atkT:0,anim:0,animT:0,walkT:0,shield:0,shieldT:0,buffT:0,lowT:0,nearT:0,hitFlash:0,alt:0,face:1,
       max:b.hp*hm,hp:b.hp*hm,atk:b.atk*dm,aspd:1,crit:b.crit,acc:b.acc+2*(t-1),dr:0,armor:0,cdr:0,dodge:b.dodge+.02*(t-1),luck:0,scoreM:1,pow:1,reach:1,critMul:b.critMul,armorPts:b.armorPts+(t-1),kbRes:b.kbRes,
       enMaxB:100,enRegenB:5,xpBonus:0,lifesteal:0,mvMul:1,meleeDmg:1,rangedDmg:1,meleeSpd:1+.1*(t-1),rangedSpd:1,kbAdd:0,flatRanged:0,flatMelee:0};
@@ -2234,14 +2242,15 @@ class Game{
   gainParts(h,o){const n=1+(this.rng()<.5?1:0);this.stageParts=(this.stageParts||0)+n;this.text(o?o.x:h.x,(o?LANES[o.lanes[0]]:this.G)-30,'+'+n+' PARTS','#c8d0d8');if(h)Comms.bubble(this,h,Comms.pick(['Spare parts!','Useful bits.','Gears and wire!']));}
   gainSupply(h,o){const w=this.rng()<.5;if(w)this.stageWater=(this.stageWater||0)+1;else this.stageFood=(this.stageFood||0)+1;this.text(o?o.x:h.x,(o?LANES[o.lanes[0]]:this.G)-36,w?'+1 WATER':'+1 FOOD',w?'#7fd0ff':'#e8b060');
     if(h)Comms.bubble(this,h,w?Comms.pick(['Clean water!','A bottle!','Water!']):Comms.pick(['Canned food!','Rations!','Still sealed!']));}
-  stepRevive(dt){const downs=this.heroes.filter(h=>!h.alive&&h.downed);if(!downs.length)return;
+  stepRevive(dt){const downs=this.heroes.concat((this.pets||[]).filter(p=>p.dog)).filter(h=>!h.alive&&h.downed);if(!downs.length)return;
     const al=this.alive().filter(o=>!o.pet);const herald=o=>(o.base.char&&o.base.char.abilities||[]).some(a=>a.id==='herald');
     for(const d of downs){const helpers=al.filter(o=>Math.abs(o.x-d.x)<9&&Math.abs((o.gy||this.G)-(d.gy||this.G))<4.5&&!(o.riseT>0));const need=helpers.some(herald)?4:5;d.revNeed=need;   /* 4s when the Herald is the one helping, 5s for everyone else */
       {const df=helpers.find(o=>o.defib);if(df){df.defib=0;this.fx.push({k:'ring',x:d.x,y:(d.gy||this.G)-10,t:0,r:16,c:'#9ad0ff'});this.fx.push({k:'arc',x:d.x,gy:d.gy||this.G,t:0,life:.4,dir:1,raw:1});this.ev('zap',{});Comms.bubble(this,df,Comms.pick(['Clear!','Shocking you awake!','Get up!']),true);this.st8(df).revives++;this.revive(d);continue;}}   /* 0.12.38 Defibrillator: one use, instant revive */
       if(helpers.length){d.revT=(d.revT||0)+dt;if(!d.revCall){d.revCall=1;Comms.say(this,helpers[0],'reviving',{ally:d});}}
       else{d.revT=Math.max(0,(d.revT||0)-dt*.5);if(d.revT<=0)d.revCall=0;}
       if(d.revT>=need){if(helpers[0])this.st8(helpers[0]).revives++;this.revive(d,helpers.some(o=>hasPerk(o,'medicine')));}}}
-  revive(h,med){h.alive=true;h.downed=0;h.hp=Math.max(1,h.max*(med?.35:.25));h.en=0;h.revT=0;h.revCall=0;h.riseT=1.1;h.riseT0=1.1;h.invulnT=1.3;h.plan=null;h.thinkT=0;h.bleedT=0;h.hotT=0;
+  revive(h,med){if(h.dog){h.alive=true;h.downed=0;h.hits=2;h.hp=h.max*2/h.hitsMax;h.revT=0;h.revCall=0;h.invulnT=1.3;h.plan=null;h.thinkT=0;this.fx.push({k:'ring',x:h.x,y:(h.gy||this.G)-8,t:0,r:10,c:'#ffe08a'});Comms.bubble(this,h,'*happy bark*',true);return;}   /* back up with 2 hits */
+    h.alive=true;h.downed=0;h.hp=Math.max(1,h.max*(med?.35:.25));h.en=0;h.revT=0;h.revCall=0;h.riseT=1.1;h.riseT0=1.1;h.invulnT=1.3;h.plan=null;h.thinkT=0;h.bleedT=0;h.hotT=0;
     this.fx.push({k:'ring',x:h.x,y:this.G-10,r:16,t:0,c:'#7dff9a'});this.ev('heal',{});this.text(h.x,this.G-56,'+'+Math.round(h.hp),'#7dff9a');
     Comms.bubble(this,h,Comms.pick(['Thanks!','I\'m up!','Back in it!','Not done yet!','Owe you one!','Still kicking!']));}
   tryResurge(h){if((this.resurgeT||-99)>this.t||h.pet)return false;const D=this.alive().find(o=>o!==h&&o.base&&o.base.char&&(o.base.char.abilities||[]).some(a=>a.id==='resurge'));if(!D)return false;
@@ -2496,7 +2505,7 @@ const CAMP_UPG={
   yard:{name:'Scrap Yard',icon:'⚙️',tiers:[100,175],txt:t=>`+${t} spare part${t>1?'s':''} each time you get back.`},
   cutters:{name:'Wire Cutters',icon:'✂️',tiers:[100,175],txt:t=>`Shutting a car alarm off is ${[30,55][t-1]}% faster (normally about 5s).`},
   lamp:{name:"Scavenger's Lamp",icon:'🔦',tiers:[100,175],txt:t=>`Searching takes ${[25,40][t-1]}% less time.`},
-  kennel:{name:'Guard Dog Kennel',icon:'🐕',tiers:[125,200,300],txt:t=>t===1?'A German Shepherd joins every stage. He guards whoever is in the most trouble and bites anything that gets close. Only ever one dog.':`Your dog gets tougher and bites harder: +${[0,25,50][t-1]}% HP, +${[0,15,30][t-1]}% damage, a little quicker.`},
+  kennel:{name:'Guard Dog Kennel',icon:'🐕',tiers:[125,200,300,450],txt:t=>['A German Shepherd joins every stage. He takes 5 hits before going down, gets a hit back every 15s, and your people can help him up.','Your dog bites 20% harder and a little quicker, and dodges more.','Your dog takes 6 hits, gets one back every 10s, and bites 30% harder.','A second German Shepherd joins the pack (both bite 40% harder).'][t-1]},   // 0.12.65 (Kyle): 4 tiers, two dogs at the top
   tower:{name:'Watchtower',icon:'🗼',tiers:[100,175,275],txt:t=>['Scouts the road ahead: each camp, pick 1 of 2 reports to shape the next stage (more ambulances, more loot, fewer zombies...).','3 reports to pick from.','3 reports, and every one is 50% stronger.'][t-1]},
   still:{name:'Moonshine Still',icon:'🫙',tiers:[100,175],txt:t=>`Brew Liquid Courage from ${t===1?2:1} food (${t===1?1:2} per camp). Whoever drinks it fights the next stage with +20% damage, -10 accuracy and steadier nerves. *hic*`},
   // 0.12.63 (Kyle): Radio Tower removed
@@ -2561,12 +2570,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794336432';const BGI=new Image();BGI.src='crawl_bg.png?v=1794336432';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794336432';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794381381';const BGI=new Image();BGI.src='crawl_bg.png?v=1794381381';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794381381';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794336432';XIMG.wave.src='crawl_wave.png?v=1794336432';XIMG.chibi.src='crawl_chibi.png?v=1794336432';XIMG.flannel.src='crawl_flannel.png?v=1794336432';XIMG.rain.src='crawl_rain.png?v=1794336432';XIMG.druid.src='crawl_druid.png?v=1794336432';XIMG.camp.src='crawl_campfire.png?v=1794336432';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794336432';XIMG.tornado.src='crawl_fx_tornado.png?v=1794336432';XIMG.vine.src='crawl_fx_vine.png?v=1794336432';XIMG.thorn.src='crawl_fx_thorn.png?v=1794336432';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794381381';XIMG.wave.src='crawl_wave.png?v=1794381381';XIMG.chibi.src='crawl_chibi.png?v=1794381381';XIMG.flannel.src='crawl_flannel.png?v=1794381381';XIMG.rain.src='crawl_rain.png?v=1794381381';XIMG.druid.src='crawl_druid.png?v=1794381381';XIMG.camp.src='crawl_campfire.png?v=1794381381';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794381381';XIMG.tornado.src='crawl_fx_tornado.png?v=1794381381';XIMG.vine.src='crawl_fx_vine.png?v=1794381381';XIMG.thorn.src='crawl_fx_thorn.png?v=1794381381';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794336432';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794336432';XIMG.obst.src='crawl_obst.png?v=1794336432';XIMG.cars.src='crawl_cars.png?v=1794336432';XIMG.robot.src='crawl_robot.png?v=1794336432';XIMG.cultist.src='crawl_cultist.png?v=1794336432';XIMG.tentacle.src='crawl_tentacle.png?v=1794336432';XIMG.boom.src='crawl_boom.png?v=1794336432';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794381381';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794381381';XIMG.obst.src='crawl_obst.png?v=1794381381';XIMG.cars.src='crawl_cars.png?v=1794381381';XIMG.robot.src='crawl_robot.png?v=1794381381';XIMG.cultist.src='crawl_cultist.png?v=1794381381';XIMG.tentacle.src='crawl_tentacle.png?v=1794381381';XIMG.boom.src='crawl_boom.png?v=1794381381';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2701,7 +2710,7 @@ function drawGame(ctx,g,W,oy){
     const sc=(m.small?.5:.62)*(1+.15*(m.stacks||0));ctx.save();ctx.translate(m.x,G-(n==='e_skeleton'?60:44)*sc);ctx.scale(sc,sc);spr(ctx,n,m.animT>0?6+Math.min(2,Math.floor((.3-m.animT)/.1)):Math.floor(g.t*(m.moving?16:6))%6,-FW(a)/2,0,true,.9,m.hitFlash);ctx.restore();
     const mw=12,mp=Math.max(0,m.hp/m.max);ctx.fillStyle='#120a14';ctx.fillRect(Math.round(m.x-mw/2)-1,Math.round(G-(n==='e_skeleton'?60:44)*sc)-3,mw+2,3);ctx.fillStyle='#7dff9a';ctx.fillRect(Math.round(m.x-mw/2),Math.round(G-(n==='e_skeleton'?60:44)*sc)-2,Math.round(mw*mp),1);ctx.restore();}
   // heroes (back to front)
-  const hs=g.heroes.concat((g.pets||[]).filter(p=>p.alive)).sort((a,b)=>a.x-b.x);
+  const hs=g.heroes.concat((g.pets||[]).filter(p=>p.alive||(p.dog&&p.downed))).sort((a,b)=>a.x-b.x);   // a downed dog lies there until someone helps him up
   for(const h of hs)if(!h.alive&&h.downed){const gy=h.gy||G,k=Math.min(1,(h.revT||0)/(h.revNeed||5)),p=.5+.5*Math.sin(g.t*5);ctx.save();ctx.strokeStyle=`rgba(125,255,154,${.25+.2*p})`;ctx.lineWidth=1;ctx.beginPath();ctx.arc(h.x,gy-20,4,0,7);ctx.stroke();
     if(k>0){ctx.strokeStyle='#7dff9a';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(h.x,gy-20,4,-Math.PI/2,-Math.PI/2+k*6.283);ctx.stroke();}ctx.fillStyle='#7dff9a';ctx.fillRect(h.x-.5,gy-22,1,4);ctx.fillRect(h.x-2,gy-20.5,4,1);ctx.restore();}   // downed: a + to help them up, filling as an ally stands on them
   for(const h of hs)if(!h.alive){const gy=h.gy||G;ctx.save();shrinkAt(ctx,h.x,gy,HS);const U=UNITS[h.key];if(U&&U.death)drawUnit(ctx,U.death,U.death.n-1,h.x,gy-(U.death.fall?2:0),U.death.pre?ART_SCALE/U.death.pre/HS:U.death.art?ART_SCALE/HS:1,.9,0,U.death.fall?((h.face||1)>0?1.45:-1.45):0,(h.face||1)>0);else spr(ctx,'h_'+h.key,10,h.x-32,gy-60,false,.85);ctx.restore();}
@@ -3136,7 +3145,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.64</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.65</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
