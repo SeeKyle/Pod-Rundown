@@ -430,7 +430,7 @@ const ABIL_DESC={
   wind:'Wind_Reading · Passive. He reads the wind: shots at anything more than about 450px away get +15 accuracy and +0.5x crit damage.',
   resurge:'Verdant_Resurgence · Passive · 25s cooldown. When an ally would die, vines catch them: they stay up, can\'t be hurt for 2s and heal 30% of their max HP.',
   nano:'Nano-Tech_Repair_Bots · 35 energy · 20s. A machine can\'t be bandaged or healed with herbs and spells, so when he drops under 55% he stops and a swarm of repair bots restores 5% of his max life every second for 5s. He can\'t move or attack while they work, and cuts it short if he gets swarmed. Built in: every time he\'s hit there\'s a 10% chance the remaining cooldown is halved.',
-  surge:'Arc_Surge · 30 energy · 15s · 8s. Overcharges the Targeted Lazer: 3d4 every 0.5s, a 25 px blast at the tip that creeps 7 px every 0.25s, and every lazer hit sets them on fire. He leans 3 toward Shooter while it lasts.',
+  surge:'Arc_Surge · 30 energy · 15s · 8s. Overcharges the Targeted Lazer: 3d4 every 0.25s, a 25 px blast at the tip that sweeps 210 px instead of 150, and every lazer hit sets them on fire. He leans 3 toward Shooter while it lasts.',
   retreat:'Tactical_Retreat (passive) · when he drops under 30% he blasts off on a blue-flame jetpack in a big arc back to the rear and lands slowly. In the air a blue shield caps every hit at 5, and he fires about 3 single missiles at random zombies on the way. Once every 40s.',
   missiles:'Missile_Barrage · 45 energy · 15s. The pod on his back pops open and lobs 3 missiles high over the fight onto a group, spread wide; each one 2d4 in a small blast.',
   smoke:'Smoke_Screen · 35 energy · 16s. Lobs a smoke grenade between a hurt ally and the enemies on them: a thick cloud for 6s (about 180px wide). Enemies inside move 30% slower and miss half their attacks; allies inside dodge 25% of hits and are STEALTHED (see-through): zombies lose track of them until they attack or use an ability. Stealth lasts 5s after they step out; stepping back in refreshes it. Not the Warhound himself.',
@@ -615,16 +615,16 @@ CHAR.lumberjack={name:'Lumber_Jack',role:'Axe + Bow',combo:0,flatHp:0,stamina:11
 CHAR.robot={name:'Warhound',role:'Targeted Lazer + Flamethrower',combo:0,flatHp:0,stamina:12,hpPerStamina:5,armorPts:12,dodge:.02,kbRes:.6,
   /* 0.12.67 (Kyle): the arc blade is gone: up close he hoses them with the flamethrower (his "melee"); a wide cone about 210 screen px long,
      everything it touches burns for 2s, 1d4 every 0.25s (numbers only on crits) */
-  melee:{dice:[1,4],every:1.3,reach:50,kb:0,hitAt:0,flame:{len:70,w0:5,w1:15,burn:2,tick:.25,dice:[1,4],dur:.75}},
+  melee:{dice:[1,4],every:1.3,reach:46,kb:0,hitAt:0,flame:{len:56,w0:8,w1:19,burn:2,tick:.25,dice:[1,4],dur:.75}},   // 0.12.77: Kyle's burst sprite; a bit shorter, much wider
   /* Targeted Lazer (ranged basic): 0.5s charge-up, then a 2s beam. The tip starts ~10 screen px in front of a target 200-500 screen px away and
-     creeps forward 5 px every 0.25s; 2d4 every 0.5s to everything within 20 px of the tip, with a little ground fire riding along.
+     (0.12.77) now: starts 50 px in front of the target and sweeps 150 px forward in 1s; 2d4 every 0.25s to everything within 20 px of the tip, with a little ground fire riding along.
      2s reload that only starts once the beam is done. (All in screen px; world = /3.) */
   ranged:{dice:[2,4],flat:0,every:0,range:167,clip:0,reload:0,pellets:1,anim:.45,
-    lazer:{charge:.5,fire:2,min:30,max:167,lead:3.3,creep:5/3,tick:.5,r:20/3,dice:[2,4],reload:2,creepS:7/3,rS:25/3,diceS:[3,4]}},
+    lazer:{charge:.5,fire:1,min:30,max:167,lead:50/3,travel:50,tick:.25,r:20/3,dice:[2,4],reload:2.75,travelS:70,rS:25/3,diceS:[3,4]}},   // 0.12.77 (Kyle): starts 50px in front of the target, sweeps 150px in 1s; 2.75s between shots
   acc:10,walkPenalty:8,crit:.08,critMul:1.8,luck:10,xp:0,run:1/* 0.12.38 (Kyle): the Warhound only walks */,turn:.3,enMax:100,enRegen:5,
   abilities:[
     // Arc_Surge (0.12.67, now activated): IF the lazer is up (or 3+ enemies are in lazer range) THEN 30 energy, 15s CD, 8s:
-    //   Shooter/Slasher -3 (toward shooter); lazer 3d4 per 0.5s, 25 px radius, creeps 7 px per 0.25s, and lazer hits Burn.
+    //   Shooter/Slasher -3 (toward shooter); lazer 3d4 per 0.25s, 25 px radius, sweeps 210 px, and lazer hits Burn.
     {id:'surge',name:'Arc_Surge',en:30,cd:15,dur:8,slide:-3,burn:2},
     // Missile_Barrage: IF 3+ enemies are bunched (or a boss is up) 40-260px out THEN 3 missiles arc onto them, 2d4 each. 45 energy, 15s.
     {id:'missiles',name:'Missile_Barrage',en:45,cd:15,n:3,gap:.18,fly:.95,range:260,min:40,r:9,dice:[2,4],spread:24},
@@ -1498,7 +1498,7 @@ class Game{
   robotLazer(h,dt,LZ){const L=h.lz;L.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;h.face=L.dir;const S=h.surgeT>0;L.tx-=(this.scroll||0)*dt;
     if(L.t<LZ.charge){if(L.tg&&!L.tg.dead){L.tx=L.tg.x-L.dir*LZ.lead;L.gy=L.tg.gy!=null?L.tg.gy:this.G;}return;}
     if(!L.fired){L.fired=1;this.ev('zap',{});}
-    L.ct+=dt;while(L.ct>=.25){L.ct-=.25;L.tx+=L.dir*(S?LZ.creepS:LZ.creep);}
+    L.tx+=L.dir*(S?LZ.travelS:LZ.travel)/LZ.fire*dt;   /* 0.12.77: a smooth fast sweep */
     L.dt+=dt;if(L.dt>=LZ.tick||L.first==null){L.first=1;if(L.dt>=LZ.tick)L.dt-=LZ.tick;else L.dt=0;const r=S?LZ.rS:LZ.r,dice=S?LZ.diceS:LZ.dice,mul=(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);L.puff=1;
       for(const e of this.enemies){if(e.dead)continue;const dx=Math.abs(e.x-L.tx)-(e.boss?e.w*.5:0),dz=e.fly?0:Math.abs((e.gy!=null?e.gy:this.G)-L.gy);if(dx>r||dz>Math.max(4,r*.75))continue;
         this.hitEnemy(e,(this.rollDice(dice)+(h.flatRanged||0))*mul,h,{sure:1});if(S&&!e.dead&&!(e.E&&e.E.fireImmune))e.fb={T:(h.base.char.abilities.find(a=>a.id==='surge')||{}).burn||2,tick:e.fb?e.fb.tick:.2,src:h,mul};}
@@ -2852,12 +2852,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794439992';const BGI=new Image();BGI.src='crawl_bg.png?v=1794439992';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794439992';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794440367';const BGI=new Image();BGI.src='crawl_bg.png?v=1794440367';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794440367';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794439992';XIMG.wave.src='crawl_wave.png?v=1794439992';XIMG.chibi.src='crawl_chibi.png?v=1794439992';XIMG.flannel.src='crawl_flannel.png?v=1794439992';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794439992';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794439992';XIMG.rain.src='crawl_rain.png?v=1794439992';XIMG.druid.src='crawl_druid.png?v=1794439992';XIMG.camp.src='crawl_campfire.png?v=1794439992';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794439992';XIMG.tornado.src='crawl_fx_tornado.png?v=1794439992';XIMG.vine.src='crawl_fx_vine.png?v=1794439992';XIMG.thorn.src='crawl_fx_thorn.png?v=1794439992';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794440367';XIMG.wave.src='crawl_wave.png?v=1794440367';XIMG.chibi.src='crawl_chibi.png?v=1794440367';XIMG.flannel.src='crawl_flannel.png?v=1794440367';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794440367';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794440367';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794440367';XIMG.rain.src='crawl_rain.png?v=1794440367';XIMG.druid.src='crawl_druid.png?v=1794440367';XIMG.camp.src='crawl_campfire.png?v=1794440367';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794440367';XIMG.tornado.src='crawl_fx_tornado.png?v=1794440367';XIMG.vine.src='crawl_fx_vine.png?v=1794440367';XIMG.thorn.src='crawl_fx_thorn.png?v=1794440367';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794439992';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794439992';XIMG.obst.src='crawl_obst.png?v=1794439992';XIMG.cars.src='crawl_cars.png?v=1794439992';XIMG.robot.src='crawl_robot.png?v=1794439992';XIMG.cultist.src='crawl_cultist.png?v=1794439992';XIMG.tentacle.src='crawl_tentacle.png?v=1794439992';XIMG.boom.src='crawl_boom.png?v=1794439992';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794440367';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794440367';XIMG.obst.src='crawl_obst.png?v=1794440367';XIMG.cars.src='crawl_cars.png?v=1794440367';XIMG.robot.src='crawl_robot.png?v=1794440367';XIMG.cultist.src='crawl_cultist.png?v=1794440367';XIMG.tentacle.src='crawl_tentacle.png?v=1794440367';XIMG.boom.src='crawl_boom.png?v=1794440367';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3170,10 +3170,12 @@ function drawGame(ctx,g,W,oy){
       for(let i=0;i<p.length;i+=4){const r=p[i],gg=p[i+1],b=p[i+2];p[i]=b*.6;p[i+1]=gg*.85;p[i+2]=Math.min(255,r*1.1+30);}cx.putImageData(D,0,0);XIMG._blueCamp=c;}catch(e){XIMG._blueCamp=IM;}}   /* 0.12.67: Kyle's campfire flames, recoloured blue for the jetpack */
     ctx.save();ctx.globalAlpha=a;if(down){ctx.translate(x,gy);ctx.scale(1,-1);ctx.translate(-x,-gy);}ctx.drawImage(XIMG._blueCamp,fr*34+3,0,28,27,x-14*s,gy-27*s,28*s,27*s);ctx.restore();};   // down: the flame points down (jet exhaust)
   const fireBit=(x,gy,s,fr,a)=>{const IM=XIMG.camp;if(!IM||!IM.complete)return;ctx.save();ctx.globalAlpha=a;ctx.drawImage(IM,fr*34+3,0,28,27,x-14*s,gy-27*s,28*s,27*s);ctx.restore();};
-  const flames=()=>{for(const f of g.fx){if(f.k!=='flame')continue;const k=f.t/f.life,src=f.src;const x0=src&&src.alive?src.x+f.dir*12:f.x;f.x=x0;
-      ctx.save();ctx.globalCompositeOperation='lighter';const gx=x0+f.dir*f.len*.5;glow(ctx,gx,f.gy-8,f.len*.55,'#ff7a20',.28*(1-k*.6));glow(ctx,x0+f.dir*6,f.gy-9,6,'#fff0a0',.45*(1-k));ctx.restore();
-      const n=11;for(let i=0;i<n;i++){const p=((i/n)+g.t*2.4)%1;if(p>Math.min(1,k*3.5+.15))continue;const d=p*f.len*(k>.75?1:1),w=f.w0+(f.w1-f.w0)*p;
-        const off=(Math.sin(i*12.9+g.t*9)*.8)*w*.6;const s=.22+.42*p;const a=(1-p*.55)*(k>.7?(1-k)/.3:1);fireBit(x0+f.dir*d,f.gy+off*.5+1,s,4+((i+Math.floor(g.t*12))%4),a);}}
+  /* 0.12.77 (Kyle's flamethrower sheet, crawl_flame.png): 15 frames, 290x200 each, nozzle at (22,156): 5 ignite, 5 full burst, 5 dying off.
+     Scaled so the burst reaches the flame's length, anchored on the nozzle (the Warhound's) or in front of the Fireman_Zombie, mirrored when facing left */
+  const flames=()=>{const IM=XIMG.flame;for(const f of g.fx){if(f.k!=='flame')continue;const k=Math.min(.999,f.t/f.life),src=f.src;
+      let x0,y0;if(src&&src.alive&&src.key==='robot'){x0=g.heroX(src)+f.dir*13;y0=(src.gy||G)-13.5;}else{x0=src&&!src.dead&&src.x!=null?src.x+f.dir*12:f.x;y0=f.gy-12;}f.x=x0;
+      const fi=k<.2?Math.floor(k/.2*5):k<.72?5+Math.floor((k-.2)/.52*10)%5:10+Math.min(4,Math.floor((k-.72)/.28*5));
+      if(IM&&IM.complete&&IM.naturalWidth){const s=f.len/205;ctx.save();ctx.translate(x0,y0);ctx.rotate(f.dir*.12);ctx.scale(f.dir*s,s*.8);ctx.translate(0,22);ctx.drawImage(IM,fi*290,0,290,200,-22,-156,290,200);ctx.restore();}}   // tipped a little down so the burst lands on them
     for(const e of g.enemies)if(e.fb&&!e.dead){const fr=4+Math.floor(g.t*10+e.phase*3)%4;fireBit(e.x+Math.sin(g.t*7+e.phase)*2,(e.gy!=null?e.gy:G)-14,.32,fr,.85);fireBit(e.x-3,(e.gy!=null?e.gy:G)-4,.22,(fr+2)%4+4,.7);}};
   /* 0.12.66 JP: the doobie (a little white joint at his mouth burning down over the 2s, glowing ember), smoke puffs drifting off him,
      a green haze while he's HIGH, a dust trail while he rushes to family, and his shield glinting during Trash_Talk */
@@ -3573,7 +3575,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.76</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.77</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
