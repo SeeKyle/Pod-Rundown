@@ -414,7 +414,7 @@ const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼'};
 // what each character is like in a fight (shown when you hover them on the party screen)
 // one line per ability for the party-screen hover boxes
 const ABIL_DESC={
-  build:'Build · 25 energy · a spellbook of three buildings, each with its own cooldown (he kneels to build; his other cooldowns pause meanwhile). WATCHTOWER (30s, 5s to build): chain-link, steel beams and a ladder; tier 1 (medical cross) heals allies near it 1% a second; Modify adds tier 2 (ammo sign: +15% ranged attack speed nearby) and tier 3 (lookout: one ranged ally climbs up for +12 accuracy and +30% range and can\'t be hit until it falls; empty, it gives +5 accuracy nearby). Each tier adds 15% to its health. CONCRETE BARRIER (16s, 3s): zombies in its lanes can\'t pass and hit it instead; allies behind it +8 accuracy. TESLA COIL (22s, 3s): zaps the nearest zombie for 1d8 every 1.5s and arcs to one more, for 25s.',
+  build:'Build · 25 energy · a spellbook of three buildings, each with its own cooldown (he kneels to build; his other cooldowns pause meanwhile). Built in: whenever one of his towers scrolls off behind the team, the tower cooldown is halved. WATCHTOWER (30s, 5s to build): chain-link, steel beams and a ladder; tier 1 (medical cross) heals allies near it 1% a second; Modify adds tier 2 (ammo sign: +15% ranged attack speed nearby) and tier 3 (lookout: one ranged ally climbs up for +12 accuracy and +30% range and can\'t be hit until it falls; empty, it gives +5 accuracy nearby). Each tier adds 15% to its health. HESCO_BARRIER (16s, 3s): one tall wire-mesh cell filled with dirt; zombies in its lanes can\'t pass and hit it instead; allies behind it +8 accuracy. TESLA COIL (22s, 3s): zaps the nearest zombie for 1d8 every 1.5s and arcs to one more, for 25s.',
   repair:'Repair · free, no cooldown · slow: patches up his buildings (6 HP a second) and the Warhound (2% a second) while he stays beside them. His other cooldowns pause while he works.',
   modify:'Modify · 30 energy · 14s. Adds the next tier to his watchtower (5s, then 7s), or bolts an auto-turret onto a broken-down car: 3-round bursts 0.25s apart, 1s reload, not very accurate.',
   satchel:'Satchel_Charge · 35 energy · 18s. Tosses a satchel of explosives that never goes off on its own; he sets it off when it\'s worth it. The biggest blast in the game: 6d4 at the centre, falling off outward, and a huge shove.',
@@ -466,7 +466,7 @@ const BEHAVIOR={
   druid:'Selfless healer. Hangs back near her friends and watches their health more than the enemies: patches up whoever is hurt worst, wraps allies in healing vines, and pokes at range with nature bolts. When enemies bunch up she drops thorns on them or sends a tornado down the lane. Light-footed and quiet. Her nerves are middling, so a boss or a fallen friend can rattle her for a moment. She tucks in behind rocks and logs when the horde gets thick.',
   archer:'Patient longbow marksman. Stays well back in his own lane, moves slowly and plants his feet for clean, accurate shots at the biggest threat. Backs up what his allies are fighting, sticks to his plan and doesn\'t waste energy. If something gets in close he cracks it with his bow. Steady and nearly silent: the best one to send searching a wreck. He shoots from behind cover whenever there\'s some nearby.',
   chibi:'Bold little front-liner. Charges in with his sword and fights up close, alternating a two-hit combo when he plants his feet and a running slash when he\'s on the move. Watches the enemies more than his friends, hops lanes to find a fight and picks his own targets. Stubborn about whoever hit him last, and loves to show off after a kill. Light on his feet and fairly steady. He never takes cover; he\'d rather be in their faces.',
-  eng:'Practical fixer. Hangs a little behind the front, works with his hands: puts up a watchtower behind the team and builds it up, drops a concrete barrier in front of a crowd, plants a tesla coil, bolts turrets onto wrecks and keeps it all patched together. Bashes anything close with a heavy wrench and blasts it with a sawn-off. Patient, very techy, a bit quiet; holds his satchel until the moment is right.',
+  eng:'Practical fixer. Hangs a little behind the front, works with his hands: puts up a watchtower behind the team and builds it up, drops a concrete barrier in front of a crowd, plants a tesla coil, bolts turrets onto wrecks and keeps it all patched together. Halving the tower cooldown whenever one of his towers scrolls off behind the team keeps them coming. Bashes anything close with a heavy wrench and blasts it with a sawn-off. Patient, very techy, a bit quiet; holds his satchel until the moment is right.',
   jp:'Loud, lovable menace. A good guy who picks on everybody, games all day and smokes even more. Kar98 at range, sword and a homemade wooden shield up close, and the first one in when family is in trouble. Keep him high or he gets grumpy.',
   flannel:'Careful, team-first marksman. Hangs back at mid range with his bolt-action rifle and plants his feet before shooting: one shot, then a 2-second reload. Anything that gets into crowbar reach gets a d12 swing instead. Looks after hurt allies before himself and keeps an eye on where his friends are. Goes for the big targets and holds a grudge: whatever hurts him becomes his next target. Sticks to his plan and his own lane, and never shows off. A seasoned survivor: steady nerves, quiet, and always puts a car or a rock between himself and the horde when he can, leaning out to shoot.',
   joel:'Fast, restless pair. Always on the move: they hop lanes looking for better fights and change plans constantly. They lean into close fights, pile onto whatever their allies are hitting, and pick off the small ones. They burn energy as soon as they have it (lots of Power Attacks), shoot on the run (sloppy), forgive quickly and love to taunt after a kill.',
@@ -648,7 +648,8 @@ CHAR.eng={name:'Engineer',role:'Wrench + Sawn-off Shotgun',combo:0,flatHp:0,stam
     //   Watchtower: tier 1 takes 5s; Modify adds tier 2 (5s) and tier 3 (7s). One shared health bar, +15% max HP per tier.
     //     T1 sign MEDICAL CROSS: allies within ~150 screen px regen 1% max HP a second.  T2 sign AMMO: allies nearby +15% ranged attack speed.
     //     T3 LOOKOUT: one ranged ally can climb up: +12 accuracy, +30% range, can't be hit until the tower falls. Empty, it gives allies nearby +5 accuracy.
-    //   Concrete barrier: blocks zombies in its lane and the ones next to it (they hit it instead); allies standing behind it +8 accuracy.
+    //   HESCO_Barrier (0.12.76, was the concrete barrier): ONE wire-mesh, fabric-lined cell filled with dirt; blocks zombies in its lane and the ones next to it
+    //   (they hit it instead); allies standing behind it +8 accuracy.
     //   Tesla coil (my design): zaps the nearest zombie within ~135 screen px for 1d8 every 1.5s and arcs to one more; lasts 25s.
     {id:'build',name:'Build',en:25,cd:0,book:1,
       tower:{cd:30,T:[5,5,7],hp:60,per:.15,r:50,regen:.01,aspd:.15,acc:5,perchAcc:12,perchRange:.3},
@@ -1377,12 +1378,12 @@ class Game{
     while(same.length>=(cap||1)){const o=same.shift();o.dead=true;this.fx.push({k:'poof',x:o.x,y:this.G-14,t:0});}
     this.minions=this.minions.filter(o=>!o.dead);this.minions.push(m);return m;}
   shoot(h,target,kind,dmg,opt){
-    const mz=MUZZLE[h.key]||[10,30];const y0=this.G-mz[1];const p={kind,x:h.x+(h.face<0?-mz[0]:mz[0]),y:y0,tx:target,dmg,src:h,spd:PSPD[kind]||160,pierce:opt.pierce||(h.style&&h.style.pierce)||0,opt,t:0,vy:kind==='brick'?-70:0,hit:new Set()};
+    const mz=MUZZLE[h.key]||[10,30];const lift=h.perch?(h.leapH||0)*.6:0;const y0=this.G-mz[1]-lift;   /* 0.12.76: up on the lookout, shots leave from up there */const p={kind,x:h.x+(h.face<0?-mz[0]:mz[0]),y:y0,tx:target,dmg,src:h,spd:PSPD[kind]||160,pierce:opt.pierce||(h.style&&h.style.pierce)||0,opt,t:0,vy:kind==='brick'?-70:0,hit:new Set()};
     this.proj.push(p);return p;
   }
   aim(p,h,tg){if(h&&h.sprayT>0){h._accBonus=(h._accBonus||0)-18;const r=this._aimInner(p,h,tg);h._accBonus+=18;return r;}return this._aimInner(p,h,tg);}
   _aimInner(p,h,tg){   // turn a shot into a free-flying projectile aimed with the reticle (0.11): either direction, heroes or enemies
-    p.aimed=true;p.gy=h.gy!=null?h.gy:this.G;p.h=h.fly?(this.G-h.y)/UNIT_SCALE:(h.key&&HERO_HB[h.key]?(MUZZLE[h.key]||[0,14])[1]/UNIT_SCALE:28);const air=tg.fly&&!tg.boss;const flyH=air?(this.G-tg.y)/UNIT_SCALE:0;
+    p.aimed=true;p.gy=h.gy!=null?h.gy:this.G;p.h=(h.fly?(this.G-h.y)/UNIT_SCALE:(h.key&&HERO_HB[h.key]?(MUZZLE[h.key]||[0,14])[1]/UNIT_SCALE:28))+(h.perch?(h.leapH||0)*.6/UNIT_SCALE:0);const air=tg.fly&&!tg.boss;const flyH=air?(this.G-tg.y)/UNIT_SCALE:0;
     const tx=tg.boss?tg.x-tg.w*.5:(tg.key?this.heroX(tg):tg.x);p.dir=tx>=p.x?1:-1;const dist=Math.abs(tx-p.x);
     if(air){p.aimH=rollAirAim((h.acc||0)+(h._accBonus||0),this.rng,flyH);p.tgy=p.gy;}
     else if(tg.boss){p.aimH=rollAimHeight((h.acc||0)+(h._accBonus||0),this.rng);p.tgy=tg.gy!=null?tg.gy:this.G;}
@@ -1469,6 +1470,8 @@ class Game{
             if(this.rng()<A.hit)this.hitEnemy(T,this.rollDice(A.dice),b.owner&&b.owner.alive?b.owner:null,{sure:1,nocrit:1});
             if(b.shots>=A.burst){b.shots=0;b.rl=A.reload;}}else b.sT=.2;}}}}
     for(const b of B){if(b.hp<=0&&!b.gone){b.gone=1;this.fx.push({k:'poof',x:b.x,y:b.gy-14,t:0,big:true});if(b.car)b.car.turret=0;if(b.occ){const o=b.occ;o.perch=null;o.leapH=0;o.acc-=b.A.perchAcc;b.occ=null;}}}
+    for(const b of B){if(b.k==='tower'&&!b.gone&&b.x<=-14&&b.owner){b.gone=1;if(b.occ){const o=b.occ;o.perch=null;o.leapH=0;o.acc-=b.A.perchAcc;b.occ=null;}
+        if(b.owner.twT>0){b.owner.twT/=2;this.text(this.heroX(b.owner),this.G-62,'tower CD ½','#ffd23f');}}}   /* 0.12.76 Build passive: a tower left behind halves the tower cooldown */
     this.blds=B.filter(b=>!b.gone&&b.x>-30);
     this.engAuras(dt);}
   engAuras(dt){const B=this.blds||[];
@@ -1480,8 +1483,9 @@ class Game{
     // lookout: IF the tower is tier 3 and empty THEN the nearest ranged ally (not the Engineer) climbs up
     for(const b of B){if(b.k!=='tower'||b.tier<3||b.hp<=0)continue;if(b.occ&&(!b.occ.alive||b.x<12)){const o=b.occ;o.perch=null;o.leapH=0;o.acc-=b.A.perchAcc;b.occ=null;}
       if(!b.occ&&b.x>20){const o=this.alive().filter(o=>!o.pet&&o.key!=='eng'&&o.key!=='robot'&&o.base.char&&o.base.char.ranged&&!this.isMeleeHero(o)&&Math.abs(this.heroX(o)-b.x)<60).sort((p,q)=>Math.abs(this.heroX(p)-b.x)-Math.abs(this.heroX(q)-b.x))[0];
-        if(o){b.occ=o;o.perch=b;o.acc+=b.A.perchAcc;Comms.bubble(this,o,Comms.pick(['Going up!','I have the high ground.','Nice view.']),true);}}
-      if(b.occ){const o=b.occ;o.x=b.x;o.leapH=150;o.pauseT=Math.max(o.pauseT||0,.05);o.moving=false;}}
+        if(o){b.occ=o;o.perch=b;o.climbT=0;o.acc+=b.A.perchAcc;Comms.bubble(this,o,Comms.pick(['Going up!','I have the high ground.','Nice view.']),true);}}
+      if(b.occ){const o=b.occ;o.pauseT=Math.max(o.pauseT||0,.05);o.moving=false;   /* 0.12.76: they slide up the ladder (about 1s), then step over to the middle */
+        if(o.climbT<1){if(o.climbT===0)o.x=b.x+14;o.climbT=Math.min(1,o.climbT+dt/1.1);o.x+=(b.x+14-o.x)*Math.min(1,dt*12);o.leapH=150*o.climbT;}else{o.x+=(b.x-o.x)*Math.min(1,dt*8);o.leapH=150;}}}
     // Field_Plating: IF the Engineer has been next to an ally for 3s AND they have no kit THEN strap one on
     for(const h of this.heroes){if(h.key!=='eng'||!h.alive)continue;const PL=(h.base.char.abilities||[]).find(a=>a.id==='plating');if(!PL)continue;
       for(const o of this.alive()){if(o===h||o.dog||o.kitHits>0)continue;if(Math.abs(this.heroX(o)-this.heroX(h))<PL.r&&Math.abs((o.gy||this.G)-(h.gy||this.G))<8){o.kitT=(o.kitT||0)+dt;if(o.kitT>=PL.T){o.kitT=0;o.kitHits=PL.hits;o.kitAdd=o.armorPts*PL.armor;o.armorPts+=o.kitAdd;o.kitKb=PL.kb;o.kbRes=(o.kbRes||0)+PL.kb;this.text(o.x,this.G-60,'+PLATING','#c8d0dc');this.ev('zap',{});}}else o.kitT=0;}}}
@@ -1920,6 +1924,7 @@ class Game{
       for(const S of this.satchels||[]){if(S.owner!==h||S.boom||S.t<S.T)continue;const on=live.filter(e=>!e.fly&&Math.abs(e.x-S.x)<S.A.r*.6&&Math.abs((e.gy!=null?e.gy:this.G)-S.gy)<12);
         if(on.length>=3||on.some(e=>e.boss||e.elite||e.max>=60)||(S.t>14&&on.length>=1)){this.satchelBoom(S);Comms.bubble(this,h,Comms.pick(['Fire in the hole!','Clacker time.','Boom.','Cover your ears!']),true);}}
       // in-progress work
+      if(h.building&&h.walkTo!=null){const d=h.walkTo-hx;h.building.wt=(h.building.wt||0)+dt;if(h.building.wt>4){h.building.x=hx;h.walkTo=null;}else if(Math.abs(d)>6&&onMeE(this,h)<2){h.x+=Math.sign(d)*Math.min(Math.abs(d),(MOVE.eng||15)*dt*1.4);h.face=d>0?1:-1;h.moving=true;h.walkT=(h.walkT||0)+dt;return;}h.walkTo=null;}
       if(h.building){const W=h.building;W.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;if(Math.random()<dt*6)this.fx.push({k:'spark',x:W.x+(Math.random()-.5)*10,gy:W.gy,t:0,life:.35,raw:1});
         if(onMeE(this,h)>=2&&W.t<W.T*.5){h.building=null;}else if(W.t>=W.T){h.building=null;this.finishBuild(h,W);}return;}
       if(h.repairing){const R=h.repairing,T=R.tgt;R.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;
@@ -1927,12 +1932,12 @@ class Game{
         if(done){h.repairing=null;}else{if(T.bld)T.hp=Math.min(T.max,T.hp+RP.bld*dt);else{this._mech=1;this.healHero(T,T.max*RP.mech*dt,true,h);this._mech=0;}if(Math.random()<dt*8)this.fx.push({k:'spark',x:(T.bld?T.x:this.heroX(T))+(Math.random()-.5)*8,gy:T.gy||this.G,t:0,life:.3,raw:1});return;}}
       const safe=near(40)===0&&!this.heroes.some(o=>!o.alive&&o.downed),en=h.en||0;   // a friend down comes first: no building until they're up
       // IF there's a fight AND no tower of mine AND it's quiet right here THEN put a watchtower up a little behind me
-      if(BU&&!tower&&h.twT<=0&&en>=BU.en&&safe&&live.length>=2&&spendEnergy(h,BU.en)){h.twT=BU.tower.cd;h.building={k:'tower',tier:1,t:0,T:BU.tower.T[0],x:Math.max(14,hx-12),gy};Comms.bubble(this,h,Comms.pick(['Putting up a tower.','Give me five seconds.','Cover me, building!']));return;}
+      if(BU&&!tower&&h.twT<=0&&en>=BU.en&&safe&&live.length>=2&&spendEnergy(h,BU.en)){h.twT=BU.tower.cd;h.building={k:'tower',tier:1,t:0,T:BU.tower.T[0],x:Math.max(20,Math.min(this.W-40,hx+45)),gy};   /* 0.12.76: well up the road so the team doesn't walk past it right away */h.walkTo=h.building.x;Comms.bubble(this,h,Comms.pick(['Putting up a tower.','Give me five seconds.','Cover me, building!']));return;}
       // IF my tower can go higher AND it's quiet AND Modify is ready THEN add a tier
       if(MO&&tower&&tower.tier<3&&h.moT<=0&&en>=MO.en&&safe&&Math.abs(tower.x-hx)<40&&spendEnergy(h,MO.en)){h.moT=MO.cd;h.building={k:'tier',tgt:tower,t:0,T:BU.tower.T[tower.tier],x:tower.x,gy:tower.gy};return;}
       // IF a pack of 3+ is coming down one lane 30-120 out THEN drop a concrete barrier in front of them
       if(BU&&h.brT2<=0&&en>=BU.en){let bl=null,bn=0;for(const l of LANES){const n=live.filter(e=>!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-l)<=BU.barrier.depth&&e.x-hx>30&&e.x-hx<120).length;if(n>bn){bn=n;bl=l;}}
-        if(bl!=null&&bn>=3&&!B.some(b=>b.k==='barrier'&&b.hp>0&&Math.abs(b.gy-bl)<6&&b.x>hx)&&spendEnergy(h,BU.en)){h.brT2=BU.barrier.cd;h.building={k:'barrier',t:0,T:BU.barrier.T,x:Math.min(this.W-20,hx+24),gy:bl};Comms.bubble(this,h,Comms.pick(['Barrier going up!','Wall them off!']));return;}}
+        if(bl!=null&&bn>=3&&!B.some(b=>b.k==='barrier'&&b.hp>0&&Math.abs(b.gy-bl)<6&&b.x>hx)&&spendEnergy(h,BU.en)){h.brT2=BU.barrier.cd;h.building={k:'barrier',t:0,T:BU.barrier.T,x:Math.min(this.W-20,hx+24),gy:bl};Comms.bubble(this,h,Comms.pick(['HESCO going up!','Wall them off!','Filling a HESCO!']));return;}}
       // IF 2+ zombies are within ~300 screen px THEN plant a tesla coil a little ahead
       if(BU&&h.tsT<=0&&en>=BU.en&&near(100)>=2&&near(20)===0&&spendEnergy(h,BU.en)){h.tsT=BU.tesla.cd;h.building={k:'tesla',t:0,T:BU.tesla.T,x:Math.min(this.W-20,hx+16),gy};return;}
       // IF a wreck is right here with no turret AND it's quiet THEN bolt a turret onto it
@@ -2847,12 +2852,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794384830';const BGI=new Image();BGI.src='crawl_bg.png?v=1794384830';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794384830';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794439992';const BGI=new Image();BGI.src='crawl_bg.png?v=1794439992';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794439992';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794384830';XIMG.wave.src='crawl_wave.png?v=1794384830';XIMG.chibi.src='crawl_chibi.png?v=1794384830';XIMG.flannel.src='crawl_flannel.png?v=1794384830';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794384830';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794384830';XIMG.rain.src='crawl_rain.png?v=1794384830';XIMG.druid.src='crawl_druid.png?v=1794384830';XIMG.camp.src='crawl_campfire.png?v=1794384830';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794384830';XIMG.tornado.src='crawl_fx_tornado.png?v=1794384830';XIMG.vine.src='crawl_fx_vine.png?v=1794384830';XIMG.thorn.src='crawl_fx_thorn.png?v=1794384830';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794439992';XIMG.wave.src='crawl_wave.png?v=1794439992';XIMG.chibi.src='crawl_chibi.png?v=1794439992';XIMG.flannel.src='crawl_flannel.png?v=1794439992';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794439992';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794439992';XIMG.rain.src='crawl_rain.png?v=1794439992';XIMG.druid.src='crawl_druid.png?v=1794439992';XIMG.camp.src='crawl_campfire.png?v=1794439992';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794439992';XIMG.tornado.src='crawl_fx_tornado.png?v=1794439992';XIMG.vine.src='crawl_fx_vine.png?v=1794439992';XIMG.thorn.src='crawl_fx_thorn.png?v=1794439992';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794384830';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794384830';XIMG.obst.src='crawl_obst.png?v=1794384830';XIMG.cars.src='crawl_cars.png?v=1794384830';XIMG.robot.src='crawl_robot.png?v=1794384830';XIMG.cultist.src='crawl_cultist.png?v=1794384830';XIMG.tentacle.src='crawl_tentacle.png?v=1794384830';XIMG.boom.src='crawl_boom.png?v=1794384830';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794439992';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794439992';XIMG.obst.src='crawl_obst.png?v=1794439992';XIMG.cars.src='crawl_cars.png?v=1794439992';XIMG.robot.src='crawl_robot.png?v=1794439992';XIMG.cultist.src='crawl_cultist.png?v=1794439992';XIMG.tentacle.src='crawl_tentacle.png?v=1794439992';XIMG.boom.src='crawl_boom.png?v=1794439992';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3305,28 +3310,32 @@ function drawGame(ctx,g,W,oy){
   /* 0.12.75 Engineer's buildings, drawn from shapes: the watchtower (steel legs, X braces, chain-link panels, plank floors with low walls,
      a ladder up the whole thing and a sign per tier), the concrete barrier, the tesla coil and the car turret */
   const drawBld=b=>{const x=Math.round(b.x),gy=b.gy;ctx.save();if(b.hitT>0){ctx.globalAlpha=.75;}
-    if(b.k==='tower'){const W=21,TH=30;const top=gy-TH*b.tier;
-      shadow(ctx,x,gy,22);
+    if(b.k==='tower'){const W=9.5,TH=30;const top=gy-TH*b.tier;   /* 0.12.76: about 45% as wide as before */
+      shadow(ctx,x,gy,11);
       for(let i=0;i<b.tier;i++){const y0=gy-TH*i,y1=y0-TH;
         ctx.strokeStyle='rgba(170,180,190,.35)';ctx.lineWidth=.4;   // chain-link: diamond lattice on the lower part of each tier
-        for(let k=-W;k<=W;k+=3){ctx.beginPath();ctx.moveTo(x+k,y0-1);ctx.lineTo(x+k+12,y0-13);ctx.stroke();ctx.beginPath();ctx.moveTo(x+k,y0-1);ctx.lineTo(x+k-12,y0-13);ctx.stroke();}
+        ctx.save();ctx.beginPath();ctx.rect(x-W,y0-14,2*W,14);ctx.clip();for(let k=-W-12;k<=W+12;k+=2.5){ctx.beginPath();ctx.moveTo(x+k,y0-1);ctx.lineTo(x+k+12,y0-13);ctx.stroke();ctx.beginPath();ctx.moveTo(x+k,y0-1);ctx.lineTo(x+k-12,y0-13);ctx.stroke();}ctx.restore();
         ctx.fillStyle='#4a5058';ctx.fillRect(x-W-1,y0-14,2*W+2,1);
         ctx.strokeStyle='#6a7280';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(x-W+2,y0);ctx.lineTo(x+W-2,y1+2);ctx.moveTo(x+W-2,y0);ctx.lineTo(x-W+2,y1+2);ctx.stroke();   // X brace
         ctx.fillStyle='#6a4a2a';ctx.fillRect(x-W-3,y1,2*W+6,2.5);ctx.fillStyle='#8a6438';ctx.fillRect(x-W-3,y1,2*W+6,1);   // plank floor
         ctx.fillStyle='#4e5560';ctx.fillRect(x-W-3,y1-5,1.5,5);ctx.fillRect(x+W+1.5,y1-5,1.5,5);ctx.fillRect(x-W-3,y1-5,2*W+6,1.2);   // low wall rail
-        const sx=x-6,sy=y0-24;ctx.fillStyle='#1a1410';ctx.fillRect(sx-1,sy-1,14,10);   // the tier's sign
+        ctx.save();ctx.translate(x-4.2,y0-23);ctx.scale(.7,.7);ctx.translate(-(x-6),-(y0-24));const sx=x-6,sy=y0-24;ctx.fillStyle='#1a1410';ctx.fillRect(sx-1,sy-1,14,10);   // the tier's sign (smaller now)
         if(i===0){ctx.fillStyle='#f2f2ea';ctx.fillRect(sx,sy,12,8);ctx.fillStyle='#d0202a';ctx.fillRect(sx+5,sy+1,2,6);ctx.fillRect(sx+3,sy+3,6,2);}
         else if(i===1){ctx.fillStyle='#4a5a2a';ctx.fillRect(sx,sy,12,8);ctx.fillStyle='#d8b040';for(let q=0;q<3;q++){ctx.fillRect(sx+2+q*3,sy+2,2,5);ctx.fillStyle='#b08020';ctx.fillRect(sx+2+q*3,sy+2,2,1);ctx.fillStyle='#d8b040';}}
-        else{ctx.fillStyle='#2a3a5a';ctx.fillRect(sx,sy,12,8);ctx.fillStyle='#9ad0ff';ctx.beginPath();ctx.arc(sx+4,sy+4,2,0,7);ctx.arc(sx+8,sy+4,2,0,7);ctx.fill();ctx.fillStyle='#1a1410';ctx.fillRect(sx+5.5,sy+3,1,2);}}
+        else{ctx.fillStyle='#2a3a5a';ctx.fillRect(sx,sy,12,8);ctx.fillStyle='#9ad0ff';ctx.beginPath();ctx.arc(sx+4,sy+4,2,0,7);ctx.arc(sx+8,sy+4,2,0,7);ctx.fill();ctx.fillStyle='#1a1410';ctx.fillRect(sx+5.5,sy+3,1,2);}ctx.restore();}
       ctx.fillStyle='#5a626e';ctx.fillRect(x-W,top,2.2,gy-top);ctx.fillRect(x+W-2.2,top,2.2,gy-top);ctx.fillStyle='#8a94a2';ctx.fillRect(x-W,top,.8,gy-top);ctx.fillRect(x+W-2.2,top,.8,gy-top);   // steel legs
       ctx.fillStyle='#7a5a34';ctx.fillRect(x+W+3,top-2,1,gy-top+2);ctx.fillRect(x+W+7,top-2,1,gy-top+2);for(let y=gy-2;y>top;y-=3)ctx.fillRect(x+W+3,y,5,.8);   // ladder all the way up
       if(b.tier>=3){ctx.fillStyle='#3a3f48';ctx.fillRect(x-W-3,top-14,2,9);ctx.fillRect(x+W+1,top-14,2,9);ctx.fillStyle='#6a4a2a';ctx.fillRect(x-W-4,top-15,2*W+8,2);}   // lookout roof
-      if(b.hp<b.max){const w=30;ctx.fillStyle='#000a';ctx.fillRect(x-w/2-1,top-20,w+2,3);ctx.fillStyle='#ffd23f';ctx.fillRect(x-w/2,top-19,w*Math.max(0,b.hp/b.max),1);}}
-    else if(b.k==='barrier'){shadow(ctx,x,gy,10);ctx.fillStyle='#22201e';ctx.beginPath();ctx.moveTo(x-9,gy+.5);ctx.lineTo(x+9,gy+.5);ctx.lineTo(x+6,gy-6);ctx.lineTo(x+4,gy-10);ctx.lineTo(x-4,gy-10);ctx.lineTo(x-6,gy-6);ctx.closePath();ctx.fill();
-      ctx.fillStyle='#a8a49a';ctx.beginPath();ctx.moveTo(x-8,gy);ctx.lineTo(x+8,gy);ctx.lineTo(x+5.5,gy-6);ctx.lineTo(x+3.5,gy-9.5);ctx.lineTo(x-3.5,gy-9.5);ctx.lineTo(x-5.5,gy-6);ctx.closePath();ctx.fill();
-      ctx.fillStyle='#c8c4b8';ctx.fillRect(x-3.5,gy-9.5,7,1);for(let k=-7;k<7;k+=3){ctx.fillStyle=(k/3|0)%2?'#e8c020':'#1a1a1a';ctx.fillRect(x+k,gy-4,3,1.4);}   // hazard band
-      if(b.hp<b.max*.6){ctx.strokeStyle='#3a3630';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(x-2,gy-9);ctx.lineTo(x,gy-5);ctx.lineTo(x-1,gy-1);ctx.stroke();}
-      if(b.hp<b.max){ctx.fillStyle='#000a';ctx.fillRect(x-8,gy-14,16,3);ctx.fillStyle='#ffd23f';ctx.fillRect(x-7,gy-13,14*Math.max(0,b.hp/b.max),1);}}
+      if(b.hp<b.max){const w=20;ctx.fillStyle='#000a';ctx.fillRect(x-w/2-1,top-20,w+2,3);ctx.fillStyle='#ffd23f';ctx.fillRect(x-w/2,top-19,w*Math.max(0,b.hp/b.max),1);}}
+    else if(b.k==='barrier'){const w=7,h=17,L=x-w,R=x+w,T=gy-h;shadow(ctx,x,gy,10);   /* 0.12.76 (Kyle): one HESCO_Barrier cell, like his photos */
+      ctx.fillStyle='#a8946c';ctx.fillRect(L,T,2*w,h);ctx.fillStyle='#c2ad84';ctx.fillRect(L+1,T+1,w-1,h-2);ctx.fillStyle='#8e7a56';ctx.fillRect(x+3,T+1,w-3,h-2);   // geotextile, lit from the left
+      for(let yy=T+2;yy<gy;yy+=2.6){ctx.fillStyle='rgba(120,100,70,.35)';ctx.fillRect(L,yy,2*w,.5);}   // fabric bulging between the wires
+      ctx.strokeStyle='rgba(70,72,74,.85)';ctx.lineWidth=.35;for(let xx=L+1.6;xx<R;xx+=2.4){ctx.beginPath();ctx.moveTo(xx,T);ctx.lineTo(xx,gy);ctx.stroke();}for(let yy=T+1.3;yy<gy;yy+=2.4){ctx.beginPath();ctx.moveTo(L,yy);ctx.lineTo(R,yy);ctx.stroke();}   // welded wire mesh
+      ctx.fillStyle='#3e4246';for(const cx of[L,x,R-1])ctx.fillRect(cx,T-1,1,h+1);ctx.fillStyle='#7a8086';for(let yy=T;yy<gy;yy+=1.6)for(const cx of[L,x,R-1])ctx.fillRect(cx,yy,1,.6);   // coil-joint rods
+      ctx.fillStyle='#5a4228';ctx.beginPath();ctx.moveTo(L-.5,T+.5);ctx.quadraticCurveTo(x-3,T-4,x,T-2.6);ctx.quadraticCurveTo(x+4,T-4.5,R+.5,T+.5);ctx.closePath();ctx.fill();ctx.fillStyle='#7a5c38';ctx.fillRect(x-4,T-2.6,3,1);   // dirt heaped over the top
+      ctx.fillStyle='#c8b48a';ctx.fillRect(L,T,2*w,1);   // the fabric lip folded over the rim
+      if(b.hp<b.max*.6){ctx.strokeStyle='#4a3a22';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(x-3,T+4);ctx.lineTo(x-1,T+8);ctx.lineTo(x-3,T+11);ctx.stroke();ctx.fillStyle='#6a5030';ctx.fillRect(x-2,gy-1,4,1);}   // torn, dirt spilling
+      if(b.hp<b.max){ctx.fillStyle='#000a';ctx.fillRect(x-8,T-8,16,3);ctx.fillStyle='#ffd23f';ctx.fillRect(x-7,T-7,14*Math.max(0,b.hp/b.max),1);}}
     else if(b.k==='tesla'){shadow(ctx,x,gy,6);ctx.fillStyle='#3a3f48';ctx.fillRect(x-4,gy-4,8,4);ctx.fillStyle='#22262c';ctx.fillRect(x-1,gy-16,2,12);
       for(let y=gy-15;y<gy-5;y+=2){ctx.fillStyle='#c87a3a';ctx.fillRect(x-2.5,y,5,1);}ctx.save();ctx.globalCompositeOperation='lighter';glow(ctx,x,gy-19,3+Math.sin(g.t*12),'#6ad0ff',.5);glow(ctx,x,gy-19,1.4,'#e8fbff',1);
       if(Math.random()<.5){ctx.strokeStyle='rgba(160,230,255,.8)';ctx.lineWidth=.5;zig(x,gy-19,x+(Math.random()-.5)*12,gy-19+(Math.random()-.5)*10,3,1.5);}ctx.restore();
@@ -3564,7 +3573,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.75</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.76</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
