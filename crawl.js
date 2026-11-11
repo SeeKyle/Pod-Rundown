@@ -353,7 +353,9 @@ const CHAR={
       // 0.12.63 (Kyle) True_Grit (was Grit_Teeth): 15s CD, lasts 8s: 50% less damage taken, +25% move speed, and his Careful/Reckless and
       //   Sharpshooter/Brawler sliders go to 10 for the duration (all-in, up close). IF hurt with something on him, OR 3+ close, THEN use it.
       {id:'grit',name:'True_Grit',en:35,cd:15,dur:8,dr:.5,under:.6,move:.25},
-      {id:'pal',name:'Call Traveling_Companion',en:30,cd:24,cast:.8,heal:.07},
+      // 0.12.68 (Kyle) Elite_Survivors (passive, replaces Call Traveling_Companion): his partner starts every stage beside him; he has the
+      //   Scavenger perk built in; and while they're within 150 screen px (50 world) of each other both get +10% dodge.
+      {id:'elite',name:'Elite_Survivors',passive:1,r:50,dodge:.1},
       // 0.12.59 (Kyle) Proximity_Bomb: one bomb, same blast shape every way, three activations on one shared 10s cooldown:
       //   OVERHAND THROW: a big arc ~117-133px out (350-400 screen px); it blows the moment it lands: 4d4.
       //   CAREFUL ROLL: underhand ~25px out (75 screen px), then it rolls ~17-25px more (50-75 screen px). IF a zombie comes near while it rolls
@@ -433,7 +435,7 @@ const ABIL_DESC={
   trip:'Proximity_Bomb · 40 energy · 10s. One bomb, three ways out. It goes off when a zombie comes within 40px in its lane (20px one lane up or down); the blast covers 100px of its lane and 40px of the lanes above and below. OVERHAND (1s, can walk): thrown exactly where he picks 300-450px away, blows on impact for 2d4+6 (60px into the side lanes). UNDERHAND (0.5s, can walk): lands 100px ahead and rolls 50px, then takes 0.5s to truly activate; tripped before that it does 2d4+2 and gives 2s back on the cooldown, activated it does 2d4+6. PLACE (3s kneeling): set 5px in front, active at once, 6d4+2 with a wider blast. A bomb left behind off screen halves what\'s left of the cooldown.',
   grit:'True_Grit · 35 energy · 15s. For 8s he takes 50% less damage, moves 25% faster, and goes all in: his Careful/Reckless and Sharpshooter/Brawler sliders both jump to 10, so he wades in with the crowbar.',
   camp:'Set_Camp · 40 energy · 30s · 1.8s to kneel and light it right in front of him. Every ally within 400px gets COZY and keeps it refreshed while they stay close: for 10s, +0.25 life and +0.25 energy every 0.5s, +10% melee attack speed and +10% move speed. The fire has 5 life; each attack that hurts Flannel_Man or his companion takes 1 off it.',
-  pal:'Call Traveling_Companion · 30 energy · 24s. Calls his timid partner: a third of his toughness, a 1d4 pistol that fires every 0.5s with 7 shots before a 5s reload, and a Brick Throw with 75% stun. She circles around him. If she\'s already out, heals her 7%.',
+  elite:'Elite_Survivors (passive) · his Traveling_Companion starts every stage right beside him, he has the Scavenger perk built in (searches wrecks for medkits, batteries and scrap), and while the two of them are within 150px of each other both get +10% dodge.',
   dash:'Wave Dash · 50 energy · 16s. Rides a blue energy wave about 300px forward; everything it passes through (about 1.5 lanes each way) takes a normal sword hit (2d5 base); War Cry, damage buffs and crits apply as usual.',
   shout:'War Cry · 25 energy · 7s. Every ally within 600px gets +25% damage and attack speed for 7s.',
   rain:'Arrow_Rain · 45 energy · 18s. 16 arrows rain down on the thickest group of enemies (1d6 each).',
@@ -503,7 +505,7 @@ const PERKS={
  superlucky:['🍀','Super Lucky','everything his Luck does, it does twice as well: his Luck counts double for finds when searching, rare drops, defusing and planting, and anything else Luck touches (Inevitable stacks included).'],
 };
 function deckSkills(name){const I=INSP[name];if(!I)return [];const out=[];if(I.passive&&INSP_PASSIVE[I.passive])out.push(['✦',INSP_PASSIVE[I.passive][0],'Deck passive: '+INSP_PASSIVE[I.passive][1]]);if(I.perk&&PERKS[I.perk])out.push([PERKS[I.perk][0],PERKS[I.perk][1],'Deck perk: '+PERKS[I.perk][2]]);return out;}
-const insP=u=>u&&u.insp&&INSP[u.insp]&&INSP[u.insp].passive;
+const insP=u=>(u&&u.insp&&INSP[u.insp]&&INSP[u.insp].passive)||(u&&u.key==='flannel'&&(((u.base&&u.base.char)||CHAR.flannel).abilities||[]).some(a=>a.id==='elite')?'scavenger':undefined);   /* 0.12.68: Elite_Survivors = Scavenger built in (a deck perk still wins) */
 function inspText(name){const I=INSP[name];if(!I)return '';const out=[];if(I.passive&&INSP_PASSIVE[I.passive])out.push('✦ '+INSP_PASSIVE[I.passive][0]);
   for(const [k,v] of Object.entries(I.mod||{})){const [l,u]=INSP_LABEL[k]||[k,''];out.push(`${v>0?'+':''}${v}${u} ${l}`);}
   for(const [k,v] of Object.entries(I.sl||{})){const S=SLIDERS.find(s=>s[0]===k);if(S)out.push(`${v>0?S[2]:S[1]} +${Math.abs(v)}`);}
@@ -647,7 +649,7 @@ CHAR.cultist={name:'Void_Cultist',role:'Dagger + Void Bolts',combo:0,flatHp:0,st
 const PAL_FRAC=1/3;
 // which cooldown timer each ability uses, so the planner can see what is ready
 const CD_KEY={nano:'nbT',tentacle:'tnT',pact:'paT',hex:'hxT',dread:'drT',clone:'clT',pin:'piT',surge:'suT',gatling:'gaT',missiles:'msT',smoke:'smT',grit:'grT',poultice:'poT',aimed:'abT',trip:'tbT',pal:'palT',camp:'caT',dash:'daT',shout:'shT',rapid:'raT',blowgun:'bgT',rain:'arT',mend:'mdT',bloom:'blT',thorns:'thT',cyclone:'cyT',
-  whirl:'whT',chop:'cpT',leap:'lpT',rage:'rgT',roll:'rlT',brick:'brT'};
+  whirl:'whT',chop:'cpT',leap:'lpT',rage:'rgT',roll:'rlT',brick:'brT',bottle:'boT'};
 const CLOSE_AB=new Set(['dread','clone','surge','grit','dash','whirl','chop','leap','rage','trip']),FAR_AB=new Set(['tentacle','hex','pin','gatling','missiles','smoke','aimed','rain','rapid','blowgun','thorns','cyclone','brick']);
 function abilityPlan(h){const C=h.base&&h.base.char;if(!C||!C.abilities||!C.abilities.length)return {};let close=0,far=0,farRange=0,ready=0;
   for(const a of C.abilities){const k=CD_KEY[a.id];const up=!(h[k]>0)&&(h.en||0)>=a.en;if(!up)continue;ready++;
@@ -661,7 +663,10 @@ CHAR.flannel_pal=(()=>{const C=CHAR.flannel,f=PAL_FRAC;return {name:'Traveling_C
   ranged:{dice:[1,4],dmgMul:1,flat:0,every:.5,range:C.ranged.range,clip:7,reload:5,pellets:1},   /* 0.12.38 (Kyle): pistol 1d4, a shot every 0.5s, 7 in the clip, 5s reload */
   acc:Math.round(C.acc*f)-3,   /* a touch less accurate to make up for the faster fire */walkPenalty:Math.round(C.walkPenalty*f),crit:C.crit*f,critMul:C.critMul,luck:0,xp:0,run:C.run,turn:C.turn,enMax:100,enRegen:5,pet:1,
   // Brick Throw: never misses and always deals damage (1.5x her pistol roll + flat bonuses), 75% chance to stun for 1.2s. 20 energy, 9s cooldown.
-  abilities:[{id:'brick',name:'Brick Throw',en:25,cd:9,range:170,dmgMul:1.5,stunCh:.75,stunT:1.2}]};})();
+  abilities:[{id:'brick',name:'Brick Throw',en:25,cd:9,range:170,dmgMul:1.5,stunCh:.75,stunT:1.2},
+    // 0.12.68 (Kyle) Bottle_Distraction: lobs a glass bottle in a big arc 450-500 screen px (150-167 world); it shatters and every zombie within
+    //   ~180 screen px (60 world) turns and goes to check the noise for 2.5s (no attacks). IF a pack of 3+ is coming THEN throw it BEHIND them.
+    {id:'bottle',name:'Bottle_Distraction',en:30,cd:16,min:150,max:167,r:60,dur:2.5,fly:1.1,min3:3}]};})();
 function heroBase(key,lvl,teamSize){
   const C=CHAR[key];if(C){const L=Math.max(1,lvl||1);const lv=1+.06*(L-1);
     return {hp:C.flatHp+C.stamina*C.hpPerStamina,atk:10*lv*(1+.3*(3-teamSize)),stamina:C.stamina,flatHp:C.flatHp,dice:(C.ranged||C.melee).dice,aspd:1,crit:C.crit,critMul:C.critMul,
@@ -1115,6 +1120,7 @@ class Game{
     this.heroes.forEach((h,i)=>{h.x=this.home(h);const saved=this.run.heroes[h.key];h.hp=saved.dead?h.max*.25:Math.max(1,h.max*(saved.hpf==null?1:saved.hpf));});
     this.mods=this.demo?scoutMods(null):scoutMods(this.run);
     {const kt=upgT(this.run,'kennel');if(kt&&!this.demo)this.spawnDog(kt);}
+    for(const h of this.heroes)if((h.base.char&&h.base.char.abilities||[]).some(a=>a.id==='elite'))this.callPal(h,{heal:0});   /* 0.12.68 Elite_Survivors: she starts the stage beside him */
     {for(const h of this.heroes){const sv=this.run.heroes[h.key];const cr=sv.carry;   /* Triage builds ride along into the stage */
       if(cr&&!this.demo){if(cr.courage){h.courage=1;addMood(h,{nerve:-3,aggr:2},99999,'courage');}if(cr.medkit){h.medkit=1;h.medkitCamp=1;}if(cr.defib)h.defib=1;if(cr.kit&&cr.kit.length)h.kit=(h.kit||[]).concat(cr.kit).slice(0,2);sv.carry=null;}}}
     if(this.heroes.some(h=>h.courage))this.recalc();
@@ -1181,7 +1187,8 @@ class Game{
   pickType(){const pool=this.st.biome.pool;let tot=0;for(const k in pool)tot+=pool[k];let r=this.rng()*tot;for(const k in pool){r-=pool[k];if(r<=0)return k;}return Object.keys(pool)[0];}
   // ---------------------------------------------------------------- damage
   /* 0.12.38 stage stats per unit (shown after a stage clears) */
-  st8(h){const k=(h&&h.key)||'?';this.stats=this.stats||{};return this.stats[k]||(this.stats[k]={dmg:0,heal:0,kills:0,downs:0,revives:0,searches:0,crits:0,heads:0,taken:0,biggest:0});}
+  st8(h,own){if(!own&&h&&h.owner&&h.owner.key&&!h.dog)h=h.owner;   /* 0.12.68: companions/summons' numbers count for their owner; the Guard Dog keeps his own line */
+    const k=(h&&h.key)||'?';this.stats=this.stats||{};return this.stats[k]||(this.stats[k]={dmg:0,heal:0,kills:0,downs:0,revives:0,searches:0,crits:0,heads:0,taken:0,biggest:0});}
   /* 0.12.56 Inevitable: IF something I try fails THEN +2 Luck and +1% crit (up to 10 stacks) until my next crit */
   failAct(h){if(!h||!h.key||this.demo||!hasPerk(h,'inevitable')||(h.inevN||0)>=10)return;h.inevN=(h.inevN||0)+1;h.luck+=2*(hasPerk(h,'superlucky')?2:1);}
   hitEnemy(e,amt,src,opt){
@@ -1259,7 +1266,7 @@ class Game{
        He can't be healed, but anyone can help him up (dogs never help others up: no hands). */
     if(h.dog){if(this.rng()<h.dodge){this.text(h.x,this.G-30,'dodge','#9ae6ff');return false;}if(h.invulnT>0)return false;h.hits=(h.hits||0)-1;h.hitFlash=.12;h.hitRegT=0;h.hp=h.max*Math.max(0,h.hits)/h.hitsMax;
       if(h.hits<=0){h.alive=false;h.downed=1;h.revT=0;h.downT=this.t;h.hp=0;h.plan=null;this.fx.push({k:'poof',x:h.x,y:this.G-14,t:0});Comms.bubble(this,h,'*yelp*',true);if(this.slot)this.st8(h).downs++;}return true;}if(from&&from.E){h.lastHitBy=from;h.grudgeT=1+19*trait(h,'grudge');}   // Forgiving forgets in a second; Vengeful holds it 20s
-    if(this.rng()<h.dodge){this.text(h.x,this.G-52,'dodge','#9ae6ff');return false;}
+    if(this.rng()<h.dodge+this.eliteDodge(h)){this.text(h.x,this.G-52,'dodge','#9ae6ff');return false;}
     if(from&&from.smokeT>0&&this.rng()<.5){this.text(h.x,this.G-52,'miss','#c8d0d8');return false;}   // Smoke_Screen: blinded attackers miss half the time
     if(!this._bgRedirect&&from){const bg=this.alive().find(o=>o!==h&&insP(o)==='bodyguard'&&Math.abs(this.heroX(o)-this.heroX(h))<14&&Math.abs((o.gy||this.G)-(h.gy||this.G))<6);
       if(bg){this._bgRedirect=1;this.hurtHero(bg,amt*.3,from);this._bgRedirect=0;amt*=.7;}}   // Bodyguard takes 30% of the hit
@@ -1561,6 +1568,7 @@ class Game{
       if(e.slowT>0){e.slowT-=dt;if(e.slowT<=0)e.slow=0;}
       if(e.kbv>0){e.x+=(e.kbDir||1)*e.kbv*dt;e.kbv=Math.max(0,e.kbv-e.kbv*8*dt-4*dt);}
       if(e.stun>0){e.stun-=dt;continue;}
+      if(e.distractT>0){e.distractT-=dt;e.distractX-=scroll*dt;e.x-=scroll*dt;const dx=e.distractX-e.x;if(Math.abs(dx)>2)e.x+=Math.sign(dx)*Math.min(Math.abs(dx),e.E.spd*(1-(e.slow||0))*dt);e.face=dx>0?1:-1;e.walkT=(e.walkT||0)+dt;continue;}   /* 0.12.68 Bottle_Distraction: they go check the noise */
       const sp=(1-e.slow);
       if(e.boss){this.bossAI(e,dt,sp,f);continue;}
       const tank=this.minions.find(m=>m.taunt)||(this.minions.length&&this.rng()<.5?this.minions[0]:null);
@@ -1741,7 +1749,7 @@ class Game{
       if(!tg){p.x+=p.spd*dt;if(p.x>this.W+20)p.dead=true;continue;}
       const ty=tg.boss?tg.y-60:tg.fly?tg.y:tg.y-22;const tx=tg.x-(tg.boss?20:0);
       if(p.kind==='brick'){if(p.sx==null){p.sx=p.x;p.sy=p.y;p.T=Math.max(.35,Math.abs(tx-p.x)/p.spd);}const u=Math.min(1,p.t/p.T);
-        p.x=p.sx+(tx-p.sx)*u;p.y=p.sy+(ty-p.sy)*u-34*4*u*(1-u);p.rot=(p.rot||0)+dt*14;if(u>=1){p.x=tx;p.y=ty;}}
+        p.x=p.sx+(tx-p.sx)*u;p.y=p.sy+(ty-p.sy)*u-46*4*u*(1-u);p.rot=(p.rot||0)+dt*14;if(u>=1){p.x=tx;p.y=ty;}}
       else{const dx=tx-p.x,dy=ty-p.y,d=Math.hypot(dx,dy)||1;p.x+=dx/d*p.spd*dt;p.y+=dy/d*p.spd*dt;}
       if(Math.abs(p.x-tx)<8&&Math.abs(p.y-ty)<(tg.boss?40:16)){
         p.hit.add(tg);const big=BIGP[p.kind]||0;const dmg=p.opt.onHit?p.opt.onHit(tg,p.dmg,0):this.hitEnemy(tg,p.dmg,p.src,{kb:big});
@@ -1888,7 +1896,16 @@ class Game{
     const BB=(C.abilities||[]).find(a=>a.id==='brick');if(BB){if(h.brT==null)h.brT=BB.cd*.3;if(h.brT>0)h.brT-=dt;
       if(h.brT<=0&&!mt&&tgt&&Math.abs(tgt.x-h.x)<=BB.range&&(h.en||0)>=BB.en*(1+.3*trait(h,'energy')-.15)&&spendEnergy(h,BB.en)){h.brT=BB.cd*(1-(h.cdr||0));h.animM=.45;
         const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(C.ranged.dmgMul||1)*BB.dmgMul*(h.atk/h.base.atk)*h.rangedDmg;
-        h._forceBox='bot';const p=this.shoot(h,tgt,'brick',dmg,{});p.sure=1;p.stunCh=BB.stunCh;p.stunT=BB.stunT;p.spd=170;this.aim(p,h,tgt);h._forceBox=null;return;}}
+        h._forceBox='bot';const p=this.shoot(h,tgt,'brick',dmg,{});p.sure=1;p.stunCh=BB.stunCh;p.stunT=BB.stunT;p.spd=136;this.aim(p,h,tgt);h._forceBox=null;return;}}
+    // ---- 0.12.68 Bottle_Distraction (the companion): IF a pack of 3+ is bunched up THEN lob a bottle 150-167 world px out, just BEHIND them,
+    //   so they turn around and walk away from us to check the noise
+    {const BO=(C.abilities||[]).find(a=>a.id==='bottle');if(BO){if(h.boT==null)h.boT=BO.cd*.4;if(h.boT>0)h.boT-=dt;
+      if(h.boT<=0&&(h.en||0)>=BO.en){const hx=this.heroX(h),live=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&e.x>hx&&e.x<this.W&&!(e.distractT>0));let best=null,bn=0;
+        for(const e of live){const n=live.filter(o=>Math.abs(o.x-e.x)<40).length;if(n>bn||(n===bn&&best&&e.x>best.x)){bn=n;best=e;}}
+        if(best&&bn>=BO.min3){const pack=live.filter(o=>Math.abs(o.x-best.x)<40),far=Math.max(...pack.map(o=>o.x));const tx=Math.min(hx+BO.max,Math.max(hx+BO.min,far+22),this.W-6);
+          if(tx-far>4&&spendEnergy(h,BO.en)){h.boT=BO.cd*(1-(h.cdr||0));h.animM=.45;h.face=1;const gy=best.gy!=null?best.gy:this.G;
+            (this.bottles=this.bottles||[]).push({x0:hx+3,gy0:h.gy||this.G,x1:tx,gy1:gy,t:0,T:BO.fly,A:BO,src:h,rot:0});this.ev('whoosh',{});
+            Comms.bubble(this,h,Comms.pick(['Hey! Over there!','Go fetch!','Look, shiny!','Catch!']),true);return;}}}}}
     // ---- Trip Bomb
     const TB=(C.abilities||[]).find(a=>a.id==='trip');if(TB){if(h.tbT==null)h.tbT=TB.cd*.25;if(h.tbT>0)h.tbT-=dt;}
     /* 0.12.64 Proximity_Bomb casts. PLACE: kneel 3s, no moving (a hit on him in crowbar range breaks it). TOSS / THROW: he keeps walking while the cast fills. */
@@ -2042,7 +2059,7 @@ class Game{
         setTimeoutSafe(this,PN.releaseAt,()=>{if(!h.alive)return;const tg=pt.dead?this.enemies.find(e=>!e.dead):pt;if(!tg)return;this.ev('bow',{});
           const dmg=this.rollDice(PN.dice)*(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
           const p=this.shoot(h,tg,'yarrow',dmg,{onHit:(e,d)=>{this.hitEnemy(e,d,h,{});if(e.dead)return;e.markT=PN.mark;e.markAmp=PN.amp;if(!e.boss){e.slow=Math.max(e.slow||0,.97);e.slowT=Math.max(e.slowT||0,PN.root);e.rootT=PN.root;}
-            this.fx.push({k:'stuck',x:e.x,gy:e.gy!=null?e.gy:this.G,t:0,life:PN.root,raw:1});}});p.pin=1;this.aim(p,h,tg);});
+            this.fx.push({k:'pinned',e,x:e.x,gy:e.gy!=null?e.gy:this.G,dir:e.x>=h.x?1:-1,t:0,life:PN.root+.4,raw:1});}});p.pin=1;p.sure=1;h._forceBox='bot';this.aim(p,h,tg);h._forceBox=null;});   /* 0.12.68 (Kyle): auto-aimed at the legs, ignores accuracy */
         return;}}
     const AR=(C.abilities||[]).find(a=>a.id==='rain');if(AR){if(h.arT==null)h.arT=AR.cd*.25;if(h.arT>0)h.arT-=dt;
       if(h.volley){h.volley-=dt;h.pauseT=Math.max(h.pauseT||0,.05);if(h.volley<=0)h.volley=0;return;}
@@ -2197,7 +2214,10 @@ class Game{
       h.dangerWhy='⚠ '+D.why;h.dangerT=this.t+T+.6;if(!D.react)(z.missed=z.missed||[]).push(h);}
     if(z.missed)Comms.onDanger(this,z,z.missed);
     return z;}
-  hurtMinion(m,amt,from){if(!m||m.dead)return;m.hp-=amt;m.hitFlash=.12;this.text(m.x,this.G-40,Math.round(amt),'#ffb0b0');}
+  /* 0.12.68 Elite_Survivors: +10% dodge for Flannel_Man and his companion while they're within 50 world px of each other */
+  eliteDodge(h){const fm=h&&h.key==='flannel'?h:h&&h.key==='flannel_pal'?h.owner:null;if(!fm||!fm.alive)return 0;const E=((fm.base.char&&fm.base.char.abilities)||[]).find(a=>a.id==='elite');if(!E)return 0;
+    const pal=h.key==='flannel'?(this.pets||[]).find(p=>p.owner===fm&&p.key==='flannel_pal'&&p.alive):h;if(!pal||!pal.alive)return 0;return Math.abs(this.heroX(fm)-this.heroX(pal))<=E.r?E.dodge:0;}
+  hurtMinion(m,amt,from){if(!m||m.dead)return;if(m.key==='flannel_pal'&&this.rng()<(m.dodge||0)+this.eliteDodge(m)){this.text(m.x,this.G-40,'dodge','#9ae6ff');return;}m.hp-=amt;m.hitFlash=.12;this.text(m.x,this.G-40,Math.round(amt),'#ffb0b0');}
   heroX(h){return h.x+(h.dodgeX||0)+(h.wanderX||0);}
   obHw(o){return Math.max(3,OBST[o.k].fw*.5*.5*.8);}   // half-width in world px (sheet is 2 px per world px)
   // each obstacle's footprint follows its picture: a rock blocks only under its base; the diagonal log blocks its left end in the near lane and its right end in the far lane
@@ -2368,6 +2388,10 @@ class Game{
       done.add(nx);pts.push([nx.x,(nx.gy||this.G)-12]);this.hitEnemy(nx,this.rollDice(A.dice)*(h.atk/h.base.atk)*h.meleeDmg,h,{});if(!nx.dead)nx.stun=Math.max(nx.stun||0,A.stun*(nx.boss?.3:1));cur=nx;}
     if(pts.length>1)this.fx.push({k:'bolt',pts,t:0,life:.28,raw:1});}
   stepRobot(dt,scroll){
+    if(this.bottles&&this.bottles.length){for(const B of this.bottles){B.t+=dt;B.x0-=scroll*dt;B.x1-=scroll*dt;B.rot+=dt*11;const u=Math.min(1,B.t/B.T);B.x=B.x0+(B.x1-B.x0)*u;B.gy=B.gy0+(B.gy1-B.gy0)*u;B.hgt=14*(1-u)+62*Math.sin(Math.PI*u);
+        if(u>=1&&!B.done){B.done=1;this.ev('shatter',{});this.fx.push({k:'glass',x:B.x1,gy:B.gy1,t:0,life:.9,raw:1});
+          for(const e of this.enemies){if(e.dead||e.boss||e.fly)continue;if(Math.abs(e.x-B.x1)<=B.A.r&&Math.abs((e.gy!=null?e.gy:this.G)-B.gy1)<=14){e.distractT=B.A.dur;e.distractX=B.x1+(this.rng()*2-1)*6;e.target=null;e.plan=null;}}}}
+      this.bottles=this.bottles.filter(B=>!B.done);}
     if(this.missiles&&this.missiles.length){for(const M of this.missiles){M.t+=dt;M.x0-=scroll*dt;M.tx-=scroll*dt;const u=Math.min(1,M.t/M.T);M.x=M.x0+(M.tx-M.x0)*u;M.gyNow=M.gy+(M.tgy-M.gy)*u;M.hgt=(1-u)*(23+(M.h0||0)*.6)+46*Math.sin(Math.PI*u);
         M.trail-=dt;if(M.trail<=0){M.trail=.035;this.fx.push({k:'puff',x:M.x,y:M.gyNow-M.hgt,t:0,life:.7+this.rng()*.3,s:.6+this.rng()*.5,raw:1});}
         if(u>=1&&!M.done){M.done=1;this.fx.push({k:'boom',x:M.x,gy:M.tgy,t:0,life:.8,raw:1,small:1});this.ev('boom',{});this.shake=Math.max(this.shake||0,.25);
@@ -2670,12 +2694,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794382846';const BGI=new Image();BGI.src='crawl_bg.png?v=1794382846';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794382846';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794383146';const BGI=new Image();BGI.src='crawl_bg.png?v=1794383146';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794383146';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794382846';XIMG.wave.src='crawl_wave.png?v=1794382846';XIMG.chibi.src='crawl_chibi.png?v=1794382846';XIMG.flannel.src='crawl_flannel.png?v=1794382846';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794382846';XIMG.rain.src='crawl_rain.png?v=1794382846';XIMG.druid.src='crawl_druid.png?v=1794382846';XIMG.camp.src='crawl_campfire.png?v=1794382846';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794382846';XIMG.tornado.src='crawl_fx_tornado.png?v=1794382846';XIMG.vine.src='crawl_fx_vine.png?v=1794382846';XIMG.thorn.src='crawl_fx_thorn.png?v=1794382846';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794383146';XIMG.wave.src='crawl_wave.png?v=1794383146';XIMG.chibi.src='crawl_chibi.png?v=1794383146';XIMG.flannel.src='crawl_flannel.png?v=1794383146';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794383146';XIMG.rain.src='crawl_rain.png?v=1794383146';XIMG.druid.src='crawl_druid.png?v=1794383146';XIMG.camp.src='crawl_campfire.png?v=1794383146';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794383146';XIMG.tornado.src='crawl_fx_tornado.png?v=1794383146';XIMG.vine.src='crawl_fx_vine.png?v=1794383146';XIMG.thorn.src='crawl_fx_thorn.png?v=1794383146';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794382846';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794382846';XIMG.obst.src='crawl_obst.png?v=1794382846';XIMG.cars.src='crawl_cars.png?v=1794382846';XIMG.robot.src='crawl_robot.png?v=1794382846';XIMG.cultist.src='crawl_cultist.png?v=1794382846';XIMG.tentacle.src='crawl_tentacle.png?v=1794382846';XIMG.boom.src='crawl_boom.png?v=1794382846';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794383146';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794383146';XIMG.obst.src='crawl_obst.png?v=1794383146';XIMG.cars.src='crawl_cars.png?v=1794383146';XIMG.robot.src='crawl_robot.png?v=1794383146';XIMG.cultist.src='crawl_cultist.png?v=1794383146';XIMG.tentacle.src='crawl_tentacle.png?v=1794383146';XIMG.boom.src='crawl_boom.png?v=1794383146';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2845,6 +2869,18 @@ function drawGame(ctx,g,W,oy){
       for(let k=0;k<2;k++){const tx=h.x-s*(4+Math.random()*24);ctx.strokeStyle='rgba(140,210,255,.8)';ctx.lineWidth=.5;zap(tx,G0-2-Math.random()*6,3+Math.random()*4,-Math.PI/2+(Math.random()-.5));}   // along the tail
       if(Math.random()<.5)glow(ctx,h.x+s*(14+Math.random()*8),G0-6-Math.random()*24,2.5,'#e8fbff',.6);ctx.restore();}};
   // Arrow_Rain: arrows falling out of the sky, and the ones stuck in the ground
+  const pinnedDraw=()=>{for(const f of g.fx){if(f.k!=='pinned')continue;const e=f.e;if(e&&!e.dead){f.x=e.x;f.gy=e.gy!=null?e.gy:G;}const k=f.t/f.life,a=k>.85?(1-k)/.15:1;
+      const B=UNITS.archer&&UNITS.archer.arrow;const x=f.x-f.dir*1.5,y=f.gy-3.5;ctx.save();ctx.globalAlpha=a;ctx.translate(x,y);ctx.rotate(f.dir>0?.62:Math.PI-.62);   /* 0.12.68: the big arrow driven through the legs into the dirt */
+      if(B)drawUnit(ctx,B,0,0,0,ART_SCALE/B.pre*2,a,0,0,false);else{ctx.fillStyle='#8a6a4a';ctx.fillRect(-9,-.5,12,1);}ctx.restore();
+      ctx.fillStyle=`rgba(60,40,24,${.6*a})`;ctx.fillRect(Math.round(f.x+f.dir*1.5)-2,Math.round(f.gy)-.5,4,1.2);   // dirt kicked up where it bit in
+      if(f.t<.25)for(let i=0;i<4;i++){ctx.fillStyle=`rgba(150,120,90,${1-f.t*4})`;ctx.fillRect(f.x+f.dir*2+(i-1.5)*1.6,f.gy-1-f.t*14*(1+i%2),1,1);}}};
+  const bottleDraw=()=>{for(const B of g.bottles||[]){const y=B.gy-B.hgt*.5-6;ctx.save();ctx.translate(B.x,y);ctx.rotate(B.rot);   /* 0.12.68 Bottle_Distraction: a green glass bottle tumbling in a big arc */
+      ctx.fillStyle='#1e4a2a';ctx.fillRect(-1.5,-3,3,5);ctx.fillRect(-.5,-5,1,2);ctx.fillStyle='#3c8a52';ctx.fillRect(-1,-2.5,1,4);ctx.fillStyle='#bfe8c8';ctx.fillRect(-1,-2.5,.6,2);ctx.fillStyle='#8a5a30';ctx.fillRect(-.5,-5.5,1,.8);ctx.restore();
+      ctx.fillStyle='rgba(0,0,0,.25)';ctx.fillRect(B.x-1.5,B.gy-.5,3,1);}
+    for(const f of g.fx){if(f.k!=='glass')continue;const k=f.t/f.life;ctx.save();ctx.globalAlpha=1-k;for(let i=0;i<9;i++){const a=i*.7+1,sp=10+((i*37)%7)*2.2,dx=Math.cos(a)*sp*Math.min(1,k*2.4),up=Math.sin(Math.min(1,k*2)*Math.PI)*(4+i%3*2);
+        ctx.fillStyle=i%3?'#7fd49a':'#e8fff0';ctx.fillRect(f.x+dx,f.gy-1-up,1,1);}
+      ctx.strokeStyle=`rgba(230,255,240,${.7*(1-k)})`;ctx.lineWidth=.6;ctx.beginPath();ctx.ellipse(f.x,f.gy-1,6+k*24,1.5+k*6,0,0,7);ctx.stroke();   // the noise rings out
+      if(k<.5){ctx.fillStyle='#ffffff';ctx.font='bold 5px monospace';ctx.textAlign='center';ctx.fillText('CRASH!',f.x,f.gy-12-k*8);}ctx.restore();}};
   const rainDraw=()=>{for(const f of g.fx)if(f.k==='stuck'){const k=f.t/f.life;drawUnit(ctx,RAIN.s,0,f.x,f.gy+1,.5,k>.7?(1-k)/.3:1,0,0,false);}
     for(const R of g.rain||[]){if(R.t<0)continue;const k=Math.min(1,R.t/R.T);drawUnit(ctx,RAIN.f,0,R.x,R.gy-(1-k)*90,.5,1,0,0,false);}};
   // Druid effects: Mend sparkle, Bloom vine heart on the healed ally, Thorn Eruption spikes, Cyclone tornadoes
@@ -3040,6 +3076,7 @@ function drawGame(ctx,g,W,oy){
       if(e.slow>0){ctx.fillStyle='rgba(154,230,255,.8)';for(let i=0;i<3;i++)ctx.fillRect(Math.round(e.x-6+i*5),Math.round(y+8+((g.t*20+i*7)%20)),1,1);}
       if(e.burnT>0){ctx.fillStyle=Math.random()<.5?'#ffb040':'#ff5a1a';ctx.fillRect(Math.round(e.x-3+Math.random()*6),Math.round(y+10+Math.random()*12),1,2);}
       if(e.hp<e.max||e.bleedT>0||e.burnT>0||e.slow>0||e.stun>0)plate(ctx,e,e.x,y-2,e.elite?20:14,false,e.elite?'#ffb020':'#e8303a');
+      if(e.distractT>0){ctx.fillStyle='#e8fff0';ctx.font='bold 6px monospace';ctx.textAlign='center';ctx.fillText('?',Math.round(e.x),Math.round(y-12-Math.abs(Math.sin(g.t*6))*1.5));}   // 0.12.68: off to check the noise
       if(e.markT>0){const my=y-9,p=.5+.5*Math.sin(g.t*10);ctx.strokeStyle=`rgba(255,70,60,${.6+.4*p})`;ctx.lineWidth=1;ctx.strokeRect(Math.round(e.x)-3.5,Math.round(my)-3.5,7,7);ctx.fillStyle='#ff4a3a';ctx.fillRect(Math.round(e.x)-.5,Math.round(my)-.5,1,1);}   // Pinning_Shot mark
       return;}
     const n='e_'+e.type,a=SP[n];const big=FH(a)===64;
@@ -3075,7 +3112,7 @@ function drawGame(ctx,g,W,oy){
     ctx.globalAlpha=1;if(M.spotted&&!M.owner){const b=Math.round(Math.sin(g.t*5)*1);ptext(ctx,'!',x,y-12+b,'#ff5a3a',1);}ctx.restore();}
   for(const h of g.alive())if(h.mine>0){const x=Math.round(g.heroX(h)-8),y=Math.round((h.gy||g.G)-31);ctx.fillStyle='#1c1412';ctx.fillRect(x-1,y,5,3);ctx.fillStyle='#6a2a1e';ctx.fillRect(x,y+1,3,1);ctx.fillStyle='#ff3a2a';ctx.fillRect(x+1,y,1,1);}   /* carrying a defused mine */
   for(const it of items)it[3]();
-  laser();waves();druidFx();robotFx();darkFx();quakes();logs();flames();jpFx();poultices();booms();
+  pinnedDraw();bottleDraw();laser();waves();druidFx();robotFx();darkFx();quakes();logs();flames();jpFx();poultices();booms();
   // projectiles
   for(const p of g.proj){const x=Math.round(p.x),y=p.aimed?Math.round(p.y):Math.round(G+(p.y-G)*HS);const c=PCOL[p.kind]||'#ff3a3a';ctx.save();shrinkAt(ctx,x,y,HS);
     if(p.kind==='void'){const d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';for(let i=1;i<=5;i++){ctx.fillStyle=`rgba(150,60,255,${.4-.07*i})`;ctx.fillRect(x-d*i*2.8-1,y-1+Math.sin(g.t*25+i)*.8,2,2);}glow(ctx,x,y,6,'#7a30e0',.35);ctx.restore();ctx.fillStyle='#12061e';ctx.beginPath();ctx.arc(x,y,2.4,0,7);ctx.fill();ctx.strokeStyle='#c090ff';ctx.lineWidth=.8;ctx.stroke();}   // void bolt: a black core in a violet halo
@@ -3087,14 +3124,19 @@ function drawGame(ctx,g,W,oy){
       glow(ctx,x,y,6,'#5dff6a',.32);glow(ctx,x,y,2.6,'#c8ffb0',.55);ctx.restore();
       ctx.fillStyle='#e8ffd8';ctx.fillRect(x-.75,y-.75,1.5,1.5);
       for(let i=0;i<3;i++){const an=g.t*14*d+i*2.09,lx=x+Math.cos(an)*2.6,ly=y+Math.sin(an)*1.6;ctx.fillStyle=i%2?'#3cc84a':'#7ee081';ctx.fillRect(lx-.6,ly-.4,1.2,.8);}}
-    else if(p.kind==='dart'){const d=(p.dir||1);ctx.fillStyle='#3a2a18';ctx.fillRect(d>0?x-5:x,y,5,1);ctx.fillStyle='#5fe04a';ctx.fillRect(d>0?x:x-1,y,1,1);ctx.fillStyle='#e8e0c8';ctx.fillRect(d>0?x-6:x+5,y-1,1,3);}   // poison dart: shaft, green-tipped point, little fletch
+    else if(p.kind==='dart'){const d=(p.dir||1),X=k=>d>0?x+k:x-k-1;   /* 0.12.68: a nicer tiny dart: steel needle, dark shaft, red and cream tuft, a drop of green poison */
+      ctx.fillStyle='rgba(200,255,190,.18)';ctx.fillRect(d>0?x-11:x+2,y,9,1);ctx.fillStyle='#d8dde8';ctx.fillRect(X(1),y,2,1);ctx.fillStyle='#5fe04a';ctx.fillRect(X(0),y,1,1);ctx.fillStyle='#2a1e14';ctx.fillRect(d>0?x-4:x+1,y,4,1);
+      ctx.fillStyle='#c8302a';ctx.fillRect(X(-5),y-1,1,3);ctx.fillStyle='#f0e6d0';ctx.fillRect(X(-6),y-1,1,1);ctx.fillRect(X(-6),y+1,1,1);ctx.fillStyle='#e04838';ctx.fillRect(X(-6),y,1,1);}   // poison dart: shaft, green-tipped point, little fletch
     else if(p.kind==='kunai'){const d=(p.dir||1);ctx.fillStyle='#2e3040';ctx.fillRect(x-d*6-(d<0?1:0),y,6,1);ctx.fillStyle='#5c3424';for(let i=1;i<5;i+=2)ctx.fillRect(x-d*(1+i),y,1,1);ctx.fillStyle='#a8aec4';ctx.fillRect(d>0?x:x-4,y-1,4,3);ctx.fillStyle='#e0e6f2';ctx.fillRect(d>0?x+3:x-4,y,2,1);ctx.fillStyle='#b0965a';ctx.fillRect(x-d*7,y-1,1,3);}   // spinning-free kunai, pixel drawn
-    else if(p.kind==='yarrow'&&UNITS.archer&&UNITS.archer.arrow){const B=UNITS.archer.arrow,d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle='rgba(255,240,200,.35)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-d*26,y);ctx.lineTo(x-d*4,y);ctx.stroke();ctx.restore();   // faint streak behind it
-      drawUnit(ctx,B,0,x,y,ART_SCALE/B.pre/HS*1.7,null,0,0,d<0);}   // his own arrow, cut from his Ranged frames
+    else if(p.kind==='yarrow'&&UNITS.archer&&UNITS.archer.arrow){const B=UNITS.archer.arrow,d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';if(p.pin){for(let i=0;i<5;i++){ctx.strokeStyle=`rgba(255,${200-i*25},${120-i*20},${.5-i*.09})`;ctx.lineWidth=3-i*.45;ctx.beginPath();ctx.moveTo(x-d*(10+i*9),y+i*.15);ctx.lineTo(x-d*(4+i*9),y);ctx.stroke();}glow(ctx,x,y,4,'#ffb050',.3);}   /* 0.12.68 Pinning_Shot: a hot motion trail */
+      else{ctx.strokeStyle='rgba(255,240,200,.35)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-d*26,y);ctx.lineTo(x-d*4,y);ctx.stroke();}ctx.restore();   // faint streak behind it
+      drawUnit(ctx,B,0,x,y,ART_SCALE/B.pre/HS*(p.pin?2.4:1.7),null,0,0,d<0);}   // his own arrow, cut from his Ranged frames
     else if(p.kind==='bullet'&&UNITS.flannel&&UNITS.flannel.bullet){const B=UNITS.flannel.bullet;drawUnit(ctx,B,0,x,y+B.ay*ART_SCALE/HS,ART_SCALE/HS,null,0,0,(p.dir||1)<0);}   // sprite bullet from the character's own sheet
     else if(p.kind==='arrow'||p.kind==='quarrel'){const d=p.enemy?-1:1;ctx.fillStyle='#8a6a4a';ctx.fillRect(d>0?x-8:x-1,y,9,1);
       ctx.fillStyle='#d8d0c0';ctx.fillRect(x-d*9,y-1,2,1);ctx.fillRect(x-d*9,y+1,2,1);ctx.fillStyle='#c8ccd6';ctx.fillRect(x+(d>0?1:-3),y-1,2,3);ctx.fillRect(x+(d>0?3:-4),y,1,1);}
-    else if(p.kind==='brick'){ctx.save();ctx.translate(x,y);ctx.rotate(p.rot||0);ctx.fillStyle='#9a3a24';ctx.fillRect(-3,-2,6,4);ctx.fillStyle='#c8603a';ctx.fillRect(-3,-2,6,1);ctx.restore();}
+    else if(p.kind==='brick'){ctx.save();ctx.translate(x,y);ctx.rotate(p.rot||0);   /* 0.12.68: a real-looking brick (long and flat), tumbling */
+      ctx.fillStyle='#4a1a10';ctx.fillRect(-4.5,-2,9,4);ctx.fillStyle='#a8442a';ctx.fillRect(-4,-1.5,8,3);ctx.fillStyle='#c9663e';ctx.fillRect(-4,-1.5,8,1);ctx.fillStyle='#8a3220';ctx.fillRect(-4,.5,8,1);
+      ctx.fillStyle='#d8c8b0';ctx.globalAlpha=.55;ctx.fillRect(-4,-1.5,1,3);ctx.fillRect(3,-1.5,1,1);ctx.globalAlpha=1;ctx.fillStyle='#5a2214';ctx.fillRect(-2,-.5,1,1);ctx.fillRect(1,-.5,1,1);ctx.restore();}
     else if(p.kind==='beam'){ctx.fillStyle='#ff2a3a';ctx.fillRect(x,y,8,1);}
     else if(p.kind==='batswarm'){ctx.fillStyle='#1a0a14';ctx.fillRect(x-3,y,7,2);ctx.fillRect(x-1,y-1,3,1);ctx.fillStyle='#ff2a2a';ctx.fillRect(x,y,1,1);}
     else drawProj(ctx,p,x,y,c,g.t);ctx.restore();}
@@ -3272,7 +3314,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.67</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.68</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
