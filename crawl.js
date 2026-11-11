@@ -119,7 +119,7 @@ const SIG={
   marina:{name:'Lantern Haunt',cd:9,txt:'Lets the lantern ghost out to fight for 9s (one at a time).',fn:(g,h,a)=>{g.addMinion(h,h.max*.3,a*.6,9,'spirit','sig',1);return true;}},
   korvold:{name:'Gorge',cd:6,txt:'Bites the front enemy for 260% and heals for 30% of it.',fn:(g,h,a)=>g.sigFront(h,a*2.6,{heal:.3})},
   thranduil:{name:'Volley',cd:6,txt:'Looses 3 heavy arrows at random enemies for 115% each.',fn:(g,h,a)=>g.sigMulti(h,'arrow',a*1.15,3)},
-  cultist:{name:'Call_of_the_Deep · Blood_Pact · Spreading_Hex · Dread_Chant · Herald_of_Life_and_Death',cd:12,txt:'A hooded void cultist with a ritual dagger.',fn:()=>false},
+  cultist:{name:'Syphon_Life · Lethal_Strikes · Spawn_Tentacle · Call_of_Cthulhu · Poisoned_Blade',cd:12,txt:'A hooded void cultist with a poisoned ritual dagger who pays for his magic in blood.',fn:()=>false},
   robot:{name:'Arc_Surge · Missile_Barrage · Smoke_Screen · Nano-Tech_Repair_Bots',cd:12,txt:'A hunched olive war-walker: a flamethrower up close, a Targeted Lazer at range, and a jetpack for getting out of trouble.',fn:()=>false},
   lumberjack:{name:'Whirl_Wind · Ground_Chop · Hatchet_Leap · Timber_Rage · Feller\'s_Rhythm',cd:14,txt:'An axeman with a hunting bow.',fn:()=>false},
   druid:{name:'Mend · Rejuvenating Bloom · Thorn Wave · Cyclone',cd:4,txt:'Mend (17 energy, 5s): instantly heals the most-hurt ally 10%. Rejuvenating Bloom (35 energy, 14s): heals an ally 4% of max HP every second for 8s. Thorn Wave (35 energy, 14s): a wave of thorns erupts along the ground down her lane; everything it bursts under takes 2d6 and bleeds. Cyclone (40 energy, 18s): a tornado wanders in front of her for 5s, pulling nearby enemies in and grinding down everything inside it.',fn:()=>false},
@@ -411,11 +411,11 @@ const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼'};
 // what each character is like in a fight (shown when you hover them on the party screen)
 // one line per ability for the party-screen hover boxes
 const ABIL_DESC={
-  tentacle:'Call_of_the_Deep · 45 energy · 7s. Cast up to 250px away. He tears open the ground and a huge dark tentacle wriggles up near the enemies. Any number can be out at once (one per cast). It can\'t move, but it lashes out a long way (about 105px) every 1.4s for 2d6, knocking things back. It has 15 HP and withers 5% of that every second; enemies standing on it swat at it, and only the life steal on its hits (it heals 20% of the damage it deals) keeps it alive.',
-  pact:'Blood_Pact · 25 energy · 20s. He cuts his own palm: pays 15% of his health (never below 40%) to give every ally +20% damage for 6s.',
-  hex:'Spreading_Hex · 30 energy · 12s. Curses an enemy: it rots for 2.5% of its max HP every second for 6s. If it dies cursed, the hex jumps to the nearest enemy (up to 3 jumps).',
-  dread:'Dread_Chant · 35 energy · 16s. A 0.6s chant: every (non-boss) enemy within 180px is gripped by terror and backs away for 2.5s.',
-  herald:'Herald_of_Life_and_Death · Passive. When he\'s the one helping a downed ally up, it takes 4s instead of 5. Every critical hit he lands gives him +1 energy and +1 HP every 0.5s for 5s, and gives every tentacle in play +1 HP every 0.5s for 5s (tentacle crits don\'t count).',
+  syphon:'Syphon_Life · free · 9s. A swirling black and purple beam from his chest into an enemy up to 330px away for 3s: it drains 3 life a second (more with damage buffs) and heals him for all of it. This is how he pays for everything else.',
+  lethal:'Lethal_Strikes · 10% of his life · 20s · 12s. A frenzy: +75% dagger speed, 25% less per hit, Poisoned_Blade doubled (50% chance, 2 stacks), and he goes all-in up close.',
+  tentacle:'Spawn_Tentacle · 8% of his life · 7s. Raises a tentacle anywhere within 400px, right in the middle of the biggest pack. It can\'t move, lashes 2d6 out to its reach, heals off what it hits, and withers 5% a second.',
+  cthulhu:'Call_of_Cthulhu · 15% of his life · 30s · 10s. His tentacles burrow and burst back up 200px in front of him, and a wave of terror rolls out from him and every tentacle: 2s of fear and 25% slower. For 10s every tentacle is 25% bigger (longer reach) and lashes 25% faster, and Spawn_Tentacle comes back twice as fast.',
+  blade:'Poisoned_Blade (passive) · a dagger hit that lands has a 25% chance to add a poison stack, and every dagger swing refreshes the poison already on the target.',
   clone:'Shadow_Clone · 35 energy · 18s. A see-through copy of him steps out for 5s: it mirrors every sword hit he lands (+40% on the same target) and soaks 35% of the blows aimed at him.',
   momentum:'Momentum · Passive. Every sword hit within 2s of the last one gives +6% attack speed, stacking up to +30%. Stop swinging for 2s and it resets.',
   pin:'Pinning_Shot · 30 energy · 12s. An arrow that nails the biggest threat to the ground for 2.5s and marks it for 6s: marked enemies take 25% more damage from everyone.',
@@ -452,7 +452,7 @@ const ABIL_DESC={
   thorns:'Thorn Wave · 40 energy · 14s. A wave of earth thorns erupts along the ground 400px down her lane: 2d6 to everything it bursts under, plus bleed (12 over 4s) and a 50% chance of a poison stack (undead are immune).',
   cyclone:'Cyclone · 45 energy · 18s. A slow tornado forms well ahead of her (about 450px out) and wanders there for 5s, slowly pulling nearby enemies toward it and dealing small steady damage (1d3 every 0.5s) to everything inside.'};
 const BEHAVIOR={
-  cultist:'Theatrical, self-serving zealot. Hangs back behind the front line, flinging void bolts and stabbing with a ritual dagger anything that gets close. Calls tentacles up out of the ground where the enemies bunch, curses the biggest threat, bleeds himself to empower his allies when a fight turns hard, and chants enemies into a panic when they swarm him. Holds grudges and loves to show off. Fairly steady (zealotry), but his chanting makes him loud, so zombies hear him coming; he rarely bothers with cover.',
+  cultist:'Theatrical, self-serving zealot. Hangs back behind the front line, flinging void bolts and stabbing with a ritual dagger anything that gets close. Pays for his magic in his own blood: tentacles up out of the middle of the pack, a frenzy of poisoned stabs, and the call of Cthulhu to send everything fleeing. Then he drinks the life back out of them with a swirling void beam. Holds grudges and loves to show off. Fairly steady (zealotry), but his chanting makes him loud, so zombies hear him coming; he rarely bothers with cover.',
   robot:'Heavy, patient war machine. Walks slowly, holds a line in front of the squishies and trusts its plating. Hoses anything close with its flamethrower and burns a creeping red lazer through anything further out (overcharged with Arc Surge when a crowd lines up). When they bunch it sends a missile barrage; when a friend is hurt and swarmed it smokes them out and hides them. When it is about to break it jets out of the fight. Listens to callouts. Unshakable: almost never panics. Also the loudest thing on the field: he clanks past wrecks and sets alarms off, and stray zombies home in on the noise. He stands in the open and trusts his plating.',
   lumberjack:'Big, stubborn brawler. Wades into the thick of it with his axe and goes for the biggest enemy, holding a grudge against whatever hit him. Shoots his hunting bow while he closes in, spins into crowds, leaps onto targets, chops the ground to stun, gets angry when he\'s hurt, and rolls out of trouble. Loud and rowdy, he draws zombies in and trips car alarms. He never hides behind anything.',
   druid:'Selfless healer. Hangs back near her friends and watches their health more than the enemies: patches up whoever is hurt worst, wraps allies in healing vines, and pokes at range with nature bolts. When enemies bunch up she drops thorns on them or sends a tornado down the lane. Light-footed and quiet. Her nerves are middling, so a boss or a fallen friend can rattle her for a moment. She tucks in behind rocks and logs when the horde gets thick.',
@@ -636,24 +636,27 @@ CHAR.cultist={name:'Void_Cultist',role:'Dagger + Void Bolts',combo:0,flatHp:0,st
   melee:{dice:[1,6],every:1.4,reach:18,kb:8,hitAt:.2},
   ranged:{dice:[1,4],flat:0,every:.95,range:210,clip:0,reload:0,pellets:1,anim:.34,releaseAt:.18},   // 0.12.22 (Kyle): weak void bolts, fired about twice as fast as other ranged heroes
   acc:14,walkPenalty:8,crit:.1,critMul:1.8,luck:18,xp:0,run:1.8,turn:.22,enMax:100,enRegen:5,
+  /* 0.12.70 (Kyle) Void_Cultist rework: no energy at all. His abilities cost LIFE (Syphon_Life is free and is how he gets it back). */
   abilities:[
-    // Call_of_the_Deep: IF 2+ enemies are within 150px (or anything big) THEN summon a tentacle beside the nearest group for 10s.
-    // 0.12.22 (Kyle): 15 HP, 25% life steal, hits for 2d6; reach 35 world px = how far the lash in its attack frames actually lands.
-    {id:'tentacle',name:'Call_of_the_Deep',en:45,cd:7,cast:.8,life:999,decay:.05,hp:15,steal:.2,reach:35,depth:10,every:1.4,dice:[2,6],kb:20,range:83},   // cast up to 250 screen px away (83 world)
-    // Blood_Pact: IF an ally is under 50% OR 4+ enemies are on screen, AND I'm above 55%, THEN pay 15% HP for +20% team damage, 6s.
-    {id:'pact',name:'Blood_Pact',en:25,cd:20,hpCost:.15,min:.4,dur:6,dmg:.2,cast:.5},
-    // Spreading_Hex: IF the biggest enemy in range isn't cursed THEN curse it: 2.5% max HP/s for 6s; jumps on death (3 times).
-    {id:'hex',name:'Spreading_Hex',en:30,cd:12,dur:6,pct:.025,range:220,jumps:3,cast:.4},
-    // Dread_Chant: IF 2+ enemies are within 40px of me THEN chant: everything within 60px backs off in terror for 2.5s.
-    {id:'dread',name:'Dread_Chant',en:35,cd:16,cast:.6,r:60,dur:2.5},
-    // 0.12.22 Herald_of_Life_and_Death (Kyle, replaces Dark_Communion): while he's up, every downed ally takes 1s less standing time to
-    //   revive (4s instead of 5); and each critical hit he lands gives him +1 energy every 0.5s for 5s.
-    {id:'herald',name:'Herald_of_Life_and_Death',passive:1,revive:1,critT:5,critEn:2}]};
+    // Syphon_Life (free): IF an enemy is within ~330 screen px (110 world) AND (I'm hurt OR nothing is on me) THEN channel a swirling black-and-purple
+    //   beam into it for 3s: 3 damage a second (scaled by his damage), and he heals for everything it drains. Breaks if it dies or gets away. 9s CD.
+    {id:'syphon',name:'Syphon_Life',en:0,cd:9,dur:3,range:110,dps:3,heal:1},
+    // Lethal_Strikes (10% of max life): IF a zombie is in dagger range and I can afford it THEN for 12s: +75% melee attack speed, -25% melee damage,
+    //   Poisoned_Blade doubled (50%, 2 stacks), and Shooter/Slasher goes to 10 (all slasher). 20s CD.
+    {id:'lethal',name:'Lethal_Strikes',en:0,hpCost:.1,cd:20,dur:12,spd:.75,dmg:.25,want:'close'},
+    // Spawn_Tentacle (8% of max life, keeps the old tentacle): placed anywhere within 400 screen px (133 world), in the middle of the biggest pack.
+    {id:'tentacle',name:'Spawn_Tentacle',en:0,hpCost:.08,cd:7,cast:.8,life:999,decay:.05,hp:15,steal:.2,reach:35,depth:10,every:1.4,dice:[2,6],kb:20,range:133},
+    // Call_of_Cthulhu (15% of max life): 10s: Spawn_Tentacle's CD runs twice as fast, every tentacle is 25% bigger (reach too) and attacks 25% faster.
+    //   On cast his tentacles burrow and re-emerge 200 screen px (67 world) in front of him, and a fear pulse goes out from him and from every tentacle:
+    //   2s of fear and -25% move speed. IF 2+ tentacles are up OR 4+ zombies are coming, AND I can afford it THEN call. 30s CD.
+    {id:'cthulhu',name:'Call_of_Cthulhu',en:0,hpCost:.15,cd:30,dur:10,size:.25,spd:.25,fear:2,slow:.25,r:45,move:67,cast:.9},
+    // Poisoned_Blade (passive): a dagger hit that lands has a 25% chance to add 1 poison stack; EVERY dagger swing refreshes the poison on its target.
+    {id:'blade',name:'Poisoned_Blade',passive:1,ch:.25,n:1}]};
 const PAL_FRAC=1/3;
 // which cooldown timer each ability uses, so the planner can see what is ready
-const CD_KEY={nano:'nbT',tentacle:'tnT',pact:'paT',hex:'hxT',dread:'drT',clone:'clT',pin:'piT',surge:'suT',gatling:'gaT',missiles:'msT',smoke:'smT',grit:'grT',poultice:'poT',aimed:'abT',trip:'tbT',pal:'palT',camp:'caT',dash:'daT',shout:'shT',rapid:'raT',blowgun:'bgT',rain:'arT',mend:'mdT',bloom:'blT',thorns:'thT',cyclone:'cyT',
+const CD_KEY={syphon:'syT',lethal:'leT',cthulhu:'ctT',nano:'nbT',tentacle:'tnT',pact:'paT',hex:'hxT',dread:'drT',clone:'clT',pin:'piT',surge:'suT',gatling:'gaT',missiles:'msT',smoke:'smT',grit:'grT',poultice:'poT',aimed:'abT',trip:'tbT',pal:'palT',camp:'caT',dash:'daT',shout:'shT',rapid:'raT',blowgun:'bgT',rain:'arT',mend:'mdT',bloom:'blT',thorns:'thT',cyclone:'cyT',
   whirl:'whT',chop:'cpT',leap:'lpT',rage:'rgT',roll:'rlT',brick:'brT',bottle:'boT'};
-const CLOSE_AB=new Set(['dread','clone','surge','grit','dash','whirl','chop','leap','rage','trip']),FAR_AB=new Set(['tentacle','hex','pin','gatling','missiles','smoke','aimed','rain','rapid','blowgun','thorns','cyclone','brick']);
+const CLOSE_AB=new Set(['lethal','dread','clone','surge','grit','dash','whirl','chop','leap','rage','trip']),FAR_AB=new Set(['syphon','cthulhu','tentacle','hex','pin','gatling','missiles','smoke','aimed','rain','rapid','blowgun','thorns','cyclone','brick']);
 function abilityPlan(h){const C=h.base&&h.base.char;if(!C||!C.abilities||!C.abilities.length)return {};let close=0,far=0,farRange=0,ready=0;
   for(const a of C.abilities){const k=CD_KEY[a.id];const up=!(h[k]>0)&&(h.en||0)>=a.en;if(!up)continue;ready++;
     if(CLOSE_AB.has(a.id))close++;if(FAR_AB.has(a.id)){far++;farRange=Math.max(farRange,a.range||a.dist||(C.ranged&&C.ranged.range)||150);}}
@@ -1305,7 +1308,7 @@ class Game{
     if(h.hp<=0)this.heroDown(h);
     return true;
   }
-  heroDown(h){if(this.tryResurge(h))return;h.jet=null;h.lz=null;h.nano=null;h.stealthT=0;h.leap=null;h.leapH=0;h.whirl=null;h.dash=null;h.rolling=null;   /* no frozen mid-move poses */for(const o of this.alive())if(o!==h&&Math.abs(this.heroX(o)-this.heroX(h))<90)Brain.panic(this,o,'down');if(h.key&&!this.demo)this.st8(h).downs++;if(!h.pet){h.downed=1;h.revT=0;h.downT=this.t;}/* 0.12.22: downed, not dead: an ally can help them up */if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
+  heroDown(h){if(this.tryResurge(h))return;h.syph=null;h.jet=null;h.lz=null;h.nano=null;h.stealthT=0;h.leap=null;h.leapH=0;h.whirl=null;h.dash=null;h.rolling=null;   /* no frozen mid-move poses */for(const o of this.alive())if(o!==h&&Math.abs(this.heroX(o)-this.heroX(h))<90)Brain.panic(this,o,'down');if(h.key&&!this.demo)this.st8(h).downs++;if(!h.pet){h.downed=1;h.revT=0;h.downT=this.t;}/* 0.12.22: downed, not dead: an ally can help them up */if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
     if(!h.pet){for(const p of this.pets||[])if(p.owner===h&&p.alive&&!p.dog){p.alive=false;this.fx.push({k:'poof',x:p.x,y:this.G-20,t:0});}}   // she leaves when he goes down
     if(!this.aliveHeroes().length){this.over='defeat';this.ev('defeat');}}
   procs(h,trig,e,amt,ally){
@@ -1396,6 +1399,8 @@ class Game{
       if(key){o._ffK=o._ffK||new Set();if(o._ffK.has(key))continue;}
       if(Math.abs(this.heroX(o)-x)<=r&&Math.abs((o.gy||this.G)-(gy==null?this.G:gy))<=depth){if(key)o._ffK.add(key);this.hurtHero(o,dmg,null);const S=this.st8(src);S.ff=(S.ff||0)+1;}}}
   /* 0.12.62 Warhound flamethrower: a cone that widens from 5 to 15 (gy) over 70px in front of him; every enemy in it starts (or restarts) burning */
+  /* 0.12.70 Void_Cultist: pay life for an ability (never below 25%) */
+  payLife(h,c){if(h.hp-h.max*c<h.max*.25)return false;h.hp-=h.max*c;this.text(h.x+4,this.G-52,'-'+Math.round(h.max*c),'#c0102a');this.fx.push({k:'ring',x:h.x,y:(h.gy||this.G)-8,r:10,t:0,c:'#c0102a'});unstealth(h);return true;}
   /* 0.12.67 Warhound: one Missile_Barrage-strength missile at T (used by the barrage and by Tactical_Retreat) */
   fireMissile(h,T,MS){if(!T)return;const mul=(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);this.ev('whoosh',{});
     (this.missiles=this.missiles||[]).push({x0:h.x+(h.face<0?-3:3),x:h.x,tx:T.x+(this.rng()*2-1)*MS.spread,gy:h.gy||this.G,tgy:Math.max(LANES[0],Math.min(LANES[LANES.length-1],(T.gy||this.G)+(this.rng()*2-1)*6)),t:0,T:MS.fly*(.9+this.rng()*.2),A:MS,src:h,mul,trail:0,h0:h.leapH||0});}
@@ -1781,7 +1786,7 @@ class Game{
     const spdB=(cry?1+cry.spd:1)*(h.rageT>0?1.2:1)*(1+(h.mom||0)*(h.momPer||0));h.cryDmg=(cry?1+cry.dmg:1)*(h.pactT>0?1+(h.pactDmg||.2):1);if(h.pactT>0)h.pactT-=dt;
     if(h.laughT>0)h.laughT-=dt;
     if(h.cozyT>0){h.cozyT-=dt;h._cozyAcc=(h._cozyAcc||0)+dt;while(h._cozyAcc>=.5){h._cozyAcc-=.5;this.healHero(h,.25,true,h);h.en=Math.min(h.enMax||100,(h.en||0)+.25);}}
-    h.mT=(h.mT||0)+dt*h.meleeSpd*spdB*(h.cozyT>0?1+COZY.melee:1)*(h.key==='jp'?(h.highT>0?1.1:(h.soberT||0)>10?.9:1):1);h.rT=(h.rT||0)+dt*h.rangedSpd*spdB;if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
+    h.mT=(h.mT||0)+dt*h.meleeSpd*spdB*(h.cozyT>0?1+COZY.melee:1)*(h.key==='jp'?(h.highT>0?1.1:(h.soberT||0)>10?.9:1):1)*(h.lethalT>0?1.75:1);h.rT=(h.rT||0)+dt*h.rangedSpd*spdB;if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
     if(h.ammo==null)h.ammo=C.ranged?(C.ranged.clip||Infinity):0;   // clip 0 = never reloads
     if(C.ranged&&h.ammo<=0&&C.ranged.clip>0){if(!h.reloadT&&C.ranged.reload>=1.5)Comms.onReload(this,h);h.reloadT=(h.reloadT||0)+dt*h.rangedSpd*spdB;if(h.reloadT>=C.ranged.reload){h.reloadT=0;h.ammo=C.ranged.clip;}}
     const reachPx=ENEMY_BODY+C.melee.reach*UNIT_SCALE;   // same body gap the zombies measure from, so a 20 reach out-reaches a 12 reach zombie
@@ -1817,6 +1822,37 @@ class Game{
           Comms.say(this,h,'missiles',{});return;}}
       // Targeted Lazer in progress (he plants and holds the beam); IF something gets right on top of me THEN drop the beam and use the flamethrower
       if(h.lz){if(onMe>=1&&h.lz.t>LZ.charge){h.lz=null;h.lzReload=LZ.reload;}else{this.robotLazer(h,dt,LZ);return;}}}
+    // ---- 0.12.70 Void_Cultist (Kyle's rework): life costs, all IF/THEN on the field; runs before the attack so Lethal_Strikes works up close
+    if(h.key==='cultist'){const CB=id=>(C.abilities||[]).find(a=>a.id===id);const SY=CB('syphon'),LS=CB('lethal'),TN=CB('tentacle'),CT=CB('cthulhu');
+      for(const [A,k] of [[SY,'syT'],[LS,'leT'],[TN,'tnT'],[CT,'ctT']])if(A){if(h[k]==null)h[k]=A.cd*.25;if(h[k]>0)h[k]-=dt*(k==='tnT'&&h.cthT>0?2:1);}
+      if(h.lethalT>0)h.lethalT-=dt;if(h.cthT>0)h.cthT-=dt;
+      if(h.summonT>0){h.summonT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);return;}
+      const live=this.enemies.filter(e=>!e.dead&&e.x<this.W+4),hx=this.heroX(h),hp=h.hp/h.max,afford=A=>A&&hp-A.hpCost>=.35;
+      // Syphon_Life in progress: stand and drain
+      if(h.syph){const S=h.syph,T=S.tg;S.t+=dt;S.acc+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;if(T)h.face=T.x>=h.x?1:-1;
+        if(!T||T.dead||Math.abs(T.x-hx)>SY.range*1.15||S.t>=SY.dur){h.syph=null;}
+        else{while(S.acc>=.25){S.acc-=.25;const d=this.hitEnemy(T,SY.dps*.25*(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1),h,{sure:1,nocrit:1,quiet:1});if(d)this.healHero(h,d*SY.heal,true,h);}return;}}
+      // IF Call_of_Cthulhu is ready AND (2+ tentacles are up OR 4+ zombies are coming) AND I can afford it THEN call
+      const tents=(this.tentacles||[]).filter(T=>T.src===h&&T.anim!=='death');
+      if(CT&&h.ctT<=0&&afford(CT)&&(tents.length>=2||live.filter(e=>e.x-hx<160).length>=4)&&this.payLife(h,CT.hpCost)){h.ctT=CT.cd*(1-(h.cdr||0));h.cthT=CT.dur;h.summonT=CT.cast;h.summonT0=CT.cast;
+        Comms.bubble(this,h,Comms.pick(['Ph\'nglui mglw\'nafh!','HE WAKES!','Cthulhu fhtagn!','The deep calls you home!']),true);this.ev('wind',{});this.shake=Math.max(this.shake||0,.35);
+        setTimeoutSafe(this,CT.cast*.7,()=>{if(!h.alive)return;const d=h.face||1,cx=this.heroX(h)+d*CT.move,ts=(this.tentacles||[]).filter(T=>T.src===h&&T.anim!=='death');
+          ts.forEach((T,i)=>{this.fx.push({k:'burrow',x:T.x,gy:T.gy,t:0,life:.5,raw:1});T.x=Math.max(8,Math.min(this.W-8,cx+(i-(ts.length-1)/2)*16));T.gy=LANES[Math.max(0,Math.min(LANES.length-1,(h.laneI||2)+((i%3)-1)))]||T.gy;T.anim='emerge';T.aT=0;});
+          for(const o of [{x:this.heroX(h),gy:h.gy||this.G}].concat(ts.map(T=>({x:T.x,gy:T.gy})))){this.fx.push({k:'dread',x:o.x,gy:o.gy,t:0,life:.8,raw:1,r:CT.r});
+            for(const e of this.enemies){if(e.dead||e.boss)continue;if(Math.abs(e.x-o.x)<CT.r&&Math.abs((e.gy||this.G)-o.gy)<16){e.retreatT=Math.max(e.retreatT||0,CT.fear);e.fearT=CT.fear;e.slow=Math.max(e.slow||0,CT.slow);e.slowT=Math.max(e.slowT||0,CT.fear);}}}});
+        return;}
+      // IF zombies are bunched within 133 world AND I can afford it THEN Spawn_Tentacle in the middle of the biggest pack
+      if(TN&&h.tnT<=0&&afford(TN)){const near=live.filter(e=>!e.fly&&Math.abs(e.x-hx)<=TN.range);let best=null,bn=0;for(const e of near){const n=near.filter(o=>Math.abs(o.x-e.x)<30).length+(e.boss?2:0);if(n>bn){bn=n;best=e;}}
+        if(best&&(bn>=2||best.boss||best.max>=this.bb.maxE*.8)&&this.payLife(h,TN.hpCost)){h.tnT=TN.cd*(1-(h.cdr||0));h.summonT=TN.cast;h.summonT0=TN.cast;
+          const pack=near.filter(o=>Math.abs(o.x-best.x)<30),tx=Math.max(8,Math.min(this.W-8,pack.reduce((a,o)=>a+o.x,0)/pack.length)),gy=best.gy!=null?best.gy:(h.gy||this.G);const mul=(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
+          setTimeoutSafe(this,TN.cast*.7,()=>{if(!h.alive)return;(this.tentacles=this.tentacles||[]).push({x:tx,gy,t:0,life:TN.life,A:TN,src:h,mul,atkT:.6,anim:'emerge',aT:0,face:1,hp:TN.hp,max:TN.hp,swatT:0});this.ev('thorns',{});this.shake=Math.max(this.shake||0,.25);});
+          Comms.say(this,h,'tentacle',{});return;}}
+      // IF a zombie is in dagger range AND Lethal_Strikes is ready AND I can afford it THEN frenzy
+      if(LS&&h.leT<=0&&afford(LS)&&live.some(e=>!e.fly&&Math.abs(e.x-hx)<26&&Math.abs((e.gy!=null?e.gy:this.G)-(h.gy||this.G))<4)&&this.payLife(h,LS.hpCost)){h.leT=LS.cd*(1-(h.cdr||0));h.lethalT=LS.dur;addMood(h,{range:10},LS.dur,'lethal');
+        this.fx.push({k:'ring',x:h.x,y:(h.gy||this.G)-10,r:16,t:0,c:'#6aff4a'});Comms.bubble(this,h,Comms.pick(['Bleed for me!','Steel and venom!','Dance, little corpses!']));}
+      // IF an enemy is in syphon range AND (I'm hurt OR nothing is on me) THEN drain it (free)
+      if(SY&&h.syT<=0&&!h.syph){const T=live.filter(e=>Math.abs(e.x-hx)<=SY.range&&e.x>-4).sort((p,q)=>(hp<.6?Math.abs(p.x-hx)-Math.abs(q.x-hx):q.hp-p.hp))[0];const onMe=live.some(e=>!e.fly&&Math.abs(e.x-hx)<16);
+        if(T&&(hp<.9||!onMe)){h.syT=SY.cd*(1-(h.cdr||0));h.syph={t:0,acc:0,tg:T};unstealth(h);this.ev('zap',{});return;}}}
     const mt=this.enemies.filter(e=>!e.dead&&!e.fly&&(e.boss?e.x-e.w-h.x<=reachPx&&e.x>h.x-4:Math.abs(e.x-this.heroX(h))<=reachPx&&(e.gy==null||Math.abs(e.gy-h.gy)<2.5))).sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x))[0];
     // ---- Wave Dash in progress: slide forward along the lane, cutting everything in the line once
     if(h.dash){const D=h.dash;D.t+=dt;const k=Math.min(1,D.t/D.T);const nx=D.x0+(D.x1-D.x0)*(1-(1-k)*(1-k));const px=h.x;h.x=nx;h.pauseT=Math.max(h.pauseT||0,.05);
@@ -1846,7 +1882,8 @@ class Game{
         if(C.melee.claw)this.fx.push({k:'claw',x:h.x+(mt.x>=h.x?6:-6),gy:h.gy||this.G,tx:mt.x,dir:mt.x>=h.x?1:-1,t:0,life:.42,raw:1});
         setTimeoutSafe(this,C.melee.hitAt||.15,()=>{if(!h.alive||mt.dead)return;   // the blow lands a moment into the swing (Kyle: very slight delay)
         const K=Math.min(100,C.melee.kb+(h.kbAdd||0));const RY=(C.abilities||[]).find(a=>a.id==='rhythm');let fell=0;if(RY){h.rhyN=(this.t-(h.rhyT==null?-99:h.rhyT)<=RY.window)?(h.rhyN||0)+1:1;h.rhyT=this.t;if(h.rhyN>=RY.n){h.rhyN=0;fell=1;}}   /* 0.12.69 Feller's_Rhythm */
-        const dealt=this.hitEnemy(mt,roll*(fell?1+RY.bonus:1),h,{});if(fell&&!mt.dead){if(!mt.boss)mt.stun=Math.max(mt.stun||0,RY.stun);this.text(mt.x,mt.y-34,'TIMBER!','#ffc860');this.shake=Math.max(this.shake||0,.12);}
+        const LT=h.lethalT>0?(C.abilities||[]).find(a=>a.id==='lethal'):null;const dealt=this.hitEnemy(mt,roll*(fell?1+RY.bonus:1)*(LT?1-LT.dmg:1),h,{});
+        {const PBd=(C.abilities||[]).find(a=>a.id==='blade');if(PBd&&!mt.dead){if(mt.poison>0)mt.poisonT=POISON.dur;if(dealt&&this.rng()<PBd.ch*(LT?2:1))this.addPoison(mt,PBd.n*(LT?2:1));}}   /* 0.12.70 Poisoned_Blade */if(fell&&!mt.dead){if(!mt.boss)mt.stun=Math.max(mt.stun||0,RY.stun);this.text(mt.x,mt.y-34,'TIMBER!','#ffc860');this.shake=Math.max(this.shake||0,.12);}
         {const MO=(C.abilities||[]).find(a=>a.id==='momentum');if(MO){h.mom=this.t-(h.momT||0)<=MO.window?Math.min(MO.max,(h.mom||0)+1):1;h.momT=this.t;h.momPer=MO.per;}}   // Momentum
         if(h.cloneT>0&&!mt.dead){this.hitEnemy(mt,roll*(h.cloneMirror||.4),h,{nocrit:1});this.fx.push({k:'slash',x:mt.x-2,y:mt.y-20,t:0});}   // the clone mirrors the hit   // knockback, Kyle's scale: 0-100, 100 = about a 40px shove
         if(dealt&&!mt.dead&&K>0){const res=mt.boss?.9:((mt.E&&mt.E.kbRes)||0);mt.kbv=Math.max(mt.kbv||0,K/100*40*8*(1-res));mt.kbDir=mt.x>=h.x?1:-1;}   
@@ -2013,30 +2050,6 @@ class Game{
       // IF a big target is 24-60px away (too far to swing, close enough to jump) AND Hatchet_Leap is ready THEN leap onto it
       const lt=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-h.x)>=LP.min&&Math.abs(e.x-h.x)<=LP.range).sort((p,q)=>(q.max-p.max))[0];
       if(LP&&h.lpT<=0&&lt&&en>=LP.en&&spendEnergy(h,LP.en)){h.lpT=LP.cd;h.leap={t:0,x0:h.x,x1:lt.x-(lt.x>h.x?10:-10)};faceToward(h,lt.x,1);h.laneI=lt.laneI!=null?lt.laneI:h.laneI;return;}}
-    // ---- 0.12.21 Void_Cultist abilities
-    {const CB=id=>(C.abilities||[]).find(a=>a.id===id);const TN=CB('tentacle'),PA=CB('pact'),HX=CB('hex'),DR=CB('dread');
-     if(TN||PA||HX||DR){for(const [A,k] of [[TN,'tnT'],[PA,'paT'],[HX,'hxT'],[DR,'drT']])if(A){if(h[k]==null)h[k]=A.cd*.25;if(h[k]>0)h[k]-=dt;}
-      if(h.summonT>0){h.summonT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);return;}
-      const live=this.enemies.filter(e=>!e.dead&&e.x<this.W+4),en=h.en||0,hx=h.x;
-      // IF 2+ enemies are within 40px THEN Dread_Chant
-      if(DR&&h.drT<=0&&en>=DR.en&&live.filter(e=>Math.abs(e.x-hx)<40).length>=2&&spendEnergy(h,DR.en)){h.drT=DR.cd*(1-(h.cdr||0));h.summonT=DR.cast;h.summonT0=DR.cast;
-        setTimeoutSafe(this,DR.cast*.8,()=>{if(!h.alive)return;this.fx.push({k:'dread',x:h.x,gy:h.gy||this.G,t:0,life:.8,raw:1,r:DR.r});this.ev('wind',{});
-          for(const e of this.enemies){if(e.dead||e.boss)continue;if(Math.abs(e.x-h.x)<DR.r&&Math.abs((e.gy||this.G)-(h.gy||this.G))<14){e.retreatT=Math.max(e.retreatT||0,DR.dur);e.fearT=DR.dur;}}});
-        Comms.say(this,h,'dread',{});return;}
-      // IF 2+ enemies are within 150px (or a big one) THEN Call_of_the_Deep near them
-      if(TN&&h.tnT<=0&&en>=TN.en){const near=live.filter(e=>!e.fly&&e.x>hx-20&&e.x-hx<=TN.range);if((near.length>=2||near.some(e=>e.boss||e.max>=this.bb.maxE*.8))&&spendEnergy(h,TN.en)){
-        h.tnT=TN.cd*(1-(h.cdr||0));h.summonT=TN.cast;h.summonT0=TN.cast;const T=near.sort((p,q)=>p.x-q.x)[0];const tx=Math.min(hx+TN.range,Math.max(hx+18,T.x-14)),gy=T.gy!=null?T.gy:(h.gy||this.G);
-        const mul=(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
-        setTimeoutSafe(this,TN.cast*.7,()=>{if(!h.alive)return;(this.tentacles=this.tentacles||[]).push({x:tx,gy,t:0,life:TN.life,A:TN,src:h,mul,atkT:.6,anim:'emerge',aT:0,face:1,hp:TN.hp,max:TN.hp,swatT:0});this.ev('thorns',{});this.shake=Math.max(this.shake||0,.25);});
-        Comms.say(this,h,'tentacle',{});return;}}
-      // IF the biggest enemy in range isn't cursed THEN Spreading_Hex
-      if(HX&&h.hxT<=0&&en>=HX.en&&!mt){const tg=live.filter(e=>!(e.hexT>0)&&Math.abs(e.x-hx)<=HX.range).sort((p,q)=>q.max-p.max)[0];if(tg&&spendEnergy(h,HX.en)){
-        h.hxT=HX.cd*(1-(h.cdr||0));h.animR=HX.cast;h.animRT=HX.cast;faceToward(h,tg.x,1);tg.hexT=HX.dur;tg.hexJ=HX.jumps;tg.hexA=HX;tg.hexSrc=h;tg.hexTick=0;
-        this.fx.push({k:'bolt',pts:[[h.x+(h.face||1)*10,(h.gy||this.G)-18],[tg.x,(tg.gy||this.G)-14]],t:0,life:.3,raw:1,c:'v'});return;}}
-      // IF an ally is under 50% OR 4+ enemies are up, AND I'm above 55%, THEN Blood_Pact
-      if(PA&&h.paT<=0&&en>=PA.en&&h.hp/h.max>PA.min+PA.hpCost&&(this.alive().some(o=>o.hp/o.max<.5)||live.length>=4)&&spendEnergy(h,PA.en)){
-        h.paT=PA.cd*(1-(h.cdr||0));h.summonT=PA.cast;h.summonT0=PA.cast;h.hp-=h.max*PA.hpCost;this.text(h.x+4,this.G-52,Math.round(h.max*PA.hpCost),'#c0102a');
-        for(const o of this.alive()){o.pactT=PA.dur;o.pactDmg=PA.dmg;}this.fx.push({k:'ring',x:h.x,y:this.G-6,r:26,t:0,c:'#c0102a'});this.ev('heal',{});Comms.say(this,h,'pact',{});return;}}}
     // ---- Druid abilities
     const AB_=id=>(C.abilities||[]).find(a=>a.id===id);const MD=AB_('mend'),BL=AB_('bloom'),TH=AB_('thorns'),CY=AB_('cyclone');
     if(MD||BL||TH||CY){for(const [A,k] of [[MD,'mdT'],[BL,'blT'],[TH,'thT'],[CY,'cyT']])if(A){if(h[k]==null)h[k]=A.cd*.2;if(h[k]>0)h[k]-=dt;}
@@ -2254,11 +2267,11 @@ class Game{
       if(T.hp<=0&&T.anim!=='death'){T.anim='death';T.aT=0;}
       if(T.anim==='death'){if(T.aT>=.8)T.done=1;continue;}
       if(T.anim==='attack'&&T.aT>=.6){T.anim='idle';T.aT=0;}
-      T.atkT-=dt;
-      if(T.anim==='idle'&&T.atkT<=0){const tg=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-T.x)<=A.reach+(e.boss?e.w*.5:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-T.gy)<=A.depth)).sort((p,q)=>Math.abs(p.x-T.x)-Math.abs(q.x-T.x))[0];
+      const big=T.src&&T.src.cthT>0?1.25:1;T.big=big;T.atkT-=dt*big;   /* 0.12.70 Call_of_Cthulhu: 25% bigger, longer reach, 25% faster */
+      if(T.anim==='idle'&&T.atkT<=0){const tg=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-T.x)<=A.reach*big+(e.boss?e.w*.5:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-T.gy)<=A.depth)).sort((p,q)=>Math.abs(p.x-T.x)-Math.abs(q.x-T.x))[0];
         if(tg){T.atkT=A.every;T.anim='attack';T.aT=0;T.face=tg.x>=T.x?1:-1;const dir=T.face;
           setTimeoutSafe(this,.32,()=>{if(T.done)return;this.ev('hit',{});this.shake=Math.max(this.shake||0,.15);
-            for(const e of this.enemies){if(e.dead||e.fly)continue;const dx=(e.x-T.x)*dir;if(dx>=-4&&dx<=A.reach+(e.boss?e.w*.5:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-T.gy)<=A.depth)){
+            for(const e of this.enemies){if(e.dead||e.fly)continue;const dx=(e.x-T.x)*dir;if(dx>=-4&&dx<=A.reach*(T.big||1)+(e.boss?e.w*.5:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-T.gy)<=A.depth)){
               const d=this.hitEnemy(e,(this.rollDice(A.dice)+(T.src.flatRanged||0)*.5)*T.mul,T.src&&T.src.alive?T.src:null,{fromTent:1});if(d)T.hp=Math.min(T.max,T.hp+d*A.steal);/* 0.12.38 (Kyle): heals 20% of the damage it deals */if(d&&!e.dead&&!e.boss){const res=(e.E&&e.E.kbRes)||0;e.kbv=Math.max(e.kbv||0,A.kb/100*40*8*(1-res));e.kbDir=dir;}}}
             this.fx.push({k:'quake',x:T.x+dir*A.reach*.8,gy:T.gy,t:0,life:.4,raw:1});});}}}
     this.tentacles=this.tentacles.filter(T=>!T.done);}
@@ -2700,12 +2713,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794383305';const BGI=new Image();BGI.src='crawl_bg.png?v=1794383305';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794383305';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794383545';const BGI=new Image();BGI.src='crawl_bg.png?v=1794383545';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794383545';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794383305';XIMG.wave.src='crawl_wave.png?v=1794383305';XIMG.chibi.src='crawl_chibi.png?v=1794383305';XIMG.flannel.src='crawl_flannel.png?v=1794383305';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794383305';XIMG.rain.src='crawl_rain.png?v=1794383305';XIMG.druid.src='crawl_druid.png?v=1794383305';XIMG.camp.src='crawl_campfire.png?v=1794383305';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794383305';XIMG.tornado.src='crawl_fx_tornado.png?v=1794383305';XIMG.vine.src='crawl_fx_vine.png?v=1794383305';XIMG.thorn.src='crawl_fx_thorn.png?v=1794383305';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794383545';XIMG.wave.src='crawl_wave.png?v=1794383545';XIMG.chibi.src='crawl_chibi.png?v=1794383545';XIMG.flannel.src='crawl_flannel.png?v=1794383545';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794383545';XIMG.rain.src='crawl_rain.png?v=1794383545';XIMG.druid.src='crawl_druid.png?v=1794383545';XIMG.camp.src='crawl_campfire.png?v=1794383545';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794383545';XIMG.tornado.src='crawl_fx_tornado.png?v=1794383545';XIMG.vine.src='crawl_fx_vine.png?v=1794383545';XIMG.thorn.src='crawl_fx_thorn.png?v=1794383545';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794383305';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794383305';XIMG.obst.src='crawl_obst.png?v=1794383305';XIMG.cars.src='crawl_cars.png?v=1794383305';XIMG.robot.src='crawl_robot.png?v=1794383305';XIMG.cultist.src='crawl_cultist.png?v=1794383305';XIMG.tentacle.src='crawl_tentacle.png?v=1794383305';XIMG.boom.src='crawl_boom.png?v=1794383305';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794383545';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794383545';XIMG.obst.src='crawl_obst.png?v=1794383545';XIMG.cars.src='crawl_cars.png?v=1794383545';XIMG.robot.src='crawl_robot.png?v=1794383545';XIMG.cultist.src='crawl_cultist.png?v=1794383545';XIMG.tentacle.src='crawl_tentacle.png?v=1794383545';XIMG.boom.src='crawl_boom.png?v=1794383545';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2808,9 +2821,10 @@ const MINI={bat:'e_bat',spirit:'e_ghost',raise:'e_skeleton',spore:'e_spawn',dron
 const HS=UNIT_SCALE;   // units, effects and projectiles are drawn at half size so the world reads bigger
 function shrinkAt(ctx,x,y,s){ctx.translate(x,y);ctx.scale(s,s);ctx.translate(-x,-y);}
 // 0.11 unit status plate: framed health bar (a tick every 10 HP), energy bar under it, and status pips above it
-const PIPS=[['poulticeT','#9ae08a','drop'],['rageT','#ff3a2a','up'],['cozyT','#ffb040','up'],['poisonT','#6aff4a','drop'],['shoutT','#ff7a1a','up'],['bleedT','#d01830','drop'],['burnT','#ff8a1f','flame'],['slow','#9ae6ff','snow'],['stun','#ffffff','star'],['shield','#7fd8ff','shield'],['buffT','#ffd23f','up']];
+const PIPS=[['poulticeT','#9ae08a','drop'],['rageT','#ff3a2a','up'],['cozyT','#ffb040','up'],['poisonT','#6aff4a','rain'],['shoutT','#ff7a1a','up'],['bleedT','#d01830','drop'],['burnT','#ff8a1f','flame'],['slow','#9ae6ff','snow'],['stun','#ffffff','star'],['shield','#7fd8ff','shield'],['buffT','#ffd23f','up']];
 function pip(ctx,x,y,c,k){ctx.fillStyle='#120a14';ctx.fillRect(x-1,y-1,5,5);ctx.fillStyle=c;
-  if(k==='drop'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,2);}else if(k==='flame'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,1);ctx.fillRect(x+1,y+2,1,1);}
+  if(k==='rain'){ctx.fillRect(x+1,y-1,1,2);ctx.fillRect(x,y+1,3,2);ctx.fillStyle='#d8ffd0';ctx.fillRect(x,y+1,1,1);}   // 0.12.70: poison = a little green raindrop
+  else if(k==='drop'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,2);}else if(k==='flame'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,1);ctx.fillRect(x+1,y+2,1,1);}
   else if(k==='snow'){ctx.fillRect(x+1,y,1,3);ctx.fillRect(x,y+1,3,1);}else if(k==='star'){ctx.fillRect(x,y,1,1);ctx.fillRect(x+2,y,1,1);ctx.fillRect(x+1,y+1,1,1);ctx.fillRect(x,y+2,1,1);ctx.fillRect(x+2,y+2,1,1);}
   else if(k==='shield'){ctx.fillRect(x,y,3,2);ctx.fillRect(x+1,y+2,1,1);}else{ctx.fillRect(x+1,y,1,3);ctx.fillRect(x,y+1,3,1);}}
 let PLATE_OFF=false;   /* the camp scene draws its heroes without health plates */
@@ -2876,6 +2890,16 @@ function drawGame(ctx,g,W,oy){
       if(Math.random()<.5)glow(ctx,h.x+s*(14+Math.random()*8),G0-6-Math.random()*24,2.5,'#e8fbff',.6);ctx.restore();}};
   // Arrow_Rain: arrows falling out of the sky, and the ones stuck in the ground
   /* 0.12.69 Hatchet_Leap landing: a cracked-earth decal that lingers, dust clouds rolling out, pebbles thrown up, a short burst of energy */
+  /* 0.12.70 Syphon_Life: two twisting strands (black and violet) from his chest to the target's middle, motes of life drifting back into him;
+     a burrow puff where Call_of_Cthulhu pulls a tentacle under; a green glint on his dagger during Lethal_Strikes */
+  const voidFx=()=>{for(const h of g.alive()){if(h.key!=='cultist')continue;const hx=g.heroX(h),gy=h.gy||G;
+      if(h.syph&&h.syph.tg&&!h.syph.tg.dead){const T=h.syph.tg,x0=hx+(h.face||1)*3,y0=gy-12,x1=T.x,y1=(T.gy!=null?T.gy:G)-(T.boss?30:12),L=Math.hypot(x1-x0,y1-y0)||1,nx=-(y1-y0)/L,ny=(x1-x0)/L;
+        ctx.save();for(const [w,c,ph,amp] of [[3.2,'rgba(10,0,16,.75)',0,2.2],[1.6,'rgba(150,60,255,.85)',Math.PI,2],[.7,'rgba(230,200,255,.9)',Math.PI*.5,1.2]]){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();
+          for(let i=0;i<=24;i++){const k=i/24,sw=Math.sin(k*12-g.t*14+ph)*amp*Math.sin(k*Math.PI),x=x0+(x1-x0)*k+nx*sw,y=y0+(y1-y0)*k+ny*sw;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();}
+        ctx.globalCompositeOperation='lighter';for(let i=0;i<5;i++){const k=1-((g.t*1.3+i/5)%1);glow(ctx,x0+(x1-x0)*k,y0+(y1-y0)*k+Math.sin(g.t*9+i)*1.5,1.3,i%2?'#ff5a8a':'#b070ff',.8);}
+        glow(ctx,x1,y1,5,'#6a20c0',.35);glow(ctx,x0,y0,3,'#b070ff',.4);ctx.restore();}
+      if(h.lethalT>0){ctx.save();ctx.globalCompositeOperation='lighter';glow(ctx,hx+(h.face||1)*7,gy-10,2.2,'#6aff4a',.35+.25*Math.sin(g.t*14));ctx.restore();}}
+    for(const f of g.fx){if(f.k!=='burrow')continue;const k=f.t/f.life;for(let i=0;i<5;i++)puffAt(f.x+(i-2)*2.5,f.gy-1-k*5-(i%2),1.6+k*2,.6*(1-k),'#4a3a2c');}};
   const slamDraw=()=>{for(const f of g.fx){if(f.k!=='crack')continue;const k=f.t/f.life,a=k>.7?(1-k)/.3:1;let sd=Math.floor(f.x*13+f.gy*7);const R=()=>{sd=(sd*9301+49297)%233280;return sd/233280;};
       ctx.save();ctx.globalAlpha=a;ctx.fillStyle='rgba(20,12,8,.35)';ctx.beginPath();ctx.ellipse(f.x,f.gy,f.r*.55,f.r*.16,0,0,7);ctx.fill();
       for(let i=0;i<8;i++){let ang=i/8*6.283+R()*.5,x=f.x,y=f.gy,L=f.r*(.55+R()*.6);ctx.beginPath();ctx.moveTo(x,y);
@@ -3111,7 +3135,7 @@ function drawGame(ctx,g,W,oy){
     if(o.alarmT>0&&Math.floor(o.alarmT*6)%2===0){const [a0,b0]=[o.x-D.fw*.22,o.x+D.fw*.22];ctx.globalCompositeOperation='lighter';for(const lx of [a0,b0]){glow(ctx,lx,gy-D.fh*.18,5,'#ffa020',.55);glow(ctx,lx,gy-D.fh*.18,2,'#fff0b0',.9);}ctx.globalCompositeOperation='source-over';}/* car alarm: flashing lights */ctx.restore();};
   const drawTent=T=>{const U=UNITS.tentacle;if(!U)return;const A=U[T.anim]||U.idle;let fr;const n=A.n;
     if(T.anim==='idle')fr=Math.floor(g.t*9+T.x)%n;else if(T.anim==='emerge')fr=Math.min(n-1,Math.floor(T.aT/.5*n));else if(T.anim==='attack')fr=Math.min(n-1,Math.floor(T.aT/.6*n));else if(T.anim==='hit')fr=Math.min(n-1,Math.floor(T.aT/.25*n));else fr=Math.min(n-1,Math.floor(T.aT/.8*n));
-    ctx.save();shrinkAt(ctx,T.x,T.gy,HS);shadow(ctx,T.x,T.gy,9);drawUnit(ctx,A,fr,T.x,T.gy+1,1,null,T.hitT>0?(T.hitT-=1/60):0,0,T.face>0);ctx.restore();
+    ctx.save();shrinkAt(ctx,T.x,T.gy,HS);shadow(ctx,T.x,T.gy,9);drawUnit(ctx,A,fr,T.x,T.gy+1,T.big||1,null,T.hitT>0?(T.hitT-=1/60):0,0,T.face>0);ctx.restore();   // 0.12.70: Call_of_Cthulhu makes them 25% bigger
     if(T.hp<T.max&&T.anim!=='death'){const w=12,y=T.gy-36;ctx.fillStyle='#000a';ctx.fillRect(Math.round(T.x-w/2)-1,y-1,w+2,3);ctx.fillStyle='#9a50e8';ctx.fillRect(Math.round(T.x-w/2),y,Math.max(0,w*T.hp/T.max),1);}};
   const items=[...(g.tentacles||[]).map(T=>[T.gy+.1,0,T.x,()=>drawTent(T)]),...(g.obst||[]).map(o=>[LANES[Math.max(...o.lanes)]+.2,-1,o.x,()=>drawOb(o)]),...hs.filter(h=>h.alive).map(h=>[h.gy||G,0,h.x,()=>drawHero(h)]),...es.map(e=>[e.boss?G-.5:(e.gy!=null&&!e.fly?e.gy:G+e.lane-5),1,-e.x,()=>drawEnemy(e)])]
     .sort((a,b)=>a[0]-b[0]||a[1]-b[1]||a[2]-b[2]);
@@ -3132,7 +3156,7 @@ function drawGame(ctx,g,W,oy){
     ctx.globalAlpha=1;if(M.spotted&&!M.owner){const b=Math.round(Math.sin(g.t*5)*1);ptext(ctx,'!',x,y-12+b,'#ff5a3a',1);}ctx.restore();}
   for(const h of g.alive())if(h.mine>0){const x=Math.round(g.heroX(h)-8),y=Math.round((h.gy||g.G)-31);ctx.fillStyle='#1c1412';ctx.fillRect(x-1,y,5,3);ctx.fillStyle='#6a2a1e';ctx.fillRect(x,y+1,3,1);ctx.fillStyle='#ff3a2a';ctx.fillRect(x+1,y,1,1);}   /* carrying a defused mine */
   for(const it of items)it[3]();
-  slamDraw();pinnedDraw();bottleDraw();laser();waves();druidFx();robotFx();darkFx();quakes();logs();flames();jpFx();poultices();booms();
+  voidFx();slamDraw();pinnedDraw();bottleDraw();laser();waves();druidFx();robotFx();darkFx();quakes();logs();flames();jpFx();poultices();booms();
   // projectiles
   for(const p of g.proj){const x=Math.round(p.x),y=p.aimed?Math.round(p.y):Math.round(G+(p.y-G)*HS);const c=PCOL[p.kind]||'#ff3a3a';ctx.save();shrinkAt(ctx,x,y,HS);
     if(p.kind==='void'){const d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';for(let i=1;i<=5;i++){ctx.fillStyle=`rgba(150,60,255,${.4-.07*i})`;ctx.fillRect(x-d*i*2.8-1,y-1+Math.sin(g.t*25+i)*.8,2,2);}glow(ctx,x,y,6,'#7a30e0',.35);ctx.restore();ctx.fillStyle='#12061e';ctx.beginPath();ctx.arc(x,y,2.4,0,7);ctx.fill();ctx.strokeStyle='#c090ff';ctx.lineWidth=.8;ctx.stroke();}   // void bolt: a black core in a violet halo
@@ -3334,7 +3358,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.69</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.70</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
