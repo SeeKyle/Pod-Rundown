@@ -157,7 +157,7 @@ next session knows where to resume.
       existing tentacles burrow and re-emerge 200 px in front of him; a fear pulse from him and from every tentacle: 2s fear, -25% move speed.
 
 ### New characters
-- [ ] **Engineer** (base on a copy of Flannel_Man's sheet, edited with refs 19965584 / f50e171d / a8e47f2e — hard hat, red shirt/overalls, wrench,
+- [x] **Engineer** (base on a copy of Flannel_Man's sheet, edited with refs 19965584 / f50e171d / a8e47f2e — hard hat, red shirt/overalls, wrench,
       short shotgun; draw your own). Shooter/Slasher: 6 toward shooter. Basic attacks: heavy slow wrench swing (hits hard, chance to stun);
       2-shell shotgun, 5 pellets per shot, ~0.33s between shots, 5s reload. Animations: build/repair, wrench swing, shotgun.
       Abilities (actives first, passive last on his card):
@@ -201,6 +201,8 @@ next session knows where to resume.
       Don't cut mana (he had mana trouble), add the mana rocks if possible; cut from stats the deck is high in to raise low ones; tag + score it
       (decks/*.py TAGS, card_text.json, fetch_order.json + card_info.txt rows), and show it as a separate deck on every site page.
       Card text: scryfall via WebFetch (api.scryfall.com/cards/named?exact=NAME), one card per call (long multi-card URLs are rejected).
+      STATUS 11-11: blocked: the scryfall fetches need Kyle's approval (he was away). Current Primary Directive ratings: mana 7, cards 7, consistency 6,
+      threats 10 (high: cut from here), finish 2 / interaction 5 / politics 5 (low: raise). Already have local text for Combustible Gearhulk, Dispatch, Thran Dynamo.
 
 ## 2. Done (for reference)
 0.12.55–0.12.62 shipped: sapper/medicine/inevitable/super-lucky/mountain deck bonuses, 3 bonuses per deck, phone camera, campfire camp scene,
