@@ -121,7 +121,7 @@ const SIG={
   thranduil:{name:'Volley',cd:6,txt:'Looses 3 heavy arrows at random enemies for 115% each.',fn:(g,h,a)=>g.sigMulti(h,'arrow',a*1.15,3)},
   cultist:{name:'Call_of_the_Deep · Blood_Pact · Spreading_Hex · Dread_Chant · Herald_of_Life_and_Death',cd:12,txt:'A hooded void cultist with a ritual dagger.',fn:()=>false},
   robot:{name:'Arc_Surge · Missile_Barrage · Smoke_Screen · Nano-Tech_Repair_Bots',cd:12,txt:'A hunched olive war-walker: a flamethrower up close, a Targeted Lazer at range, and a jetpack for getting out of trouble.',fn:()=>false},
-  lumberjack:{name:'Whirl_Wind · Ground_Chop · Hatchet_Leap · Timber_Rage · Log_Roll',cd:14,txt:'An axeman with a hunting bow.',fn:()=>false},
+  lumberjack:{name:'Whirl_Wind · Ground_Chop · Hatchet_Leap · Timber_Rage · Feller\'s_Rhythm',cd:14,txt:'An axeman with a hunting bow.',fn:()=>false},
   druid:{name:'Mend · Rejuvenating Bloom · Thorn Wave · Cyclone',cd:4,txt:'Mend (17 energy, 5s): instantly heals the most-hurt ally 10%. Rejuvenating Bloom (35 energy, 14s): heals an ally 4% of max HP every second for 8s. Thorn Wave (35 energy, 14s): a wave of thorns erupts along the ground down her lane; everything it bursts under takes 2d6 and bleeds. Cyclone (40 energy, 18s): a tornado wanders in front of her for 5s, pulling nearby enemies in and grinding down everything inside it.',fn:()=>false},
   archer:{name:'Arrow_Rain · One Nocked, Two in Hand · Blow_Gun',cd:14,txt:'Arrow_Rain (40 energy, 18s cooldown): looses a volley into the air and 16 arrows rain down on the thickest group of enemies (1d6 each, about 70px wide and 2 lanes up and down). Blow_Gun (25 energy, 9s cooldown): puffs a poison dart that always adds 1 poison stack to a living target (75% chance of a 2nd, 50% of a 3rd); each stack deals 3% of max HP every 1.5s for 7.5s, and any new stack resets the timer. Undead are immune. One Nocked, Two in Hand (30 energy, 14s cooldown): he nocks one arrow and holds two more ready, his next 3 arrows fly much faster (a third of the usual wait, quicker draw). Longbow shots (1d10) and a close-range bow strike (1d8).',fn:()=>false},
   chibi:{name:'Wave Dash · War Cry · Poultice',cd:10,txt:'Wave Dash (45 energy, 16s cooldown): rides a blue energy wave up to 400px forward, hitting everything it passes through (2 lanes up and down) for a normal sword hit (2d5 base, buffs and crits apply). War Cry (20 energy, 7s cooldown): every ally within 800px gets +25% damage and attack speed for 7s. Sword combo: Attack 1, Attack 2, and a running slash, plus a kunai throw (1d4) at enemies he can\'t reach yet.',fn:()=>false},
@@ -444,9 +444,9 @@ const ABIL_DESC={
   poultice:'Poultice · 25 energy · 15s. When he\'s under 60% health he slaps a herbal poultice on: heals himself 4% of max HP every second for 6s.',
   whirl:'Whirl_Wind · 45 energy · 14s. Spins with his axe for up to 5s at half speed, trailing a slashing wave: every second it hits everything within about 70px for 1d4 and makes it bleed (6 over 3s). He can break it off early to escape, but usually spins it out.',
   chop:'Ground_Chop · 30 energy · 9s. A huge overhead chop into the ground: a shockwave 120px ahead for 2d6 that shoves and stuns for 0.8s.',
-  leap:'Hatchet_Leap · 40 energy · 16s. Double-jumps onto an enemy up to 180px away and slams down for 1d10 to everything around the landing.',
+  leap:'Hatchet_Leap · 40 energy · 16s. Double-jumps onto an enemy up to 180px away and slams down for 1d10 to everything around the landing, cracking the ground. Everything hit is stunned: 1.2s right under him, down to 0.4s at the edge.',
   rage:'Timber_Rage · 35 energy · 20s. Under half health: +30% damage, +20% attack speed and 25% less damage taken for 6s.',
-  roll:'Log_Roll · 20 energy · 8s. When he\'s hurt and cornered, rolls back about 90px and can\'t be hit during the roll.',
+  rhythm:'Feller\'s_Rhythm (passive) · every 3rd axe hit in a row (each within 3s of the last) is a felling blow: +50% damage and a 0.4s stagger. TIMBER!',
   mend:'Mend · 17 energy · 5s. Instantly heals the most-hurt ally for 10% of their max HP.',
   bloom:'Rejuvenating Bloom · 35 energy · 14s. Wraps an ally in a healing vine heart: 4% of max HP every second for 8s.',
   thorns:'Thorn Wave · 40 energy · 14s. A wave of earth thorns erupts along the ground 400px down her lane: 2d6 to everything it bursts under, plus bleed (12 over 4s) and a 50% chance of a poison stack (undead are immune).',
@@ -590,13 +590,16 @@ CHAR.lumberjack={name:'Lumber_Jack',role:'Axe + Bow',combo:0,flatHp:0,stamina:11
     // Ground_Chop: a huge overhead chop into the ground: a shockwave 40px ahead (2d6 +flat), shoves and stuns 0.8s. 25 energy, 9s.
     {id:'chop',name:'Ground_Chop',en:30,cd:9,cast:.5,dist:40,depth:6,dice:[2,6],stun:.8,kb:35,want:'close',range:40},
     // Hatchet_Leap: double-jumps onto an enemy up to 60px away and slams down (1d10 +flat to everything within 16px). 35 energy, 16s.
-    {id:'leap',name:'Hatchet_Leap',en:40,cd:16,dur:.6,range:60,min:24,r:16,dice:[1,10],want:'close'},
+    // 0.12.69 (Kyle): the slam stuns: 1.2s right under him, down to 0.4s at the edge of the blast; a much bigger landing (cracked earth, dust, pebbles, a burst).
+    {id:'leap',name:'Hatchet_Leap',en:40,cd:16,dur:.6,range:60,min:24,r:16,dice:[1,10],want:'close',stun0:1.2,stun1:.4},
     // Timber_Rage: when he's under half health he gets angry: +30% damage, +20% attack speed, 25% less damage taken for 6s. 30 energy, 20s.
     {id:'rage',name:'Timber_Rage',en:35,cd:20,dur:6,dmg:.3,spd:.2,dr:.25,under:.5,want:'close'},
     // 0.12.58 (Kyle: it never seemed to do anything) Log_Roll reworked: he kicks a log down his lane. It rolls 120px forward at 110px/s,
     //   hitting each zombie it passes once for 1d8 +flat, knocking them back and tripping them for 0.6s. 25 energy, 11s.
     //   IF 2+ enemies are in my lane ahead within 90px (or 1 big one) THEN roll it.
-    {id:'roll',name:'Log_Roll',en:25,cd:11,dist:120,spd:110,dice:[1,8],trip:.6,kb:30,depth:5,want:'any',range:90}]};
+    // 0.12.69 (Kyle: replace Log_Roll with a passive of my choosing) Feller's_Rhythm (passive): every 3rd axe hit in a row (each within 3s of the
+    //   last) is a FELLING blow: +50% damage and a 0.4s stagger (bosses don't stagger). "TIMBER!" pops over the target.
+    {id:'rhythm',name:"Feller's_Rhythm",passive:1,n:3,window:3,bonus:.5,stun:.4}]};
 // 0.12.19: renamed Warhound with Kyle's pick of the new sprite (hunched olive war-walker, brass trim, elbowed blade arm).
 // 0.12.17 Moss_Mech (Kyle): an original moss-grown green war mech with a blue electric arc blade on its near arm and a gatling on
 //   the far arm, plus a missile pod on its back. Heavy and slow, lots of armor. Basic ranged: a short 3-round burst from the gatling.
@@ -1842,7 +1845,8 @@ class Game{
         if(C.melee.arc)this.fx.push({k:'arc',x:h.x,gy:h.gy||this.G,dir:mt.x>=h.x?1:-1,t:0,life:.3,raw:1,big:h.surgeT>0});
         if(C.melee.claw)this.fx.push({k:'claw',x:h.x+(mt.x>=h.x?6:-6),gy:h.gy||this.G,tx:mt.x,dir:mt.x>=h.x?1:-1,t:0,life:.42,raw:1});
         setTimeoutSafe(this,C.melee.hitAt||.15,()=>{if(!h.alive||mt.dead)return;   // the blow lands a moment into the swing (Kyle: very slight delay)
-        const K=Math.min(100,C.melee.kb+(h.kbAdd||0));const dealt=this.hitEnemy(mt,roll,h,{});
+        const K=Math.min(100,C.melee.kb+(h.kbAdd||0));const RY=(C.abilities||[]).find(a=>a.id==='rhythm');let fell=0;if(RY){h.rhyN=(this.t-(h.rhyT==null?-99:h.rhyT)<=RY.window)?(h.rhyN||0)+1:1;h.rhyT=this.t;if(h.rhyN>=RY.n){h.rhyN=0;fell=1;}}   /* 0.12.69 Feller's_Rhythm */
+        const dealt=this.hitEnemy(mt,roll*(fell?1+RY.bonus:1),h,{});if(fell&&!mt.dead){if(!mt.boss)mt.stun=Math.max(mt.stun||0,RY.stun);this.text(mt.x,mt.y-34,'TIMBER!','#ffc860');this.shake=Math.max(this.shake||0,.12);}
         {const MO=(C.abilities||[]).find(a=>a.id==='momentum');if(MO){h.mom=this.t-(h.momT||0)<=MO.window?Math.min(MO.max,(h.mom||0)+1):1;h.momT=this.t;h.momPer=MO.per;}}   // Momentum
         if(h.cloneT>0&&!mt.dead){this.hitEnemy(mt,roll*(h.cloneMirror||.4),h,{nocrit:1});this.fx.push({k:'slash',x:mt.x-2,y:mt.y-20,t:0});}   // the clone mirrors the hit   // knockback, Kyle's scale: 0-100, 100 = about a 40px shove
         if(dealt&&!mt.dead&&K>0){const res=mt.boss?.9:((mt.E&&mt.E.kbRes)||0);mt.kbv=Math.max(mt.kbv||0,K/100*40*8*(1-res));mt.kbDir=mt.x>=h.x?1:-1;}   
@@ -1984,7 +1988,9 @@ class Game{
         if(W.t>=WH.dur)h.whirl=null;return;}
       if(h.leap){const P=h.leap;P.t+=dt;const k=Math.min(1,P.t/LP.dur);h.x=P.x0+(P.x1-P.x0)*k;h.leapH=Math.sin(Math.PI*k)*22;h.pauseT=Math.max(h.pauseT||0,.05);
         if(k>=1){h.leap=null;h.leapH=0;this.shake=Math.max(this.shake||0,.35);this.fx.push({k:'ring',x:h.x,y:this.G-4,r:LP.r*1.6,t:0,c:'#c8a060'});this.ev('thorns',{});
-          for(const e of this.enemies){if(e.dead||e.fly)continue;if(Math.abs(e.x-h.x)<=LP.r+(e.boss?e.w:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=8))this.hitEnemy(e,(this.rollDice(LP.dice)+flat)*mul,h,{kb:1});}this.ffArea(h,h.x,h.gy,LP.r,8,(this.rollDice(LP.dice)+flat)*mul);}
+          this.fx.push({k:'crack',x:h.x,gy:h.gy||this.G,t:0,life:3.2,raw:1,r:LP.r},{k:'slam',x:h.x,gy:h.gy||this.G,t:0,life:.7,raw:1,r:LP.r,seed:Math.random()*99});
+          for(const e of this.enemies){if(e.dead||e.fly)continue;const dx=Math.abs(e.x-h.x);if(dx<=LP.r+(e.boss?e.w:0)&&(e.boss||Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=8)){this.hitEnemy(e,(this.rollDice(LP.dice)+flat)*mul,h,{kb:1});
+            if(!e.dead&&!e.boss&&LP.stun0){const q=Math.min(1,dx/LP.r);e.stun=Math.max(e.stun||0,LP.stun0-(LP.stun0-LP.stun1)*q);}}}   /* 0.12.69: stun, longest at the centre */this.ffArea(h,h.x,h.gy,LP.r,8,(this.rollDice(LP.dice)+flat)*mul);}
         return;}
       if(h.rolling)h.rolling=null;
       if(h.chopping){h.chopping-=dt;h.pauseT=Math.max(h.pauseT||0,.05);if(h.chopping<=0){h.chopping=0;const x0=h.x+(h.face<0?-CP.dist:0),x1=x0+CP.dist;this.shake=Math.max(this.shake||0,.3);this.ev('thorns',{});
@@ -1994,7 +2000,7 @@ class Game{
         return;}
       const en=h.en||0,hp=h.hp/h.max,close=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-h.x)<=24&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=6);
       // IF hurt AND something is in my face AND Log_Roll is ready THEN roll back out of it (can't be hit while rolling)
-      {const lane=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x-h.x>6&&e.x-h.x<=RL.range&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=RL.depth);
+      if(RL){const lane=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x-h.x>6&&e.x-h.x<=RL.range&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=RL.depth);
        if(RL&&h.rlT<=0&&(lane.length>=2||lane.some(e=>e.boss||e.max>=40))&&en>=RL.en&&spendEnergy(h,RL.en)){h.rlT=RL.cd*(1-(h.cdr||0));h.face=1;h.animT=.32;h.lunge=4;
          (this.logs=this.logs||[]).push({x:h.x+8,gy:h.gy||this.G,x0:h.x+8,A:RL,h,hit:new Set(),mul,flat,t:0});this.ev('whoosh',{});return;}}
       // IF under half health AND Timber_Rage is ready THEN get angry
@@ -2694,12 +2700,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794383146';const BGI=new Image();BGI.src='crawl_bg.png?v=1794383146';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794383146';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794383305';const BGI=new Image();BGI.src='crawl_bg.png?v=1794383305';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794383305';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794383146';XIMG.wave.src='crawl_wave.png?v=1794383146';XIMG.chibi.src='crawl_chibi.png?v=1794383146';XIMG.flannel.src='crawl_flannel.png?v=1794383146';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794383146';XIMG.rain.src='crawl_rain.png?v=1794383146';XIMG.druid.src='crawl_druid.png?v=1794383146';XIMG.camp.src='crawl_campfire.png?v=1794383146';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794383146';XIMG.tornado.src='crawl_fx_tornado.png?v=1794383146';XIMG.vine.src='crawl_fx_vine.png?v=1794383146';XIMG.thorn.src='crawl_fx_thorn.png?v=1794383146';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794383305';XIMG.wave.src='crawl_wave.png?v=1794383305';XIMG.chibi.src='crawl_chibi.png?v=1794383305';XIMG.flannel.src='crawl_flannel.png?v=1794383305';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794383305';XIMG.rain.src='crawl_rain.png?v=1794383305';XIMG.druid.src='crawl_druid.png?v=1794383305';XIMG.camp.src='crawl_campfire.png?v=1794383305';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794383305';XIMG.tornado.src='crawl_fx_tornado.png?v=1794383305';XIMG.vine.src='crawl_fx_vine.png?v=1794383305';XIMG.thorn.src='crawl_fx_thorn.png?v=1794383305';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794383146';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794383146';XIMG.obst.src='crawl_obst.png?v=1794383146';XIMG.cars.src='crawl_cars.png?v=1794383146';XIMG.robot.src='crawl_robot.png?v=1794383146';XIMG.cultist.src='crawl_cultist.png?v=1794383146';XIMG.tentacle.src='crawl_tentacle.png?v=1794383146';XIMG.boom.src='crawl_boom.png?v=1794383146';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794383305';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794383305';XIMG.obst.src='crawl_obst.png?v=1794383305';XIMG.cars.src='crawl_cars.png?v=1794383305';XIMG.robot.src='crawl_robot.png?v=1794383305';XIMG.cultist.src='crawl_cultist.png?v=1794383305';XIMG.tentacle.src='crawl_tentacle.png?v=1794383305';XIMG.boom.src='crawl_boom.png?v=1794383305';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2869,6 +2875,20 @@ function drawGame(ctx,g,W,oy){
       for(let k=0;k<2;k++){const tx=h.x-s*(4+Math.random()*24);ctx.strokeStyle='rgba(140,210,255,.8)';ctx.lineWidth=.5;zap(tx,G0-2-Math.random()*6,3+Math.random()*4,-Math.PI/2+(Math.random()-.5));}   // along the tail
       if(Math.random()<.5)glow(ctx,h.x+s*(14+Math.random()*8),G0-6-Math.random()*24,2.5,'#e8fbff',.6);ctx.restore();}};
   // Arrow_Rain: arrows falling out of the sky, and the ones stuck in the ground
+  /* 0.12.69 Hatchet_Leap landing: a cracked-earth decal that lingers, dust clouds rolling out, pebbles thrown up, a short burst of energy */
+  const slamDraw=()=>{for(const f of g.fx){if(f.k!=='crack')continue;const k=f.t/f.life,a=k>.7?(1-k)/.3:1;let sd=Math.floor(f.x*13+f.gy*7);const R=()=>{sd=(sd*9301+49297)%233280;return sd/233280;};
+      ctx.save();ctx.globalAlpha=a;ctx.fillStyle='rgba(20,12,8,.35)';ctx.beginPath();ctx.ellipse(f.x,f.gy,f.r*.55,f.r*.16,0,0,7);ctx.fill();
+      for(let i=0;i<8;i++){let ang=i/8*6.283+R()*.5,x=f.x,y=f.gy,L=f.r*(.55+R()*.6);ctx.beginPath();ctx.moveTo(x,y);
+        for(let j=1;j<=3;j++){ang+=(R()-.5)*.7;x=f.x+Math.cos(ang)*L*j/3;y=f.gy+Math.sin(ang)*L*j/3*.28;ctx.lineTo(x,y);}
+        ctx.strokeStyle='#1a0e08';ctx.lineWidth=1.1-.0*i;ctx.stroke();ctx.strokeStyle='rgba(200,150,100,.35)';ctx.lineWidth=.4;ctx.beginPath();ctx.moveTo(f.x,f.gy+.6);ctx.lineTo(x,y+.6);ctx.stroke();}
+      ctx.restore();}
+    for(const f of g.fx){if(f.k!=='slam')continue;const k=f.t/f.life;ctx.save();
+      if(k<.35){ctx.globalCompositeOperation='lighter';glow(ctx,f.x,f.gy-4,f.r*(.5+k*2),'#ffb040',.45*(1-k/.35));glow(ctx,f.x,f.gy-3,4,'#fff0c0',.7*(1-k/.35));ctx.globalCompositeOperation='source-over';
+        ctx.strokeStyle=`rgba(255,200,110,${.8*(1-k/.35)})`;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(f.x,f.gy-1,f.r*(.4+k*3.4),f.r*(.12+k*.9),0,0,7);ctx.stroke();}
+      for(let i=0;i<6;i++){const s=i%2?1:-1,d=f.r*(.3+k*1.4)*(1+i%3*.25),r=(2.2+i%3)*(.6+k*1.2);puffAt(f.x+s*d,f.gy-2-k*4-(i%3),r,.55*(1-k),'#9a8670');}   // dust rolling out both ways
+      for(let i=0;i<10;i++){const a=((f.seed+i*2.4)%3.1)+.02,sp=18+(i*7%11)*2,px=f.x+Math.cos(a)*sp*k*1.4*(i%2?1:-1),py=f.gy-2-(Math.sin(a)*40*k-60*k*k)-2;
+        if(py<f.gy){ctx.fillStyle=i%3?'#6a5a48':'#a89880';ctx.globalAlpha=1-k*.6;ctx.fillRect(px,py,i%4?1:1.5,i%4?1:1.5);}}   // pebbles
+      ctx.restore();}};
   const pinnedDraw=()=>{for(const f of g.fx){if(f.k!=='pinned')continue;const e=f.e;if(e&&!e.dead){f.x=e.x;f.gy=e.gy!=null?e.gy:G;}const k=f.t/f.life,a=k>.85?(1-k)/.15:1;
       const B=UNITS.archer&&UNITS.archer.arrow;const x=f.x-f.dir*1.5,y=f.gy-3.5;ctx.save();ctx.globalAlpha=a;ctx.translate(x,y);ctx.rotate(f.dir>0?.62:Math.PI-.62);   /* 0.12.68: the big arrow driven through the legs into the dirt */
       if(B)drawUnit(ctx,B,0,0,0,ART_SCALE/B.pre*2,a,0,0,false);else{ctx.fillStyle='#8a6a4a';ctx.fillRect(-9,-.5,12,1);}ctx.restore();
@@ -3112,7 +3132,7 @@ function drawGame(ctx,g,W,oy){
     ctx.globalAlpha=1;if(M.spotted&&!M.owner){const b=Math.round(Math.sin(g.t*5)*1);ptext(ctx,'!',x,y-12+b,'#ff5a3a',1);}ctx.restore();}
   for(const h of g.alive())if(h.mine>0){const x=Math.round(g.heroX(h)-8),y=Math.round((h.gy||g.G)-31);ctx.fillStyle='#1c1412';ctx.fillRect(x-1,y,5,3);ctx.fillStyle='#6a2a1e';ctx.fillRect(x,y+1,3,1);ctx.fillStyle='#ff3a2a';ctx.fillRect(x+1,y,1,1);}   /* carrying a defused mine */
   for(const it of items)it[3]();
-  pinnedDraw();bottleDraw();laser();waves();druidFx();robotFx();darkFx();quakes();logs();flames();jpFx();poultices();booms();
+  slamDraw();pinnedDraw();bottleDraw();laser();waves();druidFx();robotFx();darkFx();quakes();logs();flames();jpFx();poultices();booms();
   // projectiles
   for(const p of g.proj){const x=Math.round(p.x),y=p.aimed?Math.round(p.y):Math.round(G+(p.y-G)*HS);const c=PCOL[p.kind]||'#ff3a3a';ctx.save();shrinkAt(ctx,x,y,HS);
     if(p.kind==='void'){const d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';for(let i=1;i<=5;i++){ctx.fillStyle=`rgba(150,60,255,${.4-.07*i})`;ctx.fillRect(x-d*i*2.8-1,y-1+Math.sin(g.t*25+i)*.8,2,2);}glow(ctx,x,y,6,'#7a30e0',.35);ctx.restore();ctx.fillStyle='#12061e';ctx.beginPath();ctx.arc(x,y,2.4,0,7);ctx.fill();ctx.strokeStyle='#c090ff';ctx.lineWidth=.8;ctx.stroke();}   // void bolt: a black core in a violet halo
@@ -3314,7 +3334,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.68</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.69</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
