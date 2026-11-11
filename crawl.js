@@ -776,7 +776,7 @@ function giveCozy(o){o.cozyT=Math.max(o.cozyT||0,COZY.dur);}
 /* 0.12.64 (Kyle): proximity zone shared by Proximity_Bomb and the enemy rust mines: half-width w0 in its own lane, w1 one lane up or down */
 function bombTrig(g,x,gy,Z,who){Z=Z||{w0:6.7,w1:3.3};for(const e of (who||g.enemies)){if(e.dead||e.fly)continue;const ex=e.key?g.heroX(e):e.x,dz=Math.abs(((e.gy!=null?e.gy:g.G))-gy),dx=Math.abs(ex-x)-(e.boss?e.w*.5:0);
     if((dz<=3.5&&dx<=Z.w0)||(dz>3.5&&dz<=11.5&&dx<=Z.w1))return e;}return null;}
-function dynMv(h){let m=1;if(h.key==='jp'&&!(h.highT>0)&&(h.soberT||0)>10)m-=.1;if(h.gritT>0)m+=h.gritMv||0;if(h.cozyT>0)m+=.1;return m;}
+function dynMv(h){let m=1-(h.hunger>0?HUNGER.spd[h.hunger]:0);if(h.key==='jp'&&!(h.highT>0)&&(h.soberT||0)>10)m-=.1;if(h.gritT>0)m+=h.gritMv||0;if(h.cozyT>0)m+=.1;return m;}
 function abOrder(L){L=L||[];return [...L.filter(a=>!a.passive),...L.filter(a=>a.passive)];}
 function fleshy(u){return !(u&&u.key==='robot');}
 function g_free(o,h){return !o.looted&&!(o.searchBy&&o.searchBy!==h&&o.searchBy.alive&&o.searchBy.search&&o.searchBy.search.o===o);}
@@ -789,7 +789,7 @@ const Brain={
     g.bb={H,E,onTarget,heat,maxE,maxH,t:g.t};},
   // the decision loop: how often a unit rethinks comes from On Track/New Plan, Slow/Fast and its current mood
   due(g,u,dt){u.thinkT=(u.thinkT==null?Math.random()*.4:u.thinkT)-dt;if(u.thinkT>0)return false;
-    u.thinkT=.12+4.2*Math.pow(1-trait(u,'plan'),1.5)+1.2*(1-trait(u,'pace'))+Math.random()*.25;return true;},   // New Plan 10 rethinks ~8x a second; On Track 0 holds a plan 4-5s
+    u.thinkT=(.12+4.2*Math.pow(1-trait(u,'plan'),1.5)+1.2*(1-trait(u,'pace'))+Math.random()*.25)*(u.thirst>0?THIRST.slow[u.thirst]:1);return true;},   // 0.12.72: thirst slows decisions   // New Plan 10 rethinks ~8x a second; On Track 0 holds a plan 4-5s
   tick(u,dt){if(u.moods)u.moods=u.moods.filter(m=>(m.t-=dt)>0);if(u.grudgeT>0)u.grudgeT-=dt;if(u.pauseT>0)u.pauseT-=dt;if(u.panicT>0)u.panicT-=dt;if(u.sprayT>0)u.sprayT-=dt;},
   // score every foe a unit could fight
   pickTarget(g,u,foes,friends,isHero){if(!foes.length)return null;const bb=g.bb;const A=trait(u,'aware'),ef=1-A;
@@ -1124,6 +1124,7 @@ class Game{
     this.heroes.sort((a,b)=>(STYLE[a.key].tank?-1:0)-(STYLE[b.key].tank?-1:0)||ORDER[a.style.atk]-ORDER[b.style.atk]);
     this.recalc();
     this.heroes.forEach((h,i)=>{h.x=this.home(h);const saved=this.run.heroes[h.key];h.hp=saved.dead?h.max*.25:Math.max(1,h.max*(saved.hpf==null?1:saved.hpf));});
+    for(const h of this.heroes)if(h.thirst>0){const T=h.thirst;addMood(h,{perc:-THIRST.perc[T],plan:-THIRST.think[T],exec:-THIRST.think[T]},1e9,'thirst');}   /* 0.12.72 thirst: foggy head */
     this.mods=this.demo?scoutMods(null):scoutMods(this.run);
     {const kt=upgT(this.run,'kennel');if(kt&&!this.demo)this.spawnDog(kt);}
     for(const h of this.heroes)if((h.base.char&&h.base.char.abilities||[]).some(a=>a.id==='elite'))this.callPal(h,{heal:0});   /* 0.12.68 Elite_Survivors: she starts the stage beside him */
@@ -1167,7 +1168,7 @@ class Game{
         if(m.meleeDmg)h.meleeDmg+=m.meleeDmg/100;if(m.rangedDmg)h.rangedDmg+=m.rangedDmg/100;if(m.meleeSpd)h.meleeSpd+=m.meleeSpd/100;if(m.rangedSpd)h.rangedSpd+=m.rangedSpd/100;if(m.kb)h.kbAdd+=m.kb;}
       {const H=this.slot&&this.slot.heroes&&this.slot.heroes[h.key];const P=(H&&H.pts)||{};   /* level-up stat points (chosen at camp) */
         if(P.hp)h.max*=1+.04*P.hp;if(P.dmg)h.atk*=1+.03*P.dmg;if(P.acc)h.acc+=2*P.acc;if(P.crit)h.crit+=.01*P.crit;if(P.luck)h.luck+=3*P.luck;if(P.armor)h.armorPts+=P.armor;
-        if(h.courage){h.atk*=1.2;h.acc-=10;}   /* Liquid Courage */const gt=upgT(this.run,'gen');if(gt)h.enRegenB+=[0,.25,.5,.75,1][gt];const bt=upgT(this.run,'bench');if(bt){h.flatRanged=(h.flatRanged||0)+bt;h.flatMelee=(h.flatMelee||0)+bt;}const sh=upgT(this.run,'shrine');if(sh)h.luck+=[5,10][sh-1];}
+        if(h.courage){h.atk*=1.2;h.acc-=10;}{const sv=this.run&&this.run.heroes&&this.run.heroes[h.key];const hu=(sv&&sv.hunger)||0,th=(sv&&sv.thirst)||0;h.hunger=hu;h.thirst=th;if(hu)h.acc-=HUNGER.acc[hu];}   /* 0.12.72 hunger: shaky aim */   /* Liquid Courage */const gt=upgT(this.run,'gen');if(gt)h.enRegenB+=[0,.25,.5,.75,1][gt];const bt=upgT(this.run,'bench');if(bt){h.flatRanged=(h.flatRanged||0)+bt;h.flatMelee=(h.flatMelee||0)+bt;}const sh=upgT(this.run,'shrine');if(sh)h.luck+=[5,10][sh-1];}
       if(insP(h)==='mountain')h.kbRes=Math.min(.95,(h.kbRes||0)+.5);h.luck+=2*(h.inevN||0);if(hasPerk(h,'superlucky'))h.luck*=2;   /* 0.12.56: The Mountain, Inevitable, Super Lucky */
       if(h.hp!=null)h.hp=Math.min(h.max,pct*h.max);}
   }
@@ -1258,7 +1259,7 @@ class Game{
     for(const h of al){const H=this.slot.heroes[h.key];const cu=Math.min(5,1+.4*Math.max(0,ref-H.lvl));H.xp+=xp*1.5*h.base.xpm*(1+(h.xpBonus||0)+[0,.1,.2,.3][upgT(this.run,'dummy')])*cu/al.length;
       while(H.xp>=needHeroXp(H.lvl)){H.xp-=needHeroXp(H.lvl);H.lvl++;this.ev('herolevel',{key:h.key,lvl:H.lvl});this.text(h.x,this.G-70,'LV '+H.lvl,'#7dff9a',true);}}
   }
-  healHero(h,amt,quiet,by){if(!h||!h.alive||amt<=0||h.dog)return;if(!fleshy(h)&&!this._mech)return;   /* 0.12.58: herbs, medkits and healing magic do nothing for the Warhound */{const M=by||this._healBy;if(M&&hasPerk(M,'medicine'))amt*=1.3;}/* 0.12.56 Medicine Man: heals he gives +30% */const before=h.hp;h.hp=Math.min(h.max,h.hp+amt);{const B=by||this._healBy||h;if(B&&B.key&&!this.demo)this.st8(B).heal+=h.hp-before;}if(!quiet&&h.hp-before>=1)this.text(h.x,this.G-56,'+'+Math.round(h.hp-before),'#7dff9a');}
+  healHero(h,amt,quiet,by){if(!h||!h.alive||amt<=0||h.dog)return;if(h.hunger>0)amt*=1-HUNGER.heal[h.hunger];   /* 0.12.72: a starving body heals badly */if(!fleshy(h)&&!this._mech)return;   /* 0.12.58: herbs, medkits and healing magic do nothing for the Warhound */{const M=by||this._healBy;if(M&&hasPerk(M,'medicine'))amt*=1.3;}/* 0.12.56 Medicine Man: heals he gives +30% */const before=h.hp;h.hp=Math.min(h.max,h.hp+amt);{const B=by||this._healBy||h;if(B&&B.key&&!this.demo)this.st8(B).heal+=h.hp-before;}if(!quiet&&h.hp-before>=1)this.text(h.x,this.G-56,'+'+Math.round(h.hp-before),'#7dff9a');}
   weakest(){const a=this.alive().filter(fleshy);return a.length?a.reduce((m,h)=>h.hp/h.max<m.hp/m.max?h:m,a[0]):null;}
   // hit visual: a spray of blood thrown away from the blow, drops falling to the ground and leaving a fading spatter
   splatter(u,amt,dir,crit){if(this.demo&&this.rng()<.5)return;const boss=!!u.boss;const gy=u.gy!=null&&!u.fly?u.gy:this.G;
@@ -1438,7 +1439,7 @@ class Game{
       if(lost){h.search=null;h.defuse=null;h.planting=null;h.setting=null;h.tossing=null;h.plan=null;h.thinkT=0;h.pauseT=0;if(S&&S.o&&S.o.searchBy===h)S.o.searchBy=null;}}}
   step(dt){
     if(this.over)return;this.t+=dt;
-    const T=this;const al=this.alive();this.dropLost();for(const p of this.pets||[])if(p.dog&&!p.alive&&p.downed){p.x-=(this.scroll||0)*dt;if(p.x<-10)p.downed=0;}   /* a downed dog is left behind if nobody helps him up before he slides off screen */
+    const T=this;const al=this.alive();this.dropLost();for(const h of this.heroes)if(h.alive&&h.thirst>0&&!this.over){h.hp-=h.max*THIRST.drain[h.thirst]*dt;if(h.hp<1)h.hp=1;}   /* 0.12.72: dehydration drains a little life (never kills on its own) */for(const p of this.pets||[])if(p.dog&&!p.alive&&p.downed){p.x-=(this.scroll||0)*dt;if(p.x<-10)p.downed=0;}   /* a downed dog is left behind if nobody helps him up before he slides off screen */
     for(const p of this.pets||[])if(p.dog&&p.alive&&p.hits<p.hitsMax){p.hitRegT=(p.hitRegT||0)+dt;if(p.hitRegT>=p.hitRegEvery){p.hitRegT=0;p.hits++;p.hp=p.max*p.hits/p.hitsMax;}}   /* dog: one hit back every 15s (10s at Kennel III) */
     if(!this._hearth){this._hearth=1;if(!this.demo&&this.run&&upgT(this.run,'hearth'))for(const h of al)giveCozy(h);}   /* Hearth camp upgrade: everyone starts the stage Cozy */
     for(const t of this.timers||[])t.t-=dt;
@@ -1786,7 +1787,7 @@ class Game{
     const spdB=(cry?1+cry.spd:1)*(h.rageT>0?1.2:1)*(1+(h.mom||0)*(h.momPer||0));h.cryDmg=(cry?1+cry.dmg:1)*(h.pactT>0?1+(h.pactDmg||.2):1);if(h.pactT>0)h.pactT-=dt;
     if(h.laughT>0)h.laughT-=dt;
     if(h.cozyT>0){h.cozyT-=dt;h._cozyAcc=(h._cozyAcc||0)+dt;while(h._cozyAcc>=.5){h._cozyAcc-=.5;this.healHero(h,.25,true,h);h.en=Math.min(h.enMax||100,(h.en||0)+.25);}}
-    h.mT=(h.mT||0)+dt*h.meleeSpd*spdB*(h.cozyT>0?1+COZY.melee:1)*(h.key==='jp'?(h.highT>0?1.1:(h.soberT||0)>10?.9:1):1)*(h.lethalT>0?1.75:1);h.rT=(h.rT||0)+dt*h.rangedSpd*spdB;if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
+    h.mT=(h.mT||0)+dt*h.meleeSpd*spdB*(h.cozyT>0?1+COZY.melee:1)*(h.key==='jp'?(h.highT>0?1.1:(h.soberT||0)>10?.9:1):1)*(h.lethalT>0?1.75:1)*(h.hunger>0?1-HUNGER.spd[h.hunger]:1);h.rT=(h.rT||0)+dt*h.rangedSpd*spdB*(h.hunger>0?1-HUNGER.spd[h.hunger]:1);if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
     if(h.ammo==null)h.ammo=C.ranged?(C.ranged.clip||Infinity):0;   // clip 0 = never reloads
     if(C.ranged&&h.ammo<=0&&C.ranged.clip>0){if(!h.reloadT&&C.ranged.reload>=1.5)Comms.onReload(this,h);h.reloadT=(h.reloadT||0)+dt*h.rangedSpd*spdB;if(h.reloadT>=C.ranged.reload){h.reloadT=0;h.ammo=C.ranged.clip;}}
     const reachPx=ENEMY_BODY+C.melee.reach*UNIT_SCALE;   // same body gap the zombies measure from, so a 20 reach out-reaches a 12 reach zombie
@@ -2639,6 +2640,8 @@ const CAMP_UPG={
   garden:{name:'Garden Plot',icon:'🌱',tiers:[100,175,275],txt:t=>['50% chance of 1 food each time you get back.','1 food each time you get back.','2 food each time you get back.'][t-1]},
   rain:{name:'Rain Barrels',icon:'🛢️',tiers:[100,175],txt:t=>['50% chance of 1 water each time you get back.','1 water each time you get back.'][t-1]},
   smoker:{name:'Smokehouse',icon:'🍖',tiers:[125],txt:()=>'Smoked rations go further: one food feeds two units.'},
+  kitchen:{name:'Camp Kitchen',icon:'🍲',tiers:[200],txt:()=>'Real cooked meals: each food lowers Hunger by 2 tiers instead of 1.'},   /* 0.12.72 food quality */
+  purifier:{name:'Water Purifier',icon:'🚰',tiers:[200],txt:()=>'Clean water: each water lowers Thirst by 2 tiers instead of 1.'},   /* 0.12.72 water quality */
   cots:{name:'Med Cots',icon:'🛏️',tiers:[100,175,275],txt:t=>`Everyone rests up: +${[10,20,30][t-1]}% HP when you get back to camp.`},
   bench:{name:'Weapon Bench',icon:'🔧',tiers:[100,200,325],txt:t=>`+${t} damage on every basic attack, melee and ranged.`},
   gen:{name:'Generator',icon:'🔋',tiers:[100,175,275],txt:t=>`Everyone regains energy faster: +${[.25,.5,.75][t-1]} energy per second.`},   // 0.12.63: no tier IV (Radio Tower removed)
@@ -2688,24 +2691,31 @@ function haggleOf(s,run){const n=run.team.filter(k=>{const H=s.heroes[k];return 
 function campArrive(s,run){if(run.campAt===run.stage)return [];run.campAt=run.stage;const log=[];
   run.food=run.food||0;run.water=run.water||0;s.parts=s.parts||0;run.fed={};run.triageN=0;run.brewN=0;run.upgBought=0;run.offers=campOffers(run);run.scoutOffers=scoutRoll(run);run.scoutPick=null;
   const hungry=(run.needFeed||[]).filter(k=>run.team.includes(k)&&k!=='robot');run.needFeed=hungry;
+  for(const k of hungry){const hv=run.heroes[k];if(!hv||hv.dead)continue;hv.hunger=Math.min(3,(hv.hunger||0)+1);hv.thirst=Math.min(3,(hv.thirst||0)+1);}   /* 0.12.72 Hunger & Thirst */
   const g=upgT(run,'garden');if(g){const n=g===1?(Math.random()<.5?1:0):g===2?1:2;if(n){run.food+=n;log.push(`🌱 Garden: +${n} food`);}}
   const r=upgT(run,'rain');if(r){const n=r===1?(Math.random()<.5?1:0):1;if(n){run.water+=n;log.push(`🛢️ Rain Barrels: +1 water`);}}
   const y=upgT(run,'yard');if(y){s.parts+=y;log.push(`⚙️ Scrap Yard: +${y} spare part${y>1?'s':''}`);}
-  const w=upgT(run,'water');if(w&&hungry.length&&Math.random()<[.25,.5,.75][w-1]){const k=hungry[Math.floor(Math.random()*hungry.length)];run.fed[k]={water:'auto'};log.push(`💧 Water Filtration gave ${heroDef(k).name} water`);}
+  const w=upgT(run,'water');if(w&&hungry.length&&Math.random()<[.25,.5,.75][w-1]){const th=hungry.filter(k=>run.heroes[k].thirst>0);const k=th[Math.floor(Math.random()*th.length)];if(k){run.heroes[k].thirst=Math.max(0,run.heroes[k].thirst-1);log.push(`💧 Water Filtration gave ${heroDef(k).name} a drink`);}}
   const cb=upgT(run,'cots');if(cb){for(const k of run.team){const hv=run.heroes[k];if(!hv.dead)hv.hpf=Math.min(1,(hv.hpf==null?1:hv.hpf)+[.1,.2,.3][cb-1]);}log.push(`🛏️ Med Cots: everyone +${[10,20,30][cb-1]}% HP`);}
   return log;}
-/* 0.12.58 (Kyle): every unit wants food AND water. Each one missing = starts the next stage with 10% less HP (20% if neither). Warhound needs neither. */
-function fedOf(run,k){const f=run.fed&&run.fed[k];return typeof f==='object'&&f?f:f?{food:f!=='water'&&f!=='auto',water:f==='water'||f==='auto'}:{};}
-function missingOf(run,k){if(!(run.needFeed||[]).includes(k))return 0;const f=fedOf(run,k);return (f.food?0:1)+(f.water?0:1);}
-function feedUnit(run,k,what){if(!(run.needFeed||[]).includes(k))return false;const f=fedOf(run,k);if(f[what])return false;
+/* 0.12.72 (Kyle) Hunger & Thirst: tiers that only get worse while ignored. Every time the team gets back to camp each unit that eats and drinks
+   goes up one tier of each (max 3); each food lowers Hunger by 1 and each water lowers Thirst by 1 (by 2 with the Camp Kitchen / Water Purifier).
+   Whatever tier they leave camp at lasts the whole next stage. The Warhound needs neither. Hard-roguelike punishing on purpose. */
+const HUNGER={names:['Satiated','Hungry','Very Hungry','Starving'],heal:[0,.15,.3,.5],spd:[0,.06,.13,.22],acc:[0,2,5,9],hp:[0,.1,.2,.35]};
+const THIRST={names:['Quenched','Parched','Mildly Dehydrated','Severely Dehydrated'],perc:[0,2,4,7],think:[0,1,2,4],slow:[1,1.15,1.35,1.65],drain:[0,.0004,.001,.002]};
+function needsOf(run,k){const hv=run.heroes&&run.heroes[k];return {h:(hv&&hv.hunger)||0,t:(hv&&hv.thirst)||0};}
+function fedOf(run,k){const n=needsOf(run,k);return {food:!n.h,water:!n.t};}   // kept for the UI: true = nothing needed
+function missingOf(run,k){if(k==='robot'||!run.team.includes(k))return 0;const n=needsOf(run,k);return n.h+n.t;}
+function feedUnit(run,k,what){if(k==='robot')return false;const hv=run.heroes[k];if(!hv||hv.dead)return false;const key=what==='water'?'thirst':'hunger';if(!(hv[key]>0))return false;
   if(what==='water'){if(run.water<1)return false;run.water-=1;}else{const cost=upgT(run,'smoker')?.5:1;if(run.food<cost-1e-9)return false;run.food=Math.round((run.food-cost)*2)/2;}
-  f[what]=1;run.fed[k]=f;return true;}
-/* 0.12.71 (Kyle) Feed all: spends what's in the pack on whoever needs it, in order: most missing first (needs both before needs one),
-   then lowest HP first. Smoked food (Smokehouse) costs half a ration as usual. Never spends on anyone who doesn't need it (the Warhound needs nothing). */
-function feedAll(run){const L=(run.needFeed||[]).filter(k=>run.heroes[k]&&!run.heroes[k].dead&&missingOf(run,k)).sort((a,b)=>(missingOf(run,b)-missingOf(run,a))||((run.heroes[a].hpf==null?1:run.heroes[a].hpf)-(run.heroes[b].hpf==null?1:run.heroes[b].hpf)));
-  let n=0;for(const k of L){const f=fedOf(run,k);if(!f.food&&feedUnit(run,k,'food'))n++;if(!fedOf(run,k).water&&feedUnit(run,k,'water'))n++;}return n;}
-/* leaving camp: anyone still hungry starts the next stage with 10% less of their current HP (max HP untouched) */
-function campDepart(run){run.scoutNow=run.scoutPick||null;run.scoutTier=upgT(run,'tower');run.scoutOffers=null;run.scoutPick=null;const starved=[];for(const k of run.needFeed||[]){const m=missingOf(run,k);if(!m)continue;const hv=run.heroes[k];if(hv.dead)continue;hv.hpf=Math.max(.05,(hv.hpf==null?1:hv.hpf)*(1-.1*m));starved.push(k);}
+  hv[key]=Math.max(0,hv[key]-(upgT(run,what==='water'?'purifier':'kitchen')?2:1));return true;}
+/* Feed all: spends what's in the pack on whoever needs it most: the worst tiers first, then lowest HP; never wastes a ration on someone who's fine */
+function feedAll(run){let n=0;for(let guard=0;guard<40;guard++){const L=run.team.filter(k=>k!=='robot'&&run.heroes[k]&&!run.heroes[k].dead&&missingOf(run,k));if(!L.length)break;
+    const pick=(key)=>L.filter(k=>run.heroes[k][key]>0).sort((a,b)=>(run.heroes[b][key]-run.heroes[a][key])||((run.heroes[a].hpf==null?1:run.heroes[a].hpf)-(run.heroes[b].hpf==null?1:run.heroes[b].hpf)))[0];
+    const a=pick('hunger'),b=pick('thirst');let did=0;if(a&&feedUnit(run,a,'food')){n++;did=1;}if(b&&feedUnit(run,b,'water')){n++;did=1;}if(!did)break;}return n;}
+/* leaving camp: Hunger takes its bite out of their HP for the next stage (Thirst works during the stage) */
+function campDepart(run){run.scoutNow=run.scoutPick||null;run.scoutTier=upgT(run,'tower');run.scoutOffers=null;run.scoutPick=null;const starved=[];
+  for(const k of run.team){if(k==='robot')continue;const hv=run.heroes[k];if(!hv||hv.dead)continue;const n=needsOf(run,k);if(n.h)hv.hpf=Math.max(.05,(hv.hpf==null?1:hv.hpf)*(1-HUNGER.hp[n.h]));if(n.h||n.t)starved.push(k);}
   run.needFeed=[];run.fed={};return starved;}
 function triageBuild(s,run,what,k){const t=upgT(run,'triage');if(!t)return 'no';if((run.triageN||0)>=TRIAGE.max[t-1])return 'max';const cost=TRIAGE[what][t-1];if((s.parts||0)<cost)return 'parts';
   const cr=run.heroes[k].carry=run.heroes[k].carry||{kit:[]};
@@ -2717,12 +2727,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794383749';const BGI=new Image();BGI.src='crawl_bg.png?v=1794383749';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794383749';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794383902';const BGI=new Image();BGI.src='crawl_bg.png?v=1794383902';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794383902';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794383749';XIMG.wave.src='crawl_wave.png?v=1794383749';XIMG.chibi.src='crawl_chibi.png?v=1794383749';XIMG.flannel.src='crawl_flannel.png?v=1794383749';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794383749';XIMG.rain.src='crawl_rain.png?v=1794383749';XIMG.druid.src='crawl_druid.png?v=1794383749';XIMG.camp.src='crawl_campfire.png?v=1794383749';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794383749';XIMG.tornado.src='crawl_fx_tornado.png?v=1794383749';XIMG.vine.src='crawl_fx_vine.png?v=1794383749';XIMG.thorn.src='crawl_fx_thorn.png?v=1794383749';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794383902';XIMG.wave.src='crawl_wave.png?v=1794383902';XIMG.chibi.src='crawl_chibi.png?v=1794383902';XIMG.flannel.src='crawl_flannel.png?v=1794383902';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794383902';XIMG.rain.src='crawl_rain.png?v=1794383902';XIMG.druid.src='crawl_druid.png?v=1794383902';XIMG.camp.src='crawl_campfire.png?v=1794383902';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794383902';XIMG.tornado.src='crawl_fx_tornado.png?v=1794383902';XIMG.vine.src='crawl_fx_vine.png?v=1794383902';XIMG.thorn.src='crawl_fx_thorn.png?v=1794383902';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794383749';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794383749';XIMG.obst.src='crawl_obst.png?v=1794383749';XIMG.cars.src='crawl_cars.png?v=1794383749';XIMG.robot.src='crawl_robot.png?v=1794383749';XIMG.cultist.src='crawl_cultist.png?v=1794383749';XIMG.tentacle.src='crawl_tentacle.png?v=1794383749';XIMG.boom.src='crawl_boom.png?v=1794383749';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794383902';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794383902';XIMG.obst.src='crawl_obst.png?v=1794383902';XIMG.cars.src='crawl_cars.png?v=1794383902';XIMG.robot.src='crawl_robot.png?v=1794383902';XIMG.cultist.src='crawl_cultist.png?v=1794383902';XIMG.tentacle.src='crawl_tentacle.png?v=1794383902';XIMG.boom.src='crawl_boom.png?v=1794383902';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2825,9 +2835,11 @@ const MINI={bat:'e_bat',spirit:'e_ghost',raise:'e_skeleton',spore:'e_spawn',dron
 const HS=UNIT_SCALE;   // units, effects and projectiles are drawn at half size so the world reads bigger
 function shrinkAt(ctx,x,y,s){ctx.translate(x,y);ctx.scale(s,s);ctx.translate(-x,-y);}
 // 0.11 unit status plate: framed health bar (a tick every 10 HP), energy bar under it, and status pips above it
-const PIPS=[['poulticeT','#9ae08a','drop'],['rageT','#ff3a2a','up'],['cozyT','#ffb040','up'],['poisonT','#6aff4a','rain'],['shoutT','#ff7a1a','up'],['bleedT','#d01830','drop'],['burnT','#ff8a1f','flame'],['slow','#9ae6ff','snow'],['stun','#ffffff','star'],['shield','#7fd8ff','shield'],['buffT','#ffd23f','up']];
+const PIPS=[['hunger','#ff9a40','food'],['thirst','#5ab8ff','drip'],['poulticeT','#9ae08a','drop'],['rageT','#ff3a2a','up'],['cozyT','#ffb040','up'],['poisonT','#6aff4a','rain'],['shoutT','#ff7a1a','up'],['bleedT','#d01830','drop'],['burnT','#ff8a1f','flame'],['slow','#9ae6ff','snow'],['stun','#ffffff','star'],['shield','#7fd8ff','shield'],['buffT','#ffd23f','up']];
 function pip(ctx,x,y,c,k){ctx.fillStyle='#120a14';ctx.fillRect(x-1,y-1,5,5);ctx.fillStyle=c;
-  if(k==='rain'){ctx.fillRect(x+1,y-1,1,2);ctx.fillRect(x,y+1,3,2);ctx.fillStyle='#d8ffd0';ctx.fillRect(x,y+1,1,1);}   // 0.12.70: poison = a little green raindrop
+  if(k==='food'){ctx.fillRect(x,y,3,1);ctx.fillRect(x+1,y+1,1,2);ctx.fillStyle='#ffd8a0';ctx.fillRect(x,y,1,1);}   // 0.12.72 hunger: a little drumstick
+  else if(k==='drip'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,1);ctx.fillRect(x+1,y+2,1,1);ctx.fillStyle='#ff6a4a';ctx.fillRect(x+2,y+2,1,1);}   // thirst: a drop with a red fleck
+  else if(k==='rain'){ctx.fillRect(x+1,y-1,1,2);ctx.fillRect(x,y+1,3,2);ctx.fillStyle='#d8ffd0';ctx.fillRect(x,y+1,1,1);}   // 0.12.70: poison = a little green raindrop
   else if(k==='drop'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,2);}else if(k==='flame'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,1);ctx.fillRect(x+1,y+2,1,1);}
   else if(k==='snow'){ctx.fillRect(x+1,y,1,3);ctx.fillRect(x,y+1,3,1);}else if(k==='star'){ctx.fillRect(x,y,1,1);ctx.fillRect(x+2,y,1,1);ctx.fillRect(x+1,y+1,1,1);ctx.fillRect(x,y+2,1,1);ctx.fillRect(x+2,y+2,1,1);}
   else if(k==='shield'){ctx.fillRect(x,y,3,2);ctx.fillRect(x+1,y+2,1,1);}else{ctx.fillRect(x+1,y,1,3);ctx.fillRect(x,y+1,3,1);}}
@@ -3385,7 +3397,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.71</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.72</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -3524,7 +3536,7 @@ function chipFor(e,item,hk){const base=item?shortCard(e.card):sname(hk,e.card);c
 function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=run.food||0;run.haggle=haggleOf(s,run);run.resource=resourcefulOf(s,run);
   const owned=Object.keys(run.upg||{}).filter(id=>run.upg[id]);
   const tent=`<span class="cc-tent" style="cursor:help;font-size:18px;margin-left:6px;display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border:1px dashed #a6ff2e88;border-radius:10px;animation:ccTentPulse 2.2s ease-in-out infinite" data-tiph="${esc('<b>⛺ Every camp upgrade</b><br>'+Object.keys(CAMP_UPG).map(id=>{const U=CAMP_UPG[id],t=upgT(run,id);const mx=U.needs?(Object.keys(U.needs).every(k=>upgT(run,U.needs[k])>0)?U.tiers.length:U.tiers.length-1):U.tiers.length;return `${U.icon} ${U.name}: <b style="color:${t?'#a6ff2e':'#9a90a8'}">${t}/${mx}</b> <span style="opacity:.6">(${U.tiers.map(g=>Math.round(g*(1-(run.haggle||0)))+'g').join(' / ')})</span>`;}).join('<br>')+(run.haggle?`<br><br>🤝 Haggler: upgrades ${Math.round(run.haggle*100)}% off`:'')+(run.resource?`<br>🧰 Resourceful: you can pay in spare parts`:''))}">⛺<span style="font-size:10px;color:#a6ff2e">ⓘ</span></span>`;
-  const sup=`<div class="cc-card"><b>🏕️ Camp</b>${tent} <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · ⚙️ <b>${parts}</b> spare parts · 🥫 <b>${Number.isInteger(food)?food:Math.floor(food)+'½'}</b> food · 💧 <b>${run.water||0}</b> water</span>${(run.needFeed||[]).some(k=>missingOf(run,k)&&run.heroes[k]&&!run.heroes[k].dead)?` <button class="cc-btn" data-feedall style="padding:2px 8px;font-size:12px;vertical-align:middle" title="Feed and water everyone who needs it: most-needy and lowest HP first, never wastes supplies"><svg width="16" height="14" viewBox="0 0 16 14" style="vertical-align:-2px;image-rendering:pixelated"><rect x="1" y="5" width="7" height="8" fill="#b8642a"/><rect x="1" y="5" width="7" height="2" fill="#e8d0a0"/><rect x="2" y="8" width="5" height="3" fill="#e8302a"/><rect x="1" y="12" width="7" height="1" fill="#6a3a18"/><path d="M12 2 L14.5 7 A2.6 2.6 0 1 1 9.5 7 Z" fill="#4ab8ff"/><rect x="10.5" y="7" width="1" height="2" fill="#d8f4ff"/></svg> Feed all</button>`:''}
+  const sup=`<div class="cc-card"><b>🏕️ Camp</b>${tent} <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · ⚙️ <b>${parts}</b> spare parts · 🥫 <b>${Number.isInteger(food)?food:Math.floor(food)+'½'}</b> food · 💧 <b>${run.water||0}</b> water</span>${run.team.some(k=>missingOf(run,k)&&run.heroes[k]&&!run.heroes[k].dead)?` <button class="cc-btn" data-feedall style="padding:2px 8px;font-size:12px;vertical-align:middle" title="Feed and water everyone who needs it: most-needy and lowest HP first, never wastes supplies"><svg width="16" height="14" viewBox="0 0 16 14" style="vertical-align:-2px;image-rendering:pixelated"><rect x="1" y="5" width="7" height="8" fill="#b8642a"/><rect x="1" y="5" width="7" height="2" fill="#e8d0a0"/><rect x="2" y="8" width="5" height="3" fill="#e8302a"/><rect x="1" y="12" width="7" height="1" fill="#6a3a18"/><path d="M12 2 L14.5 7 A2.6 2.6 0 1 1 9.5 7 Z" fill="#4ab8ff"/><rect x="10.5" y="7" width="1" height="2" fill="#d8f4ff"/></svg> Feed all</button>`:''}
     ${(run.campLog||[]).length?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${run.campLog.map(esc).join(' · ')}</div>`:''}
     ${owned.length?`<div class="cc-chips" style="margin-top:6px">${owned.map(id=>{const U=CAMP_UPG[id],t=run.upg[id];return `<span class="cc-chip" title="${esc(U.txt(t))}">${U.icon} ${esc(U.name)} ${['','I','II','III','IV'][t]}</span>`;}).join('')}</div>`:''}</div>`;
   const offers=(run.offers||[]).filter(id=>upgT(run,id)<CAMP_UPG[id].tiers.length);
@@ -3580,9 +3592,11 @@ function showCamp(){
         ${(()=>{const C=CHAR[k]||{};const ab=abOrder(C.abilities).map(A=>[A.passive?'✦':'⚔',A.name||A.id,ABIL_DESC[A.id]||'']);const dk=L.insp?deckSkills(L.insp):[];   /* 0.12.56 (Kyle): Skills tab: his own abilities plus what his deck gives him; hover any for the details */
           const chip=([ic,n,d],col)=>`<span class="cc-chip" style="cursor:help;border-color:${col}" data-tiph="${esc('<div class="tt-h">'+esc(n.replace(/_/g,' '))+'</div><div class="tt-b">'+esc(d)+'</div>')}">${ic} ${esc(n.replace(/_/g,' '))}</span>`;
           return `<details class="cc-skills" style="margin-top:4px"><summary class="cc-sub" style="font-size:11px;margin:0;cursor:pointer">📜 Skills</summary><div class="cc-chips" style="margin-top:4px">${ab.map(x=>chip(x,'#7fd0ff')).join('')}${dk.map(x=>chip(x,'#c8a0ff')).join('')||(L.insp?'':'<span class="cc-sub" style="font-size:11px;margin:0">No deck inspiration</span>')}</div>${L.insp?`<div class="cc-sub" style="font-size:10px;margin:3px 0 0;opacity:.75">✨ ${esc(L.insp)}${inspText(L.insp)?': '+esc(inspText(L.insp)):''}</div>`:''}</details>`;})()}
-        ${hungry.has(k)?(()=>{const f=fedOf(run,k),m=missingOf(run,k);const fc=upgT(run,'smoker')?.5:1;
-          if(!m)return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0">🍽 Fed and watered${f.water==='auto'?' (filtered water)':''} ✓</div>`;
-          return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0;color:#ffb070">🍽 Needs ${!f.food&&!f.water?'food and water':!f.food?'food':'water'}: each one missing = 10% less HP next stage ${f.food?'<span class="cc-chip">🥫 ✓</span>':btn(`data-feed="${k}|food" ${run.food>=fc?'':'disabled'}`,'🥫 Food','Use 1 food'+(fc<1?' (smoked: half a ration)':''))} ${f.water?'<span class="cc-chip">💧 ✓</span>':btn(`data-feed="${k}|water" ${run.water>=1?'':'disabled'}`,'💧 Water','Use 1 water')}</div>`;})()
+        ${k!=='robot'&&!run.heroes[k].dead?(()=>{const n=needsOf(run,k);const fc=upgT(run,'smoker')?.5:1;   /* 0.12.72 Hunger & Thirst tiers */
+          const hc=['#7ee081','#ffd060','#ff9040','#ff4a3a'][n.h],tc=['#7fd0ff','#ffd060','#ff9040','#ff4a3a'][n.t];
+          const hT=n.h?`Next stage: heals on them ${Math.round(HUNGER.heal[n.h]*100)}% weaker, ${Math.round(HUNGER.spd[n.h]*100)}% slower moving and attacking, -${HUNGER.acc[n.h]} accuracy, and they start with ${Math.round(HUNGER.hp[n.h]*100)}% less HP.`:'Well fed.';
+          const tT=n.t?`Next stage: foggy head (Perception -${THIRST.perc[n.t]}, plans and focus -${THIRST.think[n.t]}, decisions ${Math.round((THIRST.slow[n.t]-1)*100)}% slower) and a slow life drain (${(THIRST.drain[n.t]*100).toFixed(2)}% of max HP a second).`:'Well watered.';
+          return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0">🍖 <b style="color:${hc};cursor:help" title="${esc(hT)}">${HUNGER.names[n.h]}</b> ${n.h?btn(`data-feed="${k}|food" ${run.food>=fc?'':'disabled'}`,'🥫 Eat','Use '+(fc<1?'half a ration (smoked)':'1 food')+': Hunger -'+(upgT(run,'kitchen')?2:1)):''} · 💧 <b style="color:${tc};cursor:help" title="${esc(tT)}">${THIRST.names[n.t]}</b> ${n.t?btn(`data-feed="${k}|water" ${run.water>=1?'':'disabled'}`,'💧 Drink','Use 1 water: Thirst -'+(upgT(run,'purifier')?2:1)):''}${n.h||n.t?'<span style="opacity:.75"> · it only gets worse if ignored</span>':''}</div>`;})()
           :(k==='robot'?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0;opacity:.7">🔋 Runs on its own power: no food or water needed</div>`:'')}
         ${(()=>{const fr=lvPtsFree(L),P=L.pts||{};const have=Object.keys(LVPTS).filter(x=>P[x]).map(x=>`${LVPTS[x].icon}${P[x]}`).join(' ');
           return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${fr?`<b style="color:#a6ff2e">⬆ ${fr} stat point${fr>1?'s':''} to spend</b> `+Object.keys(LVPTS).map(x=>btn(`data-pt="${k}|${x}"`,LVPTS[x].icon+' '+LVPTS[x].name,LVPTS[x].txt+' per point')).join(' '):'Stat points: one per level gained.'}${have?` <span style="opacity:.8">· spent: ${have}</span>`:''}</div>`;})()}
@@ -3613,8 +3627,8 @@ function showCamp(){
   const owned2=[...run.team.flatMap(k=>run.heroes[k].items),...run.bag.filter(e=>e.kind==='item')];
   P.querySelectorAll('[data-hone]').forEach(b=>b.onclick=()=>{const e=owned2[+b.dataset.hone];const pr=honePrice(e.r,run.stage);if((s.gold||0)<pr)return;s.gold-=pr;e.r=Math.min(CFG.maxRank,e.r+1);sfx('level');persist();showCamp();});
   const pk=P.querySelector('[data-pick]');if(pk)pk.onclick=showPick;
-  const bg=P.querySelector('[data-begin]');if(bg)bg.onclick=()=>{const left=(run.needFeed||[]).filter(k=>missingOf(run,k)&&!run.heroes[k].dead);
-    if(left.length&&!bg.dataset.sure){bg.dataset.sure=1;bg.textContent='Go hungry? '+left.map(k=>heroDef(k).name+' -'+missingOf(run,k)*10+'%').join(', ')+' HP ▶';return;}campDepart(run);persist();beginStage();};
+  const bg=P.querySelector('[data-begin]');if(bg)bg.onclick=()=>{const left=run.team.filter(k=>missingOf(run,k)&&!run.heroes[k].dead);
+    if(left.length&&!bg.dataset.sure){bg.dataset.sure=1;bg.textContent='Leave hungry/thirsty? '+left.map(k=>{const n=needsOf(run,k);return heroDef(k).name+(n.h?' '+HUNGER.names[n.h]:'')+(n.t?' '+THIRST.names[n.t]:'');}).join(', ')+' ▶';return;}campDepart(run);persist();beginStage();};
   {const fa=P.querySelector('[data-feedall]');if(fa)fa.onclick=()=>{if(feedAll(run)){sfx('level');persist();showCamp();}else{fa.textContent='Not enough supplies';}};}
   P.querySelectorAll('[data-feed]').forEach(b=>b.onclick=()=>{const [k,w]=b.dataset.feed.split('|');if(feedUnit(run,k,w)){sfx('level');persist();showCamp();}});
   P.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>{const [k,x]=b.dataset.pt.split('|');const H=s.heroes[k];if(lvPtsFree(H)<1)return;H.pts=H.pts||{};H.pts[x]=(H.pts[x]||0)+1;sfx('level');persist();showCamp();});

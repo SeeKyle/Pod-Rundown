@@ -1,4 +1,17 @@
       <h2>What's new</h2>
+      <h3>🍖 0.12.72: Hunger &amp; Thirst rework</h3>
+      <ul><li>The flat "-10% HP per missing food/water" is gone. Now each unit has <b>Hunger</b> and <b>Thirst</b> tiers that only get worse if ignored. Every return to camp pushes both up one tier (max 3). Each food lowers Hunger by 1 and each water lowers Thirst by 1, and you can feed more than once if you have the supplies. Whatever tier they leave camp at lasts the whole next stage. The Warhound needs neither.</li>
+      <li><b>Hunger</b>: Satiated → Hungry → Very Hungry → Starving.
+        <ul><li>Heals on them are 15/30/50% weaker.</li>
+        <li>They move and attack 6/13/22% slower.</li>
+        <li>Accuracy -2/-5/-9.</li>
+        <li>They start the stage with 10/20/35% less HP.</li></ul></li>
+      <li><b>Thirst</b>: Quenched → Parched → Mildly Dehydrated → Severely Dehydrated.
+        <ul><li>A foggy head: Perception -2/-4/-7, plans and focus -1/-2/-4.</li>
+        <li>Decisions 15/35/65% slower.</li>
+        <li>A slow life drain: 0.04/0.1/0.2% of max HP a second. It never kills on its own.</li></ul></li>
+      <li>New camp buildings (200g each): <b>🍲 Camp Kitchen</b> (each food lowers Hunger by 2) and <b>🚰 Water Purifier</b> (each water lowers Thirst by 2). The Smokehouse still makes a ration cost half, and Water Filtration now gives someone a free drink.</li>
+      <li>Camp cards show "🍖 Satiated / 💧 Quenched" or the tier in warning colours, with Eat and Drink buttons. Hover a tier to see exactly what it does. Units in a stage show a drumstick or drop icon by their health while hungry or thirsty. Feed all now works on tiers: the worst tiers go first, then lowest HP.</li></ul>
       <h3>🍽 0.12.71: cast/reload bars + Feed all</h3>
       <ul><li><b>Cast, channel and reload bars</b>: a thin bar under the health plate of anyone casting, channelling or reloading.
         <ul><li>Gold for casts and wind-ups: Aimed Shot, bombs, Arrow_Rain, Blow_Gun.</li>
