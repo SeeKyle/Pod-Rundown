@@ -2700,6 +2700,10 @@ function missingOf(run,k){if(!(run.needFeed||[]).includes(k))return 0;const f=fe
 function feedUnit(run,k,what){if(!(run.needFeed||[]).includes(k))return false;const f=fedOf(run,k);if(f[what])return false;
   if(what==='water'){if(run.water<1)return false;run.water-=1;}else{const cost=upgT(run,'smoker')?.5:1;if(run.food<cost-1e-9)return false;run.food=Math.round((run.food-cost)*2)/2;}
   f[what]=1;run.fed[k]=f;return true;}
+/* 0.12.71 (Kyle) Feed all: spends what's in the pack on whoever needs it, in order: most missing first (needs both before needs one),
+   then lowest HP first. Smoked food (Smokehouse) costs half a ration as usual. Never spends on anyone who doesn't need it (the Warhound needs nothing). */
+function feedAll(run){const L=(run.needFeed||[]).filter(k=>run.heroes[k]&&!run.heroes[k].dead&&missingOf(run,k)).sort((a,b)=>(missingOf(run,b)-missingOf(run,a))||((run.heroes[a].hpf==null?1:run.heroes[a].hpf)-(run.heroes[b].hpf==null?1:run.heroes[b].hpf)));
+  let n=0;for(const k of L){const f=fedOf(run,k);if(!f.food&&feedUnit(run,k,'food'))n++;if(!fedOf(run,k).water&&feedUnit(run,k,'water'))n++;}return n;}
 /* leaving camp: anyone still hungry starts the next stage with 10% less of their current HP (max HP untouched) */
 function campDepart(run){run.scoutNow=run.scoutPick||null;run.scoutTier=upgT(run,'tower');run.scoutOffers=null;run.scoutPick=null;const starved=[];for(const k of run.needFeed||[]){const m=missingOf(run,k);if(!m)continue;const hv=run.heroes[k];if(hv.dead)continue;hv.hpf=Math.max(.05,(hv.hpf==null?1:hv.hpf)*(1-.1*m));starved.push(k);}
   run.needFeed=[];run.fed={};return starved;}
@@ -2713,12 +2717,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794383545';const BGI=new Image();BGI.src='crawl_bg.png?v=1794383545';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794383545';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794383749';const BGI=new Image();BGI.src='crawl_bg.png?v=1794383749';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794383749';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794383545';XIMG.wave.src='crawl_wave.png?v=1794383545';XIMG.chibi.src='crawl_chibi.png?v=1794383545';XIMG.flannel.src='crawl_flannel.png?v=1794383545';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794383545';XIMG.rain.src='crawl_rain.png?v=1794383545';XIMG.druid.src='crawl_druid.png?v=1794383545';XIMG.camp.src='crawl_campfire.png?v=1794383545';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794383545';XIMG.tornado.src='crawl_fx_tornado.png?v=1794383545';XIMG.vine.src='crawl_fx_vine.png?v=1794383545';XIMG.thorn.src='crawl_fx_thorn.png?v=1794383545';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794383749';XIMG.wave.src='crawl_wave.png?v=1794383749';XIMG.chibi.src='crawl_chibi.png?v=1794383749';XIMG.flannel.src='crawl_flannel.png?v=1794383749';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794383749';XIMG.rain.src='crawl_rain.png?v=1794383749';XIMG.druid.src='crawl_druid.png?v=1794383749';XIMG.camp.src='crawl_campfire.png?v=1794383749';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794383749';XIMG.tornado.src='crawl_fx_tornado.png?v=1794383749';XIMG.vine.src='crawl_fx_vine.png?v=1794383749';XIMG.thorn.src='crawl_fx_thorn.png?v=1794383749';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794383545';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794383545';XIMG.obst.src='crawl_obst.png?v=1794383545';XIMG.cars.src='crawl_cars.png?v=1794383545';XIMG.robot.src='crawl_robot.png?v=1794383545';XIMG.cultist.src='crawl_cultist.png?v=1794383545';XIMG.tentacle.src='crawl_tentacle.png?v=1794383545';XIMG.boom.src='crawl_boom.png?v=1794383545';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794383749';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794383749';XIMG.obst.src='crawl_obst.png?v=1794383749';XIMG.cars.src='crawl_cars.png?v=1794383749';XIMG.robot.src='crawl_robot.png?v=1794383749';XIMG.cultist.src='crawl_cultist.png?v=1794383749';XIMG.tentacle.src='crawl_tentacle.png?v=1794383749';XIMG.boom.src='crawl_boom.png?v=1794383749';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -2827,7 +2831,27 @@ function pip(ctx,x,y,c,k){ctx.fillStyle='#120a14';ctx.fillRect(x-1,y-1,5,5);ctx.
   else if(k==='drop'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,2);}else if(k==='flame'){ctx.fillRect(x+1,y,1,1);ctx.fillRect(x,y+1,3,1);ctx.fillRect(x+1,y+2,1,1);}
   else if(k==='snow'){ctx.fillRect(x+1,y,1,3);ctx.fillRect(x,y+1,3,1);}else if(k==='star'){ctx.fillRect(x,y,1,1);ctx.fillRect(x+2,y,1,1);ctx.fillRect(x+1,y+1,1,1);ctx.fillRect(x,y+2,1,1);ctx.fillRect(x+2,y+2,1,1);}
   else if(k==='shield'){ctx.fillRect(x,y,3,2);ctx.fillRect(x+1,y+2,1,1);}else{ctx.fillRect(x+1,y,1,3);ctx.fillRect(x,y+1,3,1);}}
-let PLATE_OFF=false;   /* the camp scene draws its heroes without health plates */
+let PLATE_OFF=false;
+/* 0.12.71 (Kyle): a cast/reload bar for anything that casts, channels or reloads: [progress 0..1, colour, still filling?]
+   gold = casting, violet = channelling, grey = reloading, red = lazer charge/burn, green = smoking/repairs */
+function castBar(h){const C=h.base&&h.base.char;if(!C||!h.alive)return null;const R=C.ranged;
+  if(h.cast&&h.cast.T)return [h.cast.t/h.cast.T,'#ffd23f',1];
+  if(h.lz&&R&&R.lazer){const L=R.lazer;return h.lz.t<L.charge?[h.lz.t/L.charge,'#ff4a3a',1]:[1-(h.lz.t-L.charge)/L.fire,'#ff8a6a',0];}
+  if(h.lzReload>0&&R&&R.lazer)return [1-h.lzReload/R.lazer.reload,'#a8b0bc',1];
+  if(h.syph)return [1-h.syph.t/((C.abilities||[]).find(a=>a.id==='syphon')||{dur:3}).dur,'#b070ff',0];
+  if(h.nano)return [h.nano.t/((C.abilities||[]).find(a=>a.id==='nano')||{dur:5}).dur,'#5af0d0',1];
+  if(h.smoking)return [h.smoking.t/2,'#7ee081',1];
+  if(h.camping>0)return [1-h.camping/(h.campT0||1.8),'#ffb040',1];
+  if(h.summonT>0)return [1-h.summonT/(h.summonT0||.8),'#b070ff',1];
+  if(h.casting>0)return [1-h.casting/(h.castT0||.5),'#7ee081',1];
+  if(h.setting&&h.setting.T)return [h.setting.t/h.setting.T,'#ffd23f',1];
+  if(h.tossing&&h.tossing.T)return [h.tossing.t/h.tossing.T,'#ffd23f',1];
+  if(h.volley>0)return [1-h.volley/(h.volleyT0||.6),'#ffd23f',1];
+  if(h.blowing>0)return [1-h.blowing/(h.blowT0||.7),'#ffd23f',1];
+  if(h.calling&&h.calling.T)return [h.calling.t/h.calling.T,'#ffd23f',1];
+  if(R&&R.clip>0&&h.ammo<=0&&R.reload)return [(h.reloadT||0)/R.reload,'#a8b0bc',1];
+  if(h.search&&h.search.T)return [h.search.t/h.search.T,'#9ad0ff',1];
+  return null;}   /* the camp scene draws its heroes without health plates */
 function plate(ctx,u,x,y,w,hero,col){if(PLATE_OFF)return;x=Math.round(x-w/2);y=Math.round(y);const pct=Math.max(0,Math.min(1,u.hp/u.max));
   ctx.fillStyle='#120a14';ctx.fillRect(x-1,y-1,w+2,hero?6:4);ctx.fillStyle='#3a1a24';ctx.fillRect(x,y,w,2);
   ctx.fillStyle=col||(pct>.5?'#4fd46a':pct>.25?'#ffb020':'#e8303a');ctx.fillRect(x,y,Math.round(w*pct),2);
@@ -3107,7 +3131,10 @@ function drawGame(ctx,g,W,oy){
     if(h.gritT>0){const p=.5+.5*Math.sin(g.t*9),fa=Math.min(1,h.gritT/.5);ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(230,175,90,${(.35+.3*p)*fa})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(Math.round(h.x+lx),G-24,13+p,26+p,0,0,7);ctx.stroke();
       ctx.fillStyle=`rgba(255,215,140,${.8*fa})`;for(let i=0;i<4;i++){const an=g.t*3+i*1.57;ctx.fillRect(Math.round(h.x+lx+Math.cos(an)*13),Math.round(G-24+Math.sin(an)*24),1.5,1.5);}ctx.restore();}   // Grit_Teeth: a steady amber brace around him
     if(h.shield>0){ctx.strokeStyle='rgba(154,230,255,.7)';ctx.beginPath();ctx.ellipse(Math.round(h.x+lx),G-24,15,27,0,0,7);ctx.stroke();}
-    const bx=h.x+(h.dodgeX||0)+(h.wanderX||0);plate(ctx,h,bx,G-(hbOf(h).h+17),22,true);};
+    const bx=h.x+(h.dodgeX||0)+(h.wanderX||0);plate(ctx,h,bx,G-(hbOf(h).h+17),22,true);
+    {const cb=castBar(h);if(cb&&!PLATE_OFF){const w=18,x=Math.round(bx-w/2),y=Math.round(G-(hbOf(h).h+17))+6;const k=Math.max(0,Math.min(1,cb[0]));   /* 0.12.71: cast / channel / reload bar under the plate */
+      ctx.fillStyle='#120a14';ctx.fillRect(x-1,y-1,w+2,3);ctx.fillStyle='#2a2430';ctx.fillRect(x,y,w,1);ctx.fillStyle=cb[1];ctx.fillRect(x,y,Math.max(1,Math.round(w*k)),1);
+      if(cb[2]){ctx.fillStyle='#ffffff';ctx.globalAlpha=.55+.45*Math.sin(g.t*12);ctx.fillRect(x+Math.round(w*k)-1,y,1,1);ctx.globalAlpha=1;}}}};
   // enemies
   // depth lanes: each enemy stands a few px nearer/farther; small creatures take the front lanes; back lanes draw first
   for(const e of g.enemies)if(e.lane==null){const a=SP['e_'+e.type];e.lane=e.boss||e.fly?0:UNITS[e.type]?Math.floor(Math.random()*6):(a&&FH(a)<64?5+Math.floor(Math.random()*4):Math.floor(Math.random()*5));}
@@ -3358,7 +3385,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.70</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.71</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -3497,7 +3524,7 @@ function chipFor(e,item,hk){const base=item?shortCard(e.card):sname(hk,e.card);c
 function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=run.food||0;run.haggle=haggleOf(s,run);run.resource=resourcefulOf(s,run);
   const owned=Object.keys(run.upg||{}).filter(id=>run.upg[id]);
   const tent=`<span class="cc-tent" style="cursor:help;font-size:18px;margin-left:6px;display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border:1px dashed #a6ff2e88;border-radius:10px;animation:ccTentPulse 2.2s ease-in-out infinite" data-tiph="${esc('<b>⛺ Every camp upgrade</b><br>'+Object.keys(CAMP_UPG).map(id=>{const U=CAMP_UPG[id],t=upgT(run,id);const mx=U.needs?(Object.keys(U.needs).every(k=>upgT(run,U.needs[k])>0)?U.tiers.length:U.tiers.length-1):U.tiers.length;return `${U.icon} ${U.name}: <b style="color:${t?'#a6ff2e':'#9a90a8'}">${t}/${mx}</b> <span style="opacity:.6">(${U.tiers.map(g=>Math.round(g*(1-(run.haggle||0)))+'g').join(' / ')})</span>`;}).join('<br>')+(run.haggle?`<br><br>🤝 Haggler: upgrades ${Math.round(run.haggle*100)}% off`:'')+(run.resource?`<br>🧰 Resourceful: you can pay in spare parts`:''))}">⛺<span style="font-size:10px;color:#a6ff2e">ⓘ</span></span>`;
-  const sup=`<div class="cc-card"><b>🏕️ Camp</b>${tent} <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · ⚙️ <b>${parts}</b> spare parts · 🥫 <b>${Number.isInteger(food)?food:Math.floor(food)+'½'}</b> food · 💧 <b>${run.water||0}</b> water</span>
+  const sup=`<div class="cc-card"><b>🏕️ Camp</b>${tent} <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · ⚙️ <b>${parts}</b> spare parts · 🥫 <b>${Number.isInteger(food)?food:Math.floor(food)+'½'}</b> food · 💧 <b>${run.water||0}</b> water</span>${(run.needFeed||[]).some(k=>missingOf(run,k)&&run.heroes[k]&&!run.heroes[k].dead)?` <button class="cc-btn" data-feedall style="padding:2px 8px;font-size:12px;vertical-align:middle" title="Feed and water everyone who needs it: most-needy and lowest HP first, never wastes supplies"><svg width="16" height="14" viewBox="0 0 16 14" style="vertical-align:-2px;image-rendering:pixelated"><rect x="1" y="5" width="7" height="8" fill="#b8642a"/><rect x="1" y="5" width="7" height="2" fill="#e8d0a0"/><rect x="2" y="8" width="5" height="3" fill="#e8302a"/><rect x="1" y="12" width="7" height="1" fill="#6a3a18"/><path d="M12 2 L14.5 7 A2.6 2.6 0 1 1 9.5 7 Z" fill="#4ab8ff"/><rect x="10.5" y="7" width="1" height="2" fill="#d8f4ff"/></svg> Feed all</button>`:''}
     ${(run.campLog||[]).length?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${run.campLog.map(esc).join(' · ')}</div>`:''}
     ${owned.length?`<div class="cc-chips" style="margin-top:6px">${owned.map(id=>{const U=CAMP_UPG[id],t=run.upg[id];return `<span class="cc-chip" title="${esc(U.txt(t))}">${U.icon} ${esc(U.name)} ${['','I','II','III','IV'][t]}</span>`;}).join('')}</div>`:''}</div>`;
   const offers=(run.offers||[]).filter(id=>upgT(run,id)<CAMP_UPG[id].tiers.length);
@@ -3588,6 +3615,7 @@ function showCamp(){
   const pk=P.querySelector('[data-pick]');if(pk)pk.onclick=showPick;
   const bg=P.querySelector('[data-begin]');if(bg)bg.onclick=()=>{const left=(run.needFeed||[]).filter(k=>missingOf(run,k)&&!run.heroes[k].dead);
     if(left.length&&!bg.dataset.sure){bg.dataset.sure=1;bg.textContent='Go hungry? '+left.map(k=>heroDef(k).name+' -'+missingOf(run,k)*10+'%').join(', ')+' HP ▶';return;}campDepart(run);persist();beginStage();};
+  {const fa=P.querySelector('[data-feedall]');if(fa)fa.onclick=()=>{if(feedAll(run)){sfx('level');persist();showCamp();}else{fa.textContent='Not enough supplies';}};}
   P.querySelectorAll('[data-feed]').forEach(b=>b.onclick=()=>{const [k,w]=b.dataset.feed.split('|');if(feedUnit(run,k,w)){sfx('level');persist();showCamp();}});
   P.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>{const [k,x]=b.dataset.pt.split('|');const H=s.heroes[k];if(lvPtsFree(H)<1)return;H.pts=H.pts||{};H.pts[x]=(H.pts[x]||0)+1;sfx('level');persist();showCamp();});
   P.querySelectorAll('[data-upgp]').forEach(b=>b.onclick=()=>{const id=b.dataset.upgp,pp=upgParts(run,id);if(run.upgBought||(s.parts||0)<pp)return;s.parts-=pp;run.upg=run.upg||{};run.upg[id]=(run.upg[id]||0)+1;run.upgBought=1;sfx('level');persist();showCamp();});
