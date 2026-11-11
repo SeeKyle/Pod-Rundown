@@ -85,11 +85,11 @@ next session knows where to resume.
       (not big circles at the ends). **Add Kyle's van** (pod2/assets/kyle/van_overgrown.png — cut it from the grey bg) as a new wrecked vehicle.
 - [ ] **Combat stats**: companions' and summons' damage counts for their owner in the end-of-stage stats (Traveling_Companion → Flannel_Man,
       tentacles → Cultist, turrets/buildings → Engineer…). Only the Guard Dog (kennel) keeps its own line.
-- [ ] **Character select**: (actives-first DONE in 0.12.63) Warhound's weapon line must read "Targeted Lazer + Flamethrower".
+- [x] **Character select**: (actives-first DONE in 0.12.63) Warhound's weapon line must read "Targeted Lazer + Flamethrower".
 - [ ] **Cast bars and reload bars** for every unit that reloads or casts.
 
 ### Flannel_Man
-- [ ] **Proximity_Bomb final spec** (overrides the current 0.12.59 version): 40 energy, CD 10s.
+- [x] **Proximity_Bomb final spec** (overrides the current 0.12.59 version): 40 energy, CD 10s.
       Proximity trigger: 40 px wide in its own lane, plus 20 px wide one lane up and one lane down (bomb in the middle lane).
       Base explosion: 100 px area around the bomb, 40 px wide in the lanes above/below.
       * Overhand Toss: 1s cast, can move while casting, lands anywhere he chooses 300–450 px away (accurate); explodes on impact for 2d4+6,
@@ -101,7 +101,7 @@ next session knows where to resume.
       * Bomb left behind off screen → remaining CD halved (keep).
       * AI: with no zombies near he randomly looks for a spot to set or to underhand-toss. He knows placing is stronger but slow:
         decide "quick results" (toss/throw) vs "invest in future damage" (place) from the situation and his sliders. Choose better than before.
-- [ ] **Rust mine & Proximity Bomb trigger zone**: 40 px wide + 20 px wide in the lanes above/below (as above). Spotting enemy mines a bit harder
+- [x] **Rust mine & Proximity Bomb trigger zone**: 40 px wide + 20 px wide in the lanes above/below (as above). Spotting enemy mines a bit harder
       and checked slightly less often. Set safe-defuse range so defusers never trip it.
 - [x] **True_Grit** (replaces Grit): 15s CD, lasts 8s, -50% damage taken, +25% move speed, sets Calculated/Aggression AND Shooter/Slasher sliders
       to 10 for the duration. Flannel_Man's base sliders: Calculated/Aggression 3, Shooter/Slasher 4.
@@ -113,21 +113,21 @@ next session knows where to resume.
       nearby zombies' attention briefly. AI: prefers to throw it BEHIND a pack so they turn around.
 
 ### Warhound (robot)
-- [ ] Flamethrower becomes his "melee" (short-range) attack; reshape his blade into a flamethrower nozzle on the sprite.
-- [ ] **Targeted Lazer** ranged basic attack: 0.5s charge-up, then fires for 2s; starts 200–500 px away aimed ~10 px in front of the target and
+- [x] Flamethrower becomes his "melee" (short-range) attack; reshape his blade into a flamethrower nozzle on the sprite.
+- [x] **Targeted Lazer** ranged basic attack: 0.5s charge-up, then fires for 2s; starts 200–500 px away aimed ~10 px in front of the target and
       creeps forward 5 px every 0.25s; deals 2d4 every 0.5s in a 20 px radius at the tip; small ground fire travels with the tip; a red beam from
       his upper body angled down to the tip (make it look distinct from Flannel_Man's aimed-shot line). Reload 2s, starting only after the beam ends.
       Base Shooter/Slasher slider 5.
-- [ ] **Arc Surge** → activated: 30 energy, 15s CD, lasts 8s: Shooter/Slasher -3 toward shooter; lazer +1d4 (3d4 per 0.5s), radius 25 px,
+- [x] **Arc Surge** → activated: 30 energy, 15s CD, lasts 8s: Shooter/Slasher -3 toward shooter; lazer +1d4 (3d4 per 0.5s), radius 25 px,
       creep 7 px per 0.25s, and lazer hits apply Burn.
-- [ ] **Nano-Tech Repair Bots**: 35 energy, 20s CD, stops with a "use" animation and restores 5% max life per second for 5s; can't move/attack,
+- [x] **Nano-Tech Repair Bots**: 35 energy, 20s CD, stops with a "use" animation and restores 5% max life per second for 5s; can't move/attack,
       may cancel early if in danger. Built-in passive: 10% chance when he's attacked to halve the remaining CD.
-- [ ] **Smoke Screen**: allies (not Warhound) inside become stealthed (semi-transparent look) until they basic-attack or use an ability (moving is fine);
+- [x] **Smoke Screen**: allies (not Warhound) inside become stealthed (semi-transparent look) until they basic-attack or use an ability (moving is fine);
       the stealth lasts 5s after leaving the smoke; re-entering refreshes it.
-- [ ] **Stealth AI (general)**: an if/then rule for any stealthed unit — they know they're safer until they break it and act accordingly
+- [x] **Stealth AI (general)**: an if/then rule for any stealthed unit — they know they're safer until they break it and act accordingly
       (e.g. reposition, revive, set up). Build it generic for future stealth sources.
 - [x] **Missile_Barrage**: 3 missiles that spread out a bit more, same damage, 15s CD, 45 energy.
-- [ ] **Remove Gatling_Arm**. Add a jetpack to his sprite. New passive **Tactical_Retreat**: when he drops under 30% HP he blasts up in an arc on a
+- [x] **Remove Gatling_Arm**. Add a jetpack to his sprite. New passive **Tactical_Retreat**: when he drops under 30% HP he blasts up in an arc on a
       blue-flame jetpack (recolor one of Kyle's campfire flames blue) with a blue shield effect, flies back to 100 px from the left edge and slowly
       lands; while flying all damage taken is capped at 5 per hit; effects end on landing. Internal CD 40s. The flight takes about the same time
       from anywhere (faster when further); during it he fires single Missile_Barrage-strength missiles at random enemies — about 3 over the flight.
@@ -175,13 +175,32 @@ next session knows where to resume.
       * Passive (rename the armor kit): standing near an ally long enough applies an armor kit: +25% armor until they take 3 hits
         (add a small extra effect if it feels weak). Kyle also floated a 0.75s-cast "Armor Kit" active — he settled on making it the passive.
       Balance him against the others with the sim.
-- [ ] **JP**: new sprite sheet built off Flannel_Man's, refs ec239582 (orange hoodie) / 43f7cc34 / 5c7c9cae: large orange hoodie, shorter hair
+- [x] **JP**: new sprite sheet built off Flannel_Man's, refs ec239582 (orange hoodie) / 43f7cc34 / 5c7c9cae: large orange hoodie, shorter hair
       and beard, white skin, Kar98-style rifle, sword melee weapon and a makeshift wooden shield in his off hand. Card weapon line:
       "Kar98 + Sword & Board". Also make a dodge-roll animation (for later skills).
       Melee: medium speed, low-medium damage. Kar98: a bit more damage and range than Flannel_Man's gun, slower between shots.
       Ability **Protect_the_Familia**: rushes to an ally in danger, immune to damage while rushing; on arrival both get a shield = 50% of JP's
       max life for 5s, and he shoves the ally 75 px back toward the left edge. Fill in his other abilities + passive in his spirit and
       list them actives-first.
+
+### Added by Kyle on 11-10 (after 0.12.64)
+- [x] Fireman_Zombie: 4x a normal zombie's health and armor, about 2/5 its speed (keeps fire immunity, harder hits).
+- [x] Werewolves feel weak / too few: improve (more of them, a bit sturdier), keeping roles: zombies slow/weak, werewolves fast backline threats, firemen slow tanks.
+- [x] Stage scaling: remove the old per-stage enemy boosts; instead +3% health, armor and damage per stage (rounded down).
+- [x] Guard dog: takes 5 hits before going down (not HP), can't be healed, one hit restored every 15s; a Downed animation so heroes can revive him (dogs never revive others);
+      the last kennel tier gives 2 dogs (add tiers if needed) and rebalance kennel tier bonuses around the dog being sturdier/revivable.
+- [x] JP details: very good guy who picks on people, avid gamer, smokes pot all day (not a drinker). Skills mix jokey + sensible.
+      A SMOKE ability: 2s, he can move while smoking a big doobie (animation with smoke puffs and a burning ember that burns down), no other actions while smoking;
+      a HIGH mechanic: buffs while high, falls off / goes negative when not high (passive tied to it). Protect_the_Familia as specified.
+      4 actives + 1 passive. Kar98 ranged, homemade-looking wooden shield + real sword. Orange hoodie, dark blue jeans, white, short hair + beard.
+      Smooth the sprite edges so he doesn't look blocky; double-check every animation. Put JP FIRST in the roster (before Flannel_Man).
+      Same smoothing/animation care for the Engineer.
+- [ ] LAST: Magic deck "Primary Directive 2.0" (Leon's robots deck, decks/robots.py + raw_lists.json key Primary_Directive): copy the list, consider adding
+      Hulking Metamorph, Repair and Recharge, Digsite Engineer, Dispatch, Liberty Prime Recharged, Combustible Gearhulk (MUST), Memnarch the Warden (MUST),
+      Dauntless Scrapbot, Moxite Refinery, Guidelight Synergist, Marketback Walker (MUST), Hedron Archive, Gilded Lotus, Thran Dynamo, Reaver Titan.
+      Don't cut mana (he had mana trouble), add the mana rocks if possible; cut from stats the deck is high in to raise low ones; tag + score it
+      (decks/*.py TAGS, card_text.json, fetch_order.json + card_info.txt rows), and show it as a separate deck on every site page.
+      Card text: scryfall via WebFetch (api.scryfall.com/cards/named?exact=NAME), one card per call (long multi-card URLs are rejected).
 
 ## 2. Done (for reference)
 0.12.55–0.12.62 shipped: sapper/medicine/inevitable/super-lucky/mountain deck bonuses, 3 bonuses per deck, phone camera, campfire camp scene,
