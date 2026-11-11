@@ -83,7 +83,7 @@ next session knows where to resume.
       (set after the doubling of camp costs).
 - [ ] **Car lights**: on each car sprite find the real headlight/taillight pixels and make alarms flash those spots with light rays
       (not big circles at the ends). **Add Kyle's van** (pod2/assets/kyle/van_overgrown.png — cut it from the grey bg) as a new wrecked vehicle.
-- [ ] **Combat stats**: companions' and summons' damage counts for their owner in the end-of-stage stats (Traveling_Companion → Flannel_Man,
+- [x] **Combat stats**: companions' and summons' damage counts for their owner in the end-of-stage stats (Traveling_Companion → Flannel_Man,
       tentacles → Cultist, turrets/buildings → Engineer…). Only the Guard Dog (kennel) keeps its own line.
 - [x] **Character select**: (actives-first DONE in 0.12.63) Warhound's weapon line must read "Targeted Lazer + Flamethrower".
 - [ ] **Cast bars and reload bars** for every unit that reloads or casts.
@@ -106,10 +106,10 @@ next session knows where to resume.
 - [x] **True_Grit** (replaces Grit): 15s CD, lasts 8s, -50% damage taken, +25% move speed, sets Calculated/Aggression AND Shooter/Slasher sliders
       to 10 for the duration. Flannel_Man's base sliders: Calculated/Aggression 3, Shooter/Slasher 4.
 - [x] **Aimed Shot**: killing an enemy with it halves its remaining CD.
-- [ ] **Elite Survivors** passive (replaces Call Traveling_Companion): the companion starts each stage beside him, Flannel_Man has the Scavenger
+- [x] **Elite Survivors** passive (replaces Call Traveling_Companion): the companion starts each stage beside him, Flannel_Man has the Scavenger
       perk built in, and both get +10% dodge while within 150 px of each other.
-- [ ] **Brick toss** (Traveling_Companion): a bit more arc, 20% slower projectile, looks like a brick (ref uploads/388903a3 — make it less tall).
-- [ ] **Bottle_Distraction** (new Traveling_Companion ability): lobs a glass bottle (bigger arc than the brick) 450–500 px; it shatters and pulls
+- [x] **Brick toss** (Traveling_Companion): a bit more arc, 20% slower projectile, looks like a brick (ref uploads/388903a3 — make it less tall).
+- [x] **Bottle_Distraction** (new Traveling_Companion ability): lobs a glass bottle (bigger arc than the brick) 450–500 px; it shatters and pulls
       nearby zombies' attention briefly. AI: prefers to throw it BEHIND a pack so they turn around.
 
 ### Warhound (robot)
@@ -133,27 +133,27 @@ next session knows where to resume.
       from anywhere (faster when further); during it he fires single Missile_Barrage-strength missiles at random enemies — about 3 over the flight.
 
 ### Lumber_Jack
-- [ ] Replace Log_Roll with a passive of your choosing (document it). Hatchet_Leap gets a stun (longer near the landing centre, shorter at the edge)
+- [x] Replace Log_Roll with a passive of your choosing (document it). Hatchet_Leap gets a stun (longer near the landing centre, shorter at the edge)
       and a much better landing: cracked-earth decal, dust, pebbles, a small energy burst.
 
 ### Yumi_Archer
-- [ ] **Pinning_Shot**: bigger arrow with a motion trail; looks pinned into the target's legs/ground; auto-aimed (ignores accuracy).
+- [x] **Pinning_Shot**: bigger arrow with a motion trail; looks pinned into the target's legs/ground; auto-aimed (ignores accuracy).
 - [x] **One Nocked, Two in Hand**: 3 shots over 1s (was 1.5s), 40 energy, 10s CD; can't crit; built-in passive: whenever she lands a crit,
       its remaining CD is halved.
-- [ ] **Blow_Gun**: (1d4 + immune-halves-CD DONE 0.12.63) still to do: nicer tiny dart
+- [x] **Blow_Gun**: (1d4 + immune-halves-CD DONE 0.12.63) still to do: nicer tiny dart
       (about 4x2 px, ref: dart images eb69cbf7 / 62228cc4 / 131f51f6 — draw your own).
 
 ### Chibi_Warrior
 - [x] Kunai toss a little slower, with a 50% chance to apply (or refresh) a poison stack.
 
 ### Void_Cultist (rework, keep tentacle basics)
-- [ ] No energy costs; abilities cost life (choose sensible amounts/percentages) except Syphon_Life which is free.
-- [ ] **Syphon_Life**: dark black/purple swirling beam from his midpoint to the target's; drains life per second (damages, heals him).
-- [ ] **Poisoned_Blade** (passive): his successful melee hits (not dodged/missed/fully blocked) have 25% to add 1 poison stack; ALL of his
+- [x] No energy costs; abilities cost life (choose sensible amounts/percentages) except Syphon_Life which is free.
+- [x] **Syphon_Life**: dark black/purple swirling beam from his midpoint to the target's; drains life per second (damages, heals him).
+- [x] **Poisoned_Blade** (passive): his successful melee hits (not dodged/missed/fully blocked) have 25% to add 1 poison stack; ALL of his
       melee basic attacks refresh poison duration on the target. New poison icon: small green raindrop.
-- [ ] **Lethal_Strikes**: 12s: +75% melee attack speed, -25% melee damage, Poisoned_Blade doubled (50%, 2 stacks), Shooter/Slasher set to 10 (slasher).
-- [ ] **Spawn_Tentacle** (keep): can place anywhere within 400 px, prefers the middle of packs.
-- [ ] **Call_of_Cthulhu**: 10s: Spawn_Tentacle CD halved, all tentacles +25% size (attack range grows to match) and +25% attack speed; on cast,
+- [x] **Lethal_Strikes**: 12s: +75% melee attack speed, -25% melee damage, Poisoned_Blade doubled (50%, 2 stacks), Shooter/Slasher set to 10 (slasher).
+- [x] **Spawn_Tentacle** (keep): can place anywhere within 400 px, prefers the middle of packs.
+- [x] **Call_of_Cthulhu**: 10s: Spawn_Tentacle CD halved, all tentacles +25% size (attack range grows to match) and +25% attack speed; on cast,
       existing tentacles burrow and re-emerge 200 px in front of him; a fear pulse from him and from every tentacle: 2s fear, -25% move speed.
 
 ### New characters
