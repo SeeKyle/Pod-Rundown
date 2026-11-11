@@ -67,26 +67,26 @@ next session knows where to resume.
       Fix the ⛺ tent tooltip: remove "(+1 with a radio tower)" next to Generator and make the tooltip list the real upgrades/tiers
       generated from CAMP_UPG (so it stays right when upgrades change). Make the tent icon obviously hoverable (pulse/“hover me” hint)
       and add a dismissable camp help popup (“don't show again”, stored in localStorage) explaining the tent tooltip and other camp features.
-- [ ] **Feed-all button** in camp (icon: food + drink together, draw your own from uploads b7fb7708 / 9ca96fb5 / 6e8833e9 as reference).
+- [x] **Feed-all button** in camp (icon: food + drink together, draw your own from uploads b7fb7708 / 9ca96fb5 / 6e8833e9 as reference).
       Auto-feeds/waters the team with what's available: lowest-HP units first, accounts for smoked food costing half (Smoker upgrade),
       worst hunger/thirst tiers first, never wastes supplies on units that don't need them (Warhound needs neither).
-- [ ] **Hunger & Thirst rework** (replaces the flat -10% HP per missing food/water):
+- [x] **Hunger & Thirst rework** (replaces the flat -10% HP per missing food/water):
       Tiers that only get worse while ignored, last the whole stage, and each food/water use lowers the tier by 1
       (by 2 with a new food-quality / water-quality building). Display "Satiated" / "Quenched" when fine.
       Hunger: Hungry → Very Hungry → Starving: reduces heals received, move & attack speed, accuracy; each tier also starts the stage with less HP.
       Thirst: Parched → Mildly Dehydrated → Severely Dehydrated: reduces perception and clear thinking (plan/exec-type sliders, slower decisions),
       plus a small HP drain. Make it punishing (hard roguelike). Show debuff icons on units + in camp.
-- [ ] **Retry system**: a run starts with 1 retry (max 1, doesn't stack). On a stage loss you may retry that stage once: snapshot
+- [x] **Retry system**: a run starts with 1 retry (max 1, doesn't stack). On a stage loss you may retry that stage once: snapshot
       everything at stage start (each hero's HP, energy, items, herbs, kit, buffs/debuffs, gold, supplies, parts, run state) and restore it.
       Beating the stage on the next attempt gives the retry back. Dying again after using it = run over (full reset, as now).
 - [x] **Car alarms scarier**; stopping an alarm takes 5s; Wire Cutters upgrade makes the fix faster only (not shorter alarms) and costs 125g
       (set after the doubling of camp costs).
-- [ ] **Car lights**: on each car sprite find the real headlight/taillight pixels and make alarms flash those spots with light rays
+- [x] **Car lights**: on each car sprite find the real headlight/taillight pixels and make alarms flash those spots with light rays
       (not big circles at the ends). **Add Kyle's van** (pod2/assets/kyle/van_overgrown.png — cut it from the grey bg) as a new wrecked vehicle.
 - [x] **Combat stats**: companions' and summons' damage counts for their owner in the end-of-stage stats (Traveling_Companion → Flannel_Man,
       tentacles → Cultist, turrets/buildings → Engineer…). Only the Guard Dog (kennel) keeps its own line.
 - [x] **Character select**: (actives-first DONE in 0.12.63) Warhound's weapon line must read "Targeted Lazer + Flamethrower".
-- [ ] **Cast bars and reload bars** for every unit that reloads or casts.
+- [x] **Cast bars and reload bars** for every unit that reloads or casts.
 
 ### Flannel_Man
 - [x] **Proximity_Bomb final spec** (overrides the current 0.12.59 version): 40 energy, CD 10s.
