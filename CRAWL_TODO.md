@@ -212,6 +212,8 @@ Fireman_Zombie, Warhound flamethrower (as ranged — still to move to "melee", s
 
 ## 0.12.80 (11-11) Eddie added
 - Eddie's 7 decks live (decks/eddie_*.py, takeaways_eddie.py, repair_eddie.py, plan_tags tail). PD2 = decks/robots2.py.
-- NOT done: Pod Sim for Eddie/PD2 (Kyle: skip, too heavy; they're filtered out of the sim picker), Crypt INSP bonuses for the 8 new decks, custom dice per player.
+- NOT done: Pod Sim for Eddie/PD2 (Kyle: skip, too heavy; they're filtered out of the sim picker).
+- DONE 0.12.81-82: scroll fix, phone unit frames + tap tips, INSP rework (exactly 2 things per deck; a slider nudge counts only paired with a strong passive), Eddie in PLAYER_ICON, per-player dice, new jellyfish.
+- Crypt OWNERS (save tabs) still only Kyle; Cheez/Leon/Eddie tabs not switched on.
 - Queue from Kyle: (1) clicking buttons in Crypt Crawl (camp feed/water etc.) jumps the page scroll, stop that; (2) phone: ability tooltips need tap-to-view (long-press selects text now);
   (3) phone: hide the unit life panels under the stage, use small WoW-style unit frames in the top-left sky instead; (4) Leon's green jellyfish icon: cooler, a bit more realistic.
