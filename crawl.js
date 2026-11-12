@@ -125,9 +125,9 @@ const SUMMON_TXT={empower:'Recasting grows the one already out (+25% power, up t
 const RANGED_SUMMONERS=new Set(['robots','mech','marina','kykar','thing','vile']);   // their summons shoot from mid-screen; everyone else's charge in
 // ---- signature abilities: every hero comes with one, on its own cooldown (not a spell slot). fn(game, hero, atk)
 const SIG={
-  knight:{name:'Shield_Wall · Crimson_Charge · Leap_Strike · Blood_Oath',cd:16,txt:'Holds the front in full crimson plate with a sword-and-shield combo. Throws up a Shield_Wall that pulls zombies onto him, Crimson_Charges through a lane of them, and Leap_Strikes onto anything mauling a friend. Blood_Oath: every kill heals him and he hits harder when he\'s hurt.',fn:()=>false},
-  carcher:{name:'Piercing_Shot · Tumble · Light_Feet',cd:10,txt:'Shoots a bow from long range, puts a Piercing_Shot through a whole line of zombies, and Tumbles back out of reach when one gets on her, loosing an arrow mid-air. Light_Feet: quick and hard to pin down.',fn:()=>false},
-  csorc:{name:'Chain_Lightning · Thunderclap · Arcane_Flow',cd:11,txt:'Throws sparks of lightning, arcs Chain_Lightning through a pack, and calls down a Thunderclap on a crowd (big hit and a stun). Arcane_Flow: every kill gives him energy back.',fn:()=>false},
+  knight:{name:'Shield_Wall · Crimson_Charge · Leap_Strike · Shield_Bash · Blood_Oath',cd:16,txt:'Holds the front in full crimson plate with a sword-and-shield combo. Throws up a Shield_Wall that pulls zombies onto him, Crimson_Charges through a lane of them, Leap_Strikes onto anything mauling a friend, and Shield_Bashes to stun (and interrupt shrieks and archers). Blood_Oath: every kill heals him and he hits harder when he\'s hurt.',fn:()=>false},
+  carcher:{name:'Piercing_Shot · Tumble · Snare_Arrow · Hunters_Mark · Light_Feet',cd:10,txt:'Shoots a bow from long range, puts a Piercing_Shot through a whole line of zombies, Tumbles back out of reach when one gets on her, pins fast or dangerous zombies with a Snare_Arrow, and puts a Hunters_Mark on the one the team should focus. Light_Feet: quick and hard to pin down.',fn:()=>false},
+  csorc:{name:'Chain_Lightning · Thunderclap · Static_Shield · Overcharge · Arcane_Flow',cd:11,txt:'Throws sparks of lightning, arcs Chain_Lightning through a pack, calls down a Thunderclap on a crowd, wraps a friend in a Static_Shield, and Overcharges his sparks so they jump. Arcane_Flow: every kill gives him energy back.',fn:()=>false},
   soldier:{name:'Frag_Grenade · Battle_Hardened',cd:14,txt:'Holds the middle with an Assault_Rifle (24-round mag) and a rifle-butt up close, lobs a Frag_Grenade into bunched-up zombies (4d6 blast and a 1.5s stun), and is Battle_Hardened: below half HP he takes 15% less damage and reloads 25% faster.',fn:()=>false},
   shoshi:{name:'Ctrl_Z · Turn_It_Off_And_On_Again · Tech_Support · Dad_Mode · Always_Online',cd:12,txt:'Taps zombies with an Automatic_Pistol (20-round mag; unloads on big targets), undoes the damage an ally just took, reboots allies in trouble, keeps everyone\'s cooldowns moving with Tech_Support, goes dad mode for anyone about to drop, and is Always_Online: pings when someone goes down, kills car alarms from his phone, and calls targets for everyone near him.',fn:()=>false},
   grim:{name:'Royal Cleave',cd:6,txt:'Sweeps every ground enemy in reach for 220% damage and shoves them back.',fn:(g,h,a)=>g.sigArea(h,46,a*2.2,{kb:1.4,ground:1,fx:'slash'})},
@@ -372,7 +372,9 @@ const CHAR={
       {id:'oath',name:'Blood_Oath',passive:1,heal:.03,under:.5,dmg:.15},
       {id:'wall',name:'Shield_Wall',en:46,cd:16,dur:4,dr:.6,r:50},
       {id:'charge',name:'Crimson_Charge',en:40,cd:12,min:25,max:90,dist:95,dice:[2,6],kb:40,spd:220},
-      {id:'kleap',name:'Leap_Strike',en:52,cd:18,min:30,max:110,dice:[3,6],splash:[1,6],stun:1,T:.6}]},
+      {id:'kleap',name:'Leap_Strike',en:52,cd:18,min:30,max:110,dice:[3,6],splash:[1,6],stun:1,T:.6},
+      // 0.12.195 Shield_Bash: slams his shield into the zombie in front: 1d6 and a 1.5s stun (bosses 0.5s). It interrupts a Screamer's shriek and a Skeleton_Archer's draw. 23 energy, 8s.
+      {id:'bash',name:'Shield_Bash',en:23,cd:8,reach:20,dice:[1,6],stun:1.5}]},
   // 0.12.178 (Kyle) Chibi_Archer (CraftPix chibi pack, the Archer): a little hooded archer. Long-range bow, light on her feet.
   //   Piercing_Shot: IF 3+ zombies are lined up ahead in one lane THEN a heavy arrow goes through all of them (up to 5): 2d6 each. 35 energy, 10s.
   //   Tumble: IF a zombie gets right on her THEN she hops back about 45px and looses an arrow mid-air. 25 energy, 12s.
@@ -384,7 +386,11 @@ const CHAR={
     abilities:[
       {id:'lightfeet',name:'Light_Feet',passive:1},
       {id:'pierce',name:'Piercing_Shot',en:40,cd:10,n:5,dice:[2,6],lineN:3},
-      {id:'tumble',name:'Tumble',en:29,cd:12,dist:45,T:.6}]},
+      {id:'tumble',name:'Tumble',en:29,cd:12,dist:45,T:.6},
+      // 0.12.195 Snare_Arrow: pins one zombie in place for 2.5s (1d4) and slows anything beside it 30% for 2s. 29 energy, 12s.
+      {id:'snare',name:'Snare_Arrow',en:29,cd:12,root:2.5,r:14,slow:.3,slowT:2,dice:[1,4]},
+      // 0.12.195 Hunter's_Mark: marks one zombie for 6s: everyone hits it 25% harder. 23 energy, 15s.
+      {id:'hmark',name:'Hunters_Mark',en:23,cd:15,dur:6,amp:.25}]},
   // 0.12.178 (Kyle) Chibi_Sorcerer (CraftPix chibi pack, the Wizard): dark-haired, dark cloak, yellow lightning.
   //   Chain_Lightning: IF 2+ zombies are within 150 THEN a bolt hits the nearest and jumps to 3 more within 45 of each other: 2d6, 20% less each jump, and a 0.4s stun. 40 energy, 11s.
   //   Thunderclap: IF 3+ zombies are bunched 30-160 out THEN he charges up and calls lightning down on them: 3d6 in a 60-wide blast, 1s stun (bosses 0.4s). 45 energy, 16s.
@@ -396,7 +402,11 @@ const CHAR={
     abilities:[
       {id:'arcflow',name:'Arcane_Flow',passive:1,en:3},
       {id:'chain',name:'Chain_Lightning',en:46,cd:11,r:150,jump:45,n:4,dice:[2,6],fall:.2,stun:.4},
-      {id:'thunder',name:'Thunderclap',en:52,cd:16,min:30,max:160,r:30,dice:[3,6],stun:1,T:.9}]},
+      {id:'thunder',name:'Thunderclap',en:52,cd:16,min:30,max:160,r:30,dice:[3,6],stun:1,T:.9},
+      // 0.12.195 Static_Shield: wraps an ally (or himself) within 60 in crackling static for 6s: a shield worth 20% of their max HP, and anything that hits them gets zapped for 1d4. 40 energy, 14s.
+      {id:'static',name:'Static_Shield',en:40,cd:14,r:60,shield:.2,dur:6,zap:[1,4]},
+      // 0.12.195 Overcharge: his next 3 sparks hit 50% harder and each jumps to a second zombie within 40 for half. 29 energy, 12s.
+      {id:'overcharge',name:'Overcharge',en:29,cd:12,n:3,mul:1.5,jump:40}]},
   // 0.12.175 (Kyle) the Soldier (CraftPix freebie art): helmet, balaclava, plate carrier and an assault rifle. Steady mid-range shooter with a rifle-butt up close.
   //   Frag_Grenade: he pulls a pin and lobs it 40-130 out onto a bunch of zombies; it lands, ticks for 0.5s and blows: 4d6 in a 30-wide blast
   //   (full in the middle, 60% at the edge) and everything caught is STUNNED for 1.5s. He won't throw it where an ally would be caught.
@@ -523,6 +533,11 @@ const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼',Eddie:'♠'};
 // one line per ability for the party-screen hover boxes
 const ABIL_DESC={
   autopistol:'Automatic_Pistol (his basic attack) · 1d4 a round, a 20-round mag, 3.25s reload. TAP: single aimed shots (+15 accuracy, about 2 a second). UNLOAD: full auto at about 12 rounds a second (-6 accuracy), used on big targets (firemen, werewolves, bosses), on anything mauling a hurt ally, and now and then just because. No melee: up close he just keeps shooting.',
+  snare:'Snare_Arrow · 29 energy · 12s. Pins one zombie in place for 2.5s (1d4) and slows anything right beside it 30% for 2s. Goes for fast ones (Screamers, werewolves) and anything closing on a hurt ally.',
+  hmark:'Hunters_Mark · 23 energy · 15s. Marks one zombie for 6s: everyone hits it 25% harder.',
+  static:'Static_Shield · 40 energy · 14s. Wraps an ally (or himself) within 180px in static for 6s: a shield worth 20% of their max HP, and anything that hits them is zapped for 1d4.',
+  overcharge:'Overcharge · 29 energy · 12s. His next 3 sparks hit 50% harder and each jumps to a second zombie close by for half.',
+  bash:'Shield_Bash · 23 energy · 8s. Slams his shield into the zombie in front: 1d6 and a 1.5s stun (bosses 0.5s). Interrupts a Screamer\'s shriek or a Skeleton_Archer\'s draw.',
   oath:'Blood_Oath (passive) · every kill heals him 3% of his max HP, and below half HP he hits 15% harder.',
   wall:'Shield_Wall · 46 energy · 16s. When 3+ zombies are on him, or 2+ are mauling an ally under 45% near him, he plants his shield for 4s: 60% less damage, no knockback, and every zombie within 150px is taunted onto him.',
   charge:'Crimson_Charge · 40 energy · 12s. When 3+ zombies are lined up in one lane 75-270px ahead, he charges through the line (up to 285px): 2d6 to each and a big shove.',
@@ -1543,6 +1558,7 @@ class Game{
     if(h.key==='soldier'){const HB=(h.base.char.abilities||[]).find(a=>a.id==='hardened');if(HB&&h.hp<h.max*HB.under)amt*=1-HB.dr;}   /* 0.12.175 Battle_Hardened */
     if(this.heroes.some(o=>o.key==='shoshi'&&o.alive)){const L=h.dmgLog=h.dmgLog||[];L.push([this.t,amt]);while(L.length&&this.t-L[0][0]>4)L.shift();}   /* for Shoshi's Ctrl_Z */
     if(h.dadT>0)amt*=1-(h.dadDR||.4);   /* Shoshi's Dad_Mode */
+    if(h.staticT>0&&from&&!from.dead&&!from.key&&from.x!=null){this.hitEnemy(from,this.rollDice(h.staticZap||[1,4])*(h.staticMul||1),h.staticBy&&h.staticBy.alive?h.staticBy:null,{sure:1,nocrit:1});this.fx.push({k:'bolt',pts:[[this.heroX(h),(h.gy||this.G)-14],[from.x,(from.gy!=null?from.gy:this.G)-14]],t:0,life:.15,raw:1,c:'y'});}   /* 0.12.195 Static_Shield zap */
     if(h.shield>0){const s=Math.min(h.shield,amt);h.shield-=s;amt-=s;if(h.thorns&&from&&!from.dead)this.hitEnemy(from,s*.3,null,{nocrit:1,sure:1});}
     if(amt<=0)return false;
     {const was=h.hp/h.max;h.hp-=amt;if(h.key&&was>=.35&&h.hp/h.max<.35)Brain.panic(this,h,'hurt');
@@ -1598,6 +1614,8 @@ class Game{
     this.minions=this.minions.filter(o=>!o.dead);this.minions.push(m);return m;}
   shoot(h,target,kind,dmg,opt){
     const mz=MUZZLE[h.key]||[10,30];const lift=h.perch?(h.leapH||0)*.6:0;const y0=this.G-mz[1]-lift;   /* 0.12.76: up on the lookout, shots leave from up there */const p={kind,x:h.x+(h.face<0?-mz[0]:mz[0]),y:y0,tx:target,dmg,src:h,spd:PSPD[kind]||160,pierce:opt.pierce||(h.style&&h.style.pierce)||0,opt,t:0,vy:kind==='brick'?-70:0,hit:new Set()};
+    if(h&&h.ocN>0&&kind==='zap'){h.ocN--;p.dmg*=h.ocMul||1.5;p.oc=1;const J=h.ocJump||40;p.opt.onHit=(e,d)=>{this.hitEnemy(e,d,h,{});const n=this.enemies.filter(o=>!o.dead&&o!==e&&!o.fly&&Math.abs(o.x-e.x)<J&&Math.abs((o.gy!=null?o.gy:this.G)-(e.gy!=null?e.gy:this.G))<14).sort((a,b)=>Math.abs(a.x-e.x)-Math.abs(b.x-e.x))[0];
+      if(n){this.hitEnemy(n,d*.5,h,{sure:1});this.fx.push({k:'bolt',pts:[[e.x,(e.gy!=null?e.gy:this.G)-12],[n.x,(n.gy!=null?n.gy:this.G)-12]],t:0,life:.25,raw:1,c:'y'});}};}   /* 0.12.195 Overcharge */
     this.proj.push(p);return p;
   }
   aim(p,h,tg){if(h&&h.sprayT>0){h._accBonus=(h._accBonus||0)-18;const r=this._aimInner(p,h,tg);h._accBonus+=18;return r;}return this._aimInner(p,h,tg);}
@@ -1826,7 +1844,7 @@ class Game{
       if(h.kbv>0&&h.building&&h.walkTo==null)h.kbv=0;if(h.kbv>0){h.x+=(h.kbDir||-1)*h.kbv*dt;h.kbv=Math.max(0,h.kbv-h.kbv*8*dt-4*dt);}   /* shoved by a heavy hit */
       regenEnergy(h,dt);if(h.critRegenT>0){h.critRegenT-=dt;h.en=Math.min(h.enMax||100,(h.en||0)+2*dt);h.hp=Math.min(h.max,h.hp+2*dt);}/* Herald: +1 energy and +1 HP every 0.5s */if(h.riseT>0){h.riseT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);}h.walkT+=dt*(scroll?(MOVE[h.key]||26)/26:0);if(h.animT>0)h.animT-=dt;if(h.hitFlash>0)h.hitFlash-=dt;if(h.buffT>0)h.buffT-=dt;
       if(h.shellT>0){h.shellT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);}
-      if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}
+      if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}if(h.staticT>0)h.staticT-=dt;
       if(h.invulnT>0)h.invulnT-=dt;
       if(h.hotT>0){h.hotT-=dt;h.hotTick=(h.hotTick||0)+dt;if(h.hotTick>=h.hotEvery){h.hotTick-=h.hotEvery;this.healHero(h,h.hotAmt,false,h.hotSrc);}}   // Rejuvenating Bloom
       if(h.slowT>0){h.slowT-=dt;if(h.slowT<=0)h.slow=0;}if(h.bleedT>0){h.bleedT-=dt;h.bleedTick+=dt;if(h.bleedTick>=1||h.bleedT<=0){const d=h.bleedDps*Math.min(1,h.bleedTick);h.bleedTick=0;h.hp-=d;this.text(h.x+6,this.G-58,Math.round(d),'#c0102a');if(h.hp<=0){this.heroDown(h);continue;}}}
@@ -2170,6 +2188,16 @@ class Game{
       /* 0.12.194 sliders: Selfless walls up to save allies sooner (under 55%), Selfish only when he's the one swarmed. Pack Hunters leap in for allies under 50%,
          Lone Wolves only under 30%. Blind Aggression charges a line of 2. Panicky won't charge or leap below half HP. */
       const allyHp=T('self')<.4?.55:T('self')>.65?0:.45,leapHp=T('pack')<.4?.5:T('pack')>.65?.3:.4,shaky=T('nerve')>.6&&h.hp/h.max<.5;
+      /* 0.12.195 Shield_Bash: ALWAYS IF a Screamer is shrieking or a Skeleton_Archer is drawing within reach THEN bash it (interrupt).
+           ELSE IF Pack Hunter AND an ally under 40% has one on them within reach THEN bash that one.
+           ELSE IF Blind Aggression THEN bash whatever's in front on cooldown. (Calculated keeps it for the first two.) */
+      {const SB=AB('bash');if(h.sbT>0)h.sbT-=dt;if(h.bash){h.bash.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;if(h.bash.t>=h.bash.T)h.bash=null;return;}
+        if(SB&&!(h.sbT>0)&&(h.en||0)>=SB.en){const inReach=live.filter(e=>Math.abs(e.x-hx)<SB.reach&&Math.abs(lane(e)-gy)<10);let tg=null,why='';
+          tg=inReach.find(e=>e.scrT>0&&!e.scrDone)||inReach.find(e=>e.type==='skarcher'&&e.animT>0);if(tg)why='interrupt';
+          if(!tg&&T('pack')<.45){for(const o of al){if(o.hp/o.max>=.4)continue;const m=inReach.find(e=>Math.abs(e.x-this.heroX(o))<16);if(m){tg=m;why='off a hurt ally';break;}}}
+          if(!tg&&T('aggr')>.6&&inReach.length){tg=inReach[0];why='aggressive';}
+          if(tg&&spendEnergy(h,SB.en)){h.sbT=SB.cd*(1-(h.cdr||0));faceToward(h,tg.x,1);h.bash={t:0,T:.4};h.animM=.36;h.swingAnim='attack2';this.hitEnemy(tg,this.rollDice(SB.dice)*(h.atk/h.base.atk),h,{sure:1,kb:15});
+            if(!tg.dead){tg.stun=Math.max(tg.stun||0,tg.boss?.5:SB.stun);if(tg.scrT>0)tg.scrT=0;this.text(tg.x,lane(tg)-26,why==='interrupt'?'INTERRUPTED':'STUN','#ffe07a');}this.ev('hit',{});h.abWhy='BASH: '+why;h.abWhyT=this.t+3;return;}}}
       if(SW&&h.swT<=0&&(h.en||0)>=SW.en){const save=al.some(o=>o.hp/o.max<allyHp&&Math.abs(this.heroX(o)-hx)<40&&live.filter(e=>Math.abs(e.x-this.heroX(o))<18).length>=2);
         if((onMe>=3||save)&&spendEnergy(h,SW.en)){h.abWhy='SHIELD WALL: '+(save?'protecting an ally':'swarmed');h.abWhyT=this.t+3;h.swT=SW.cd*(1-(h.cdr||0));h.wallT=SW.dur;h.wallDR=SW.dr;h.kbRes0=h.kbRes;h.kbRes=1;this.fx.push({k:'ring',x:hx,y:gy-12,t:0,r:SW.r,c:'#ff8080'});this.ev('shout',{});Comms.bubble(this,h,Comms.pick(['To me!','Hold the line!','Behind my shield!','Come on, then!']),true);
           for(const e of live)if(!e.boss&&Math.abs(e.x-hx)<SW.r){e.tauntT=SW.dur;e.tauntBy=h;e.target=h;}return;}}
@@ -2188,6 +2216,25 @@ class Game{
         if(u>=1){h.tumble=null;h.leapH=0;}return;}
       if(h.pshot){const P=h.pshot;P.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;if(!P.shot&&P.t>=P.T*.55){P.shot=1;if(!P.tg.dead){const p=this.shoot(h,P.tg,'arrow',this.rollDice(PS.dice)*(h.atk/h.base.atk)*h.rangedDmg,{pierce:PS.n});p.big=1;this.aim(p,h,P.tg);p.arc=0;p.h=p.h0=p.aimH=24;p.tgy=p.gy0=p.gy=P.tg.gy!=null?P.tg.gy:this.G;p.sure=1;this.ev('bow',{});   /* flat and true down the lane so it can go through the whole line */this.text(hx,gy-30,'PIERCE','#ffd0d0');}}if(P.t>=P.T)h.pshot=null;return;}
       const live=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>2&&e.x<this.W+2);
+      /* 0.12.195 Snare_Arrow and Hunters_Mark (both use her Shot_2 draw, 0.7s)
+         SNARE: IF a fast zombie (Screamer, werewolf) is coming OR one is within 35 of an ally under 40% THEN pin it.
+           Pack Hunter checks allies first; Lone Wolf checks what's coming at her first; Panicky also snares anything within 30 of herself; Large Targets prefers the biggest.
+         MARK: Ally Awareness marks what the most allies are fighting; Enemy Awareness marks the biggest threat closest to her.
+           Preserve only marks a big one (Nemesis, boss, 60+ HP); Squander marks anything with real HP left. Never re-marks a marked zombie. */
+      {const T0=k=>trait(h,k);const SN=AB('snare'),HM=AB('hmark');for(const k of ['snT','hmT'])if(h[k]>0)h[k]-=dt;if(h.snT==null){h.snT=SN?SN.cd*.3:0;h.hmT=HM?HM.cd*.4:0;}
+        const lv=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>2&&e.x<this.W-2&&Math.abs(e.x-hx)<C.ranged.range);const lane=e=>e.gy!=null?e.gy:this.G;
+        if(SN&&h.snT<=0&&(h.en||0)>=SN.en&&lv.length){const al2=this.alive().filter(o=>o!==h&&!o.pet);
+          const allyT=()=>{for(const o of al2){if(o.hp/o.max>=.4)continue;const ox=this.heroX(o);const m=lv.filter(e=>!(e.rootT>0)&&Math.abs(e.x-ox)<35).sort((a,b)=>Math.abs(a.x-ox)-Math.abs(b.x-ox))[0];if(m)return [m,'stopping one on a hurt ally'];}return null;};
+          const fastT=()=>{const f=lv.filter(e=>!(e.rootT>0)&&(e.E.spd||0)>=15).sort((a,b)=>T0('size')>.6?b.max-a.max:Math.abs(a.x-hx)-Math.abs(b.x-hx))[0];return f?[f,'a fast one']:null;};
+          const meT=()=>{if(T0('nerve')<=.6)return null;const m=lv.filter(e=>!(e.rootT>0)&&Math.abs(e.x-hx)<30)[0];return m?[m,'too close (panicky)']:null;};
+          const pick=(T0('pack')<.45?[allyT,fastT,meT]:[meT,fastT,allyT]).map(f=>f()).find(Boolean);
+          if(pick&&spendEnergy(h,SN.en)){const [tg,why]=pick;h.snT=SN.cd*(1-(h.cdr||0));faceToward(h,tg.x,1);h.abWhy='SNARE: '+why;h.abWhyT=this.t+3;h.pshot={t:0,T:.7,tg,shot:1};
+            setTimeoutSafe(this,.42,()=>{if(!h.alive||tg.dead)return;const p=this.shoot(h,tg,'arrow',this.rollDice(SN.dice)*(h.atk/h.base.atk),{onHit:(e,d)=>{this.hitEnemy(e,d,h,{});if(e.dead)return;if(!e.boss){e.slow=Math.max(e.slow||0,.97);e.slowT=Math.max(e.slowT||0,SN.root);e.rootT=SN.root;}else{e.slow=Math.max(e.slow||0,.5);e.slowT=Math.max(e.slowT||0,1);}
+              if(e.scrT>0){e.scrT=0;}this.text(e.x,lane(e)-26,'SNARED','#c8ffb0');for(const o of this.enemies){if(o.dead||o===e||o.fly)continue;if(Math.abs(o.x-e.x)<SN.r&&Math.abs(lane(o)-lane(e))<10){o.slow=Math.max(o.slow||0,SN.slow);o.slowT=Math.max(o.slowT||0,SN.slowT);}}}});this.aim(p,h,tg);this.ev('bow',{});});return;}}
+        if(HM&&h.hmT<=0&&(h.en||0)>=HM.en&&lv.length){const big=e=>e.boss||e.nem||e.max>=60;let cand=lv.filter(e=>!(e.markT>0)&&e.hp>8);if(T0('energy')>.6)cand=cand.filter(big);
+          let tg=null,why='';if(cand.length){if(T0('aware')>.55){const al2=this.alive().filter(o=>o!==h&&!o.pet);let bs=-1;for(const e of cand){const n=al2.filter(o=>Math.abs(this.heroX(o)-e.x)<30).length+(big(e)?1:0);if(n>bs){bs=n;tg=e;}}why='what the team is on';}
+            else{tg=cand.sort((a,b)=>(big(b)-big(a))||Math.abs(a.x-hx)-Math.abs(b.x-hx))[0];why=big(tg)?'the big threat':'closest threat';}}
+          if(tg&&(T0('energy')<.35||big(tg)||lv.length>=3)&&spendEnergy(h,HM.en)){h.hmT=HM.cd*(1-(h.cdr||0));faceToward(h,tg.x,1);h.abWhy='MARK: '+why;h.abWhyT=this.t+3;h.pshot={t:0,T:.5,tg,shot:1};tg.markT=HM.dur;tg.markAmp=HM.amp;this.text(tg.x,lane(tg)-30,'MARKED','#ff8080');this.fx.push({k:'ring',x:tg.x,y:lane(tg)-14,t:0,r:9,c:'#ff6060'});Comms.bubble(this,h,Comms.pick(['That one!','Focus here!','Marked!']),true);return;}}}
       /* 0.12.194 sliders: Panicky tumbles away sooner (up to 24px), Steady lets them get to 10. IF Pack Hunter AND a hurt ally (under 35%) is right beside me THEN I stand my ground. */
       const T=k=>trait(h,k);const tr=10+14*T('nerve');const guard=T('pack')<.4&&this.alive().some(o=>o!==h&&!o.pet&&o.hp/o.max<.35&&Math.abs(this.heroX(o)-hx)<20);
       if(guard&&live.some(e=>Math.abs(e.x-hx)<tr)){h.abWhy='STAYING: covering a hurt ally';h.abWhyT=this.t+1;}
@@ -2201,6 +2248,20 @@ class Game{
       const hx=this.heroX(h),gy=h.gy||this.G;
       if(h.cast){const K=h.cast;K.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;if(!K.done&&K.t>=K.at){K.done=1;K.fn();}if(K.t>=K.T)h.cast=null;return;}
       const live=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>2&&e.x<this.W+2);const al=this.alive().filter(o=>o!==h);const T=k=>trait(h,k);
+      /* 0.12.195 Static_Shield: Selfless shields an ally under 50% with 2+ on them first, then himself; Selfish himself first (under 60% and being hit);
+           Panicky shields himself as soon as 2+ are on him; Preserve waits until someone is under 35%. */
+      {const SS=AB('static'),OC=AB('overcharge');for(const k of ['ssT','ocT'])if(h[k]>0)h[k]-=dt;if(h.ssT==null){h.ssT=SS?SS.cd*.3:0;h.ocT=OC?OC.cd*.3:0;}
+        if(SS&&h.ssT<=0&&(h.en||0)>=SS.en){const lim=T('energy')>.6?.35:.5;const onU=o=>live.filter(e=>Math.abs(e.x-this.heroX(o))<18&&Math.abs((e.gy!=null?e.gy:this.G)-(o.gy||this.G))<10).length;
+          const ally=()=>al.filter(o=>!o.pet&&!(o.staticT>0)&&o.hp/o.max<lim&&onU(o)>=1&&Math.abs(this.heroX(o)-hx)<SS.r).sort((a,b)=>a.hp/a.max-b.hp/b.max)[0];
+          const me=()=>!(h.staticT>0)&&((h.hp/h.max<(T('energy')>.6?.35:.6)&&onU(h)>=1)||(T('nerve')>.6&&onU(h)>=2))?h:null;
+          const tgt=T('self')>.6?(me()||ally()):(ally()||me());
+          if(tgt&&spendEnergy(h,SS.en)){h.ssT=SS.cd*(1-(h.cdr||0));tgt.shield=Math.max(tgt.shield||0,tgt.max*SS.shield);tgt.shieldT=SS.dur;tgt.staticT=SS.dur;tgt.staticZap=SS.zap;tgt.staticBy=h;tgt.staticMul=h.atk/h.base.atk;
+            this.fx.push({k:'ring',x:this.heroX(tgt),y:(tgt.gy||this.G)-14,t:0,r:12,c:'#fff08a'});this.ev('zap',{});h.abWhy='STATIC SHIELD: '+(tgt===h?'myself':(heroDef(tgt.key)||{name:tgt.key}).name);h.abWhyT=this.t+3;
+            h.cast={t:0,T:.5,at:.01,anim:'nova',fn:()=>{}};return;}}
+        /* Overcharge: Squander whenever 2+ are in range; Preserve only for a big one or 4+; otherwise 3+ or a big one. Not while a charge is still loaded. */
+        if(OC&&h.ocT<=0&&!(h.ocN>0)&&(h.en||0)>=OC.en){const inR=live.filter(e=>Math.abs(e.x-hx)<C.ranged.range);const big=inR.some(e=>e.boss||e.nem||e.max>=60);
+          const go=T('energy')<.35?inR.length>=2:T('energy')>.6?(big||inR.length>=4):(big||inR.length>=3);
+          if(go&&spendEnergy(h,OC.en)){h.ocT=OC.cd*(1-(h.cdr||0));h.ocN=OC.n;h.ocMul=OC.mul;h.ocJump=OC.jump;this.fx.push({k:'ring',x:hx,y:(h.gy||this.G)-16,t:0,r:10,c:'#ffe04a'});this.ev('zap',{});h.abWhy='OVERCHARGE: '+inR.length+' in range';h.abWhyT=this.t+3;}}}
       if(TC&&h.tcT<=0&&(h.en||0)>=TC.en){const inR=(a,b,R)=>{const dx=a.x-b.x,dz=((a.gy!=null?a.gy:this.G)-(b.gy!=null?b.gy:this.G))/.45;return dx*dx+dz*dz<=R*R;};let best=null,bs=0;
         for(const e of live){const d=Math.abs(e.x-hx);if(d<TC.min||d>TC.max)continue;const sp={x:e.x,gy:e.gy!=null?e.gy:this.G};const got=live.filter(o=>inR(o,sp,TC.r*.85));const sc=got.length+(got.some(o=>o.boss||o.nem||o.max>=60)?1:0);if(sc>bs){bs=sc;best=sp;}}
         /* 0.12.194: Blind Aggression or Squander calls it on 2 with a big one; Optimal waits for 4 while he's safe */
@@ -3616,12 +3677,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794492781';const BGI=new Image();BGI.src='crawl_bg.png?v=1794492781';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794492781';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794493171';const BGI=new Image();BGI.src='crawl_bg.png?v=1794493171';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794493171';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794492781';XIMG.wave.src='crawl_wave.png?v=1794492781';XIMG.chibi.src='crawl_chibi.png?v=1794492781';XIMG.flannel.src='crawl_flannel.png?v=1794492781';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794492781';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794492781';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794492781';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794492781';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794492781';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794492781';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794492781';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794492781';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794492781';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794492781';XIMG.rain.src='crawl_rain.png?v=1794492781';XIMG.druid.src='crawl_druid.png?v=1794492781';XIMG.camp.src='crawl_campfire.png?v=1794492781';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794492781';XIMG.tornado.src='crawl_fx_tornado.png?v=1794492781';XIMG.vine.src='crawl_fx_vine.png?v=1794492781';XIMG.thorn.src='crawl_fx_thorn.png?v=1794492781';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794493171';XIMG.wave.src='crawl_wave.png?v=1794493171';XIMG.chibi.src='crawl_chibi.png?v=1794493171';XIMG.flannel.src='crawl_flannel.png?v=1794493171';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794493171';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794493171';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794493171';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794493171';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794493171';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794493171';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794493171';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794493171';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794493171';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794493171';XIMG.rain.src='crawl_rain.png?v=1794493171';XIMG.druid.src='crawl_druid.png?v=1794493171';XIMG.camp.src='crawl_campfire.png?v=1794493171';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794493171';XIMG.tornado.src='crawl_fx_tornado.png?v=1794493171';XIMG.vine.src='crawl_fx_vine.png?v=1794493171';XIMG.thorn.src='crawl_fx_thorn.png?v=1794493171';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794492781';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794492781';XIMG.obst.src='crawl_obst.png?v=1794492781';XIMG.cityob.src='crawl_cityob.png?v=1794492781';XIMG.harvest.src='crawl_harvest.png?v=1794492781';XIMG.wraith.src='crawl_wraith.png?v=1794492781';XIMG.cars.src='crawl_cars.png?v=1794492781';XIMG.robot.src='crawl_robot.png?v=1794492781';XIMG.cultist.src='crawl_cultist.png?v=1794492781';XIMG.tentacle.src='crawl_tentacle.png?v=1794492781';XIMG.boom.src='crawl_boom.png?v=1794492781';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794493171';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794493171';XIMG.obst.src='crawl_obst.png?v=1794493171';XIMG.cityob.src='crawl_cityob.png?v=1794493171';XIMG.harvest.src='crawl_harvest.png?v=1794493171';XIMG.wraith.src='crawl_wraith.png?v=1794493171';XIMG.cars.src='crawl_cars.png?v=1794493171';XIMG.robot.src='crawl_robot.png?v=1794493171';XIMG.cultist.src='crawl_cultist.png?v=1794493171';XIMG.tentacle.src='crawl_tentacle.png?v=1794493171';XIMG.boom.src='crawl_boom.png?v=1794493171';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -4117,7 +4178,9 @@ function drawGame(ctx,g,W,oy){
     ctx.restore();
     if(h.gritT>0){const p=.5+.5*Math.sin(g.t*9),fa=Math.min(1,h.gritT/.5);ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(230,175,90,${(.35+.3*p)*fa})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(Math.round(h.x+lx),G-24,13+p,26+p,0,0,7);ctx.stroke();
       ctx.fillStyle=`rgba(255,215,140,${.8*fa})`;for(let i=0;i<4;i++){const an=g.t*3+i*1.57;ctx.fillRect(Math.round(h.x+lx+Math.cos(an)*13),Math.round(G-24+Math.sin(an)*24),1.5,1.5);}ctx.restore();}   // Grit_Teeth: a steady amber brace around him
-    if(h.shield>0){ctx.strokeStyle='rgba(154,230,255,.7)';ctx.beginPath();ctx.ellipse(Math.round(h.x+lx),G-24,15,27,0,0,7);ctx.stroke();}
+    if(h.shield>0){ctx.strokeStyle=h.staticT>0?'rgba(255,230,90,.75)':'rgba(154,230,255,.7)';ctx.beginPath();ctx.ellipse(Math.round(h.x+lx),G-24,15,27,0,0,7);ctx.stroke();
+      if(h.staticT>0){ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle='rgba(255,240,140,.9)';ctx.lineWidth=.6;for(let i=0;i<3;i++){const a=g.t*7+i*2.1+Math.sin(g.t*31+i)*.6,x0=h.x+lx+Math.cos(a)*15,y0=G-24+Math.sin(a)*27;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x0+Math.sin(g.t*40+i)*3,y0+2.5);ctx.lineTo(x0+1.5,y0+5);ctx.stroke();}ctx.restore();}}   /* 0.12.195 Static_Shield: yellow, crackling */
+    if(h.ocN>0){ctx.save();ctx.globalCompositeOperation='lighter';const hx2=h.x+lx+(h.face||1)*4,hy2=G-16;glow(ctx,hx2,hy2,5+Math.sin(g.t*20),'#ffe04a',.55);ctx.fillStyle='#fffbe0';for(let i=0;i<h.ocN;i++){const a=g.t*9+i*2.1;ctx.fillRect(Math.round(hx2+Math.cos(a)*4),Math.round(hy2+Math.sin(a)*4),1,1);}ctx.restore();}   /* Overcharge: crackling hands, one orbiting spark per charged shot */
     const bx=h.x+(h.dodgeX||0)+(h.wanderX||0),G0=G;{const G=G0-(h.leapH||0)*1.2*HS;if(!h.ghost)plate(ctx,h,bx,G-(hbOf(h).h+17),22,true);   /* 0.12.75: the plate rides up with a hero on the lookout or a jetpack */
     {const cb=castBar(h);if(cb&&!PLATE_OFF){const w=18,x=Math.round(bx-w/2),y=Math.round(G-(hbOf(h).h+17))+6;const k=Math.max(0,Math.min(1,cb[0]));   /* 0.12.71: cast / channel / reload bar under the plate */
       ctx.fillStyle='#120a14';ctx.fillRect(x-1,y-1,w+2,3);ctx.fillStyle='#2a2430';ctx.fillRect(x,y,w,1);ctx.fillStyle=cb[1];ctx.fillRect(x,y,Math.max(1,Math.round(w*k)),1);
@@ -4139,6 +4202,7 @@ function drawGame(ctx,g,W,oy){
       if(e.nem||e.hp<e.max||e.bleedT>0||e.burnT>0||e.slow>0||e.stun>0)plate(ctx,e,e.x,y-2,e.nem?24:e.elite?20:14,false,e.nem?'#ff4a3a':e.elite?'#ffb020':'#e8303a');
       if(e.nem){ctx.save();ctx.font='bold 7px monospace';ctx.textAlign='center';const nm=e.nem.name+' '+'★'.repeat(e.nem.rank);ctx.fillStyle='#000';ctx.fillText(nm,e.x+.8,y-7.2);ctx.fillStyle=e.nem.col||'#ff6a4a';ctx.fillText(nm,e.x,y-8);ctx.restore();}
       if(e.distractT>0){ctx.fillStyle='#e8fff0';ctx.font='bold 6px monospace';ctx.textAlign='center';ctx.fillText('?',Math.round(e.x),Math.round(y-12-Math.abs(Math.sin(g.t*6))*1.5));}   // 0.12.68: off to check the noise
+      if(e.rootT>0&&!e.boss){const fx0=Math.round(e.x),fy0=Math.round(gy);ctx.strokeStyle='#4a7a2a';ctx.lineWidth=1;for(let i=0;i<4;i++){const sx=fx0-5+i*3.3;ctx.beginPath();ctx.moveTo(sx,fy0+1);ctx.quadraticCurveTo(sx+(i%2?3:-3),fy0-4-i%2*2,sx+(i%2?-1:1),fy0-7);ctx.stroke();}ctx.fillStyle='#8a6a40';ctx.fillRect(fx0-1,fy0-6,2,6);ctx.fillStyle='#e8e0c8';ctx.fillRect(fx0-1,fy0-7,2,1);}   /* 0.12.195 Snare_Arrow: the arrow pinned at his feet, vines tangled round his legs */
       if(e.markT>0){const my=y-9,p=.5+.5*Math.sin(g.t*10);ctx.strokeStyle=`rgba(255,70,60,${.6+.4*p})`;ctx.lineWidth=1;ctx.strokeRect(Math.round(e.x)-3.5,Math.round(my)-3.5,7,7);ctx.fillStyle='#ff4a3a';ctx.fillRect(Math.round(e.x)-.5,Math.round(my)-.5,1,1);}   // Pinning_Shot mark
       return;}
     const n='e_'+e.type,a=SP[n];const big=FH(a)===64;
@@ -4536,7 +4600,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.194</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.195</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
