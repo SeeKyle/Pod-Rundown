@@ -32,16 +32,16 @@ const CFG={
     // rebuilt roster: only the zombie so far. animAtk = attack animation length (s), hitAt = when in it the blow lands (s)
     // Kyle's zombie: 25 HP (0.12.3, was 15), 1d6 per hit, swings every 1.25s, 12px reach, very slow, 3 armor (=6% less damage), small-medium knockback resistance,
     // 25% on hit to Bleed (20 dmg over 5s), item 4% / small gold 17.5%. Three looks (skins), identical stats.
-    zombie:  {undead:1,scale:.88,aimScale:.88,hp:25,dmgDie:6,spd:8.8,   /* 0.12.38 (Kyle): 12% smaller, about the size of our humanoids */atk:1.25,reach:12,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
-              itemChance:.04,goldChance:.175,goldAmt:[2,6],stack:true,xp:2,pts:10,cost:1.2,animAtk:.6,hitAt:.38,skins:['zombie','zombie_f','zombie_b']},
+    zombie:  {undead:1,scale:.88,aimScale:.88,hp:25,dmgDie:6,spd:9.5,   /* 0.12.136 (Kyle): 9.5 (was 8.8) */   /* 0.12.38 (Kyle): 12% smaller, about the size of our humanoids */atk:1.25,reach:12,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
+              itemChance:.04,goldChance:.105,goldAmt:[2,6],stack:true,xp:2,pts:10,cost:1.2,animAtk:.6,hitAt:.38,skins:['zombie','zombie_f','zombie_b']},
     // 0.12.62 (Kyle) Fireman_Zombie: a zombie in turnout gear. A touch slower than a normal zombie, 1.25x the life, triple the armor,
     //   hits slightly harder, and can't be burned (fire and burn damage do nothing to him). Swings a heavy gloved arm.
     // 0.12.65 (Kyle): now 4x a zombie's health (100) and armor (12) at 2/5 its speed
-    fireman: {undead:1,scale:.88,aimScale:.88,hp:100,dmgDie:7,spd:3.5,atk:1.25,reach:12,armorPts:12,kbRes:.6,bleed:{chance:.25,dmg:20,dur:5},fireImmune:1,name:'Fireman_Zombie',
-              itemChance:.05,goldChance:.2,goldAmt:[3,7],stack:true,xp:5,pts:30,cost:3.2,animAtk:.6,hitAt:.4,skins:['zombie_fire']},
+    fireman: {undead:1,scale:.88,aimScale:.88,hp:100,dmgDie:7,spd:5,   /* 0.12.136 (Kyle): 5 (was 3.5) */atk:1.25,reach:12,armorPts:12,kbRes:.6,bleed:{chance:.25,dmg:20,dur:5},fireImmune:1,name:'Fireman_Zombie',
+              itemChance:.05,goldChance:.12,goldAmt:[3,7],stack:true,xp:5,pts:30,cost:3.2,animAtk:.6,hitAt:.4,skins:['zombie_fire']},
     // Kyle's werewolf, the first fast enemy: zombie stats except 30 HP (0.12.3, was 40) and fast; hunts the back-line heroes first
     werewolf:{hp:38,dmgDie:7,spd:44,atk:1.2,reach:12,armorPts:4,   /* 0.12.65: a bit sturdier and meaner (was 30 HP, 1d6, 3 armor) */kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
-              itemChance:.04,goldChance:.175,goldAmt:[2,6],xp:3,pts:16,cost:2.2,animAtk:.7,hitAt:.45,backline:true,fps:12,scale:.77,
+              itemChance:.04,goldChance:.105,goldAmt:[2,6],xp:3,pts:16,cost:2.2,animAtk:.7,hitAt:.45,backline:true,fps:12,scale:.77,
               leap:{dmg:10,gap:20,dur:.5,cd:8}},   // jumping attack: bounds over a 20px gap and lands for 10 damage
   },
   harvestLive:true,wraithLive:true,   /* 0.12.132 (Kyle): switched on */   /* 0.12.127 (Kyle): switched on to try him */
@@ -1213,6 +1213,7 @@ class Game{
     this.W=opt.W||CFG.W;this.H=CFG.H;this.G=CFG.GROUND;
     this.rng=opt.rng||Math.random;this.demo=!!opt.demo;this.run=opt.run;this.slot=opt.slot;if(!this.demo)setRunModes(this.run);this.hardcore=!this.demo&&!!(this.run&&this.run.hardcore);
     this.st=CFG.stage(this.run.stage,this.run.prestige);
+    this.nemQ=(this.run.nemeses||[]).filter(n=>n.stage<this.st.n).slice(0,1);   /* 0.12.136: one returning Nemesis per stage, 40% of the way in */
     this.dist=0;this.t=0;this.events=[];this.enemies=[];this.proj=[];this.fx=[];this.minions=[];this.texts=[];
     this.budget=2;this.bossSpawned=false;this.over=null;this.kills=0;this.shake=0;this.devourStacks=0;
     this.stageXp=0;this.stageScore=0;this.loot=[];this.stageGold=0;this.stageItems=[];this.stageFood=0;this.stageWater=0;this.stageParts=0;this.stats={};
@@ -1283,6 +1284,33 @@ class Game{
   front(){const a=this.alive();return a.length?a.reduce((m,h)=>h.x>m.x?h:m,a[0]):null;}
   ev(type,o){this.events.push(Object.assign({type},o||{}));}
   // ---------------------------------------------------------------- spawning
+  /* 0.12.136 (Kyle) NEMESIS (Shadow of Mordor style): IF an enemy downs a hero THEN it's promoted: it gets a name, heals to full,
+     grows bigger and tougher, glows red and wears a name tag. Each further hero it downs ranks it up (max III).
+     IF it's still alive when the stage ends THEN it remembers you: it comes back in a later stage, one rank higher.
+     Killing one pays out bonus gold and XP. */
+  nemesis(e,h){const run=this.run;run.nemeses=run.nemeses||[];const N=e.nem;
+    if(!N){const F=['Rotgut','Gnasher','Mulch','Grimjaw','Stitches','Bonesaw','Sludge','Gristle','Moldy Mike','Chompers','Big Sheila','Toejam','Wormtooth','Hollowgut','Larry'],
+        T=['the Hungry','Ankle-Biter','the Unkillable','Hero-Eater','the Persistent','of the Gutter','the Smelly','Kneecapper','the Patient','Two-Bites'];
+      const used=new Set(run.nemeses.map(n=>n.name));let name;for(let i=0;i<20;i++){name=F[Math.floor(this.rng()*F.length)]+' '+T[Math.floor(this.rng()*T.length)];if(!used.has(name))break;}
+      e.nem={id:'n'+Date.now()+Math.floor(this.rng()*1e4),name,rank:0,kills:[]};run.nemeses.push({id:e.nem.id,name,rank:0,type:e.type,kills:[],stage:this.st.n});}
+    this.nemRank(e,h);this.ev('nemesis',{name:e.nem.name,rank:e.nem.rank,trait:(e.nem.traits||[]).slice(-1)[0]});}
+  /* Nemesis traits (Kyle: skills they pick up): one when it first rises, a second at rank III.
+     Ravenous: heals 40% of the damage it deals.  Bloodthirsty: every hit makes them bleed.  Bulwark: +8 armor and 70% knockback resistance.
+     Howler: every 12s it howls and 2 zombies come running.  Cleaver: each swing also hits another hero standing next to the target (50%). */
+  nemOnHit(e,V,d){if(e.nemHas('rav')){e.hp=Math.min(e.max,e.hp+d*.4);}
+    if(e.nemHas('cleave')){const o=this.alive().find(o=>o!==V&&!o.pet&&Math.abs(this.heroX(o)-this.heroX(V))<10&&Math.abs((o.gy||this.G)-(V.gy||this.G))<8);if(o)this.hurtHero(o,d*.5,e);}}
+  nemTrait(e){const N=e.nem,pool=['rav','blood','bulwark','howl','cleave'].filter(t=>!(N.traits||[]).includes(t));const t=pool[Math.floor(this.rng()*pool.length)];(N.traits=N.traits||[]).push(t);
+    if(t==='bulwark'){e.armorPts=(e.armorPts||0)+8;e.nemKb=.7;}return t;}
+  nemRank(e,h){const N=e.nem;if(N.rank>=3){e.hp=e.max;return;}N.rank++;if(h)N.kills.push(h.key);
+    e.nemHas=t=>(N.traits||[]).includes(t);if(N.rank===1&&!(N.traits||[]).length)this.nemTrait(e);else if(N.rank===3&&(N.traits||[]).length<2)this.nemTrait(e);
+    const r=()=>this.rng();   /* 0.12.136 (Kyle): no two promotions alike: every rank-up rolls its own boosts */
+    const hpM=N.rank===1?1.5+r()*.7:1.2+r()*.35,dmM=1.1+r()*.3,arm=1+Math.floor(r()*6);e.max=Math.round(e.max*hpM);e.hp=e.max;e.dmg*=dmM;e.dmgMul*=dmM;e.armorPts=(e.armorPts||0)+arm;
+    if(N.col==null){N.col=['#ff2a1a','#ff8a1a','#b04aff','#4aff7a','#ffd23f','#4ad8ff'][Math.floor(r()*6)];N.size=.95+r()*.25;}
+    const R=(this.run.nemeses||[]).find(n=>n.id===N.id);if(R){R.rank=N.rank;R.kills=N.kills.slice();R.stage=this.st.n;R.traits=(N.traits||[]).slice();R.col=N.col;R.size=N.size;}
+    this.text(e.x,(e.gy||this.G)-48,N.name.toUpperCase()+(N.rank>1?' · RANK '+'I'.repeat(N.rank):' RISES'),'#ff4a3a');this.shake=Math.max(this.shake||0,.3);
+    for(const o of this.alive())if(Math.random()<.5)Comms.bubble(this,o,Comms.pick(N.rank>1?['It\'s getting stronger!','Not HIM again!',N.name.split(' ')[0]+' is back for more!']:['That one\'s got a name now...','We\'ve made an enemy.','Watch out for that one!']));}
+  spawnNemesis(n){const e=this.spawnEnemy(n.type||'zombie',{x:this.W+12});e.nem={id:n.id,name:n.name,rank:0,kills:(n.kills||[]).slice(),traits:[]};const r=Math.min(3,(n.rank||1)+1);e.nem.col=n.col;e.nem.size=n.size;for(const t of (n.traits||[])){e.nem.traits.push(t);if(t==='bulwark'){e.armorPts=(e.armorPts||0)+8;e.nemKb=.7;}}
+    for(let i=0;i<r;i++)this.nemRank(e,null);this.ev('nemesis',{name:n.name,rank:e.nem.rank,back:1});return e;}
   spawnEnemy(type,opt){
     const E=CFG.enemies[type];const st=this.st;const elite=false;   /* 0.12.87 (Kyle): no elite zombies for now (was 7% +1% a stage) */
     const hp=Math.max(1,Math.round(E.hp*st.hpMul*ENEMY_HP))*(elite?2.6:1);   /* 0.12.103: zombies trimmed with hero damage so fights take as long as before */
@@ -1323,7 +1351,7 @@ class Game{
     if(src&&src.key&&!this.demo){const S=this.st8(src);S.dmg+=amt;if(crit)S.crits++;if(opt.head)S.heads++;if(amt>S.biggest)S.biggest=amt;}   /* stage stats */
     this.splatter(e,amt,1,crit);
     if(opt.kb>0){const ratio=Math.min(1,amt/Math.max(1,e.max));let kb=ratio<.08?ratio*12:ratio<.25?2+ratio*14:5+ratio*12;   // chip ~0, medium small, big decent
-      if(crit)kb*=1.6;if(e.boss)kb*=.12;kb*=opt.kb;if(e.fly)kb*=.7;if(e.E&&e.E.kbRes)kb*=1-e.E.kbRes;e.kbv=Math.max(e.kbv||0,Math.min(18,kb)*7);e.kbDir=src&&src.x!=null&&!e.boss?(e.x>=src.x?1:-1):1;}
+      if(crit)kb*=1.6;if(e.boss)kb*=.12;kb*=opt.kb;if(e.fly)kb*=.7;if(e.nemKb)kb*=1-e.nemKb;else if(e.E&&e.E.kbRes)kb*=1-e.E.kbRes;e.kbv=Math.max(e.kbv||0,Math.min(18,kb)*7);e.kbDir=src&&src.x!=null&&!e.boss?(e.x>=src.x?1:-1):1;}
     if(!opt.quiet||crit)this.text(e.x+(this.rng()*8-4),e.y-(e.boss?100:e.fly?16:44),Math.round(amt),crit?'#ffd23f':opt.fire?'#ffb060':'#ffffff',crit);   /* burn ticks only show a number when they crit */
     if(src&&src.lifesteal>0&&src.alive){const b0=src.hp;src.hp=Math.min(src.max,src.hp+amt*src.lifesteal);if(src.key)this.st8(src).heal+=src.hp-b0;}
     if(!ABILITIES_OFF&&src&&src.style&&src.style.leech)this.healHero(this.weakest(),amt*src.style.leech*.5,true);
@@ -1360,6 +1388,7 @@ class Game{
         else if(m>1&&this.rng()<.03*m)this.loot.push({kind:this.rng()<.5?'water':'food',x:e.x+(this.rng()*10-5),gy:e.gy,amt:1,t:0});
         if(this.rng()<.04*m*((this.mods&&this.mods.parts)||1)*PK.p)this.loot.push({kind:'parts',x:e.x+(this.rng()*10-5),gy:e.gy,amt:1+(this.rng()<.5?1:0),t:0});}
       const iChance=(e.boss?1:e.elite?.1+.01*st.n:(e.E.itemChance!=null?e.E.itemChance:.004+.0012*st.n))*PK.i;if(this.rng()<iChance){const it=rollItem(this.run,this.rng,e.boss?'U':null,e.boss?'boss':e.elite?'elite':'mob');if(it)this.loot.push({kind:'item',x:e.x+6,item:it,t:0});}}
+    if(e.nem){const N=e.nem;this.run.nemeses=(this.run.nemeses||[]).filter(n=>n.id!==N.id);const gd=15*N.rank;this.stageGold+=gd;this.gainXp(20*N.rank*this.st.xpMul);this.ev('nemdown',{name:N.name});this.text(e.x,(e.gy||this.G)-50,N.name.toUpperCase()+' IS DEAD · +'+gd+'g','#ffd23f');}
     if(e.boss&&(e.type==='harvest'||e.type==='wraith'))this.fx.push({k:e.type+'die',x:e.x,gy:this.G,t:0,life:2.2,raw:1});
     if(e.boss){this.ev('bossdown',{name:e.B.name});this.shake=1;for(const o of this.enemies)if(!o.dead){o.dead=true;this.fx.push({k:'poof',x:o.x,y:o.y-20,t:0});}}
   }
@@ -1428,7 +1457,7 @@ class Game{
     this.splatter(h,amt,-1,false);
     this.procs(h,'whenhit',from,amt);
     if(h.hp/h.max<.35)for(const o of this.alive())this.procs(o,'allylow',null,0,h);
-    if(h.hp<=0)this.heroDown(h);
+    if(h.hp<=0){if(from&&from.E&&!from.boss&&!from.dead&&!h.pet&&!h.dog)this.nemesis(from,h);this.heroDown(h);}
     return true;
   }
   heroDown(h){if(this.tryResurge(h))return;if(!h.pet)for(const o of this.alive())if(o.key==='shoshi'&&o!==h){o.pingT=4;this.text(this.heroX(o),(o.gy||this.G)-50,'PING!','#b38cff');}   /* Circle_Ping */if(h.cap&&h.cap.last&&!h.lsUsed&&!h.pet){h.lsUsed=1;h.hp=1;h.alive=true;h.invulnT=3;this.text(this.heroX(h),(h.gy||this.G)-50,'LAST STAND!','#ffd23f');this.fx.push({k:'ring',x:this.heroX(h),y:(h.gy||this.G)-10,r:18,t:0,c:'#ffd23f'});return;}   /* 0.12.106 Last Stand talent */h.building=null;h.repairing=null;h.syph=null;h.jet=null;h.lz=null;h.nano=null;h.stealthT=0;h.leap=null;h.leapH=0;h.whirl=null;h.dash=null;h.rolling=null;   /* no frozen mid-move poses */for(const o of this.alive())if(o!==h&&Math.abs(this.heroX(o)-this.heroX(h))<90)Brain.panic(this,o,'down');if(h.key&&!this.demo)this.st8(h).downs++;if(!h.pet&&h.cap&&h.cap.wind&&!h.swUsed){h.swUsed=1;h.swT=this.t+3;}   /* Second Wind talent */if(!h.pet){h.downed=1;h.revT=0;h.downT=this.t;h.search=null;h.plan=null;h.alDecide=null;h.srDecide=null;h.building=null;h.repairing=null;h.smoking=null;h.rush=null;h.cast=null;}   /* 0.12.102 fix: going down drops whatever job I was in the middle of (alarm, search, build...) *//* 0.12.22: downed, not dead: an ally can help them up */if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
@@ -1659,6 +1688,7 @@ class Game{
         this.strays=[];const ats=this.clusters.map(q=>q.at);for(let i=0;i<STRAYS_PER_STAGE(this.st.n)*3&&this.strays.length<STRAYS_PER_STAGE(this.st.n);i++){
           const k=Math.floor(this.rng()*(ats.length-1));const a=ats[k],b=ats[k+1];if(b-a<this.st.len*.07)continue;const x=a+(b-a)*(.3+.4*this.rng());if(this.strays.some(s=>Math.abs(s-x)<this.st.len*.05))continue;this.strays.push(x);}
         this.strays.sort((p,q)=>p-q);}
+      if(!this.demo&&this.nemQ&&this.nemQ.length&&this.dist>=this.st.len*.4)this.spawnNemesis(this.nemQ.shift());
       while(this.strays&&this.strays.length&&this.dist>=this.strays[0]){this.strays.shift();if(this.enemies.filter(e=>!e.dead).length<24)this.spawnEnemy('zombie',{x:this.W+10+this.rng()*22,elite:'roll',stray:1});}
       const C0=this.clusters[0];
       if(C0&&this.dist>=C0.at){if(!C0.alerted){C0.alerted=1;if(!this.demo&&this.run&&upgT(this.run,'radio')>=2)for(const h of this.alive())if(!h.pet){if(!(h.alertT>0))h.acc+=10;h.alertT=5;}}   /* 0.12.105 Radio Shack II: early warning */C0.t-=dt;if(C0.t<=0&&this.enemies.filter(e=>!e.dead).length<28){C0.left--;C0.t=.12+this.rng()*.35;
@@ -1823,7 +1853,8 @@ class Game{
           if(!inRange)e.atkT=Math.min(e.E.atk,e.atkT+dt);
           else{e.atkT+=dt;if(e.atkT>=e.E.atk){e.atkT=0;e.anim=1;e.animT=e.E.animAtk||.3;
             const blow=()=>{if(e.dead||e.stun>0||!V.alive||Math.abs(e.gy-(V.gy||this.G))>(V===T?3:10)||Math.abs(e.x-this.heroX(V))>Rch+bodyT(V)+2)return;/* no swinging at thin air */const d=e.E.dmgDie?Math.max(1,Math.floor((1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul)):e.dmg;const took=this.hurtHero(V,d,e);
-              const B=e.E.bleed;if(B&&took&&V.alive&&this.rng()<B.chance)this.bleed(V,B.dmg*e.dmgMul,B.dur);};
+              const B=e.E.bleed;if(B&&took&&V.alive&&this.rng()<(e.nemHas&&e.nemHas('blood')?1:B.chance))this.bleed(V,B.dmg*e.dmgMul,B.dur);
+              if(took&&e.nem)this.nemOnHit(e,V,d);};
             if(e.E.hitAt)setTimeoutSafe(this,e.E.hitAt,blow);else blow();}}
         }else{
         const wall=this.minions.filter(m=>m.x<e.x+4&&m.x>f.x+10).reduce((b,m)=>!b||m.x>b.x?m:b,null);const bx=wall&&wall.x+12>blockX?wall.x+12:blockX;
@@ -2917,6 +2948,7 @@ class Game{
       if(R.doorT>0)R.doorT-=dt;}}
   /* zombies and storefront roofs: walk in the front door -> vanish -> come out the roof door -> fight whoever's up there -> hop down */
   roofEnemy(e,dt,scroll){if(e.emergeT>0)e.emergeT-=dt;
+    if(e.nem&&e.nemHas&&e.nemHas('howl')){e.howlT=(e.howlT==null?4:e.howlT)-dt;if(e.howlT<=0){e.howlT=12;for(let i=0;i<2;i++)this.spawnEnemy('zombie',{x:this.W+10+i*10});this.text(e.x,(e.gy||this.G)-44,'HOWLS!','#ff6a4a');this.ev('shout',{});}}
     if(e.inside!=null){const o=e.roofO;e.inside-=dt;if(o)e.x=o.x;if(e.inside>0&&o&&this.obst.includes(o))return true;
       e.inside=null;if(e.goingDown||!o||!o.roof||!this.obst.includes(o)||!o.roof.occ){e.goingDown=0;e.gy=LANES[0];e.laneI=0;e.roofO=null;if(o)e.x=o.x;e.emergeT=.5;return false;}   /* back out the front door */
       e.onRoof=1;e.rx=o.roof.dx||0;e.gy=o.roof.y;o.roof.doorT=.6;e.atkT2=.6;e.emergeT=.5;return true;}   /* 0.12.130 (Kyle): steps out of the dark doorway faded and brightens */
@@ -3301,12 +3333,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794469374';const BGI=new Image();BGI.src='crawl_bg.png?v=1794469374';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794469374';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794469669';const BGI=new Image();BGI.src='crawl_bg.png?v=1794469669';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794469669';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794469374';XIMG.wave.src='crawl_wave.png?v=1794469374';XIMG.chibi.src='crawl_chibi.png?v=1794469374';XIMG.flannel.src='crawl_flannel.png?v=1794469374';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794469374';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794469374';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794469374';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794469374';XIMG.rain.src='crawl_rain.png?v=1794469374';XIMG.druid.src='crawl_druid.png?v=1794469374';XIMG.camp.src='crawl_campfire.png?v=1794469374';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794469374';XIMG.tornado.src='crawl_fx_tornado.png?v=1794469374';XIMG.vine.src='crawl_fx_vine.png?v=1794469374';XIMG.thorn.src='crawl_fx_thorn.png?v=1794469374';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794469669';XIMG.wave.src='crawl_wave.png?v=1794469669';XIMG.chibi.src='crawl_chibi.png?v=1794469669';XIMG.flannel.src='crawl_flannel.png?v=1794469669';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794469669';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794469669';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794469669';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794469669';XIMG.rain.src='crawl_rain.png?v=1794469669';XIMG.druid.src='crawl_druid.png?v=1794469669';XIMG.camp.src='crawl_campfire.png?v=1794469669';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794469669';XIMG.tornado.src='crawl_fx_tornado.png?v=1794469669';XIMG.vine.src='crawl_fx_vine.png?v=1794469669';XIMG.thorn.src='crawl_fx_thorn.png?v=1794469669';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794469374';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794469374';XIMG.obst.src='crawl_obst.png?v=1794469374';XIMG.cityob.src='crawl_cityob.png?v=1794469374';XIMG.harvest.src='crawl_harvest.png?v=1794469374';XIMG.wraith.src='crawl_wraith.png?v=1794469374';XIMG.cars.src='crawl_cars.png?v=1794469374';XIMG.robot.src='crawl_robot.png?v=1794469374';XIMG.cultist.src='crawl_cultist.png?v=1794469374';XIMG.tentacle.src='crawl_tentacle.png?v=1794469374';XIMG.boom.src='crawl_boom.png?v=1794469374';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794469669';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794469669';XIMG.obst.src='crawl_obst.png?v=1794469669';XIMG.cityob.src='crawl_cityob.png?v=1794469669';XIMG.harvest.src='crawl_harvest.png?v=1794469669';XIMG.wraith.src='crawl_wraith.png?v=1794469669';XIMG.cars.src='crawl_cars.png?v=1794469669';XIMG.robot.src='crawl_robot.png?v=1794469669';XIMG.cultist.src='crawl_cultist.png?v=1794469669';XIMG.tentacle.src='crawl_tentacle.png?v=1794469669';XIMG.boom.src='crawl_boom.png?v=1794469669';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3799,11 +3831,12 @@ function drawGame(ctx,g,W,oy){
       if(A){nm=A.name;const N=H[nm].n;fr=Math.min(N-1,Math.floor(A.t/A.T*N));}else if(e.hitFlash>0){nm='hurt';fr=0;}else{const mov=e.x>(e._px==null?e.x:e._px)+.01||e.x<(e._px==null?e.x:e._px)-.01;nm=mov?(W?'drift':'walk'):(e.phase&&!W?'enraged':'idle');fr=Math.floor(g.t*(mov?9:7))%H[nm].n;}
       e._px=e.x;const a=H[nm];shadow(ctx,e.x,G,W?22:30);drawUnit(ctx,Object.assign({},a,{img:e.type}),fr,e.x,G-(W?6+Math.sin(g.t*2)*3:0),.95,null,e.hitFlash,0,true);return;}   /* the wraith floats */
     if(e.boss){const bf=e.animT>0?2:Math.floor(g.t*2)%2;const y=e.fly?e.y-90:G-124;shadow(ctx,e.x,G,26);spr(ctx,'b_'+e.type,bf,e.x-64,y,false,null,e.hitFlash);return;}
-    if(UNITS[e.skin||e.type]){const U=UNITS[e.skin||e.type];const [A,uf]=unitFrame(e,U);const gy=e.gy!=null?G:G+e.lane;const sc=(e.E.scale||1)*(e.elite?1.1:1);shadow(ctx,e.x,gy,8);
+    if(UNITS[e.skin||e.type]){const U=UNITS[e.skin||e.type];const [A,uf]=unitFrame(e,U);const gy=e.gy!=null?G:G+e.lane;const sc=(e.E.scale||1)*(e.elite?1.1:1)*(e.nem?(1.12+.1*e.nem.rank)*(e.nem.size||1):1);shadow(ctx,e.x,gy,8);if(e.nem){glow(ctx,e.x,gy-10,10+e.nem.rank*2,e.nem.col||'#ff2a1a',.16+.04*Math.sin(g.t*4));}   /* 0.12.136 Nemesis: bigger with a red glow */
       const dsc=A.pre?sc/A.pre:sc;drawUnit(ctx,A,uf,e.x,gy,dsc,null,e.hitFlash,0,e.face>0);const y=gy-U.walk.ay*(U.walk.pre?sc/U.walk.pre:sc);   /* pre-shrunk art (zombies) is drawn 1:1 */
       if(e.slow>0){ctx.fillStyle='rgba(154,230,255,.8)';for(let i=0;i<3;i++)ctx.fillRect(Math.round(e.x-6+i*5),Math.round(y+8+((g.t*20+i*7)%20)),1,1);}
       if(e.burnT>0){ctx.fillStyle=Math.random()<.5?'#ffb040':'#ff5a1a';ctx.fillRect(Math.round(e.x-3+Math.random()*6),Math.round(y+10+Math.random()*12),1,2);}
-      if(e.hp<e.max||e.bleedT>0||e.burnT>0||e.slow>0||e.stun>0)plate(ctx,e,e.x,y-2,e.elite?20:14,false,e.elite?'#ffb020':'#e8303a');
+      if(e.nem||e.hp<e.max||e.bleedT>0||e.burnT>0||e.slow>0||e.stun>0)plate(ctx,e,e.x,y-2,e.nem?24:e.elite?20:14,false,e.nem?'#ff4a3a':e.elite?'#ffb020':'#e8303a');
+      if(e.nem){ctx.save();ctx.font='bold 7px monospace';ctx.textAlign='center';const nm=e.nem.name+' '+'★'.repeat(e.nem.rank);ctx.fillStyle='#000';ctx.fillText(nm,e.x+.8,y-7.2);ctx.fillStyle=e.nem.col||'#ff6a4a';ctx.fillText(nm,e.x,y-8);ctx.restore();}
       if(e.distractT>0){ctx.fillStyle='#e8fff0';ctx.font='bold 6px monospace';ctx.textAlign='center';ctx.fillText('?',Math.round(e.x),Math.round(y-12-Math.abs(Math.sin(g.t*6))*1.5));}   // 0.12.68: off to check the noise
       if(e.markT>0){const my=y-9,p=.5+.5*Math.sin(g.t*10);ctx.strokeStyle=`rgba(255,70,60,${.6+.4*p})`;ctx.lineWidth=1;ctx.strokeRect(Math.round(e.x)-3.5,Math.round(my)-3.5,7,7);ctx.fillStyle='#ff4a3a';ctx.fillRect(Math.round(e.x)-.5,Math.round(my)-.5,1,1);}   // Pinning_Shot mark
       return;}
@@ -4187,7 +4220,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.135</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.136</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -4503,7 +4536,7 @@ function loop(now){
   const g=CC.game;if(!g||root.hidden)return;let dt=Math.min(.05,(now-CC.last)/1000);CC.last=now;
   if(!CC.paused){for(let i=0;i<CC.speed;i++)g.step(dt);}
   for(const e of g.events){if(e.type==='levelup'){sfx('level');flash('LEVEL UP!',900);}if(e.type==='boss'){sfx('boss');flash(e.name.toUpperCase(),1800);}
-    if(e.type==='herolevel')sfx('level');if(e.type==='enrage')flash('ENRAGED!',1400);if(e.type==='itemdrop'){sfx('level');flash('ITEM FOUND!',900);}if(e.type==='herodown')sfx('die');if(e.type==='gun')sfx(e.big?'biggun':'gun');if(e.type==='boom')sfx('boom');if(e.type==='dash')sfx('dash');if(e.type==='bow')sfx('bow');if(e.type==='heal')sfx('heal');if(e.type==='camp')sfx('camp');if(e.type==='whoosh')sfx('whoosh');if(e.type==='thorns')sfx('thorns');if(e.type==='bell')sfx('bell');if(e.type==='lazer')sfx('lazer',e);if(e.type==='flame')sfx('flame');if(e.type==='wind')sfx('wind');if(e.type==='shout')sfx('shout');}
+    if(e.type==='herolevel')sfx('level');if(e.type==='enrage')flash('ENRAGED!',1400);if(e.type==='itemdrop'){sfx('level');flash('ITEM FOUND!',900);}if(e.type==='herodown')sfx('die');if(e.type==='gun')sfx(e.big?'biggun':'gun');if(e.type==='boom')sfx('boom');if(e.type==='dash')sfx('dash');if(e.type==='bow')sfx('bow');if(e.type==='heal')sfx('heal');if(e.type==='camp')sfx('camp');if(e.type==='whoosh')sfx('whoosh');if(e.type==='thorns')sfx('thorns');if(e.type==='bell')sfx('bell');if(e.type==='nemesis'){sfx('boss');flash(e.back?e.name.toUpperCase()+' RETURNS! (RANK '+'I'.repeat(e.rank)+')':(e.rank>1?e.name.toUpperCase()+' GROWS STRONGER':e.name.toUpperCase()+' RISES')+(e.trait?' · '+({rav:'RAVENOUS',blood:'BLOODTHIRSTY',bulwark:'BULWARK',howl:'HOWLER',cleave:'CLEAVER'}[e.trait]||''):''),1800);}if(e.type==='nemdown'){sfx('clear');flash(e.name.toUpperCase()+' IS DEAD',1600);}if(e.type==='lazer')sfx('lazer',e);if(e.type==='flame')sfx('flame');if(e.type==='wind')sfx('wind');if(e.type==='shout')sfx('shout');}
   g.events.length=0;
   ctx.imageSmoothingEnabled=false;drawGame(ctx,g,384,0);panCam();
   const run=g.run;info.innerHTML=`<span class="px" style="font-size:10px;color:#a6ff2e">STAGE ${run.stage}${run.prestige?' ★'+run.prestige:''}</span><span>${esc(g.st.biome.name)}</span><span>Score <b>${fmt(run.score+g.stageScore)}</b></span><span>💰 <b>${fmt((SLOT().gold||0)+g.stageGold)}</b></span>
