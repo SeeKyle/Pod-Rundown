@@ -59,7 +59,7 @@ const CFG={
       // 0.12.65 (Kyle): enemies get +3% health, armor and damage per stage (rounded down), nothing else
       hpMul:Math.pow(1.03,n-1)*Math.pow(2.2,P),
       dmgMul:Math.pow(1.03,n-1)*Math.pow(1.8,P),
-      countMul:1+.04*(n-1),   // more enemies per stage stays (that is numbers, not stats)
+      countMul:1+.05*(n-1),   /* 0.12.87 (Kyle): 5% more enemies per stage, rounded down per wave */   // more enemies per stage stays (that is numbers, not stats)
       xpMul:1+0.19*(n-1)+P*2.4};
   },
 };
@@ -1226,7 +1226,7 @@ class Game{
   ev(type,o){this.events.push(Object.assign({type},o||{}));}
   // ---------------------------------------------------------------- spawning
   spawnEnemy(type,opt){
-    const E=CFG.enemies[type];const st=this.st;const elite=(!opt||opt.elite==='roll')&&this.rng()<.07+.01*st.n;
+    const E=CFG.enemies[type];const st=this.st;const elite=false;   /* 0.12.87 (Kyle): no elite zombies for now (was 7% +1% a stage) */
     const hp=Math.floor(E.hp*st.hpMul)*(elite?2.6:1);
     const e={type,E,x:this.W+10+this.rng()*20,y:E.fly?this.G-70+this.rng()*36:this.G,hp,max:hp,dmg:(E.dmg||E.dmgDie/2+.5)*st.dmgMul*(elite?1.5:1),dmgMul:st.dmgMul*(elite?1.5:1),skin:E.skins?E.skins[Math.floor(this.rng()*E.skins.length)]:type,atkT:this.rng()*.5,
       walkT:this.rng(),anim:0,animT:0,slow:0,slowT:0,stun:0,burn:0,burnT:0,shred:0,elite,armorPts:Math.floor((E.armorPts||0)*Math.pow(1.03,(st.n||1)-1)),fly:!!E.fly,ranged:!!E.ranged,hitFlash:0,phase:this.rng()*6,target:null};
@@ -1582,7 +1582,7 @@ class Game{
       if(!this.clusters){const N=CLUSTERS.count;this.clusters=[];
         for(let i=0;i<N;i++){const t=i/(N-1);const size=i===0?CLUSTERS.first:i===N-1?CLUSTERS.last[0]+Math.floor(this.rng()*(CLUSTERS.last[1]-CLUSTERS.last[0]+1)):
             Math.max(2,Math.min(7,Math.round(CLUSTERS.first+(CLUSTERS.last[0]+.5-CLUSTERS.first)*t+(this.rng()*2-1))));
-          const at=this.st.len*Math.max(.02,Math.min(.9,.04+.84*t+(this.rng()*2-1)*.04));const sz=Math.max(1,Math.round(size*(this.st.countMul||1)*((this.mods&&this.mods.foes)||1)+(this.rng()-.5)*.6));this.clusters.push({at,size:sz,left:sz,t:0});}
+          const at=this.st.len*Math.max(.02,Math.min(.9,.04+.84*t+(this.rng()*2-1)*.04));const sz=Math.max(1,Math.floor(size*(this.st.countMul||1)*((this.mods&&this.mods.foes)||1)));this.clusters.push({at,size:sz,left:sz,t:0});}
         // strays: single zombies dropped in the quiet gaps between clusters (never right on top of one), some stages get none in a gap
         this.strays=[];const ats=this.clusters.map(q=>q.at);for(let i=0;i<STRAYS_PER_STAGE(this.st.n)*3&&this.strays.length<STRAYS_PER_STAGE(this.st.n);i++){
           const k=Math.floor(this.rng()*(ats.length-1));const a=ats[k],b=ats[k+1];if(b-a<this.st.len*.07)continue;const x=a+(b-a)*(.3+.4*this.rng());if(this.strays.some(s=>Math.abs(s-x)<this.st.len*.05))continue;this.strays.push(x);}
@@ -1767,7 +1767,7 @@ class Game{
       }
     }
     this.enemies=this.enemies.filter(e=>!e.dead||e.boss);
-    if(this.t>180&&!this.boss){for(const e of this.enemies)if(!e.dead)e.dmg*=1+.01*dt;}   // stage dragging on: monsters grow fierce
+    /* 0.12.87 (Kyle): removed for now: enemies grew fiercer when a stage dragged past 3 minutes */   // stage dragging on: monsters grow fierce
     // ---- Campfire: grows, burns (cozy aura), breaks after 5 hits on Flannel_Man / his companion, then dies out
     if(this.camp){const F=this.camp;F.t+=dt;F.x-=scroll*dt;
       if(F.state==='start'&&F.t>=.9){F.state='burn';}
@@ -2866,12 +2866,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794444904';const BGI=new Image();BGI.src='crawl_bg.png?v=1794444904';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794444904';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794444959';const BGI=new Image();BGI.src='crawl_bg.png?v=1794444959';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794444959';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794444904';XIMG.wave.src='crawl_wave.png?v=1794444904';XIMG.chibi.src='crawl_chibi.png?v=1794444904';XIMG.flannel.src='crawl_flannel.png?v=1794444904';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794444904';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794444904';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794444904';XIMG.rain.src='crawl_rain.png?v=1794444904';XIMG.druid.src='crawl_druid.png?v=1794444904';XIMG.camp.src='crawl_campfire.png?v=1794444904';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794444904';XIMG.tornado.src='crawl_fx_tornado.png?v=1794444904';XIMG.vine.src='crawl_fx_vine.png?v=1794444904';XIMG.thorn.src='crawl_fx_thorn.png?v=1794444904';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794444959';XIMG.wave.src='crawl_wave.png?v=1794444959';XIMG.chibi.src='crawl_chibi.png?v=1794444959';XIMG.flannel.src='crawl_flannel.png?v=1794444959';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794444959';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794444959';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794444959';XIMG.rain.src='crawl_rain.png?v=1794444959';XIMG.druid.src='crawl_druid.png?v=1794444959';XIMG.camp.src='crawl_campfire.png?v=1794444959';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794444959';XIMG.tornado.src='crawl_fx_tornado.png?v=1794444959';XIMG.vine.src='crawl_fx_vine.png?v=1794444959';XIMG.thorn.src='crawl_fx_thorn.png?v=1794444959';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794444904';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794444904';XIMG.obst.src='crawl_obst.png?v=1794444904';XIMG.cars.src='crawl_cars.png?v=1794444904';XIMG.robot.src='crawl_robot.png?v=1794444904';XIMG.cultist.src='crawl_cultist.png?v=1794444904';XIMG.tentacle.src='crawl_tentacle.png?v=1794444904';XIMG.boom.src='crawl_boom.png?v=1794444904';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794444959';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794444959';XIMG.obst.src='crawl_obst.png?v=1794444959';XIMG.cars.src='crawl_cars.png?v=1794444959';XIMG.robot.src='crawl_robot.png?v=1794444959';XIMG.cultist.src='crawl_cultist.png?v=1794444959';XIMG.tentacle.src='crawl_tentacle.png?v=1794444959';XIMG.boom.src='crawl_boom.png?v=1794444959';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3608,7 +3608,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.86</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.87</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
