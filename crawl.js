@@ -1676,7 +1676,7 @@ class Game{
     al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;let tx=this.exiting?this.W+60:(h.plan&&h.plan.reviveD&&!h.plan.reviveD.alive?h.plan.reviveD.x:h.plan&&h.plan.goTo&&h.plan.goTo.mine?h.plan.goTo.mine.x-DEFUSE_D:h.plan&&h.plan.goTo&&h.plan.goTo.ob?(()=>{const o=h.plan.goTo.ob;if(/search|disarm/.test(h.plan.intent))return this.searchSpot(o,h).x;const [a,b]=this.obSpan(o,o.lanes[0]);return h.x<(a+b)/2?a-6:b+6;})():h.plan&&h.plan.goTo&&h.plan.goTo.alive?this.heroX(h.plan.goTo)+(h.plan.goTo.x<h.x?8:-8):this.home(h)+drift+(h.plan?(this._clear?Math.max(-6,h.plan.xoff):h.plan.xoff):0));tx=Math.max(8,Math.min(this.W-8,tx));   /* 0.12.58: with nothing near, nobody hangs far back (the march needs the party up front) */
       if(!this.exiting&&trait(h,'range')>.55&&!(h.plan&&(h.plan.intent==='retreat'||h.plan.reviveD||h.plan.goTo))){const foe=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&e.gy!=null&&Math.abs(e.gy-(h.gy||190))<4&&e.x>h.x&&e.x-h.x<90).reduce((b,e)=>!b||e.x<b.x?e:b,null);if(foe)tx=Math.max(tx,Math.min(this.home(h)+28,foe.x-12));}   // push forward into the fight
       h._tx=tx;const x0=h.x;const C=h.base.char;const rm=C?((h.plan&&/retreat|charge|kite|cover|regroup|gather|revive|herb|guard|search|disarm|hunker|defuse/.test(h.plan.intent))||this.exiting?C.run:1):(h.plan?h.plan.runMul:1);h.running=C?rm>1:false;
-      const d=tx-h.x,st=mv*(h.mvMul||1)*dynMv(h)*(h.whirl?.5:1)*(this.exiting&&!C?2.6:1.6)*rm*(rm>1?.75:.85)*dt;/* 0.12.13 (Kyle): walking 15% slower, running 25% slower */if(!(h.pauseT>0)||this.exiting)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;h.moveT=h.moving?(h.moveT||0)+dt:0;});
+      const d=tx-h.x,st=mv*(h.mvMul||1)*(h.slowT>0?1-(h.slow||0):1)*dynMv(h)*(h.whirl?.5:1)*(this.exiting&&!C?2.6:1.6)*rm*(rm>1?.75:.85)*dt;/* 0.12.13 (Kyle): walking 15% slower, running 25% slower */if(!(h.pauseT>0)||this.exiting)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;h.moveT=h.moving?(h.moveT||0)+dt:0;});
     const f=this.front();if(!f)return;
     // blocking: walk unless something is close
     const near=this.enemies.filter(e=>!e.dead&&!e.fly).reduce((m,e)=>Math.min(m,e.x-(e.boss?e.w:0)-(e.ranged?40:0)),1e9);
@@ -1731,7 +1731,7 @@ class Game{
       if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}
       if(h.invulnT>0)h.invulnT-=dt;
       if(h.hotT>0){h.hotT-=dt;h.hotTick=(h.hotTick||0)+dt;if(h.hotTick>=h.hotEvery){h.hotTick-=h.hotEvery;this.healHero(h,h.hotAmt,false,h.hotSrc);}}   // Rejuvenating Bloom
-      if(h.bleedT>0){h.bleedT-=dt;h.bleedTick+=dt;if(h.bleedTick>=1||h.bleedT<=0){const d=h.bleedDps*Math.min(1,h.bleedTick);h.bleedTick=0;h.hp-=d;this.text(h.x+6,this.G-58,Math.round(d),'#c0102a');if(h.hp<=0){this.heroDown(h);continue;}}}
+      if(h.slowT>0){h.slowT-=dt;if(h.slowT<=0)h.slow=0;}if(h.bleedT>0){h.bleedT-=dt;h.bleedTick+=dt;if(h.bleedTick>=1||h.bleedT<=0){const d=h.bleedDps*Math.min(1,h.bleedTick);h.bleedTick=0;h.hp-=d;this.text(h.x+6,this.G-58,Math.round(d),'#c0102a');if(h.hp<=0){this.heroDown(h);continue;}}}
       for(const it of h.items)if(it.cd>0)it.cd-=dt;
       if(this.enemies.some(e=>!e.dead&&e.x-h.x<36))this.procs(h,'near');
       if(h.roofBusy)continue;   /* 0.12.122: up a storefront roof for the crate: busy, no fighting */
@@ -2666,7 +2666,7 @@ class Game{
   stepMines(dt,scroll){if(this.demo)return;this.mines=this.mines||[];this.stepBomblets(dt,scroll);
     if(this.mineAt==null){const n=1+Math.floor(this.rng()*3);this.mineAt=[];for(let i=0;i<n;i++)this.mineAt.push(this.st.len*(.12+.76*this.rng()));this.mineAt.sort((a,b)=>a-b);}
     while(this.mineAt.length&&this.dist>=this.mineAt[0]&&!this.exiting){this.mineAt.shift();let l=Math.floor(this.rng()*LANES.length);for(let k=0;k<5&&this.laneBlocked(l,this.W+20,this.W+44);k++)l=Math.floor(this.rng()*LANES.length);
-      this.mines.push({x:this.W+30,l,gy:LANES[l],t:0,armed:true,spotted:false,chk:0,cluster:this.rng()<.3});}   /* 0.12.157 (Kyle): ~30% are cluster mines */
+      {const r=this.rng();this.mines.push({x:this.W+30,l,gy:LANES[l],t:0,armed:true,spotted:false,chk:0,cluster:r<.25,shotgun:r>=.25&&r<.45});}}   /* 0.12.157 (Kyle): ~25% cluster mines, ~20% tripwire shotguns, the rest rust mines */
     const al=this.alive().filter(h=>!h.pet||h.dog);for(const h of al)this.mineClamp(h);   /* 0.12.156: re-check after dodges and shoves so nobody gets carried onto a mine they know about */
     for(const M of this.mines){M.x-=scroll*dt;M.t+=dt;if(!M.armed)continue;
       if(M.owner){if(M.t<M.arm)continue;if(bombTrig(this,M.x,M.gy))this.mineBoom(M);continue;}   /* 0.12.64: same proximity zone as the Proximity_Bomb */
@@ -2702,11 +2702,26 @@ class Game{
        A CLUSTER mine pops for 2d4+2 in a 30-50 screen px blast and throws 5-6 bomblets 50-150 screen px out either side (random lanes too);
        each arcs, lands, and goes off 0.25s later for 2d4+2 in its own 30-50 screen px blast. Our own planted mines are unchanged (4d4 x who set it). */
     const sc=M.owner?M.mult:(1+.05*(this.st.n-1));
+    if(M.shotgun&&!M.owner){this.shotgunFire(M,sc);return;}
     if(M.cluster&&!M.owner){const R=10+this.rng()*6.7;this.blastAt(M.x,M.gy,R,R*.45,(this.rollDice([2,4])+2)*sc,null);
       const n=5+(this.rng()<.5?1:0);for(let i=0;i<n;i++){const dir=this.rng()<.5?-1:1,dx=dir*(16.7+this.rng()*33.3),dl=Math.floor(this.rng()*3)-1,l=Math.max(0,Math.min(LANES.length-1,(M.l!=null?M.l:2)+dl));
         (this.bomblets=this.bomblets||[]).push({x0:M.x,gy0:M.gy,x1:M.x+dx,gy1:LANES[l],t:0,T:.45+this.rng()*.25,fuse:-1,R:10+this.rng()*6.7,dmg:(this.rollDice([2,4])+2)*sc,spin:this.rng()*6});}
       return;}
     const R=M.owner?20:24,RD=M.owner?9:10,dmg=M.owner?this.rollDice([4,4])*sc:(this.rollDice([2,4])+4)*sc;this.blastAt(M.x,M.gy,R,RD,dmg,M.owner&&M.owner.alive?M.owner:null,!!M.owner);}
+  /* 0.12.158 (Kyle) TRIPWIRE SHOTGUN: a sawed-off hidden in a bush (a trash pile downtown) aimed back down its lane. Crossing the wire fires a pellet spread
+     to the left: 3d4+3 point-blank falling to half at 60 world px (180 screen px) in its lane; one lane over within 40 world px takes half again. Hits zombies too. */
+  /* 0.12.158 (Kyle): tripwire shotgun. One loud blast, 7 pellets fanned out to the left, 1d4 each (+5%/stage). Each pellet stops in the first body
+     in its path. Anyone hit bleeds (3 per pellet over 4s) and is slowed 30% for 2.5s. Hurts heroes and zombies alike. */
+  shotgunFire(M,sc){const RNG=70,N=7,offs=[];for(let i=0;i<N;i++)offs.push((i/(N-1)*2-1)*20+(this.rng()-.5)*14);   /* semi-random: each pellet wobbles inside its slice of the cone */   /* large cone: about two lanes either way at full range */
+    this.fx.push({k:'pellets',x:M.x-4,gy:M.gy,t:0,life:.35,raw:1,offs,R:RNG});this.ev('shotgun',{});this.shake=Math.max(this.shake||0,.4);
+    const T=[];for(const h of this.alive())T.push({u:h,hero:1,x:this.heroX(h),gy:h.gy||this.G});
+    for(const e of this.enemies){if(e.dead||e.fly)continue;T.push({u:e,x:e.x,gy:e.gy!=null?e.gy:this.G});}
+    const hits=new Map();
+    for(const o of offs){let best=null,bd=1e9;for(const t of T){const dx=M.x-t.x;if(dx<-4||dx>RNG)continue;const py=M.gy+o*Math.max(0,dx)/RNG;if(Math.abs(t.gy-py)>4)continue;if(dx<bd){bd=dx;best=t;}}
+      if(best)hits.set(best,(hits.get(best)||0)+1);}
+    for(const [t,n] of hits){let d=0;for(let i=0;i<n;i++)d+=this.rollDice([1,4]);d*=sc;const u=t.u;
+      if(t.hero){this.hurtHero(u,d,null);if(u.alive){this.bleed(u,3*n,4);u.slow=Math.max(u.slow||0,.3);u.slowT=Math.max(u.slowT||0,2.5);}u.x-=1.5*n*(1-Math.min(.95,u.kbRes||0));}
+      else{this.hitEnemy(u,d,null,{sure:1,kb:.15*n});if(!u.dead){u.bleedT=4;u.bleedDps=Math.max(u.bleedDps&&u.bleedT>0?u.bleedDps:0,3*n/4);u.slow=Math.max(u.slow||0,.3);u.slowT=Math.max(u.slowT||0,2.5);}}}}
   blastAt(x,gy,R,RD,dmg,owner,ours){const inB=(px,pgy)=>{const dx=px-x,dz=pgy-gy;const q=(dx/R)**2+(dz/RD)**2;return q<=1?(q<=1/9?1:.6):0;};
     for(const h of this.alive()){if(ours&&!this.hardcore)break;const f=inB(this.heroX(h),h.gy||this.G);if(!f)continue;this.hurtHero(h,dmg*f,null);h.x-=Math.sign(x-this.heroX(h)||1)*6*(1-Math.min(.95,h.kbRes||0));}
     for(const e of this.enemies){if(e.dead||e.fly)continue;const f=inB(e.x,e.gy!=null?e.gy:this.G);if(!f)continue;this.hitEnemy(e,dmg*f,owner,{blast:1,bx:x,sure:1});}}
@@ -3371,12 +3386,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794473235';const BGI=new Image();BGI.src='crawl_bg.png?v=1794473235';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794473235';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794473489';const BGI=new Image();BGI.src='crawl_bg.png?v=1794473489';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794473489';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794473235';XIMG.wave.src='crawl_wave.png?v=1794473235';XIMG.chibi.src='crawl_chibi.png?v=1794473235';XIMG.flannel.src='crawl_flannel.png?v=1794473235';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794473235';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794473235';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794473235';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794473235';XIMG.rain.src='crawl_rain.png?v=1794473235';XIMG.druid.src='crawl_druid.png?v=1794473235';XIMG.camp.src='crawl_campfire.png?v=1794473235';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794473235';XIMG.tornado.src='crawl_fx_tornado.png?v=1794473235';XIMG.vine.src='crawl_fx_vine.png?v=1794473235';XIMG.thorn.src='crawl_fx_thorn.png?v=1794473235';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794473489';XIMG.wave.src='crawl_wave.png?v=1794473489';XIMG.chibi.src='crawl_chibi.png?v=1794473489';XIMG.flannel.src='crawl_flannel.png?v=1794473489';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794473489';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794473489';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794473489';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794473489';XIMG.rain.src='crawl_rain.png?v=1794473489';XIMG.druid.src='crawl_druid.png?v=1794473489';XIMG.camp.src='crawl_campfire.png?v=1794473489';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794473489';XIMG.tornado.src='crawl_fx_tornado.png?v=1794473489';XIMG.vine.src='crawl_fx_vine.png?v=1794473489';XIMG.thorn.src='crawl_fx_thorn.png?v=1794473489';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794473235';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794473235';XIMG.obst.src='crawl_obst.png?v=1794473235';XIMG.cityob.src='crawl_cityob.png?v=1794473235';XIMG.harvest.src='crawl_harvest.png?v=1794473235';XIMG.wraith.src='crawl_wraith.png?v=1794473235';XIMG.cars.src='crawl_cars.png?v=1794473235';XIMG.robot.src='crawl_robot.png?v=1794473235';XIMG.cultist.src='crawl_cultist.png?v=1794473235';XIMG.tentacle.src='crawl_tentacle.png?v=1794473235';XIMG.boom.src='crawl_boom.png?v=1794473235';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794473489';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794473489';XIMG.obst.src='crawl_obst.png?v=1794473489';XIMG.cityob.src='crawl_cityob.png?v=1794473489';XIMG.harvest.src='crawl_harvest.png?v=1794473489';XIMG.wraith.src='crawl_wraith.png?v=1794473489';XIMG.cars.src='crawl_cars.png?v=1794473489';XIMG.robot.src='crawl_robot.png?v=1794473489';XIMG.cultist.src='crawl_cultist.png?v=1794473489';XIMG.tentacle.src='crawl_tentacle.png?v=1794473489';XIMG.boom.src='crawl_boom.png?v=1794473489';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3413,6 +3428,9 @@ function sfx(k,o){if(muted)return;try{AC=AC||new (window.AudioContext||window.we
     for(let i=0;i<n;i++)ch[i]=(Math.random()*2-1)*Math.pow(1-i/n,big?2.2:3.5);
     const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=buf;f.type='lowpass';f.frequency.value=big?2400:1800;g.gain.value=big?.55:.16;
     s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t);tone(big?90:140,big?.35:.12,'sine',big?.35:.09,big?32:60);if(big)tone(1400,.06,'square',.03,500);}
+  if(k==='shotgun'){const d=.6,n=Math.floor(AC.sampleRate*d),buf=AC.createBuffer(1,n,AC.sampleRate),ch=buf.getChannelData(0);for(let i=0;i<n;i++)ch[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);   /* 0.12.158 one big loud shotgun blast */
+    const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=buf;f.type='lowpass';f.frequency.setValueAtTime(5000,t);f.frequency.exponentialRampToValueAtTime(400,t+d);g.gain.value=.9;
+    s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t);tone(70,.45,'sine',.55,28);tone(2200,.04,'square',.06,600);}
   if(k==='boom'){const d=1.1,n=Math.floor(AC.sampleRate*d),buf=AC.createBuffer(1,n,AC.sampleRate),ch=buf.getChannelData(0);for(let i=0;i<n;i++)ch[i]=(Math.random()*2-1)*Math.pow(1-i/n,1.6);
     const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=buf;f.type='lowpass';f.frequency.setValueAtTime(1600,t);f.frequency.exponentialRampToValueAtTime(220,t+d);g.gain.value=.7;
     s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t);tone(60,.8,'sine',.5,24);}
@@ -4024,7 +4042,14 @@ function drawGame(ctx,g,W,oy){
     if(F.state==='dying'||F.state==='dead'){ctx.fillStyle='rgba(150,150,160,.25)';for(let i=0;i<3;i++){const ph=((g.t*.4+i*.33)%1);ctx.beginPath();ctx.arc(F.x+Math.sin(ph*6+i)*2,F.gy-6-ph*20,1.5+ph*3,0,7);ctx.fill();}}}
   traps();rainDraw();
   /* 0.12.51 enemy scrap mines: a rusted Trip Bomb cousin, dark red casing, spikes, a blinking red light and a taut wire. Unspotted ones are faint. */
-  for(const M of g.mines||[]){if(!M.armed)continue;const x=Math.round(M.x),y=M.gy;ctx.save();ctx.globalAlpha=M.spotted?1:.38;
+  for(const M of g.mines||[]){if(!M.armed)continue;const x=Math.round(M.x),y=M.gy;ctx.save();
+    if(M.shotgun&&!M.owner){const city=g.st.biome&&g.st.biome.id==='city';   /* 0.12.158 tripwire shotgun: a bush (trash bags downtown), a barrel peeking out pointing left, a wire across the lane */
+      ctx.globalAlpha=M.spotted?1:.55;ctx.strokeStyle='rgba(210,210,200,.6)';ctx.lineWidth=.4;ctx.beginPath();ctx.moveTo(x-10,y-5);ctx.lineTo(x-10,y+1.5);ctx.moveTo(x-10,y-4.5);ctx.lineTo(x-2,y-3.2);ctx.stroke();ctx.fillStyle='#3a2a24';ctx.fillRect(x-10.5,y-5.5,1,1);
+      ctx.globalAlpha=1;ctx.fillStyle='#2a2a2e';ctx.fillRect(x-6,y-4,5,1);ctx.fillStyle='#55555c';ctx.fillRect(x-6,y-4,5,.4);ctx.fillStyle='#000';ctx.fillRect(x-6.4,y-4,.5,1);   /* twin barrels */
+      if(city){ctx.fillStyle='#1c1f26';ctx.beginPath();ctx.ellipse(x+1.5,y-2.6,4.2,3,0,0,7);ctx.fill();ctx.fillStyle='#262a33';ctx.beginPath();ctx.ellipse(x+4.5,y-2,3.2,2.4,0,0,7);ctx.fill();ctx.fillStyle='#3a404c';ctx.fillRect(x+.5,y-5,1.4,.6);}
+      else{for(const [bx,by,r,c] of [[x+1,y-3,3.6,'#1e3a1a'],[x+3.6,y-2.4,3,'#244a20'],[x-.6,y-1.6,2.6,'#2c5a26'],[x+2.4,y-4.6,2.4,'#30642a']]){ctx.fillStyle=c;ctx.beginPath();ctx.arc(bx,by,r,0,7);ctx.fill();}}
+      if(M.spotted){const b=Math.round(Math.sin(g.t*5)*1);ptext(ctx,'!',x-4,y-12+b,'#ff5a3a',1);}ctx.restore();continue;}
+    ctx.globalAlpha=M.spotted?1:.38;
     ctx.strokeStyle='rgba(200,200,190,.55)';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(x-7,y-1.5);ctx.lineTo(x+7,y-1.5);ctx.stroke();ctx.fillStyle='#3a2a24';ctx.fillRect(x-7.5,y-2.5,1,2);ctx.fillRect(x+6.5,y-2.5,1,2);   /* wire + stakes */
     ctx.fillStyle='#1c1412';ctx.fillRect(x-3,y-3,6,3);ctx.fillStyle='#6a2a1e';ctx.fillRect(x-2.5,y-2.5,5,2);ctx.fillStyle='#8a4a2a';ctx.fillRect(x-2,y-2.5,2,1);   /* rusted casing */
     if(M.cluster){ctx.fillStyle='#4a3a30';for(const sx of [-2.5,-.5,1.5]){ctx.beginPath();ctx.arc(x+sx+.5,y-3.6,.9,0,7);ctx.fill();}ctx.fillStyle='#c8a030';ctx.fillRect(x-2.5,y-1.2,5,.5);}   /* 0.12.157 cluster mine: little bomblets packed on top and a faded yellow band */
@@ -4081,6 +4106,8 @@ function drawGame(ctx,g,W,oy){
       if(tt<.1){ctx.globalAlpha=1-tt*10;ctx.fillStyle='#ff3a3a';ctx.fillRect(Math.round(f.x)-1,Math.round(f.y)-1,f.big?3:2,f.big?3:2);}   // impact burst
       ctx.globalAlpha=1;}
     if((f.k==='harvestdie'||f.k==='wraithdie')&&ATLAS[f.k.slice(0,-3)]){const D=ATLAS[f.k.slice(0,-3)].die;const fr=Math.min(D.n-1,Math.floor(f.t/1.6*D.n));ctx.save();shrinkAt(ctx,f.x,f.gy,HS);ctx.globalAlpha=f.t>1.8?Math.max(0,1-(f.t-1.8)/.4):1;drawUnit(ctx,Object.assign({},D,{img:f.k.slice(0,-3)}),fr,f.x,f.gy,.95,null,0,0,true);ctx.restore();continue;}
+    if(f.k==='pellets'){const k2=f.t/f.life;glow(ctx,f.x,f.gy-3.5,6*(1-k2),'#ffd080',.8*(1-k2));   /* 0.12.158 shotgun pellets: 7 streaks along their real paths */
+      ctx.strokeStyle=`rgba(255,220,150,${(1-k2).toFixed(2)})`;ctx.lineWidth=.6;for(const o of f.offs||[]){const d0=k2*f.R,a=o/f.R;ctx.beginPath();ctx.moveTo(f.x-d0,f.gy-3.5+a*d0);ctx.lineTo(f.x-d0-7,f.gy-3.5+a*(d0+7));ctx.stroke();}continue;}
     if(f.k==='poof'){ctx.fillStyle=`rgba(180,170,190,${1-k})`;for(let i=0;i<(f.big?10:6);i++){const a=i*1.1;const r=4+k*(f.big?22:12);ctx.fillRect(Math.round(f.x+Math.cos(a)*r),Math.round(f.y+Math.sin(a)*r*.6),2,2);}}
     if(f.k==='ring'){ctx.strokeStyle=f.c;ctx.globalAlpha=1-k;ctx.beginPath();ctx.ellipse(Math.round(f.x),Math.round(f.y),f.r*(.3+k),f.r*(.3+k)*.45,0,0,7);ctx.stroke();ctx.globalAlpha=1;}
     if(f.k==='slash'){const al=Math.max(0,1-k*1.6);for(let i=0;i<14;i++){const a2=-1.2+i*.18;const r=13+k*3;ctx.fillStyle=`rgba(240,232,214,${al*(i<3||i>11?.5:1)})`;ctx.fillRect(Math.round(f.x-6+Math.cos(a2)*r),Math.round(f.y+Math.sin(a2)*r*.9),2,i>3&&i<10?2:1);}}
@@ -4262,7 +4289,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.157</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.158</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -4578,7 +4605,7 @@ function loop(now){
   const g=CC.game;if(!g||root.hidden)return;let dt=Math.min(.05,(now-CC.last)/1000);CC.last=now;
   if(!CC.paused){for(let i=0;i<CC.speed;i++)g.step(dt);}
   for(const e of g.events){if(e.type==='levelup'){sfx('level');flash('LEVEL UP!',900);}if(e.type==='boss'){sfx('boss');flash(e.name.toUpperCase(),1800);}
-    if(e.type==='herolevel')sfx('level');if(e.type==='enrage')flash('ENRAGED!',1400);if(e.type==='itemdrop'){sfx('level');flash('ITEM FOUND!',900);}if(e.type==='herodown')sfx('die');if(e.type==='gun')sfx(e.big?'biggun':'gun');if(e.type==='boom')sfx('boom');if(e.type==='dash')sfx('dash');if(e.type==='bow')sfx('bow');if(e.type==='heal')sfx('heal');if(e.type==='camp')sfx('camp');if(e.type==='whoosh')sfx('whoosh');if(e.type==='thorns')sfx('thorns');if(e.type==='bell')sfx('bell');if(e.type==='nemesis'){sfx('boss');flash(e.back?e.name.toUpperCase()+' RETURNS! (RANK '+'I'.repeat(e.rank)+')':(e.rank>1?e.name.toUpperCase()+' GROWS STRONGER':e.name.toUpperCase()+' RISES')+(e.trait?' · '+({rav:'RAVENOUS',blood:'BLOODTHIRSTY',bulwark:'BULWARK',howl:'HOWLER',cleave:'CLEAVER'}[e.trait]||''):''),1800);}if(e.type==='nemdown'){sfx('clear');flash(e.name.toUpperCase()+' IS DEAD',1600);}if(e.type==='lazer')sfx('lazer',e);if(e.type==='flame')sfx('flame');if(e.type==='wind')sfx('wind');if(e.type==='shout')sfx('shout');}
+    if(e.type==='herolevel')sfx('level');if(e.type==='enrage')flash('ENRAGED!',1400);if(e.type==='itemdrop'){sfx('level');flash('ITEM FOUND!',900);}if(e.type==='herodown')sfx('die');if(e.type==='gun')sfx(e.big?'biggun':'gun');if(e.type==='boom')sfx('boom');if(e.type==='dash')sfx('dash');if(e.type==='bow')sfx('bow');if(e.type==='heal')sfx('heal');if(e.type==='camp')sfx('camp');if(e.type==='whoosh')sfx('whoosh');if(e.type==='thorns')sfx('thorns');if(e.type==='bell')sfx('bell');if(e.type==='nemesis'){sfx('boss');flash(e.back?e.name.toUpperCase()+' RETURNS! (RANK '+'I'.repeat(e.rank)+')':(e.rank>1?e.name.toUpperCase()+' GROWS STRONGER':e.name.toUpperCase()+' RISES')+(e.trait?' · '+({rav:'RAVENOUS',blood:'BLOODTHIRSTY',bulwark:'BULWARK',howl:'HOWLER',cleave:'CLEAVER'}[e.trait]||''):''),1800);}if(e.type==='nemdown'){sfx('clear');flash(e.name.toUpperCase()+' IS DEAD',1600);}if(e.type==='lazer')sfx('lazer',e);if(e.type==='flame')sfx('flame');if(e.type==='shotgun')sfx('shotgun');if(e.type==='wind')sfx('wind');if(e.type==='shout')sfx('shout');}
   g.events.length=0;
   ctx.imageSmoothingEnabled=false;drawGame(ctx,g,384,0);panCam();
   const run=g.run;info.innerHTML=`<span class="px" style="font-size:10px;color:#a6ff2e">STAGE ${run.stage}${run.prestige?' ★'+run.prestige:''}</span><span>${esc(g.st.biome.name)}</span><span>Score <b>${fmt(run.score+g.stageScore)}</b></span><span>💰 <b>${fmt((SLOT().gold||0)+g.stageGold)}</b></span>
