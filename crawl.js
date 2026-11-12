@@ -3782,12 +3782,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794506490';const BGI=new Image();BGI.src='crawl_bg.png?v=1794506490';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794506490';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794506784';const BGI=new Image();BGI.src='crawl_bg.png?v=1794506784';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794506784';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794506490';XIMG.wave.src='crawl_wave.png?v=1794506490';XIMG.chibi.src='crawl_chibi.png?v=1794506490';XIMG.flannel.src='crawl_flannel.png?v=1794506490';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794506490';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794506490';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794506490';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794506490';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794506490';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794506490';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794506490';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794506490';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794506490';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794506490';XIMG.rain.src='crawl_rain.png?v=1794506490';XIMG.druid.src='crawl_druid.png?v=1794506490';XIMG.camp.src='crawl_campfire.png?v=1794506490';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794506490';XIMG.tornado.src='crawl_fx_tornado.png?v=1794506490';XIMG.vine.src='crawl_fx_vine.png?v=1794506490';XIMG.thorn.src='crawl_fx_thorn.png?v=1794506490';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794506784';XIMG.wave.src='crawl_wave.png?v=1794506784';XIMG.chibi.src='crawl_chibi.png?v=1794506784';XIMG.flannel.src='crawl_flannel.png?v=1794506784';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794506784';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794506784';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794506784';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794506784';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794506784';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794506784';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794506784';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794506784';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794506784';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794506784';XIMG.rain.src='crawl_rain.png?v=1794506784';XIMG.druid.src='crawl_druid.png?v=1794506784';XIMG.camp.src='crawl_campfire.png?v=1794506784';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794506784';XIMG.tornado.src='crawl_fx_tornado.png?v=1794506784';XIMG.vine.src='crawl_fx_vine.png?v=1794506784';XIMG.thorn.src='crawl_fx_thorn.png?v=1794506784';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794506490';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794506490';XIMG.obst.src='crawl_obst.png?v=1794506490';XIMG.cityob.src='crawl_cityob.png?v=1794506490';XIMG.harvest.src='crawl_harvest.png?v=1794506490';XIMG.wraith.src='crawl_wraith.png?v=1794506490';XIMG.cars.src='crawl_cars.png?v=1794506490';XIMG.robot.src='crawl_robot.png?v=1794506490';XIMG.cultist.src='crawl_cultist.png?v=1794506490';XIMG.tentacle.src='crawl_tentacle.png?v=1794506490';XIMG.boom.src='crawl_boom.png?v=1794506490';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794506784';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794506784';XIMG.obst.src='crawl_obst.png?v=1794506784';XIMG.cityob.src='crawl_cityob.png?v=1794506784';XIMG.harvest.src='crawl_harvest.png?v=1794506784';XIMG.wraith.src='crawl_wraith.png?v=1794506784';XIMG.cars.src='crawl_cars.png?v=1794506784';XIMG.robot.src='crawl_robot.png?v=1794506784';XIMG.cultist.src='crawl_cultist.png?v=1794506784';XIMG.tentacle.src='crawl_tentacle.png?v=1794506784';XIMG.boom.src='crawl_boom.png?v=1794506784';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -4698,17 +4698,17 @@ canvas.cc-fire{display:block;width:100%;image-rendering:pixelated;image-renderin
 .cc-hud.tall .sp{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
 .cc-sp{position:relative;font-size:11px;padding:3px 6px 5px;border-radius:6px;background:#1e1228;border:1px solid #3a2450;overflow:hidden}.cc-sp.it{border-style:dashed;color:#b8aecb}
 .cc-sp i{position:absolute;left:0;bottom:0;height:2px;background:#a6ff2e;width:0}
-#cc .cc-uf{display:none}
-#cc.phone .cc-hud{display:none!important}
-#cc.phone .cc-uf{display:flex;flex-direction:column;gap:3px;position:absolute;left:4px;top:4px;z-index:3;pointer-events:auto}
-#cc.phone.land .cc-uf{top:22px}
-#cc .uf{display:flex;align-items:center;gap:4px;background:rgba(7,4,10,.62);border:1px solid #a6ff2e55;border-radius:6px;padding:2px 5px 2px 2px;width:118px;cursor:help}
-#cc .uf .cc-por{width:22px!important;height:22px!important;border-radius:4px;flex:0 0 auto}
-#cc .uf .ufb{flex:1;min-width:0}
-#cc .uf .ufn{font-size:9px;line-height:1.1;color:#eee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#cc .uf .ufn span{color:#ffd23f}
-#cc .uf .ufh,#cc .uf .ufe{height:5px;background:#2a1020;border-radius:2px;margin-top:2px;overflow:hidden}#cc .uf .ufe{height:3px;background:#101a2a}
-#cc .uf .ufh i,#cc .uf .ufe i{display:block;height:100%;width:100%;background:linear-gradient(#5ee07a,#1f9a3c)}#cc .uf .ufe i{background:#3fb6ff}
-#cc .uf.dead{opacity:.45;filter:grayscale(1)}
+#cc .cc-hud{display:none!important}
+#cc .cc-uf{display:flex;flex-direction:column;gap:4px;position:absolute;left:1.6%;top:9%;z-index:3;pointer-events:auto}   /* 0.12.204 (Kyle): life bars top-left over the sky, for every screen */
+#cc.land .cc-uf{top:calc(9% + 20px)}
+#cc .uf{display:block;width:clamp(104px,19vw,170px);cursor:help;text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000}
+#cc .uf .cc-por{display:none}
+#cc .uf .ufn{font:700 clamp(9px,1.25vw,12px)/1.15 system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#cc .uf .ufn span.lv{color:#ffd23f;font-weight:600}
+#cc .uf .ufs{font-weight:600;font-size:.9em;margin-left:4px}
+#cc .uf .ufh{height:clamp(4px,.55vw,7px);background:rgba(30,10,20,.8);border:1px solid rgba(0,0,0,.7);border-radius:2px;margin-top:2px;overflow:hidden}
+#cc .uf .ufe{height:2px;background:rgba(16,26,42,.8);margin-top:1px;overflow:hidden;border-radius:1px}
+#cc .uf .ufh i,#cc .uf .ufe i{display:block;height:100%;width:100%}#cc .uf .ufe i{background:#3fb6ff}
+#cc .uf.dead{opacity:.5;filter:grayscale(1)}
 #cc.land .cc-info{position:absolute;top:0;left:0;z-index:2;background:rgba(7,4,10,.6);padding:3px 8px}
 #cc.land .cc-hud{position:absolute;bottom:0;left:0;z-index:2;background:rgba(7,4,10,.55);grid-auto-flow:column;padding:3px 6px}
 #cc.land .cc-hc{padding:1px 4px;border-width:1px}
@@ -4735,7 +4735,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.203</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.204</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -5044,7 +5044,7 @@ function beginStage(){
     <div class="sp"><span class="cc-sp" data-sig style="border-color:#ffd23f"><b>⚡ ${esc(SIG[h.key].name)}</b><i></i></span>${h.spells.map((s,i)=>`<span class="cc-sp" data-s="${i}"><b>${s.r>=CFG.maxRank?'✦ ':''}${esc(sname(h.key,s.card))}</b> r${s.r}<i></i></span>`).join('')}${h.items.map(it=>`<span class="cc-sp it"><b>${esc(shortCard(it.card))}</b> ${ITEM[it.arch].label} r${it.r}</span>`).join('')}</div></div></div>`).join('');
   hud.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
   /* 0.12.81 (Kyle) phones: small WoW-style unit frames in the top-left of the sky instead of the panels under the stage; tap one to see its abilities */
-  const uf=$('.cc-uf',root);uf.innerHTML=CC.game.heroes.map(h=>`<div class="uf" data-h="${h.key}" data-tiph="${esc(ufTip(h))}"><span data-por="${h.key}"></span><div class="ufb"><div class="ufn">${esc(h.def.name)} <span>${h.lvl}</span></div><div class="ufh"><i></i></div><div class="ufe"><i></i></div></div></div>`).join('');
+  const uf=$('.cc-uf',root);uf.innerHTML=CC.game.heroes.map(h=>{const col=(typeof CALL_COLOR!=='undefined'&&CALL_COLOR[h.key])||'#9ad0ff';return `<div class="uf" data-h="${h.key}" data-tiph="${esc(ufTip(h))}"><div class="ufb"><div class="ufn" style="color:${col}">${esc(h.def.name)} <span class="lv">${h.lvl}</span><span class="ufs"></span></div><div class="ufh"><i style="background:linear-gradient(${col},${col}aa)"></i></div><div class="ufe"><i></i></div></div></div>`;}).join('');
   uf.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
   const st=CC.game.st;flash(`STAGE ${run.stage}`,1400);if(st.boss)setTimeout(()=>{},0);
   root.querySelector('[data-a=restart]').hidden=false;layout();CC.last=performance.now();cancelAnimationFrame(CC.raf);CC.raf=requestAnimationFrame(loop);
@@ -5060,7 +5060,10 @@ function loop(now){
   const run=g.run;info.innerHTML=`<span class="px" style="font-size:10px;color:#a6ff2e">STAGE ${run.stage}${run.prestige?' ★'+run.prestige:''}</span><span>${esc(g.st.biome.name)}</span><span>Score <b>${fmt(run.score+g.stageScore)}</b></span><span>💰 <b>${fmt((SLOT().gold||0)+g.stageGold)}</b></span>
     <span class="cc-xp" title="Next upgrade"><i style="width:${Math.min(100,(run.xp||0)/(8+6*(run.lv||0))*100)}%"></i></span>${run.pending?`<b style="color:#a6ff2e">⬆${run.pending}</b>`:''}`;
   bossEl.textContent=g.boss&&!g.boss.dead?g.boss.B.name.toUpperCase():'';
-  if(root.classList.contains('phone'))for(const h of g.heroes){const f=root.querySelector(`.cc-uf [data-h="${h.key}"]`);if(!f)continue;f.classList.toggle('dead',!h.alive);
+  const doSt=(CC.ufT=(CC.ufT||0)+1)%8===0;
+  for(const h of g.heroes){const f=root.querySelector(`.cc-uf [data-h="${h.key}"]`);if(!f)continue;f.classList.toggle('dead',!h.alive);
+    if(doSt){const S=[];if(!h.alive)S.push(['DOWN','#ff4a4a']);else{if(h.bleedT>0)S.push(['🩸','#ff5a5a']);if(h.stun>0)S.push(['💫','#ffe07a']);if(h.slowT>0&&h.slow>0)S.push(['🐌','#9ad0ff']);if(h.shield>0)S.push(['🛡'+Math.round(h.shield),'#cfe8ff']);if(h.highT>0)S.push(['🌿','#8fe36a']);if(h.gritT>0||h.wallT>0)S.push(['🪨','#d8c8a8']);if(h.stealthT>0)S.push(['👻','#c8c8ff']);if(h.hunger>0)S.push(['🍖','#ffb070']);if((h.moods||[]).some(m=>m.name==='roasted'))S.push(['🔥','#ffa040']);if(h.buffT>0)S.push(['⬆','#a6ff2e']);}
+      const s=f.querySelector('.ufs');const html=S.map(([t,c])=>`<span style="color:${c}">${t}</span>`).join(' ');if(s.dataset.v!==html){s.dataset.v=html;s.innerHTML=html;}}
     f.querySelector('.ufh i').style.width=Math.max(0,h.hp/h.max*100)+'%';f.querySelector('.ufe i').style.width=h.enMax?Math.max(0,Math.min(100,(h.en||0)/h.enMax*100))+'%':'0%';}
   for(const h of g.heroes){const el=hud.querySelector(`[data-h="${h.key}"]`);if(!el)continue;el.classList.toggle('dead',!h.alive);el.querySelector('.bar i').style.width=Math.max(0,h.hp/h.max*100)+'%';
     el.querySelector('.n span').textContent=SLOT().heroes[h.key].lvl;
