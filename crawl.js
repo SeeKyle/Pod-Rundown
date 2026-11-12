@@ -33,15 +33,15 @@ const CFG={
     // Kyle's zombie: 25 HP (0.12.3, was 15), 1d6 per hit, swings every 1.25s, 12px reach, very slow, 3 armor (=6% less damage), small-medium knockback resistance,
     // 25% on hit to Bleed (20 dmg over 5s), item 4% / small gold 17.5%. Three looks (skins), identical stats.
     zombie:  {undead:1,scale:.88,aimScale:.88,hp:25,dmgDie:6,spd:9.5,   /* 0.12.136 (Kyle): 9.5 (was 8.8) */   /* 0.12.38 (Kyle): 12% smaller, about the size of our humanoids */atk:1.25,reach:12,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
-              itemChance:.04,goldChance:.105,goldAmt:[2,6],stack:true,xp:2,pts:10,cost:1.2,animAtk:.6,hitAt:.38,skins:['zombie','zombie_f','zombie_b']},
+              itemChance:.04,goldChance:.6,goldAmt:[2,6],stack:true,xp:2,pts:10,cost:1.2,animAtk:.6,hitAt:.38,skins:['zombie','zombie_f','zombie_b']},
     // 0.12.62 (Kyle) Fireman_Zombie: a zombie in turnout gear. A touch slower than a normal zombie, 1.25x the life, triple the armor,
     //   hits slightly harder, and can't be burned (fire and burn damage do nothing to him). Swings a heavy gloved arm.
     // 0.12.65 (Kyle): now 4x a zombie's health (100) and armor (12) at 2/5 its speed
     fireman: {undead:1,scale:.88,aimScale:.88,hp:100,dmgDie:7,spd:5,   /* 0.12.136 (Kyle): 5 (was 3.5) */atk:1.25,reach:12,armorPts:12,kbRes:.6,bleed:{chance:.25,dmg:20,dur:5},fireImmune:1,name:'Fireman_Zombie',
-              itemChance:.05,goldChance:.12,goldAmt:[3,7],stack:true,xp:5,pts:30,cost:3.2,animAtk:.6,hitAt:.4,skins:['zombie_fire']},
+              itemChance:.05,goldChance:.65,goldAmt:[3,7],stack:true,xp:5,pts:30,cost:3.2,animAtk:.6,hitAt:.4,skins:['zombie_fire']},
     // Kyle's werewolf, the first fast enemy: zombie stats except 30 HP (0.12.3, was 40) and fast; hunts the back-line heroes first
     werewolf:{hp:38,dmgDie:7,spd:44,atk:1.2,reach:12,armorPts:4,   /* 0.12.65: a bit sturdier and meaner (was 30 HP, 1d6, 3 armor) */kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
-              itemChance:.04,goldChance:.105,goldAmt:[2,6],xp:3,pts:16,cost:2.2,animAtk:.7,hitAt:.45,backline:true,fps:12,scale:.77,
+              itemChance:.04,goldChance:.6,goldAmt:[2,6],xp:3,pts:16,cost:2.2,animAtk:.7,hitAt:.45,backline:true,fps:12,scale:.77,
               leap:{dmg:10,gap:20,dur:.5,cd:8}},   // jumping attack: bounds over a 20px gap and lands for 10 damage
   },
   harvestLive:true,wraithLive:true,   /* 0.12.132 (Kyle): switched on */   /* 0.12.127 (Kyle): switched on to try him */
@@ -1326,7 +1326,7 @@ class Game{
     const hp=Math.max(1,Math.round(E.hp*st.hpMul*ENEMY_HP))*(elite?2.6:1);   /* 0.12.103: zombies trimmed with hero damage so fights take as long as before */
     const e={type,E,x:this.W+10+this.rng()*20,y:E.fly?this.G-70+this.rng()*36:this.G,hp,max:hp,dmg:(E.dmg||E.dmgDie/2+.5)*st.dmgMul*(elite?1.5:1),dmgMul:st.dmgMul*(elite?1.5:1),skin:E.skins?E.skins[Math.floor(this.rng()*E.skins.length)]:type,atkT:this.rng()*.5,
       walkT:this.rng(),anim:0,animT:0,slow:0,slowT:0,stun:0,burn:0,burnT:0,shred:0,elite,armorPts:Math.floor((E.armorPts||0)*Math.pow(1.03,(st.n||1)-1)),fly:!!E.fly,ranged:!!E.ranged,hitFlash:0,phase:this.rng()*6,target:null};
-    if(opt)Object.assign(e,opt);
+    if(opt)Object.assign(e,opt);e.elite=false;   /* 0.12.142 (Kyle): no elites at all (the leftover elite:'roll' made every wave zombie secretly elite); only promoted Nemeses are different */
     this.enemies.push(e);return e;
   }
   spawnBoss(){
@@ -1373,9 +1373,9 @@ class Game{
     if(e.bounty&&!this.demo){this.stageGold+=10;this.text(e.x,e.y-40,'+10','#ffd23f');}
     if(insP(src)==='devour'&&src.alive){this.healHero(src,src.max*.03,true);src.en=Math.min(src.enMax||100,(src.en||0)+4);}
     e.dead=true;this.kills++;if(src&&src.key&&!this.demo)this.st8(src).kills++;this.onKillDark(e);if(src&&src.key&&!this.demo)Brain.showoff(this,src,'kill');if(src&&src.key)Comms.onKill(this,src);
-    const xp=(e.boss?e.B.xp:e.E.xp*(e.elite?2.5:1)*.33)*this.st.xpMul;   // regular enemies give about half the XP they used to (stages are twice as long)
+    const xp=(e.boss?e.B.xp:e.E.xp*.825)*this.st.xpMul;   /* 0.12.142: same XP per kill as before the elite fix (was 2.5 x .33) */   // regular enemies give about half the XP they used to (stages are twice as long)
     /* 0.12.94 (Kyle): scores are much lower: a zombie is worth 1 (werewolf 1.6, fireman 3), +10% a stage; about 50 for a good stage 1 */
-    const pts=(e.boss?e.B.pts:e.E.pts*(e.elite?3:1))/10*(1+.1*(this.st.n-1))*(1+this.run.prestige)*(src?src.scoreM:1);
+    const pts=(e.boss?e.B.pts:e.E.pts*3)/10*(1+.1*(this.st.n-1))*(1+this.run.prestige)*(src?src.scoreM:1);
     this.stageScore+=pts;this.gainXp(xp);
     this.fx.push({k:'poof',x:e.x,y:e.y-(e.fly?0:20),t:0,big:!!e.boss||e.elite});
     if(!e.boss&&e._blast&&/^zombie/.test(e.type)){   /* 0.12.40 (Kyle): blown up by an explosion -> it bursts into gibs instead of falling over */
@@ -1388,13 +1388,13 @@ class Game{
     if(!this.demo){const st=this.st;const r=this.rng();
       const PK=e.picked?{g:1.6,s:2,p:2.5,i:1.5}:{g:1,s:1,p:1,i:1};const gChance=e.boss?1:e.elite?1:Math.min(.95,(e.E.goldChance!=null?e.E.goldChance:.12)*((this.mods&&this.mods.gold)||1)*PK.g);if(r<gChance){const piles=e.boss?5:e.elite?2:1;   /* 0.12.38 (Kyle): every gold pile is small, 2-6 gold (bosses drop 5 piles, elites 2) */
         for(let i=0;i<piles;i++)this.loot.push({kind:'gold',x:e.x+(this.rng()*14-7),gy:e.gy,amt:1+Math.floor(this.rng()*4.6),t:0,big:false});   /* 0.12.93 (Kyle): smaller piles since there are more enemies now: 1-5 gold (avg 4.0 -> 2.8) */}
-      {const m=e.boss?6:e.elite?2:1;   /* 0.12.38 camp supplies off enemies (low odds): food or water 3%, spare parts 4% */
+      {const m=e.boss?6:e.nem?2:1;   /* 0.12.38 camp supplies off enemies (low odds): food or water 3%, spare parts 4% */
         /* 0.12.93 (Kyle): food and water each run their own "pity" roll PER HERO (summons, companions and pets don't roll). The first kill is a
            2% chance; every miss adds +0.3% (more with Supply boosts, Luck and a picked-up enemy) until it drops, then it resets to 2%.
            That's about one of each every ~18 kills per hero (0.12.94). Bosses and elites still drop extra. */
         const K=src&&!src.pet&&!src.minion&&this.run.team&&this.run.team.includes(src.key)?src:null;
         if(K){const P=this.run.pity=this.run.pity||{},q=P[K.key]=P[K.key]||{food:0,water:0};const boost=((this.mods&&this.mods.supply)||1)*PK.s*(1+(K.luck||0)/200)*(1+[0,.15,.3][upgT(this.run,'forage')||0]);const kp=insP(K);   /* 0.12.104 Forager / Rain Catcher / Lucky Looter */
-          for(const kind of ['food','water']){const ch=Math.min(1,(.012+.0015*q[kind])*boost*m*   /* 0.12.140 (Kyle: too much food and water): 1.2% + 0.15% a miss (was 2% + 0.3%) */((kp==='forager'&&kind==='food')||(kp==='raincatch'&&kind==='water')?2.5:hasPerk(K,'looter')?1.8:1));if(this.rng()<ch){q[kind]=0;this.loot.push({kind,x:e.x+(this.rng()*10-5),gy:e.gy,amt:1,t:0});}else q[kind]++;}}
+          for(const kind of ['food','water']){const ch=Math.min(1,(.02+.0025*q[kind])*boost*m*   /* 0.12.140 (Kyle: too much food and water): 1.2% + 0.15% a miss (was 2% + 0.3%) */((kp==='forager'&&kind==='food')||(kp==='raincatch'&&kind==='water')?2.5:hasPerk(K,'looter')?1.8:1));if(this.rng()<ch){q[kind]=0;this.loot.push({kind,x:e.x+(this.rng()*10-5),gy:e.gy,amt:1,t:0});}else q[kind]++;}}
         else if(m>1&&this.rng()<.03*m)this.loot.push({kind:this.rng()<.5?'water':'food',x:e.x+(this.rng()*10-5),gy:e.gy,amt:1,t:0});
         if(this.rng()<.04*m*((this.mods&&this.mods.parts)||1)*PK.p)this.loot.push({kind:'parts',x:e.x+(this.rng()*10-5),gy:e.gy,amt:1+(this.rng()<.5?1:0),t:0});}
       const iChance=(e.boss?1:e.elite?.1+.01*st.n:(e.E.itemChance!=null?e.E.itemChance:.004+.0012*st.n))*PK.i;if(this.rng()<iChance){const it=rollItem(this.run,this.rng,e.boss?'U':null,e.boss?'boss':e.elite?'elite':'mob');if(it)this.loot.push({kind:'item',x:e.x+6,item:it,t:0});}}
@@ -3343,12 +3343,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794470113';const BGI=new Image();BGI.src='crawl_bg.png?v=1794470113';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794470113';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794470219';const BGI=new Image();BGI.src='crawl_bg.png?v=1794470219';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794470219';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794470113';XIMG.wave.src='crawl_wave.png?v=1794470113';XIMG.chibi.src='crawl_chibi.png?v=1794470113';XIMG.flannel.src='crawl_flannel.png?v=1794470113';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794470113';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794470113';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794470113';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794470113';XIMG.rain.src='crawl_rain.png?v=1794470113';XIMG.druid.src='crawl_druid.png?v=1794470113';XIMG.camp.src='crawl_campfire.png?v=1794470113';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794470113';XIMG.tornado.src='crawl_fx_tornado.png?v=1794470113';XIMG.vine.src='crawl_fx_vine.png?v=1794470113';XIMG.thorn.src='crawl_fx_thorn.png?v=1794470113';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794470219';XIMG.wave.src='crawl_wave.png?v=1794470219';XIMG.chibi.src='crawl_chibi.png?v=1794470219';XIMG.flannel.src='crawl_flannel.png?v=1794470219';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794470219';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794470219';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794470219';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794470219';XIMG.rain.src='crawl_rain.png?v=1794470219';XIMG.druid.src='crawl_druid.png?v=1794470219';XIMG.camp.src='crawl_campfire.png?v=1794470219';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794470219';XIMG.tornado.src='crawl_fx_tornado.png?v=1794470219';XIMG.vine.src='crawl_fx_vine.png?v=1794470219';XIMG.thorn.src='crawl_fx_thorn.png?v=1794470219';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794470113';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794470113';XIMG.obst.src='crawl_obst.png?v=1794470113';XIMG.cityob.src='crawl_cityob.png?v=1794470113';XIMG.harvest.src='crawl_harvest.png?v=1794470113';XIMG.wraith.src='crawl_wraith.png?v=1794470113';XIMG.cars.src='crawl_cars.png?v=1794470113';XIMG.robot.src='crawl_robot.png?v=1794470113';XIMG.cultist.src='crawl_cultist.png?v=1794470113';XIMG.tentacle.src='crawl_tentacle.png?v=1794470113';XIMG.boom.src='crawl_boom.png?v=1794470113';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794470219';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794470219';XIMG.obst.src='crawl_obst.png?v=1794470219';XIMG.cityob.src='crawl_cityob.png?v=1794470219';XIMG.harvest.src='crawl_harvest.png?v=1794470219';XIMG.wraith.src='crawl_wraith.png?v=1794470219';XIMG.cars.src='crawl_cars.png?v=1794470219';XIMG.robot.src='crawl_robot.png?v=1794470219';XIMG.cultist.src='crawl_cultist.png?v=1794470219';XIMG.tentacle.src='crawl_tentacle.png?v=1794470219';XIMG.boom.src='crawl_boom.png?v=1794470219';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -4230,7 +4230,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.141</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.142</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
