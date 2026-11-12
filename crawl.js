@@ -346,7 +346,7 @@ const CHAR={
   //   games all day and smokes a lot of weed (not a drinker). Plays sword-fight with his kids. Mixes jokey and sensible.
   jp:{name:'JP',role:'Kar98 + Sword & Board',flatHp:0,stamina:9,hpPerStamina:5,armorPts:7,dodge:.05,kbRes:.35,
     melee:{dice:[1,8],every:1.1,reach:18,kb:18,hitAt:.15},                    // sword: medium speed, low-medium damage
-    ranged:{dice:[4,4],flat:-2,every:2.25,range:290,clip:1,reload:2.25,pellets:1,quietReload:1},   // 0.12.79 (Kyle): Kar98 4d4-2, 2.25s; he doesn't call out reloads
+    ranged:{dice:[1,8],flat:4,every:2.25,range:290,clip:1,reload:2.25,pellets:1,quietReload:1,aimT:.25},   // 0.12.163 (Kyle): Kar98 1d8+4 with a 0.25s aim wind-up before the shot (was 4d4-2, no wind-up); 2.25s; he doesn't call out reloads
     acc:20,walkPenalty:12,crit:.12,critMul:2,luck:18,xp:0,run:2,turn:.22,enMax:100,enRegen:5,
     blockCh:.2,   // 0.12.79 Sword & Board (built into his melee kit): 20% to BLOCK a hit outright with the homemade shield. Any unit with a shield gets blockCh.
     abilities:[
@@ -2424,8 +2424,11 @@ class Game{
       h.unload=big||onHurt||h.freeUntil>this.t;h.shAcc=h.unload?(C.ranged.sprayAcc||0):(C.ranged.tapAcc||0);if(!h.unload&&(h.burstN||0)>=C.ranged.burst){if(h.rT<C.ranged.burstGap)return;h.burstN=0;}}
     if(C.ranged&&h.ammo>0&&h.rT>=C.ranged.every*(rap?RA.every:1)){if(C.ranged.burst)h.burstN=(h.burstN||0)+1;
       if(h.moving&&trait(h,'exec')>.5&&!(h.plan&&h.plan.intent==='retreat')&&(h.plantT=(h.plantT||0)+dt)<.2+1.2*(trait(h,'exec')-.5)*2)return;   // optimal shooters plant their feet first (but not when running away)
-      h.plantT=0;h.rT=0;h.ammo-=1;unstealth(h);h.animR=rap?RA.anim:(C.ranged.anim||.5);h.animRT=h.animR;h.firedMoving=h.moving;if(!C.ranged.releaseAt)this.ev('gun',{});
-      const rel=C.ranged.releaseAt?C.ranged.releaseAt*(h.animR/(C.ranged.anim||.5)):0;if(rap)h.rapid--;
+      h.plantT=0;h.rT=0;h.ammo-=1;unstealth(h);const AIM=C.ranged.aimT||0;
+      if(AIM){h.aimHold=AIM;h.pauseT=Math.max(h.pauseT||0,AIM);h.moving=false;faceToward(h,tgt.x,1);   /* 0.12.163 aim wind-up: he plants, shoulders it, then fires */
+        setTimeoutSafe(this,AIM,()=>{if(!h.alive)return;h.aimHold=0;h.animR=C.ranged.anim||.5;h.animRT=h.animR;h.firedMoving=false;this.ev('gun',{});});}
+      else{h.animR=rap?RA.anim:(C.ranged.anim||.5);h.animRT=h.animR;h.firedMoving=h.moving;if(!C.ranged.releaseAt)this.ev('gun',{});}
+      const rel=AIM?AIM:C.ranged.releaseAt?C.ranged.releaseAt*(h.animR/(C.ranged.anim||.5)):0;if(rap)h.rapid--;
       const dmg=(this.rollDice(C.ranged.dice)+(C.ranged.flat||0)+(h.flatRanged||0))*(C.ranged.dmgMul||1)*(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
       const fire=()=>{if(!h.alive)return;const tg=tgt.dead?this.liveE().sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x))[0]:tgt;if(!tg)return;if(C.ranged.flame){this.flameSpray(h,tg,C.ranged.flame);return;}if(C.ranged.gl){this.launchNade(h,tg,dmg,C.ranged.gl);return;}if(C.ranged.releaseAt)this.ev('bow',{});
         const WR=(C.abilities||[]).find(a=>a.id==='wind');const far=WR&&Math.abs(tg.x-h.x)>WR.far;   // Wind_Reading
@@ -3388,12 +3391,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794474107';const BGI=new Image();BGI.src='crawl_bg.png?v=1794474107';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794474107';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794474223';const BGI=new Image();BGI.src='crawl_bg.png?v=1794474223';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794474223';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794474107';XIMG.wave.src='crawl_wave.png?v=1794474107';XIMG.chibi.src='crawl_chibi.png?v=1794474107';XIMG.flannel.src='crawl_flannel.png?v=1794474107';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794474107';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794474107';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794474107';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794474107';XIMG.rain.src='crawl_rain.png?v=1794474107';XIMG.druid.src='crawl_druid.png?v=1794474107';XIMG.camp.src='crawl_campfire.png?v=1794474107';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794474107';XIMG.tornado.src='crawl_fx_tornado.png?v=1794474107';XIMG.vine.src='crawl_fx_vine.png?v=1794474107';XIMG.thorn.src='crawl_fx_thorn.png?v=1794474107';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794474223';XIMG.wave.src='crawl_wave.png?v=1794474223';XIMG.chibi.src='crawl_chibi.png?v=1794474223';XIMG.flannel.src='crawl_flannel.png?v=1794474223';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794474223';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794474223';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794474223';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794474223';XIMG.rain.src='crawl_rain.png?v=1794474223';XIMG.druid.src='crawl_druid.png?v=1794474223';XIMG.camp.src='crawl_campfire.png?v=1794474223';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794474223';XIMG.tornado.src='crawl_fx_tornado.png?v=1794474223';XIMG.vine.src='crawl_fx_vine.png?v=1794474223';XIMG.thorn.src='crawl_fx_thorn.png?v=1794474223';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794474107';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794474107';XIMG.obst.src='crawl_obst.png?v=1794474107';XIMG.cityob.src='crawl_cityob.png?v=1794474107';XIMG.harvest.src='crawl_harvest.png?v=1794474107';XIMG.wraith.src='crawl_wraith.png?v=1794474107';XIMG.cars.src='crawl_cars.png?v=1794474107';XIMG.robot.src='crawl_robot.png?v=1794474107';XIMG.cultist.src='crawl_cultist.png?v=1794474107';XIMG.tentacle.src='crawl_tentacle.png?v=1794474107';XIMG.boom.src='crawl_boom.png?v=1794474107';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794474223';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794474223';XIMG.obst.src='crawl_obst.png?v=1794474223';XIMG.cityob.src='crawl_cityob.png?v=1794474223';XIMG.harvest.src='crawl_harvest.png?v=1794474223';XIMG.wraith.src='crawl_wraith.png?v=1794474223';XIMG.cars.src='crawl_cars.png?v=1794474223';XIMG.robot.src='crawl_robot.png?v=1794474223';XIMG.cultist.src='crawl_cultist.png?v=1794474223';XIMG.tentacle.src='crawl_tentacle.png?v=1794474223';XIMG.boom.src='crawl_boom.png?v=1794474223';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3836,6 +3839,7 @@ function drawGame(ctx,g,W,oy){
       else if(h.throwT>0&&U.throw){A=U.throw;f=Math.min(A.n-1,Math.floor((1-h.throwT/.45)*A.n));}
       else if(h.dash&&U.runatk){A=U.runatk;f=Math.min(A.n-1,3+Math.floor(h.dash.t/h.dash.T*2));}
       else if(h.animM>0){A=(h.swingAnim&&U[h.swingAnim])||U.melee;const D=h.swingAnim==='attack2'?.36:.45;f=Math.min(A.n-1,Math.floor((1-h.animM/D)*A.n));}
+      else if(h.aimHold>0&&U.ranged){A=U.ranged;f=0;}   /* 0.12.163 holding the aim before the shot */
       else if(h.animR>0){A=(h.firedMoving&&U.walkfire)||U.ranged;f=Math.min(A.n-1,Math.floor((1-h.animR/(h.animRT||.5))*A.n));}
       else if((h.casting>0||h.animC>0)&&h.key==='druid'){A=U.ranged;f=1;}   // staff raised, tip glowing
       else if(h.volley>0&&U.ranged){A=U.ranged;f=Math.min(2,Math.floor((1-h.volley/(h.volleyT0||.6))*3));}   // draws and looses high
@@ -4291,7 +4295,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.162</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.163</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
