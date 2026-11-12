@@ -51,7 +51,7 @@ const CFG={
   stage(n,prestige){
     const bi=Math.floor((n-1)/this.stagesPerBiome)%this.biomes.length, b=this.biomes[bi];
     const P=prestige||0;
-    return {n,biome:b,bi,boss:n%this.stagesPerBiome===0?b.boss:null,
+    return {n,biome:b,bi,boss:null,   /* 0.12.84 (Kyle): no bosses for now (the table stays for later) */
       len:1.5*(820+42*(n-1)),   // 5 stages per biome; each about 25% shorter than before
       rate:1.5*(0.62+0.061*(n-1))*(1+0.3*P),   // spawn budget per second
       // 0.12.13 (Kyle): each stage ~10-20% harder on average (was ~25%): +8% enemy HP, +5% damage and +4% more enemies per stage
@@ -305,9 +305,9 @@ function spendEnergy(u,c){if((u.en||0)<c)return false;u.en-=c;unstealth(u);retur
 function onMeE(g,h){const x=g.heroX(h);return g.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-x)<16).length;}
 function unstealth(u){if(u&&u.stealthT>0){u.stealthT=0;u.stealthCd=1.2;}}
 // Werewolves come in a set number per stage (Kyle: 1 on stage 1, 2 on stage 3), spread along the stage instead of from the random pool
-const CLUSTERS={count:7,first:2,last:[6,7]};   // Kyle: first cluster 2, last cluster 6-7
-const WOLVES_PER_STAGE=n=>Math.min(9,3+Math.floor((n-1)*.5));   // 0.12.65 (Kyle: too weak / too few): 3 on stage 1, one more about every 2 stages   // 0.12.13 (Kyle): 2 on stage 1, then one more about every 2-3 stages (2,2,2,3,3,4,4,4,5...)
-const STRAYS_PER_STAGE=n=>2+Math.floor((n-1)/3);   // 0.12.13 (Kyle): a lonely zombie here or there between cluster waves
+const CLUSTERS={count:8,first:3,last:[7,9]};   // 0.12.84 (Kyle: good waves of regular zombies): 8 waves, 3 at the start to 7-9 at the end   // Kyle: first cluster 2, last cluster 6-7
+const WOLVES_PER_STAGE=n=>n<2?0:Math.min(8,2+Math.floor((n-2)*.5));   // 0.12.84 (Kyle): no werewolves on stage 1; 2 on stage 2, one more every 2 stages, max 8   // 0.12.65 (Kyle: too weak / too few): 3 on stage 1, one more about every 2 stages   // 0.12.13 (Kyle): 2 on stage 1, then one more about every 2-3 stages (2,2,2,3,3,4,4,4,5...)
+const STRAYS_PER_STAGE=n=>3+Math.floor((n-1)/3);   // 0.12.84: one more lonely zombie per stage   // 0.12.13 (Kyle): a lonely zombie here or there between cluster waves
 const ENEMY_BODY=9;   // px between a melee enemy's centre and the front hero's centre before reach is added
 const HERO_FLAT_HP=0,HP_PER_STAMINA=5,HERO_DICE=[2,4],HERO_BASE_CRIT=.1;   // basic attack = 2d4; every hero starts at 10% crit
 // ---- 0.12.3 real characters: every number comes straight from the character sheet Kyle fills out
@@ -1239,7 +1239,8 @@ class Game{
       slow:0,slowT:0,stun:0,burn:0,burnT:0,shred:0,hitFlash:0,fly:!!B.fly,phase:0,w:22};
     this.enemies.push(b);this.boss=b;this.bossSpawned=true;this.ev('boss',{name:B.name});this.shake=.6;for(const h of this.alive())Brain.panic(this,h,'boss');
   }
-  pickType(){const pool=this.st.biome.pool;let tot=0;for(const k in pool)tot+=pool[k];let r=this.rng()*tot;for(const k in pool){r-=pool[k];if(r<=0)return k;}return Object.keys(pool)[0];}
+  pickType(){const n=this.st.n||1;const pool=Object.assign({},this.st.biome.pool);if(pool.fireman!=null)pool.fireman=n<3?0:Math.min(.2,.08+.015*(n-3));   /* 0.12.84 (Kyle): Fireman_Zombie from stage 3 (8% of a wave, +1.5% a stage, max 20%) */
+    let tot=0;for(const k in pool)tot+=pool[k];let r=this.rng()*tot;for(const k in pool){r-=pool[k];if(r<=0&&pool[k]>0)return k;}return 'zombie';}
   // ---------------------------------------------------------------- damage
   /* 0.12.38 stage stats per unit (shown after a stage clears) */
   st8(h,own){if(!own&&h&&h.owner&&h.owner.key&&!h.dog)h=h.owner;   /* 0.12.68: companions/summons' numbers count for their owner; the Guard Dog keeps his own line */
@@ -1588,7 +1589,7 @@ class Game{
         this.strays.sort((p,q)=>p-q);}
       while(this.strays&&this.strays.length&&this.dist>=this.strays[0]){this.strays.shift();if(this.enemies.filter(e=>!e.dead).length<24)this.spawnEnemy('zombie',{x:this.W+10+this.rng()*22,elite:'roll',stray:1});}
       const C0=this.clusters[0];
-      if(C0&&this.dist>=C0.at){C0.t-=dt;if(C0.t<=0&&this.enemies.filter(e=>!e.dead).length<24){C0.left--;C0.t=.12+this.rng()*.35;
+      if(C0&&this.dist>=C0.at){C0.t-=dt;if(C0.t<=0&&this.enemies.filter(e=>!e.dead).length<28){C0.left--;C0.t=.12+this.rng()*.35;
           this.spawnEnemy(this.pickType(),{x:this.W+10+this.rng()*22,elite:'roll'});if(C0.left<=0)this.clusters.shift();}}}
     if(!stageDone&&!this.demo){if(!this.wolfPlan){const k=WOLVES_PER_STAGE(this.st.n);this.wolfPlan=[];for(let i=0;i<k;i++)this.wolfPlan.push(this.st.len*(.12+.68*(i+.2+.4*this.rng())/k));}
       while(this.wolfPlan.length&&this.dist>=this.wolfPlan[0]){this.wolfPlan.shift();this.spawnEnemy('werewolf');}}
@@ -2865,12 +2866,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794444291';const BGI=new Image();BGI.src='crawl_bg.png?v=1794444291';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794444291';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794444780';const BGI=new Image();BGI.src='crawl_bg.png?v=1794444780';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794444780';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794444291';XIMG.wave.src='crawl_wave.png?v=1794444291';XIMG.chibi.src='crawl_chibi.png?v=1794444291';XIMG.flannel.src='crawl_flannel.png?v=1794444291';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794444291';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794444291';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794444291';XIMG.rain.src='crawl_rain.png?v=1794444291';XIMG.druid.src='crawl_druid.png?v=1794444291';XIMG.camp.src='crawl_campfire.png?v=1794444291';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794444291';XIMG.tornado.src='crawl_fx_tornado.png?v=1794444291';XIMG.vine.src='crawl_fx_vine.png?v=1794444291';XIMG.thorn.src='crawl_fx_thorn.png?v=1794444291';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794444780';XIMG.wave.src='crawl_wave.png?v=1794444780';XIMG.chibi.src='crawl_chibi.png?v=1794444780';XIMG.flannel.src='crawl_flannel.png?v=1794444780';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794444780';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794444780';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794444780';XIMG.rain.src='crawl_rain.png?v=1794444780';XIMG.druid.src='crawl_druid.png?v=1794444780';XIMG.camp.src='crawl_campfire.png?v=1794444780';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794444780';XIMG.tornado.src='crawl_fx_tornado.png?v=1794444780';XIMG.vine.src='crawl_fx_vine.png?v=1794444780';XIMG.thorn.src='crawl_fx_thorn.png?v=1794444780';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794444291';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794444291';XIMG.obst.src='crawl_obst.png?v=1794444291';XIMG.cars.src='crawl_cars.png?v=1794444291';XIMG.robot.src='crawl_robot.png?v=1794444291';XIMG.cultist.src='crawl_cultist.png?v=1794444291';XIMG.tentacle.src='crawl_tentacle.png?v=1794444291';XIMG.boom.src='crawl_boom.png?v=1794444291';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794444780';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794444780';XIMG.obst.src='crawl_obst.png?v=1794444780';XIMG.cars.src='crawl_cars.png?v=1794444780';XIMG.robot.src='crawl_robot.png?v=1794444780';XIMG.cultist.src='crawl_cultist.png?v=1794444780';XIMG.tentacle.src='crawl_tentacle.png?v=1794444780';XIMG.boom.src='crawl_boom.png?v=1794444780';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3607,7 +3608,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.82</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.84</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
