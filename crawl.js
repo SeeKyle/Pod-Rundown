@@ -328,8 +328,8 @@ const CHAR={
       //   the friend furthest left AND bashes the closest zombie 75px the other way for 2d4 (1s stun). 50 energy, 20s.
       {id:'familia',name:'Protect_the_Familia',en:50,cd:20,range:220,spd:120,shield:.5,shieldT:5,push:25,under:.55,bashDice:[2,4],bashPush:25,bashStun:1},
       // 0.12.93 No_Scope (replaces Shield_Bash): the gamer in him. A hip-fired Kar98 flick that punches through up to 3 zombies in a line
-      //   for 4d6 each (+15% crit). IF 2+ zombies are lined up in front of me within 290px (or a big one) THEN no-scope it. 30 energy, 10s.
-      {id:'noscope',name:'No_Scope',en:30,cd:10,dice:[4,6],pierce:3,range:290,crit:.15},
+      //   for 3d6 each (+15% crit). IF 2+ zombies are lined up in front of me within 290px (or a big one) THEN no-scope it. 35 energy, 15s.
+      {id:'noscope',name:'No_Scope',en:35,cd:15,dice:[3,6],pierce:3,range:290,crit:.15},   // 0.12.94: toned down (was 4d6, 30 energy, 10s)
       // Trash_Talk: he picks on the zombies (and his friends). Every zombie within 70px comes for HIM for 4s while he hides behind the shield
       //   (30% less damage); his friends laugh it off: +5% crit for 6s. IF 2+ zombies are on an ally near me THEN talk trash. 25 energy, 18s.
       {id:'trash',name:'Trash_Talk',en:30,cd:12,r:70,dur:4,dr:.3,crit:.05,critT:6},   // 0.12.79: 12s, and more reasons to use it
@@ -449,7 +449,7 @@ const ABIL_DESC={
   smoke:'Smoke_Screen · 35 energy · 16s. Lobs a smoke grenade between a hurt ally and the enemies on them: a thick cloud for 6s (about 180px wide). Enemies inside move 30% slower and miss half their attacks; allies inside dodge 25% of hits and are STEALTHED (see-through): zombies lose track of them until they attack or use an ability. Stealth lasts 5s after they step out; stepping back in refreshes it. Not the Warhound himself.',
   toke:'Toke_Break · no energy · 22s · 2s. He sparks up a big one and keeps walking but does nothing else while he smokes; then he\'s HIGH for 30s (see Wake_n_Bake) and feels 6% better.',
   familia:'Protect_the_Familia · 50 energy · 20s. When a friend within 660px drops under 55% with a zombie near them (or under 35% no matter what), he sprints to them (immune on the way), shields you both for 50% of his max HP for 5s, shoves the friend 75px toward whoever is furthest left, and shield-bashes the closest zombie 75px the other way for 2d4 with a 1s stun.',
-  noscope:'No_Scope · 30 energy · 10s. The gamer in him: a hip-fired Kar98 flick that punches through up to 3 zombies in a line for 4d6 each, with +15% crit. Used when 2+ zombies line up in front of him (or one big one).',
+  noscope:'No_Scope · 35 energy · 15s. The gamer in him: a hip-fired Kar98 flick that punches through up to 3 zombies in a line for 3d6 each, with +15% crit. Used when 2+ zombies line up in front of him (or one big one).',
   trash:'Trash_Talk · 30 energy · 12s. He roasts every zombie within 210px so they all come for him for 4s while he hides behind the shield (30% less damage); his friends laugh: +5% crit for 6s. He uses it when zombies are piling on a friend, or when 3+ are around him and he\'s above half health.',
   baked:'Wake_n_Bake · Passive. While HIGH: +20% dodge, 20% less damage taken, +2 energy a second, +20% sword speed, and he leans 4 toward Slasher. Sober for 10s+: -6 accuracy and 10% slower moving and attacking. Sword & Board (built in): 20% to BLOCK a hit outright with the shield.',
   aimed:'Aimed Shot · 45 energy · 14s · 2s cast with a laser sight. Never misses the head box, +5% crit, 2.5x crit damage, pierces. If the shot kills, what\'s left of its cooldown is halved.',
@@ -1279,7 +1279,8 @@ class Game{
     if(insP(src)==='devour'&&src.alive){this.healHero(src,src.max*.03,true);src.en=Math.min(src.enMax||100,(src.en||0)+4);}
     e.dead=true;this.kills++;if(src&&src.key&&!this.demo)this.st8(src).kills++;this.onKillDark(e);if(src&&src.key&&!this.demo)Brain.showoff(this,src,'kill');if(src&&src.key)Comms.onKill(this,src);
     const xp=(e.boss?e.B.xp:e.E.xp*(e.elite?2.5:1)*.33)*this.st.xpMul;   // regular enemies give about half the XP they used to (stages are twice as long)
-    const pts=Math.round((e.boss?e.B.pts:e.E.pts*(e.elite?3:1))*(1+.4*(this.st.n-1))*(1+this.run.prestige)*(src?src.scoreM:1));
+    /* 0.12.94 (Kyle): scores are much lower: a zombie is worth 1 (werewolf 1.6, fireman 3), +10% a stage; about 50 for a good stage 1 */
+    const pts=(e.boss?e.B.pts:e.E.pts*(e.elite?3:1))/10*(1+.1*(this.st.n-1))*(1+this.run.prestige)*(src?src.scoreM:1);
     this.stageScore+=pts;this.gainXp(xp);
     this.fx.push({k:'poof',x:e.x,y:e.y-(e.fly?0:20),t:0,big:!!e.boss||e.elite});
     if(!e.boss&&e._blast&&/^zombie/.test(e.type)){   /* 0.12.40 (Kyle): blown up by an explosion -> it bursts into gibs instead of falling over */
@@ -2886,12 +2887,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794458135';const BGI=new Image();BGI.src='crawl_bg.png?v=1794458135';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794458135';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794458539';const BGI=new Image();BGI.src='crawl_bg.png?v=1794458539';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794458539';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794458135';XIMG.wave.src='crawl_wave.png?v=1794458135';XIMG.chibi.src='crawl_chibi.png?v=1794458135';XIMG.flannel.src='crawl_flannel.png?v=1794458135';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794458135';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794458135';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794458135';XIMG.rain.src='crawl_rain.png?v=1794458135';XIMG.druid.src='crawl_druid.png?v=1794458135';XIMG.camp.src='crawl_campfire.png?v=1794458135';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794458135';XIMG.tornado.src='crawl_fx_tornado.png?v=1794458135';XIMG.vine.src='crawl_fx_vine.png?v=1794458135';XIMG.thorn.src='crawl_fx_thorn.png?v=1794458135';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794458539';XIMG.wave.src='crawl_wave.png?v=1794458539';XIMG.chibi.src='crawl_chibi.png?v=1794458539';XIMG.flannel.src='crawl_flannel.png?v=1794458539';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794458539';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794458539';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794458539';XIMG.rain.src='crawl_rain.png?v=1794458539';XIMG.druid.src='crawl_druid.png?v=1794458539';XIMG.camp.src='crawl_campfire.png?v=1794458539';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794458539';XIMG.tornado.src='crawl_fx_tornado.png?v=1794458539';XIMG.vine.src='crawl_fx_vine.png?v=1794458539';XIMG.thorn.src='crawl_fx_thorn.png?v=1794458539';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794458135';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794458135';XIMG.obst.src='crawl_obst.png?v=1794458135';XIMG.cars.src='crawl_cars.png?v=1794458135';XIMG.robot.src='crawl_robot.png?v=1794458135';XIMG.cultist.src='crawl_cultist.png?v=1794458135';XIMG.tentacle.src='crawl_tentacle.png?v=1794458135';XIMG.boom.src='crawl_boom.png?v=1794458135';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794458539';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794458539';XIMG.obst.src='crawl_obst.png?v=1794458539';XIMG.cars.src='crawl_cars.png?v=1794458539';XIMG.robot.src='crawl_robot.png?v=1794458539';XIMG.cultist.src='crawl_cultist.png?v=1794458539';XIMG.tentacle.src='crawl_tentacle.png?v=1794458539';XIMG.boom.src='crawl_boom.png?v=1794458539';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3410,6 +3411,9 @@ function drawGame(ctx,g,W,oy){
   engFx();voidFx();slamDraw();pinnedDraw();bottleDraw();laser();waves();druidFx();robotFx();darkFx();quakes();logs();flames();jpFx();poultices();booms();
   // projectiles
   for(const p of g.proj){const x=Math.round(p.x),y=p.aimed?Math.round(p.y):Math.round(G+(p.y-G)*HS);const c=PCOL[p.kind]||'#ff3a3a';ctx.save();shrinkAt(ctx,x,y,HS);
+    /* 0.12.94 (Kyle): projectiles turn to match the way they're flying (arrows from the tower point down at the target) */
+    {const fx=p.x,fy=p.aimed?p.y:G+(p.y-G)*HS;if(p._sx!=null){const dx=fx-p._sx,dy=fy-p._sy;if(dx*dx+dy*dy>.01)p._ang=Math.atan2(dy,dx);}p._sx=fx;p._sy=fy;
+      if(p._ang!=null&&p.kind!=='buck'){const d=(p.kind==='arrow'||p.kind==='quarrel')?(p.enemy?-1:1):(p.dir||1);let r=d<0?p._ang-Math.PI:p._ang;while(r>Math.PI)r-=2*Math.PI;while(r<-Math.PI)r+=2*Math.PI;if(Math.abs(r)>.02){ctx.translate(x,y);ctx.rotate(r);ctx.translate(-x,-y);}}}
     if(p.kind==='void'){const d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';for(let i=1;i<=5;i++){ctx.fillStyle=`rgba(150,60,255,${.4-.07*i})`;ctx.fillRect(x-d*i*2.8-1,y-1+Math.sin(g.t*25+i)*.8,2,2);}glow(ctx,x,y,6,'#7a30e0',.35);ctx.restore();ctx.fillStyle='#12061e';ctx.beginPath();ctx.arc(x,y,2.4,0,7);ctx.fill();ctx.strokeStyle='#c090ff';ctx.lineWidth=.8;ctx.stroke();}   // void bolt: a black core in a violet halo
     else if(p.kind==='buck'){const d=(p.dir||1);ctx.save();ctx.globalCompositeOperation='lighter';   /* one buckshot pellet: a hot slug with a short streak */
       ctx.strokeStyle='rgba(255,200,120,.55)';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x-d*6,y);ctx.lineTo(x,y);ctx.stroke();ctx.fillStyle='#fff0c0';ctx.fillRect(x-.75,y-.75,1.5,1.5);ctx.restore();}
@@ -3629,7 +3633,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.93</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.94</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -3890,11 +3894,11 @@ function showPick(){
         <span class="cn">${nm}</span>${d.r1>=CFG.maxRank?`<span class="cc-sub" style="margin:0;font-size:11px">${esc(base)} at max rank</span>`:''}${o.slot==='spell'?`<span class="cc-sub" style="margin:0;font-size:10px">inspired by ${esc(shortCard(o.card))}</span>`:''}
         <span class="who"><span data-por="${o.hero}"></span>${esc(hd.name)}</span>
         <span>${o.kind==='new'?'':`r${d.r0} → `}${rankStars(d.r1)}${d.where?` <span class="cc-sub" style="font-size:10px">· ${d.where}</span>`:''}</span><span class="tx">${esc(d.txt)}${o.kind==='aug'?` <b>${AUG[o.aug].name}:</b> ${AUG[o.aug].txt}.`:''}</span></button>`;}).join('')}</div>
-    <div class="cc-row" style="margin-top:12px"><button class="cc-btn" data-reroll ${run.rerolls>0?'':'disabled'}>🎲 Reroll (${run.rerolls})</button><button class="cc-btn" data-skip>Skip (+${fmt(60*run.stage)} score)</button></div>`);
+    <div class="cc-row" style="margin-top:12px"><button class="cc-btn" data-reroll ${run.rerolls>0?'':'disabled'}>🎲 Reroll (${run.rerolls})</button><button class="cc-btn" data-skip>Skip (+${fmt(2*run.stage)} score)</button></div>`);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
   P.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const o=os[+b.dataset.i];const r=applyOffer(run,o,s);if(r==='full')return showReplace(o);if(o.blessed)run.blessed=Math.max(0,(run.blessed||0)-1);sfx('level');CC.offersCache=null;persist();run.pending?showPick():showCamp();});
   P.querySelector('[data-reroll]').onclick=()=>{if(run.rerolls>0){run.rerolls--;CC.offersCache=null;persist();showPick();}};
-  P.querySelector('[data-skip]').onclick=()=>{run.pending--;if(isB)run.blessed=Math.max(0,(run.blessed||0)-1);run.score+=60*run.stage;CC.offersCache=null;persist();run.pending?showPick():showCamp();};
+  P.querySelector('[data-skip]').onclick=()=>{run.pending--;if(isB)run.blessed=Math.max(0,(run.blessed||0)-1);run.score+=2*run.stage;CC.offersCache=null;persist();run.pending?showPick():showCamp();};
 }
 function showReplace(o){
   const s=SLOT(),run=s.run;const hv=run.heroes[o.hero];const t=o.slot==='item'?'item':SPELL[o.arch].passive?'passive':'active';
@@ -3959,7 +3963,7 @@ function statsBrief(g){const S=g.stats||{};const keys=Object.keys(S).filter(k=>k
     <div style="overflow-x:auto"><table class="cc-stats" style="border-collapse:collapse;font-size:11px;width:100%;text-align:right"><tr style="opacity:.7"><th style="text-align:left">Unit</th><th>Damage</th><th>DPS</th><th>Healed</th><th>Kills</th><th>Crits</th><th>Heads</th><th>Taken</th><th>Downed</th><th>Revives</th><th>Searches</th></tr>${rows}</table></div></div>`;}
 function finishStage(g){
   const s=SLOT(),run=s.run;const first=!g._fin;g._fin=1;   /* 0.12.73: 'give up' after a retry offer comes back through here: don't count the stage twice */
-  if(first){g.saveBack();run.score+=g.stageScore;s.gold=(s.gold||0)+g.stageGold;
+  if(first){g.saveBack();run.score+=Math.round(g.stageScore);s.gold=(s.gold||0)+g.stageGold;
   s.parts=(s.parts||0)+(g.stageParts||0);run.food=(run.food||0)+(g.stageFood||0);run.water=(run.water||0)+(g.stageWater||0);}   /* camp supplies */
   run.lastHaul={food:g.stageFood||0,water:g.stageWater||0,parts:g.stageParts||0};
   const found=[];if(g.over==='clear')for(const it of g.stageItems){const where=giveItem(run,s,it);if(where)found.push(shortCard(it.card)+(where==='bag'?' (backpack)':''));else{const v=Math.round(itemPrice(it.rar,run.stage)/3);s.gold+=v;found.push(shortCard(it.card)+' (sold, no room: +'+v+'g)');}}
@@ -3969,7 +3973,7 @@ function finishStage(g){
     for(const k of run.team){const h=run.heroes[k];if(h.dead){h.dead=false;h.hpf=.25;}else h.hpf=Math.min(1,(h.hpf||0)+.3);}
     run.needFeed=run.team.filter(k=>k!=='robot');   /* 0.12.58: everyone needs food AND water at camp, except the Warhound */
     if(run.retryUsed){run.retryUsed=0;run.retries=1;run.campLog2='↻ Stage beaten on the retry: you get your retry back.';}   /* 0.12.73 */
-    const cleared=run.stage;run.score+=Math.round(250*cleared*(1+run.prestige));
+    const cleared=run.stage;run.score+=Math.round(5*cleared*(1+run.prestige));   /* 0.12.94: clear bonus 5 x stage (was 250 x stage) */
     if(cleared>=CFG.maxStage){persist();CC.game=null;return showVictory(lvls);}
     if(cleared===CFG.strangerStage&&run.team.length<3&&!run.strangerDone){run.strangerDone=1;const free=s.forsook?[]:DATA.heroes.filter(h=>!run.team.includes(h.key));
       if(CFG.stage(cleared,run.prestige).boss)run.shopAt=cleared+1;run.stage++;persist();CC.game=null;return showStranger(free);}
@@ -3977,7 +3981,7 @@ function finishStage(g){
     run.stage++;run.rerolls=Math.max(run.rerolls,1);
     if(run.prestige*100+run.stage-1>s.best.prestige*100+s.best.stage){s.best.stage=run.stage-1;s.best.prestige=run.prestige;}
     persist();CC.game=null;
-    const rb=run.campLog2;run.campLog2=null;const P=showPanel(`<div class="cc-h">STAGE ${cleared} CLEAR!</div>${rb?`<p class="cc-sub" style="color:#a6ff2e">${rb}</p>`:''}<p class="cc-sub">+${fmt(g.stageScore+250*cleared*(1+run.prestige))} score · ${g.kills} kills · 💰 +${fmt(g.stageGold)} gold${g.stageParts?' · ⚙ +'+g.stageParts+' spare parts':''}${g.stageFood?' · 🥫 +'+g.stageFood+' food':''}${g.stageWater?' · 💧 +'+g.stageWater+' water':''}${found.length?'<br>Found: '+found.map(esc).join(', '):''}${lvls.length?'<br>'+lvls.join(', '):''}</p>${statsBrief(g)}<div class="cc-row"><button class="cc-btn go" data-c>TO CAMP ▶</button></div>`);
+    const rb=run.campLog2;run.campLog2=null;const P=showPanel(`<div class="cc-h">STAGE ${cleared} CLEAR!</div>${rb?`<p class="cc-sub" style="color:#a6ff2e">${rb}</p>`:''}<p class="cc-sub">+${fmt(Math.round(g.stageScore)+Math.round(5*cleared*(1+run.prestige)))} score · ${g.kills} kills · 💰 +${fmt(g.stageGold)} gold${g.stageParts?' · ⚙ +'+g.stageParts+' spare parts':''}${g.stageFood?' · 🥫 +'+g.stageFood+' food':''}${g.stageWater?' · 💧 +'+g.stageWater+' water':''}${found.length?'<br>Found: '+found.map(esc).join(', '):''}${lvls.length?'<br>'+lvls.join(', '):''}</p>${statsBrief(g)}<div class="cc-row"><button class="cc-btn go" data-c>TO CAMP ▶</button></div>`);
     P.querySelector('[data-c]').onclick=showCamp;return;}
   // defeat
   /* 0.12.85 (Kyle): nobody loses a run any more. A wipe keeps EVERYTHING (gold, parts, food, water, items and XP picked up on the way),
