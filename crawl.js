@@ -1689,7 +1689,7 @@ class Game{
       // basic attack
       const rate=dt*h.aspd*(h.buffT>0?1.3:1);const st=h.style;
       const findT=(kind)=>{const melee=kind==='melee';const ox=melee?f.x:h.x;const range=melee?st.reach*UNIT_SCALE+3:(st.range||170)*(h.perch?1+((CHAR.eng.abilities[0].tower.perchRange)||.3):1);
-        const L=this.enemies.filter(e=>!e.dead&&(melee?(e.boss?e.x-e.w-h.x<=range&&e.x>h.x:Math.abs(e.x-h.x)<=range):(Math.abs(e.x-h.x)<=range))).sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x));
+        const L=this.enemies.filter(e=>!e.dead&&e.inside==null&&(melee?(e.boss?e.x-e.w-h.x<=range&&e.x>h.x:Math.abs(e.x-h.x)<=range):(Math.abs(e.x-h.x)<=range))).sort((p,q)=>Math.abs(p.x-h.x)-Math.abs(q.x-h.x));
         const P=h.plan&&h.plan.tgt;if(P&&!P.dead&&L.includes(P)&&(!melee||P.boss||P.fly||P.gy==null||Math.abs(P.gy-h.gy)<2.5))return P;   // 0.12.2: the brain's pick, if it's in reach
         if(!melee)return L[0];
         // melee only reaches its own lane; if the nearest foe is in another lane, step one lane toward it
@@ -1746,6 +1746,7 @@ class Game{
       if(e.slowT>0){e.slowT-=dt;if(e.slowT<=0)e.slow=0;}
       if(e.kbv>0){e.x+=(e.kbDir||1)*e.kbv*dt;e.kbv=Math.max(0,e.kbv-e.kbv*8*dt-4*dt);}
       if(e.stun>0){e.stun-=dt;continue;}
+      if(this.obst&&this.roofEnemy(e,dt,scroll))continue;   /* 0.12.122: storefront roof routes */
       if(this.blds&&!e.fly&&!e.boss)this.bldBlock(e,dt);   /* 0.12.75: barriers stop them; they hit buildings in their way */
       if(e.distractT>0){e.distractT-=dt;e.distractX-=scroll*dt;e.x-=scroll*dt;const dx=e.distractX-e.x;if(Math.abs(dx)>2)e.x+=Math.sign(dx)*Math.min(Math.abs(dx),e.E.spd*(1-(e.slow||0))*dt);e.face=dx>0?1:-1;e.walkT=(e.walkT||0)+dt;continue;}   /* 0.12.68 Bottle_Distraction: they go check the noise */
       const sp=(1-e.slow);
@@ -2847,26 +2848,62 @@ class Game{
   /* 0.12.119 (Kyle): lootable storefronts. Each lives at the middle of its building in the downtown backdrop and moves with it (the
      building's parallax speed), so it never drifts off its building or into a gap. As a shop's building scrolls in, ~45% of them are open
      for looting (shown by a gold glint and an alarm bell). */
-  /* 0.12.122 (Kyle) storefront rooftops are ONLY for the crate up there: IF a roof still has its crate AND it's fairly quiet near the ladder
-     THEN the nearest free ally climbs up (1.1s), loots it (1.5s), climbs straight back down (1s). Nobody fights or hangs out up there;
-     once the crate's gone the roof is worthless and nobody climbs it again. */
-  stepRoofs(dt){for(const o of this.obst||[]){const R=o.roof;if(!R)continue;const lx=o.x+(o.bw||36)/2+1.5;
-      const off=h=>{if(!h)return;h.perch=null;h.leapH=0;h.roofBusy=0;R.occ=null;};
-      if(R.occ&&(!R.occ.alive||o.x<10)){off(R.occ);R.done=1;}
-      if(!R.occ&&R.crate&&!R.done&&o.x>40&&o.x<this.W-30){const quiet=this.enemies.filter(e=>!e.dead&&Math.abs(e.x-lx)<50).length<2;
-        const cand=quiet?this.alive().filter(h=>!h.pet&&h.key!=='robot'&&!h.perch&&!h.jet&&!h.search&&!h.building&&!h.repairing&&Math.abs(this.heroX(h)-lx)<40&&h.hp/h.max>.4).sort((p,q)=>Math.abs(this.heroX(p)-lx)-Math.abs(this.heroX(q)-lx)):[];const h=cand[0];
-        if(h){R.occ=h;h.perch=R;h.roofBusy=1;R.st='up';R.t=0;h.x=lx;Comms.bubble(this,h,Comms.pick(['Crate on the roof!','Grabbing that crate.','Be right back down.']),true);}}
-      if(R.occ){const h=R.occ,lift=Math.max(10,(h.gy||this.G)-R.y)/(1.2*UNIT_SCALE),sx=o.x-(o.bw||36)*.22;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;R.t+=dt;
-        if(R.st==='up'){h.x+=(lx-h.x)*Math.min(1,dt*12);h.leapH=lift*Math.min(1,R.t/1.1);if(R.t>=1.1){R.st='loot';R.t=0;}}
-        else if(R.st==='loot'){h.x+=(sx-h.x)*Math.min(1,dt*6);h.leapH=lift;if(R.t>=1.5){R.crate=false;R.crateDone=1;const r=this.rng();if(r<.45)this.gainSupply(h,o);else if(r<.8)this.gainParts(h,o);else{const gd=4+Math.floor(this.rng()*7);this.stageGold+=gd;this.text(h.x,R.y-10,'+'+gd,'#ffd23f');}
-            Comms.bubble(this,h,Comms.pick(['Rooftop stash!','Someone hid this up here.','Got it, coming down.']));R.st='down';R.t=0;}}
-        else{h.x+=(lx-h.x)*Math.min(1,dt*10);if(Math.abs(h.x-lx)<1.5||R.t>.6){R.dt2=(R.dt2||0)+dt;h.leapH=lift*Math.max(0,1-R.dt2/1);if(R.dt2>=1){off(h);R.done=1;}}}}}}
+  /* 0.12.122 (Kyle) storefront rooftops. Two reasons to go up the ladder (1.1s climb, busy while climbing):
+     - a crate up there: anyone free goes up, loots it (1.5s) and comes straight back down;
+     - a fight: a shooter takes the roof (+6 accuracy, +30% range) while there's something to shoot. IF nothing's in range for 2s, or
+       they drop under 30% HP, or the shop scrolls off THEN they climb down. Nobody hangs out up there doing nothing.
+     Zombies can get up too: they walk into the shop's front door, vanish inside (1.2s) and come out the stairwell door on the roof
+     (at most 2 per roof), then go for whoever's up there. With nobody left up top they hop back down. */
+  stepRoofs(dt){for(const o of this.obst||[]){const R=o.roof;if(!R)continue;const hw=(o.bw||36)/2,lx=o.x+hw+1.5;R.dx=-hw*.55;
+      const off=h=>{if(!h)return;h.perch=null;h.leapH=0;h.roofBusy=0;if(R.acc){h.acc-=R.acc;R.acc=0;}R.occ=null;};
+      if(R.occ&&(!R.occ.alive||o.x<10)){off(R.occ);}
+      const foes=x=>this.enemies.filter(e=>!e.dead&&e.inside==null&&Math.abs(e.x-x)<170).length;
+      if(!R.occ&&o.x>40&&o.x<this.W-30){R.wait=(R.wait||0)-dt;const quiet=this.enemies.filter(e=>!e.dead&&Math.abs(e.x-lx)<50&&!e.onRoof).length<2;
+        const free=(h,r)=>!h.pet&&h.key!=='robot'&&!h.perch&&!h.jet&&!h.search&&!h.building&&!h.repairing&&Math.abs(this.heroX(h)-lx)<(r||40)&&h.hp/h.max>.4;
+        const near=(L)=>L.sort((p,q)=>Math.abs(this.heroX(p)-lx)-Math.abs(this.heroX(q)-lx))[0];
+        let h=null,why=null;
+        if(R.wait<=0){R.wait=1.5;const sh=near(this.alive().filter(h=>free(h,70)&&h.base.char&&h.base.char.ranged&&!this.isMeleeHero(h)));if(sh&&foes(lx)>=2&&this.rng()<.45){h=sh;why='fight';}}
+        if(!h&&R.crate&&quiet){h=near(this.alive().filter(free));why='crate';}
+        if(h){R.occ=h;h.perch=R;h.roofBusy=1;R.st='up';R.t=0;R.why=why;R.idle=0;h.x=lx;h.laneI=0;h.gy=LANES[0];
+          Comms.bubble(this,h,Comms.pick(why==='fight'?['Taking the roof!','High ground!','I\'ll cover you from up here.']:['Crate on the roof!','Grabbing that crate.','Be right back down.']),true);}}
+      if(R.occ){const h=R.occ,lift=Math.max(10,(h.gy||this.G)-R.y)/(1.2*UNIT_SCALE);R.t+=dt;
+        const down=()=>{R.st='down';R.t=0;R.dt2=0;h.roofBusy=1;if(R.acc){h.acc-=R.acc;R.acc=0;}};
+        const lootCrate=()=>{R.crate=false;R.crateDone=1;const r=this.rng();if(r<.45)this.gainSupply(h,o);else if(r<.8)this.gainParts(h,o);else{const gd=4+Math.floor(this.rng()*7);this.stageGold+=gd;this.text(h.x,R.y-10,'+'+gd,'#ffd23f');}
+          Comms.bubble(this,h,Comms.pick(['Rooftop stash!','Someone hid this up here.','Found a crate up top!']));};
+        if(R.st==='up'){h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;h.x+=(lx-h.x)*Math.min(1,dt*12);h.leapH=lift*Math.min(1,R.t/1.1);
+          if(R.t>=1.1){R.t=0;if(R.why==='fight'){R.st='fight';h.roofBusy=0;R.acc=6;h.acc+=6;}else R.st='loot';}}
+        else if(R.st==='loot'){h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;h.x+=(o.x-hw*.45-h.x)*Math.min(1,dt*6);h.leapH=lift;if(R.t>=1.5){lootCrate();down();}}
+        else if(R.st==='fight'){h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;h.leapH=lift;const spot=o.x+hw*.25;h.x+=(spot-h.x)*Math.min(1,dt*6);h.face=1;
+          if(R.crate&&R.t>1.5)lootCrate();
+          R.idle=foes(h.x)?0:R.idle+dt;if(R.idle>2||h.hp/h.max<.3||o.x<16)down();}
+        else{h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;h.x+=(lx-h.x)*Math.min(1,dt*10);if(Math.abs(h.x-lx)<1.5||R.t>.6){R.dt2=(R.dt2||0)+dt;h.leapH=lift*Math.max(0,1-R.dt2/1);if(R.dt2>=1)off(h);}}}
+      if(R.doorT>0)R.doorT-=dt;}}
+  /* zombies and storefront roofs: walk in the front door -> vanish -> come out the roof door -> fight whoever's up there -> hop down */
+  roofEnemy(e,dt,scroll){
+    if(e.inside!=null){const o=e.roofO;e.inside-=dt;if(o)e.x=o.x;if(e.inside>0&&o&&this.obst.includes(o))return true;
+      e.inside=null;if(e.goingDown||!o||!o.roof||!this.obst.includes(o)||!o.roof.occ){e.goingDown=0;e.gy=LANES[0];e.laneI=0;e.roofO=null;if(o)e.x=o.x;return false;}   /* back out the front door */
+      e.onRoof=1;e.rx=o.roof.dx||0;e.gy=o.roof.y;o.roof.doorT=.6;e.atkT2=.6;return true;}
+    if(e.onRoof){const o=e.roofO,R=o&&o.roof;if(!R||!this.obst.includes(o)){e.onRoof=0;e.gy=LANES[0];e.laneI=0;e.roofO=null;return false;}
+      const hw=(o.bw||36)/2,occ=R.occ&&R.st!=='down'&&R.st!=='up'?R.occ:null;e.gy=R.y;
+      if(occ){const tx=occ.x-o.x-4;const d=tx-e.rx;e.face=d>0?1:-1;if(Math.abs(d)>1){e.rx+=Math.sign(d)*Math.min(Math.abs(d),e.E.spd*(1-(e.slow||0))*dt);e.walkT+=dt;}
+        e.atkT2-=dt;if(Math.abs(d)<=2&&e.atkT2<=0){e.atkT2=e.E.atk||1.25;e.animT=.3;const dm=e.E.dmgDie?Math.max(1,Math.floor((1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul)):e.dmg;this.hurtHero(occ,dm,e);}e.rIdle=0;}
+      else{e.rIdle=(e.rIdle||0)+dt;if(e.rIdle>.6){const d=(R.dx||0)-e.rx;e.face=d>0?1:-1;if(Math.abs(d)>1){e.rx+=Math.sign(d)*Math.min(Math.abs(d),e.E.spd*dt);e.walkT+=dt;}
+          else{e.onRoof=0;e.goingDown=1;e.inside=1.2;R.doorT=.6;return true;}}}   /* 0.12.122 (Kyle): nobody left up top: back through the roof door, down the stairs and out the front door */
+      e.rx=Math.max(-hw+2,Math.min(hw-2,e.rx));e.x=o.x+e.rx;return true;}
+    if(e.roofGo){const o=e.roofO,R=o&&o.roof;if(!R||!R.occ||!this.obst.includes(o)){e.roofGo=0;e.roofO=null;return false;}
+      e.x-=scroll*dt;const dx=o.x-e.x,ty=LANES[0];e.face=dx>0?1:-1;const v=e.E.spd*(1-(e.slow||0))*dt;
+      if(Math.abs(dx)>1)e.x+=Math.sign(dx)*Math.min(Math.abs(dx),v*1.2);if(Math.abs(e.gy-ty)>.5)e.gy+=Math.sign(ty-e.gy)*Math.min(Math.abs(ty-e.gy),LANE_SPD*dt);e.walkT+=dt;
+      if(Math.abs(dx)<3&&Math.abs(e.gy-ty)<1){e.roofGo=0;e.inside=1.2;this.fx.push({k:'puff',x:o.x,y:ty-4,t:0,life:.35,s:1});}return true;}
+    // IF a roof has a shooter on it AND fewer than 2 zombies are on their way up THEN a nearby zombie may head for the shop door
+    if(!e.boss&&!e.fly&&e.E.undead&&e.gy!=null&&this.rng()<dt*.5){for(const o of this.obst||[]){const R=o.roof;if(!R||!R.occ||R.st!=='fight')continue;if(Math.abs(e.x-o.x)>45)continue;
+        const n=this.enemies.filter(q=>!q.dead&&q.roofO===o).length;if(n>=2)continue;e.roofGo=1;e.roofO=o;e.target=null;e.plan=null;return true;}}
+    return false;}
   spawnFronts(){if(!(this.st.biome&&this.st.biome.id==='city')||typeof BGA==='undefined'||!BGA.city)return;const L=BGA.city.layers.find(l=>l.shops);if(!L)return;
     const s=L.w/L.r[2],T=L.tile,d=this.dist*L.sp;this.frontSeen=this.frontSeen||{};
     for(const [ax,kind,bw] of L.shops){const base=ax*s-d,k=Math.ceil((this.W+2-base)/T),x=base+k*T;if(x>this.W+30)continue;const id=k+':'+ax;if(this.frontSeen[id])continue;this.frontSeen[id]=1;
       if(this.rng()<.3){const BW=(bw||40)*s;const F={k:'city_front',x,lanes:[0],blk:0,par:L.sp,shop:kind,bw:BW};this.obst.push(F);
         if(this.rng()<.5)F.roof={hp:1,y:L.y+L.front*s-7,crate:this.rng()<.7,occ:null};   /* 0.12.122 (Kyle): some have a flat roof with a ladder up the side and maybe a crate up top */   /* 0.12.121 (Kyle): two pillars stand out front: the only part you can't walk through */
-        for(const sd of [-1,1])this.obst.push({k:'city_pillar',x:x+sd*(BW/2-2),lanes:[0],blk:0,par:L.sp,front:1});}}}
+        for(const sd of [-1,1])this.obst.push({k:'city_pillar',x:x+sd*(BW/2-2),lanes:[0],blk:0,par:L.sp,front:1,F,sd});}}}
   // keep bodies out of obstacles: IF a unit ends up inside one in its lane THEN push it out the near side
   obClamp(u,isHero){if(!this.obst||!this.obst.length||u.fly||u.boss)return;const gy=u.gy;if(gy==null)return;
     for(const o of this.obst){if(OBST[o.k].flat)continue;const l=o.lanes.find(l=>Math.abs(LANES[l]-gy)<3.5);if(l==null)continue;const pad=isHero?3:2;const [a,b]=this.obSpan(o,l);if(u.x>a-pad&&u.x<b+pad)u.x=(u.x-(a+b)/2)>=0?b+pad:a-pad;}}   // where a hero actually stands right now
@@ -3227,12 +3264,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794467562';const BGI=new Image();BGI.src='crawl_bg.png?v=1794467562';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794467562';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794467968';const BGI=new Image();BGI.src='crawl_bg.png?v=1794467968';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794467968';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794467562';XIMG.wave.src='crawl_wave.png?v=1794467562';XIMG.chibi.src='crawl_chibi.png?v=1794467562';XIMG.flannel.src='crawl_flannel.png?v=1794467562';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794467562';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794467562';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794467562';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794467562';XIMG.rain.src='crawl_rain.png?v=1794467562';XIMG.druid.src='crawl_druid.png?v=1794467562';XIMG.camp.src='crawl_campfire.png?v=1794467562';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794467562';XIMG.tornado.src='crawl_fx_tornado.png?v=1794467562';XIMG.vine.src='crawl_fx_vine.png?v=1794467562';XIMG.thorn.src='crawl_fx_thorn.png?v=1794467562';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794467968';XIMG.wave.src='crawl_wave.png?v=1794467968';XIMG.chibi.src='crawl_chibi.png?v=1794467968';XIMG.flannel.src='crawl_flannel.png?v=1794467968';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794467968';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794467968';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794467968';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794467968';XIMG.rain.src='crawl_rain.png?v=1794467968';XIMG.druid.src='crawl_druid.png?v=1794467968';XIMG.camp.src='crawl_campfire.png?v=1794467968';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794467968';XIMG.tornado.src='crawl_fx_tornado.png?v=1794467968';XIMG.vine.src='crawl_fx_vine.png?v=1794467968';XIMG.thorn.src='crawl_fx_thorn.png?v=1794467968';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794467562';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794467562';XIMG.obst.src='crawl_obst.png?v=1794467562';XIMG.cityob.src='crawl_cityob.png?v=1794467562';XIMG.cars.src='crawl_cars.png?v=1794467562';XIMG.robot.src='crawl_robot.png?v=1794467562';XIMG.cultist.src='crawl_cultist.png?v=1794467562';XIMG.tentacle.src='crawl_tentacle.png?v=1794467562';XIMG.boom.src='crawl_boom.png?v=1794467562';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794467968';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794467968';XIMG.obst.src='crawl_obst.png?v=1794467968';XIMG.cityob.src='crawl_cityob.png?v=1794467968';XIMG.cars.src='crawl_cars.png?v=1794467968';XIMG.robot.src='crawl_robot.png?v=1794467968';XIMG.cultist.src='crawl_cultist.png?v=1794467968';XIMG.tentacle.src='crawl_tentacle.png?v=1794467968';XIMG.boom.src='crawl_boom.png?v=1794467968';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3711,7 +3748,7 @@ function drawGame(ctx,g,W,oy){
   // depth lanes: each enemy stands a few px nearer/farther; small creatures take the front lanes; back lanes draw first
   for(const e of g.enemies)if(e.lane==null){const a=SP['e_'+e.type];e.lane=e.boss||e.fly?0:UNITS[e.type]?Math.floor(Math.random()*6):(a&&FH(a)<64?5+Math.floor(Math.random()*4):Math.floor(Math.random()*5));}
   const es=g.enemies.filter(e=>!e.dead).sort((a,b)=>a.lane-b.lane||b.x-a.x);
-  const drawEnemy=(e)=>{const G0=(e.gy!=null&&!e.fly&&!e.boss)?e.gy:g.G;ctx.save();shrinkAt(ctx,e.x,G0,HS);drawEnemy0(e);ctx.restore();};
+  const drawEnemy=(e)=>{if(e.inside!=null)return;const G0=(e.gy!=null&&!e.fly&&!e.boss)?e.gy:g.G;ctx.save();shrinkAt(ctx,e.x,G0,HS);drawEnemy0(e);ctx.restore();};
   const drawEnemy0=(e)=>{const G=(e.gy!=null&&!e.fly&&!e.boss)?e.gy:g.G;let fr=e.animT>0?6+Math.min(2,Math.floor((.3-e.animT)/.1)):e.hitFlash>0&&!e.boss?9:Math.floor(e.walkT*8)%6;
     if(e.boss){const bf=e.animT>0?2:Math.floor(g.t*2)%2;const y=e.fly?e.y-90:G-124;shadow(ctx,e.x,G,26);spr(ctx,'b_'+e.type,bf,e.x-64,y,false,null,e.hitFlash);return;}
     if(UNITS[e.skin||e.type]){const U=UNITS[e.skin||e.type];const [A,uf]=unitFrame(e,U);const gy=e.gy!=null?G:G+e.lane;const sc=(e.E.scale||1)*(e.elite?1.1:1);shadow(ctx,e.x,gy,8);
@@ -3767,9 +3804,11 @@ function drawGame(ctx,g,W,oy){
       for(let i=0;i<12;i++){ctx.fillStyle=S.goods[i%S.goods.length];ctx.fillRect(x-hw+2+hsh(o.x+i)*(hw*2-4),gy+.5+hsh(o.x*3+i)*2,i%3?.6:1,.6);}}
     // 0.12.122 rooftop: a parapet slab across the top, a ladder up the right side, maybe a crate up there
     if(o.roof){const R=o.roof,ry=R.y;ctx.fillStyle='#2c3a50';ctx.fillRect(x-hw-1,ry-1.5,hw*2+2,2.2);ctx.fillStyle='#5e7090';ctx.fillRect(x-hw-1,ry-1.5,hw*2+2,.6);
-      for(let k=x-hw;k<x+hw;k+=3){ctx.fillStyle='#202a3a';ctx.fillRect(k,ry-2.6,.5,1.1);}ctx.fillStyle='#3a4a62';ctx.fillRect(x-hw-1,ry-2.8,hw*2+2,.5);   // railing
+      // the stairwell door zombies come up through (opens as one steps out)
+      const dx=x+(R.dx!=null?R.dx:-hw*.55);ctx.fillStyle='#26324a';ctx.fillRect(dx-4,ry-11,8,10);ctx.fillStyle='#3e4e66';ctx.fillRect(dx-4.5,ry-12,9,1.2);
+      ctx.fillStyle=R.doorT>0?'#0a0606':'#18202c';ctx.fillRect(dx-2.2,ry-9,4.4,8);if(R.doorT>0){ctx.fillStyle='#2e3a4c';ctx.fillRect(dx+2.2,ry-9,1.6,8);ctx.globalAlpha=.4;ctx.fillStyle='#ff5040';ctx.fillRect(dx-1,ry-6,.6,.6);ctx.fillRect(dx+.6,ry-6,.6,.6);ctx.globalAlpha=1;}
       const lx=x+hw+1.5,ly=LANES[0]+1;ctx.fillStyle='#6a5a48';ctx.fillRect(lx-1.6,ry-3,.6,ly-ry+3);ctx.fillRect(lx+1,ry-3,.6,ly-ry+3);for(let y=ry-1;y<ly;y+=2.4)ctx.fillRect(lx-1.6,y,3.2,.5);
-      if(R.crate||R.crateDone){const D=OBST.city_crate;drawUnit(ctx,{fw:D.fw,fh:D.fh,n:1,ax:D.fw/2,ay:D.fh-1,x:D.x,y:D.y,img:'cityob'},R.crateDone?1:0,x-hw*.45,ry-1,.45,null,0,0,false);
+      if(R.crate||R.crateDone){const D=OBST.city_crate;drawUnit(ctx,{fw:D.fw,fh:D.fh,n:1,ax:D.fw/2,ay:D.fh-1,x:D.x,y:D.y,img:'cityob'},R.crateDone?1:0,x-hw*.45+4,ry-1,.45,null,0,0,false);
         if(R.crate&&(g.t*.9+o.x*.02)%2<.2){const f=((g.t*.9+o.x*.02)%2)/.2;ctx.globalAlpha=Math.sin(f*3.14);ctx.fillStyle='#fff6c0';const sx=x-hw*.45+2,sy=ry-9;ctx.fillRect(sx-1.5,sy,3,.5);ctx.fillRect(sx-.25,sy-1.25,.5,3);ctx.globalAlpha=1;}}}
     // loot bag over the door while it's still lootable
     if(lt){const iy=top-6+Math.sin(g.t*3+o.x)*1.2;ctx.fillStyle='#1a1208';ctx.beginPath();ctx.arc(x,iy+1.6,3.2,0,7);ctx.fill();ctx.fillStyle=S.c;ctx.beginPath();ctx.arc(x,iy+1.6,2.5,0,7);ctx.fill();ctx.fillRect(x-1,iy-2.2,2,1.6);
@@ -3785,6 +3824,10 @@ function drawGame(ctx,g,W,oy){
     ctx.restore();};
   // the storefront's two pillars: stone columns from the sidewalk up to the cornice, in front of lane-0 units
   const drawPillar=o=>{const L=(BGA.city&&BGA.city.layers.find(l=>l.shops));if(!L)return;const s=L.w/L.r[2];const top=L.y+L.front*s-7,gy=LANES[0]+1,x=Math.round(o.x*2)/2;ctx.save();
+    /* 0.12.122 (Kyle): a waist-high wall along the front edge of the roof, drawn in front of whoever is up there (low enough that the crate shows over it) */
+    if(o.sd>0&&o.F&&o.F.roof){const F=o.F,R=F.roof,fx=Math.round(F.x*2)/2,hw=Math.max(14,(F.bw||36)/2-1),ry=R.y;ctx.fillStyle='#2c3a50';ctx.fillRect(fx-hw-1,ry-6.5,hw*2+2,7.2);
+      ctx.fillStyle='#5e7090';ctx.fillRect(fx-hw-1.4,ry-7,hw*2+2.8,1);ctx.fillStyle='#202a3a';for(let yy=ry-4.5;yy<ry;yy+=2.2)ctx.fillRect(fx-hw-1,yy,hw*2+2,.4);
+      for(let k=fx-hw;k<fx+hw;k+=4)ctx.fillRect(k+((Math.round(k)%8)?2:0),ry-6,.4,6);ctx.fillStyle='#3a4a62';ctx.fillRect(fx-hw-1,ry-6,.6,6.6);}
     shadow(ctx,x,gy,3);ctx.fillStyle='#2a3444';ctx.fillRect(x-2.6,top-1,5.2,2.2);ctx.fillRect(x-2.6,gy-2.2,5.2,2.2);
     ctx.fillStyle='#4a5a72';ctx.fillRect(x-1.7,top+1,3.4,gy-top-3);ctx.fillStyle='#7a8ca6';ctx.fillRect(x-1.7,top+1,.8,gy-top-3);ctx.fillStyle='#26303f';ctx.fillRect(x+1,top+1,.7,gy-top-3);
     ctx.fillStyle='#5e7090';ctx.fillRect(x-2.6,top-1,5.2,.6);ctx.fillStyle='#1e2632';for(let y=top+5;y<gy-4;y+=5)ctx.fillRect(x-1.7,y,3.4,.4);ctx.restore();};
@@ -4095,7 +4138,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.122</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.123</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
