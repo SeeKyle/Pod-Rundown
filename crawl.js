@@ -316,23 +316,24 @@ const CHAR={
   //   games all day and smokes a lot of weed (not a drinker). Plays sword-fight with his kids. Mixes jokey and sensible.
   jp:{name:'JP',role:'Kar98 + Sword & Board',flatHp:0,stamina:9,hpPerStamina:5,armorPts:7,dodge:.05,kbRes:.35,
     melee:{dice:[1,8],every:1.1,reach:18,kb:18,hitAt:.15},                    // sword: medium speed, low-medium damage
-    ranged:{dice:[1,10],flat:1,every:2.4,range:290,clip:1,reload:2.4,pellets:1},   // Kar98: more damage and range than Flannel_Man's rifle, slower between shots
+    ranged:{dice:[4,4],flat:-2,every:2.25,range:290,clip:1,reload:2.25,pellets:1,quietReload:1},   // 0.12.79 (Kyle): Kar98 4d4-2, 2.25s; he doesn't call out reloads
     acc:20,walkPenalty:12,crit:.12,critMul:2,luck:18,xp:0,run:2,turn:.22,enMax:100,enRegen:5,
+    blockCh:.2,   // 0.12.79 Sword & Board (built into his melee kit): 20% to BLOCK a hit outright with the homemade shield. Any unit with a shield gets blockCh.
     abilities:[
       // Toke_Break: 2s, he can keep walking but does nothing else, then he's HIGH for 30s and patched up 6%. No energy, 22s.
       //   IF I'm not high (or nearly down) AND nothing is within 45px THEN spark one up.
       {id:'toke',name:'Toke_Break',en:0,cd:22,dur:2,high:30,heal:.06},
       // Protect_the_Familia: IF an ally is under 45% with 2+ zombies on them (within ~160px of me) THEN rush to them, immune while rushing;
       //   on arrival we both get a shield worth 50% of my max HP for 5s and I shove them 75px back toward the left edge. 40 energy, 20s.
-      {id:'familia',name:'Protect_the_Familia',en:40,cd:20,range:160,spd:120,shield:.5,shieldT:5,push:25},
+      {id:'familia',name:'Protect_the_Familia',en:50,cd:20,range:220,spd:120,shield:.5,shieldT:5,push:25,under:.55},   // 0.12.79: easier to trigger, costs more
       // Shield_Bash: the homemade shield to the face: 1d6, a big shove and a 1s stun. 20 energy, 8s.
-      {id:'bash',name:'Shield_Bash',en:20,cd:8,dice:[1,6],stun:1,kb:45},
+      {id:'bash',name:'Shield_Bash',en:25,cd:8,dice:[1,6],stun:1,kb:45},
       // Trash_Talk: he picks on the zombies (and his friends). Every zombie within 70px comes for HIM for 4s while he hides behind the shield
       //   (30% less damage); his friends laugh it off: +5% crit for 6s. IF 2+ zombies are on an ally near me THEN talk trash. 25 energy, 18s.
-      {id:'trash',name:'Trash_Talk',en:25,cd:18,r:70,dur:4,dr:.3,crit:.05,critT:6},
+      {id:'trash',name:'Trash_Talk',en:30,cd:12,r:70,dur:4,dr:.3,crit:.05,critT:6},   // 0.12.79: 12s, and more reasons to use it
       // Wake_n_Bake (passive): HIGH = +10% dodge, 10% less damage taken, +1 energy/s, +10% sword speed. Sober (not high for 10s+) =
       //   -6 accuracy, -10% move and attack speed, and he gets grumpy.
-      {id:'baked',name:'Wake_n_Bake',passive:1,dodge:.1,dr:.1,en:1,mspd:.1,soberAfter:10,acc:-6,slow:.1}]},
+      {id:'baked',name:'Wake_n_Bake',passive:1,dodge:.2,dr:.2,en:2,mspd:.2,slide:4,soberAfter:10,acc:-6,slow:.1}]},   // 0.12.79: high bonuses doubled + slides 4 toward slasher
   flannel:{name:'Flannel_Man',role:'Rifle + Melee',flatHp:0,stamina:8,hpPerStamina:5,armorPts:5,dodge:.05,kbRes:.40,
     melee:{dice:[1,12],every:1.5,reach:20,kb:23,hitAt:.15},                 // crowbar: d12, swing every 1.5s, 20px reach, knockback 23/100
     ranged:{dice:[1,8],flat:0,every:1.75,range:250,clip:1,reload:1.75,pellets:1},   /* bolt-action rifle: d8, 1.75s between shots (0.12.38: -0.25s), reloads after every shot */
@@ -435,10 +436,10 @@ const ABIL_DESC={
   missiles:'Missile_Barrage · 45 energy · 15s. The pod on his back pops open and lobs 3 missiles high over the fight onto a group, spread wide; each one 2d4 in a small blast.',
   smoke:'Smoke_Screen · 35 energy · 16s. Lobs a smoke grenade between a hurt ally and the enemies on them: a thick cloud for 6s (about 180px wide). Enemies inside move 30% slower and miss half their attacks; allies inside dodge 25% of hits and are STEALTHED (see-through): zombies lose track of them until they attack or use an ability. Stealth lasts 5s after they step out; stepping back in refreshes it. Not the Warhound himself.',
   toke:'Toke_Break · no energy · 22s · 2s. He sparks up a big one and keeps walking but does nothing else while he smokes; then he\'s HIGH for 30s (see Wake_n_Bake) and feels 6% better.',
-  familia:'Protect_the_Familia · 40 energy · 20s. When an ally is under 45% with zombies on them, he sprints over (can\'t be hurt while rushing). Then they both get a shield worth 50% of his max HP for 5s, and he shoves the ally 75px back toward safety.',
-  bash:'Shield_Bash · 20 energy · 8s. A face full of homemade shield: 1d6, a big shove and a 1s stun.',
-  trash:'Trash_Talk · 25 energy · 18s. He roasts every zombie within 70px until they all come for HIM for 4s, hiding behind the shield (30% less damage). His friends laugh it off: +5% crit for 6s.',
-  baked:'Wake_n_Bake · Passive. While HIGH: +10% dodge, 10% less damage taken, +1 energy per second, +10% sword speed. Sober for 10s+: -6 accuracy, -10% move and attack speed, and he gets grumpy.',
+  familia:'Protect_the_Familia · 50 energy · 20s. When a friend within 660px drops under 55% with a zombie near them (or under 35% no matter what), he sprints over and can\'t be hurt on the way. They both get a shield worth half his max HP for 5s and he shoves them 75px back.',
+  bash:'Shield_Bash · 25 energy · 8s. A face full of homemade shield: 1d6, a big shove and a 1s stun.',
+  trash:'Trash_Talk · 30 energy · 12s. He roasts every zombie within 210px so they all come for him for 4s while he hides behind the shield (30% less damage); his friends laugh: +5% crit for 6s. He uses it when zombies are piling on a friend, or when 3+ are around him and he\'s above half health.',
+  baked:'Wake_n_Bake · Passive. While HIGH: +20% dodge, 20% less damage taken, +2 energy a second, +20% sword speed, and he leans 4 toward Slasher. Sober for 10s+: -6 accuracy and 10% slower moving and attacking. Sword & Board (built in): 20% to BLOCK a hit outright with the shield.',
   aimed:'Aimed Shot · 45 energy · 14s · 2s cast with a laser sight. Never misses the head box, +5% crit, 2.5x crit damage, pierces. If the shot kills, what\'s left of its cooldown is halved.',
   trip:'Proximity_Bomb · 40 energy · 10s. One bomb, three ways out. It goes off when a zombie comes within 40px in its lane (20px one lane up or down); the blast covers 100px of its lane and 40px of the lanes above and below. OVERHAND (1s, can walk): thrown exactly where he picks 300-450px away, blows on impact for 2d4+6 (60px into the side lanes). UNDERHAND (0.5s, can walk): lands 100px ahead and rolls 50px, then takes 0.5s to truly activate; tripped before that it does 2d4+2 and gives 2s back on the cooldown, activated it does 2d4+6. PLACE (3s kneeling): set 5px in front, active at once, 6d4+2 with a wider blast. A bomb left behind off screen halves what\'s left of the cooldown.',
   grit:'True_Grit · 35 energy · 15s. For 8s he takes 50% less damage, moves 25% faster, and goes all in: his Careful/Reckless and Sharpshooter/Brawler sliders both jump to 10, so he wades in with the crowbar.',
@@ -654,7 +655,7 @@ CHAR.eng={name:'Engineer',role:'Wrench + Sawn-off Shotgun',combo:0,flatHp:0,stam
     {id:'build',name:'Build',en:25,cd:0,book:1,
       tower:{cd:30,T:[5,5,7],hp:60,per:.15,r:50,regen:.01,aspd:.15,acc:5,perchAcc:12,perchRange:.3},
       barrier:{cd:16,T:3,hp:80,depth:9,acc:8,behind:40},
-      tesla:{cd:22,T:3,hp:30,life:25,r:45,every:1.5,dice:[1,8]}},
+      tesla:{cd:22,T:3,hp:30,life:25,r:45,every:1.5,dice:[1,4],flat:2}},   // 0.12.79: 1d4+2
     // Repair: no cooldown, slow: fixes buildings (6 HP/s) and the Warhound (2% a second) while he stays next to them. Pauses his other cooldowns.
     {id:'repair',name:'Repair',en:0,cd:0,bld:6,mech:.02},
     // Modify: adds the next watchtower tier, or bolts an auto-turret onto a broken-down car (3-round bursts 0.25s apart, 1s reload, low accuracy).
@@ -763,7 +764,7 @@ const PERSONA={   // starting values (Kyle's test numbers: middling with a few e
  dog:{aggr:7,aware:9,pace:7,lane:6,self:1,range:10,plan:3,energy:5,size:3,exec:5,grudge:9,pack:1,flair:3,talk:6,listen:9,perc:9,tech:0,nerve:3,noise:4,cover:0},   // Guard Dog: loyal, alert, bites what comes near his people
  flannel_pal:{aggr:1,aware:9,pace:4,lane:2,self:5,range:1,plan:3,energy:6,size:2,exec:6,grudge:3,pack:2,flair:0,talk:3,listen:10,perc:7,tech:4,nerve:9,noise:2,cover:9},   // the companion (timid): hangs back, keeps her distance, picks off small ones next to him
  eng:{aggr:4,aware:6,pace:4,lane:4,self:4,range:4,plan:7,energy:5,size:6,exec:8,grudge:3,pack:6,flair:3,talk:4,listen:7,perc:7,tech:10,nerve:6,noise:5,cover:6},   // 0.12.75 Engineer: Shooter/Slasher 4 (6 toward shooter), very techy
- jp:{aggr:6,aware:5,pace:6,lane:5,self:2,range:5,plan:4,energy:5,size:5,exec:5,grudge:3,pack:2,flair:8,talk:10,listen:4,perc:5,tech:5,nerve:6,noise:7,cover:5},   // JP: loud, social, picks on everyone, steps in for family
+ jp:{aggr:6,aware:5,pace:6,lane:5,self:2,range:4,plan:4,energy:5,size:5,exec:5,grudge:3,pack:2,flair:8,talk:10,listen:4,perc:5,tech:5,nerve:6,noise:7,cover:5},   // JP: loud, social, picks on everyone, steps in for family
  flannel:{aggr:3,aware:7,pace:5,lane:4,self:1,range:4,plan:3,energy:4,size:8,exec:7,grudge:8,pack:6,flair:1,talk:5,listen:6,perc:6,tech:6,nerve:2,noise:3,cover:8},   // Flannel_Man (Kyle's sheet)
  joel:   {aggr:6,aware:7,pace:8,lane:7,self:3,range:7,plan:7,energy:2,size:3,exec:4,grudge:3,pack:2,flair:8,talk:8,listen:3,perc:5,tech:5},   // The Spore Runners
  mathas: {aggr:3,aware:2,pace:3,lane:2,self:8,range:1,plan:2,energy:9,size:10,exec:9,grudge:9,pack:9,flair:1,talk:1,listen:1,perc:4,tech:6},  // Bounty Fiend
@@ -1311,6 +1312,7 @@ class Game{
     if(h.dog){if(this.rng()<h.dodge){this.text(h.x,this.G-30,'dodge','#9ae6ff');return false;}if(h.invulnT>0)return false;h.hits=(h.hits||0)-1;h.hitFlash=.12;h.hitRegT=0;h.hp=h.max*Math.max(0,h.hits)/h.hitsMax;
       if(h.hits<=0){h.alive=false;h.downed=1;h.revT=0;h.downT=this.t;h.hp=0;h.plan=null;this.fx.push({k:'poof',x:h.x,y:this.G-14,t:0});Comms.bubble(this,h,'*yelp*',true);if(this.slot)this.st8(h).downs++;}return true;}if(from&&from.E){h.lastHitBy=from;h.grudgeT=1+19*trait(h,'grudge');}   // Forgiving forgets in a second; Vengeful holds it 20s
     if(this.rng()<h.dodge+this.eliteDodge(h)){this.text(h.x,this.G-52,'dodge','#9ae6ff');return false;}
+    {const bc=h.base&&h.base.char&&h.base.char.blockCh;if(bc&&from&&!(h.smoking)&&this.rng()<bc){this.text(h.x,this.G-52,'BLOCK','#e8c890');this.ev('hit',{});h.blockT=.25;return false;}}   /* 0.12.79: shields block */
     if(from&&from.smokeT>0&&this.rng()<.5){this.text(h.x,this.G-52,'miss','#c8d0d8');return false;}   // Smoke_Screen: blinded attackers miss half the time
     if(!this._bgRedirect&&from){const bg=this.alive().find(o=>o!==h&&insP(o)==='bodyguard'&&Math.abs(this.heroX(o)-this.heroX(h))<14&&Math.abs((o.gy||this.G)-(h.gy||this.G))<6);
       if(bg){this._bgRedirect=1;this.hurtHero(bg,amt*.3,from);this._bgRedirect=0;amt*=.7;}}   // Bodyguard takes 30% of the hit
@@ -1326,7 +1328,7 @@ class Game{
     if(h.perch&&h.perch.hp>0)return false;   /* 0.12.75: up on the lookout, nothing can reach them */
     if(h.kitHits>0){h.kitHits--;if(h.kitHits<=0){h.armorPts-=h.kitAdd||0;h.kbRes-=h.kitKb||0;h.kitAdd=0;h.kitKb=0;this.text(h.x,this.G-60,'plating gone','#b8c0cc');}}   /* Field_Plating */
     if(h.key==='robot'){if(h.jet)amt=Math.min(amt,(h.jet.A&&h.jet.A.cap)||5);if(from&&h.nbT>0&&this.rng()<.1){h.nbT/=2;this.text(h.x,this.G-60,'CD½','#7fe0ff');}}   /* 0.12.67 Tactical_Retreat shield; Nano-Tech's built-in CD halving */
-    if(h.key==='jp'){if(h.highT>0)amt*=.9;if(h.trashT>0)amt*=.7;if(h.rushT>0)return false;}   /* JP: high 10% less, Trash_Talk 30% less, immune while rushing to family */   // True_Grit (0.12.63: this was hidden inside the comment above, so Grit never actually reduced damage)
+    if(h.key==='jp'){if(h.highT>0)amt*=.8;if(h.trashT>0)amt*=.7;if(h.rushT>0)return false;}   /* JP: high 10% less, Trash_Talk 30% less, immune while rushing to family */   // True_Grit (0.12.63: this was hidden inside the comment above, so Grit never actually reduced damage)
     if(h.shield>0){const s=Math.min(h.shield,amt);h.shield-=s;amt-=s;if(h.thorns&&from&&!from.dead)this.hitEnemy(from,s*.3,null,{nocrit:1,sure:1});}
     if(amt<=0)return false;
     {const was=h.hp/h.max;h.hp-=amt;if(h.key&&was>=.35&&h.hp/h.max<.35)Brain.panic(this,h,'hurt');
@@ -1461,9 +1463,9 @@ class Game{
     const B=this.blds;if(!B||!B.length){this.engAuras(dt);return;}
     for(const b of B){b.t+=dt;b.x-=scroll*dt;if(b.hitT>0)b.hitT-=dt;if(b.car)b.x=b.car.x;
       if(b.k==='tesla'){b.hp-=b.max/b.A.life*dt;b.zT-=dt;if(b.zT<=0&&b.hp>0){const T=this.enemies.filter(e=>!e.dead&&Math.abs(e.x-b.x)<b.A.r).sort((p,q)=>Math.abs(p.x-b.x)-Math.abs(q.x-b.x))[0];
-          if(T){b.zT=b.A.every;const mul=b.owner&&b.owner.base?(b.owner.atk/b.owner.base.atk):1;this.hitEnemy(T,this.rollDice(b.A.dice)*mul,b.owner&&b.owner.alive?b.owner:null,{sure:1});
+          if(T){b.zT=b.A.every;const mul=b.owner&&b.owner.base?(b.owner.atk/b.owner.base.atk):1;this.hitEnemy(T,(this.rollDice(b.A.dice)+(b.A.flat||0))*mul,b.owner&&b.owner.alive?b.owner:null,{sure:1});
             const pts=[[b.x,b.gy-20],[T.x,(T.gy!=null?T.gy:this.G)-12]];const T2=this.enemies.find(e=>!e.dead&&e!==T&&Math.abs(e.x-T.x)<25);
-            if(T2){this.hitEnemy(T2,this.rollDice(b.A.dice)*mul*.6,b.owner&&b.owner.alive?b.owner:null,{sure:1});pts.push([T2.x,(T2.gy!=null?T2.gy:this.G)-12]);}
+            if(T2){this.hitEnemy(T2,(this.rollDice(b.A.dice)+(b.A.flat||0))*mul*.6,b.owner&&b.owner.alive?b.owner:null,{sure:1});pts.push([T2.x,(T2.gy!=null?T2.gy:this.G)-12]);}
             this.fx.push({k:'bolt',pts,t:0,life:.25,raw:1});this.ev('zap',{});}else b.zT=.3;}}
       if(b.k==='turret'&&b.hp>0){const A=b.A;if(b.rl>0)b.rl-=dt;else{b.sT-=dt;if(b.sT<=0){const T=this.enemies.filter(e=>!e.dead&&e.x>b.x-20&&Math.abs(e.x-b.x)<A.range).sort((p,q)=>Math.abs(p.x-b.x)-Math.abs(q.x-b.x))[0];
           if(T){b.sT=A.gap;b.shots++;b.face=T.x>=b.x?1:-1;const ty=(T.gy!=null?T.gy:this.G)-12;this.fx.push({k:'tracer',x0:b.x+b.face*4,y0:b.gy-26,x1:T.x+(Math.random()-.5)*6,y1:ty+(Math.random()-.5)*8,t:0,life:.08,raw:1});this.ev('gun',{});
@@ -1877,9 +1879,9 @@ class Game{
     const spdB=(cry?1+cry.spd:1)*(h.rageT>0?1.2:1)*(1+(h.mom||0)*(h.momPer||0));h.cryDmg=(cry?1+cry.dmg:1)*(h.pactT>0?1+(h.pactDmg||.2):1);if(h.pactT>0)h.pactT-=dt;
     if(h.laughT>0)h.laughT-=dt;
     if(h.cozyT>0){h.cozyT-=dt;h._cozyAcc=(h._cozyAcc||0)+dt;while(h._cozyAcc>=.5){h._cozyAcc-=.5;this.healHero(h,.25,true,h);h.en=Math.min(h.enMax||100,(h.en||0)+.25);}}
-    h.mT=(h.mT||0)+dt*h.meleeSpd*spdB*(h.cozyT>0?1+COZY.melee:1)*(h.key==='jp'?(h.highT>0?1.1:(h.soberT||0)>10?.9:1):1)*(h.lethalT>0?1.75:1)*(h.hunger>0?1-HUNGER.spd[h.hunger]:1);h.rT=(h.rT||0)+dt*h.rangedSpd*spdB*(h.hunger>0?1-HUNGER.spd[h.hunger]:1)*(h.ammoBuffT>0?1.15:1);if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
+    h.mT=(h.mT||0)+dt*h.meleeSpd*spdB*(h.cozyT>0?1+COZY.melee:1)*(h.key==='jp'?(h.highT>0?1.2:(h.soberT||0)>10?.9:1):1)*(h.lethalT>0?1.75:1)*(h.hunger>0?1-HUNGER.spd[h.hunger]:1);h.rT=(h.rT||0)+dt*h.rangedSpd*spdB*(h.hunger>0?1-HUNGER.spd[h.hunger]:1)*(h.ammoBuffT>0?1.15:1);if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
     if(h.ammo==null)h.ammo=C.ranged?(C.ranged.clip||Infinity):0;   // clip 0 = never reloads
-    if(C.ranged&&h.ammo<=0&&C.ranged.clip>0){if(!h.reloadT&&C.ranged.reload>=1.5)Comms.onReload(this,h);h.reloadT=(h.reloadT||0)+dt*h.rangedSpd*spdB;if(h.reloadT>=C.ranged.reload){h.reloadT=0;h.ammo=C.ranged.clip;}}
+    if(C.ranged&&h.ammo<=0&&C.ranged.clip>0){if(!h.reloadT&&C.ranged.reload>=1.5&&!C.ranged.quietReload)Comms.onReload(this,h);h.reloadT=(h.reloadT||0)+dt*h.rangedSpd*spdB;if(h.reloadT>=C.ranged.reload){h.reloadT=0;h.ammo=C.ranged.clip;}}
     const reachPx=ENEMY_BODY+C.melee.reach*UNIT_SCALE;   // same body gap the zombies measure from, so a 20 reach out-reaches a 12 reach zombie
     /* 0.12.67 Stealth AI (works for any stealth source): IF I'm hidden AND (I'm hurt under 45% OR a friend is down) THEN hold my fire and stay hidden
        (let heals land, get revived, or slip over and revive them: reviving doesn't break it); IF I'm hidden and healthy THEN take the free opening shot (which reveals me) */
@@ -1922,7 +1924,7 @@ class Game{
       const B=this.blds=this.blds||[];const tower=B.find(b=>b.k==='tower'&&b.hp>0&&b.owner===h);
       // satchel: IF one of mine is out AND 3+ zombies (or a big one) are on it THEN set it off
       for(const S of this.satchels||[]){if(S.owner!==h||S.boom||S.t<S.T)continue;const on=live.filter(e=>!e.fly&&Math.abs(e.x-S.x)<S.A.r*.6&&Math.abs((e.gy!=null?e.gy:this.G)-S.gy)<12);
-        if(on.length>=3||on.some(e=>e.boss||e.elite||e.max>=60)||(S.t>14&&on.length>=1)){this.satchelBoom(S);Comms.bubble(this,h,Comms.pick(['Fire in the hole!','Clacker time.','Boom.','Cover your ears!']),true);}}
+        if(on.length>=3||on.some(e=>e.boss||e.elite||e.max>=60)||(S.t>6&&on.length>=2)||(S.t>12&&on.length>=1)){this.satchelBoom(S);Comms.bubble(this,h,Comms.pick(['Fire in the hole!','Clacker time.','Boom.','Cover your ears!']),true);}}
       // in-progress work
       if(h.building&&h.walkTo!=null){const d=h.walkTo-hx;h.building.wt=(h.building.wt||0)+dt;if(h.building.wt>4){h.building.x=hx;h.walkTo=null;}else if(Math.abs(d)>6&&onMeE(this,h)<2){h.x+=Math.sign(d)*Math.min(Math.abs(d),(MOVE.eng||15)*dt*1.4);h.face=d>0?1:-1;h.moving=true;h.walkT=(h.walkT||0)+dt;return;}h.walkTo=null;}
       if(h.building){const W=h.building;W.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;if(Math.random()<dt*6)this.fx.push({k:'spark',x:W.x+(Math.random()-.5)*10,gy:W.gy,t:0,life:.35,raw:1});
@@ -1946,6 +1948,7 @@ class Game{
       if(RP&&safe){const T=B.filter(b=>b.hp>0&&b.hp<b.max*.75&&Math.abs(b.x-hx)<28).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0]||this.alive().find(o=>o.key==='robot'&&o.hp<o.max*.6&&Math.abs(this.heroX(o)-hx)<24);if(T){h.repairing={tgt:T,t:0};return;}}
       // satchel: IF 3+ zombies are bunched 30-100 out THEN toss one onto them (he sets it off later)
       if(SC&&h.scT<=0&&en>=SC.en&&!(this.satchels||[]).some(S=>S.owner===h&&!S.boom)){let best=null,bn=0;for(const e of live){const d=e.x-hx;if(e.fly||d<SC.min||d>SC.max)continue;const n=live.filter(o=>Math.abs(o.x-e.x)<20).length;if(n>bn){bn=n;best=e;}}
+        if(!(best&&bn>=3)){const big=live.filter(e=>!e.fly&&e.x-hx>=SC.min&&e.x-hx<=SC.max+40&&(e.boss||e.elite||e.max>=60)).sort((p,q)=>q.max-p.max)[0];if(big){best=big;bn=3;}else if(best&&bn>=2&&live.length>=4){bn=3;}}   /* 0.12.79: bosses/big ones, or a pair when the field is busy */
         if(best&&bn>=3&&spendEnergy(h,SC.en)){h.scT=SC.cd;h.animM=.45;h.face=1;(this.satchels=this.satchels||[]).push({x0:hx+3,x:hx,x1:best.x-6,gy0:gy,gy:best.gy!=null?best.gy:gy,gy1:best.gy!=null?best.gy:gy,t:0,T:SC.fly,A:SC,owner:h});this.ev('whoosh',{});return;}}}
     // ---- 0.12.70 Void_Cultist (Kyle's rework): life costs, all IF/THEN on the field; runs before the attack so Lethal_Strikes works up close
     if(h.key==='cultist'){const CB=id=>(C.abilities||[]).find(a=>a.id===id);const SY=CB('syphon'),LS=CB('lethal'),TN=CB('tentacle'),CT=CB('cthulhu');
@@ -2035,19 +2038,19 @@ class Game{
       if(h.highT>0){h.highT-=dt;h.soberT=0;h.en=Math.min(h.enMax||100,(h.en||0)+BK.en*dt);}else{h.soberT=(h.soberT||0)+dt;if(h.soberT>BK.soberAfter&&!h._grump){h._grump=1;Comms.bubble(this,h,Comms.pick(['Ugh, I need a break.','Who touched my lighter?','Not now, I\'m sober.','Everybody shut up for a sec.']));}}
       h.dodgeB=h.dodgeB==null?h.dodge:h.dodgeB;h.dodge=h.dodgeB+(h.highT>0?BK.dodge:0);h._accBonus=(h._accBonus||0);if(h.trashT>0)h.trashT-=dt;
       // smoking: 2s, can walk, nothing else
-      if(h.smoking){const S=h.smoking;S.t+=dt;if(S.t>=TK.dur){h.smoking=null;h.highT=TK.high;h._grump=0;this.healHero(h,h.max*TK.heal,true,h);Comms.bubble(this,h,Comms.pick(['Ahh. Okay. Okay, I\'m good.','Now THAT\'S the stuff.','Alright, who wants some? ...No? More for me.','Lag\'s gone. Let\'s go.']));}return;}
+      if(h.smoking){const S=h.smoking;S.t+=dt;if(S.t>=TK.dur){h.smoking=null;h.highT=TK.high;h._grump=0;addMood(h,{range:BK.slide||4},TK.high,'high');this.healHero(h,h.max*TK.heal,true,h);Comms.bubble(this,h,Comms.pick(['Ahh. Okay. Okay, I\'m good.','Now THAT\'S the stuff.','Alright, who wants some? ...No? More for me.','Lag\'s gone. Let\'s go.']));}return;}
       // rushing to family
       if(h.rush){h.pauseT=Math.max(h.pauseT||0,.05);h.moving=true;const R=h.rush,o=R.ally;if(!o.alive){h.rush=null;h.rushT=0;}else{const tx=this.heroX(o)+6,d=tx-h.x;const st=Math.sign(d)*Math.min(Math.abs(d),FM.spd*dt);h.x+=st;h.gy+=Math.sign((o.gy||this.G)-h.gy)*Math.min(Math.abs((o.gy||this.G)-h.gy),40*dt);h.face=d<0?-1:1;
           if(Math.abs(d)<3){h.rush=null;h.rushT=0;for(const u of [h,o]){u.shield=Math.max(u.shield||0,h.max*FM.shield);u.shieldT=FM.shieldT;}o.x=Math.max(10,o.x-FM.push);o.thinkT=0;this.fx.push({k:'ring',x:o.x,y:(o.gy||this.G)-10,t:0,r:12,c:'#ffa040'});Comms.bubble(this,h,Comms.pick(['Get behind me!','Not my family!','Back up, I got this!','Nobody touches them!']),true);}}return;}
       // Protect_the_Familia
-      if(FM&&h.fmT<=0&&(h.en||0)>=FM.en){const o=this.alive().filter(a=>a!==h&&!a.pet&&a.hp/a.max<.45&&Math.abs(this.heroX(a)-h.x)<=FM.range&&this.enemies.filter(e=>!e.dead&&Math.abs(e.x-this.heroX(a))<25).length>=2).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
+      if(FM&&h.fmT<=0&&(h.en||0)>=FM.en){const o=this.alive().filter(a=>a!==h&&!a.pet&&!a.perch&&Math.abs(this.heroX(a)-h.x)<=FM.range&&(a.hp/a.max<.35||(a.hp/a.max<FM.under&&this.enemies.some(e=>!e.dead&&Math.abs(e.x-this.heroX(a))<30)))).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
         if(o&&spendEnergy(h,FM.en)){h.fmT=FM.cd*(1-(h.cdr||0));h.rush={ally:o};h.rushT=9;Comms.bubble(this,h,Comms.pick(['FAMILIA!','Hold on, I\'m coming!','HEY! That\'s my people!']),true);return;}}
       // Shield_Bash
       if(BS&&h.bsT<=0&&mt&&!mt.dead&&(h.en||0)>=BS.en&&spendEnergy(h,BS.en)){h.bsT=BS.cd*(1-(h.cdr||0));h.animM=.35;h.face=mt.x>=h.x?1:-1;const d=this.hitEnemy(mt,(this.rollDice(BS.dice)+(h.flatMelee||0))*(h.atk/h.base.atk)*h.meleeDmg,h,{kb:1});
         if(d&&!mt.dead){mt.stun=Math.max(mt.stun||0,BS.stun*(mt.boss?.3:1));const res=mt.boss?.9:((mt.E&&mt.E.kbRes)||0);mt.kbv=Math.max(mt.kbv||0,BS.kb/100*40*8*(1-res));mt.kbDir=mt.x>=h.x?1:-1;}this.ev('hit',{});return;}
       // Trash_Talk
       if(TT&&h.ttT<=0&&(h.en||0)>=TT.en){const near=this.enemies.filter(e=>!e.dead&&!e.boss&&Math.abs(e.x-h.x)<=TT.r);const onAlly=this.alive().some(a=>a!==h&&!a.pet&&this.enemies.filter(e=>!e.dead&&Math.abs(e.x-this.heroX(a))<22).length>=2);
-        if(near.length>=2&&onAlly&&spendEnergy(h,TT.en)){h.ttT=TT.cd*(1-(h.cdr||0));h.trashT=TT.dur;for(const e of near){e.tauntT=TT.dur;e.tauntBy=h;e.target=h;}for(const a of this.alive())if(!a.pet)a.laughT=TT.critT;
+        const selfOK=h.hp/h.max>.5&&near.length>=3;if(near.length>=2&&(onAlly||selfOK)&&spendEnergy(h,TT.en)){h.ttT=TT.cd*(1-(h.cdr||0));h.trashT=TT.dur;for(const e of near){e.tauntT=TT.dur;e.tauntBy=h;e.target=h;}for(const a of this.alive())if(!a.pet)a.laughT=TT.critT;
           Comms.bubble(this,h,Comms.pick(['Your mom walks faster than that!','Bro, you smell worse than my gaming chair.','Is that your best? My kids hit harder!','Come here, you rotten nerds!','Zero kills, all deaths. Classic.']),true);return;}}
       // Toke_Break
       if(TK&&h.tkT<=0&&!(h.highT>3)&&!this.enemies.some(e=>!e.dead&&Math.abs(e.x-h.x)<45)){h.tkT=TK.cd*(1-(h.cdr||0));h.smoking={t:0};if(Math.random()<.7)Comms.bubble(this,h,Comms.pick(['Hold up, smoke break.','Pause the game, I gotta hit this.','One sec, one sec...','Medicinal. Totally medicinal.']));return;}}
@@ -2852,12 +2855,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794440443';const BGI=new Image();BGI.src='crawl_bg.png?v=1794440443';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794440443';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794441936';const BGI=new Image();BGI.src='crawl_bg.png?v=1794441936';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794441936';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794440443';XIMG.wave.src='crawl_wave.png?v=1794440443';XIMG.chibi.src='crawl_chibi.png?v=1794440443';XIMG.flannel.src='crawl_flannel.png?v=1794440443';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794440443';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794440443';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794440443';XIMG.rain.src='crawl_rain.png?v=1794440443';XIMG.druid.src='crawl_druid.png?v=1794440443';XIMG.camp.src='crawl_campfire.png?v=1794440443';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794440443';XIMG.tornado.src='crawl_fx_tornado.png?v=1794440443';XIMG.vine.src='crawl_fx_vine.png?v=1794440443';XIMG.thorn.src='crawl_fx_thorn.png?v=1794440443';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794441936';XIMG.wave.src='crawl_wave.png?v=1794441936';XIMG.chibi.src='crawl_chibi.png?v=1794441936';XIMG.flannel.src='crawl_flannel.png?v=1794441936';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794441936';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794441936';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794441936';XIMG.rain.src='crawl_rain.png?v=1794441936';XIMG.druid.src='crawl_druid.png?v=1794441936';XIMG.camp.src='crawl_campfire.png?v=1794441936';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794441936';XIMG.tornado.src='crawl_fx_tornado.png?v=1794441936';XIMG.vine.src='crawl_fx_vine.png?v=1794441936';XIMG.thorn.src='crawl_fx_thorn.png?v=1794441936';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794440443';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794440443';XIMG.obst.src='crawl_obst.png?v=1794440443';XIMG.cars.src='crawl_cars.png?v=1794440443';XIMG.robot.src='crawl_robot.png?v=1794440443';XIMG.cultist.src='crawl_cultist.png?v=1794440443';XIMG.tentacle.src='crawl_tentacle.png?v=1794440443';XIMG.boom.src='crawl_boom.png?v=1794440443';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794441936';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794441936';XIMG.obst.src='crawl_obst.png?v=1794441936';XIMG.cars.src='crawl_cars.png?v=1794441936';XIMG.robot.src='crawl_robot.png?v=1794441936';XIMG.cultist.src='crawl_cultist.png?v=1794441936';XIMG.tentacle.src='crawl_tentacle.png?v=1794441936';XIMG.boom.src='crawl_boom.png?v=1794441936';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3575,7 +3578,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.78</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.79</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
