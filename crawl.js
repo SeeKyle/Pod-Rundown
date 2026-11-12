@@ -2154,7 +2154,7 @@ class Game{
     if(h.key==='shoshi'){const AS=id=>(C.abilities||[]).find(a=>a.id===id);const RB=AS('reboot'),FT=AS('trial'),DM=AS('dad'),RM=AS('online'),UZ=AS('undo');
       for(const [A,k] of [[RB,'rbT'],[FT,'frT'],[DM,'ddT'],[UZ,'unT']])if(A){if(h[k]==null)h[k]=A.cd*.3;if(h[k]>0)h[k]-=dt;}
       if(h.dadT>0)h.dadT-=dt;
-      const hx=this.heroX(h),al=this.alive().filter(o=>o!==h&&!o.pet);const near=(o,r)=>Math.abs(this.heroX(o)-hx)<r&&Math.abs((o.gy||this.G)-(h.gy||this.G))<14;
+      const hx=this.heroX(h),al=this.alive().filter(o=>o!==h&&!o.pet);const near=(o,r)=>Math.abs(this.heroX(o)-hx)<Math.max(r,150);   /* 0.12.138 (Kyle: barely saw him cast): his abilities reach ~150 px, any lane */
       const foesOn=o=>this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-this.heroX(o))<20).length;
       const cdsOf=o=>((o.base&&o.base.char&&o.base.char.abilities)||[]).filter(a=>!a.passive&&CD_KEY[a.id]&&o[CD_KEY[a.id]]>.5).map(a=>CD_KEY[a.id]);
       // phone in hand (Remote_Fix / reboot taps): stand still while it plays
@@ -2165,12 +2165,12 @@ class Game{
             Comms.bubble(this,h,Comms.pick(['Disabled it from my phone.','There\'s an app for that.','Alarm\'s off. You\'re welcome.','Remote access, baby.']),true);}};return;}}
       // Ctrl_Z: undo the last few seconds of damage on an ally who just got chunked
       if(UZ&&h.unT<=0&&(h.en||0)>=UZ.en){const lost=o=>(o.dmgLog||[]).filter(e=>this.t-e[0]<=UZ.win).reduce((a,e)=>a+e[1],0);
-        const T=al.concat([h]).filter(o=>!o.downed&&o.alive&&(o===h||near(o,UZ.r))&&lost(o)>=o.max*UZ.min).sort((p,q)=>lost(q)/q.max-lost(p)/p.max)[0];
+        const T=al.concat([h]).filter(o=>!o.downed&&o.alive&&(o===h||near(o,UZ.r))&&lost(o)>=o.max*Math.min(UZ.min,.15)).sort((p,q)=>lost(q)/q.max-lost(p)/p.max)[0];
         if(T&&spendEnergy(h,UZ.en)){h.unT=UZ.cd*(1-(h.cdr||0));const amt=Math.min(lost(T),T.max-T.hp);T.dmgLog=[];h.phoneT=.4;h.phoneDo=()=>{if(!T.alive)return;this.healHero(T,amt,false,h);
             this.fx.push({k:'ring',x:this.heroX(T),y:(T.gy||this.G)-14,r:14,t:0,c:'#7affe0'});this.text(this.heroX(T),(T.gy||this.G)-46,'CTRL+Z','#7affe0');
             Comms.bubble(this,h,Comms.pick(['Ctrl+Z. That never happened.','Undo! Undo!','Rolling you back to the last save.','Reverting that.']),true);};return;}}
       // Dad_Mode: an ally under 40% with 2+ zombies on them
-      if(DM&&h.ddT<=0&&(h.en||0)>=DM.en){const T=al.filter(o=>near(o,DM.r)&&o.hp/o.max<DM.under&&foesOn(o)>=2)[0];
+      if(DM&&h.ddT<=0&&(h.en||0)>=DM.en){const T=al.filter(o=>near(o,DM.r)&&o.hp/o.max<Math.max(DM.under,.55)&&foesOn(o)>=1)[0];
         if(T&&spendEnergy(h,DM.en)){h.ddT=DM.cd*(1-(h.cdr||0));h.dadT=DM.dur;h.dadDR=DM.dr;h.x=this.heroX(T)+(T.x<h.x?6:-6);h.gy=T.gy;h.laneI=T.laneI;
           T.shield=Math.max(T.shield||0,T.max*DM.shield);T.shieldT=Math.max(T.shieldT||0,DM.dur);
           for(const e of this.enemies){if(e.dead||e.boss||Math.abs(e.x-this.heroX(T))>22)continue;const res=(e.E&&e.E.kbRes)||0;e.kbv=Math.max(e.kbv||0,DM.kb/100*40*8*(1-res));e.kbDir=e.x>=this.heroX(T)?1:-1;}
@@ -2184,8 +2184,8 @@ class Game{
             this.fx.push({k:'ring',x:this.heroX(T),y:(T.gy||this.G)-14,r:12,t:0,c:'#7affe0'});this.text(this.heroX(T),(T.gy||this.G)-44,'REBOOTED','#7affe0');
             Comms.bubble(this,h,Comms.pick(['Have you tried turning it off and on again?','Hold power for ten seconds.','Rebooting you, one sec.','Clear your cache, buddy.','Fixed it. Don\'t touch anything.']),true);};return;}}
       // Tech_Support (was Free_Trial)
-      if(FT&&h.frT<=0&&(h.en||0)>=FT.en){const grp=al.filter(o=>near(o,FT.r)&&!o.downed&&o.alive);const worth=grp.filter(o=>cdsOf(o).length);
-        if(worth.length&&grp.some(o=>foesOn(o)>=1||this.enemies.some(e=>!e.dead&&Math.abs(e.x-this.heroX(o))<80))&&spendEnergy(h,FT.en)){h.frT=FT.cd*(1-(h.cdr||0));
+      if(FT&&h.frT<=0&&(h.en||0)>=FT.en){const grp=al.filter(o=>near(o,FT.r)&&!o.downed&&o.alive);const worth=grp;   /* 0.12.138: worth casting whenever someone's in reach and zombies are around (the +energy helps everyone) */
+        if(worth.length&&this.enemies.some(e=>!e.dead&&e.x<this.W+10)&&spendEnergy(h,FT.en)){h.frT=FT.cd*(1-(h.cdr||0));
           for(const o of grp){for(const k of cdsOf(o))o[k]*=1-FT.cut;if(FT.energy)o.en=Math.min(o.enMax||100,(o.en||0)+FT.energy);this.fx.push({k:'ring',x:this.heroX(o),y:(o.gy||this.G)-14,r:10,t:0,c:'#ffd23f'});}
           this.text(hx,(h.gy||this.G)-48,'TECH SUPPORT','#ffd23f');if(this.rng()<.35)Comms.bubble(this,h,Comms.pick(['Tech support, how can I help?','Pushing an update to everyone.','Have you tried closing some tabs?','I just optimized you. You\'re welcome.','Ticket closed.']),true);return;}}}
     // ---- JP (0.12.66)
@@ -3335,12 +3335,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794469725';const BGI=new Image();BGI.src='crawl_bg.png?v=1794469725';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794469725';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794469895';const BGI=new Image();BGI.src='crawl_bg.png?v=1794469895';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794469895';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794469725';XIMG.wave.src='crawl_wave.png?v=1794469725';XIMG.chibi.src='crawl_chibi.png?v=1794469725';XIMG.flannel.src='crawl_flannel.png?v=1794469725';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794469725';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794469725';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794469725';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794469725';XIMG.rain.src='crawl_rain.png?v=1794469725';XIMG.druid.src='crawl_druid.png?v=1794469725';XIMG.camp.src='crawl_campfire.png?v=1794469725';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794469725';XIMG.tornado.src='crawl_fx_tornado.png?v=1794469725';XIMG.vine.src='crawl_fx_vine.png?v=1794469725';XIMG.thorn.src='crawl_fx_thorn.png?v=1794469725';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794469895';XIMG.wave.src='crawl_wave.png?v=1794469895';XIMG.chibi.src='crawl_chibi.png?v=1794469895';XIMG.flannel.src='crawl_flannel.png?v=1794469895';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794469895';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794469895';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794469895';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794469895';XIMG.rain.src='crawl_rain.png?v=1794469895';XIMG.druid.src='crawl_druid.png?v=1794469895';XIMG.camp.src='crawl_campfire.png?v=1794469895';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794469895';XIMG.tornado.src='crawl_fx_tornado.png?v=1794469895';XIMG.vine.src='crawl_fx_vine.png?v=1794469895';XIMG.thorn.src='crawl_fx_thorn.png?v=1794469895';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794469725';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794469725';XIMG.obst.src='crawl_obst.png?v=1794469725';XIMG.cityob.src='crawl_cityob.png?v=1794469725';XIMG.harvest.src='crawl_harvest.png?v=1794469725';XIMG.wraith.src='crawl_wraith.png?v=1794469725';XIMG.cars.src='crawl_cars.png?v=1794469725';XIMG.robot.src='crawl_robot.png?v=1794469725';XIMG.cultist.src='crawl_cultist.png?v=1794469725';XIMG.tentacle.src='crawl_tentacle.png?v=1794469725';XIMG.boom.src='crawl_boom.png?v=1794469725';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794469895';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794469895';XIMG.obst.src='crawl_obst.png?v=1794469895';XIMG.cityob.src='crawl_cityob.png?v=1794469895';XIMG.harvest.src='crawl_harvest.png?v=1794469895';XIMG.wraith.src='crawl_wraith.png?v=1794469895';XIMG.cars.src='crawl_cars.png?v=1794469895';XIMG.robot.src='crawl_robot.png?v=1794469895';XIMG.cultist.src='crawl_cultist.png?v=1794469895';XIMG.tentacle.src='crawl_tentacle.png?v=1794469895';XIMG.boom.src='crawl_boom.png?v=1794469895';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -4222,7 +4222,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.137</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.138</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
