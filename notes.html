@@ -1,5 +1,13 @@
       <h2>What's new</h2>
-      <h3>💥 0.12.156 Rust mines, fixed top to bottom</h3><ul>
+      <h3>💣 0.12.157 Rust mines retuned + CLUSTER MINES</h3><ul>
+<li>Enemy <b>rust mines</b> now hit for <b>2d4+4</b> (+5% per stage). Your own planted mines are unchanged.</li>
+<li>New <b>cluster mine</b> (about 30% of enemy mines). It looks almost like a rust mine, but with little bomblets packed on top and a faded yellow band, so a sharp eye can tell. When it goes off:
+<ul><li>it pops for <b>2d4+2</b> in a 30–50px blast;</li>
+<li>it throws <b>5–6 bomblets</b> in random directions, 50–150px out to either side, sometimes into the next lanes over;</li>
+<li>each bomblet arcs, lands, blinks, and goes off <b>0.25s</b> later for <b>2d4+2</b> in its own 30–50px blast.</li></ul>
+Zombies caught in any of it get hurt too.</li>
+</ul>
+<h3>💥 0.12.156 Rust mines, fixed top to bottom</h3><ul>
 <li><b>Defusing actually works now.</b> Two old bugs meant a defuse could almost never finish. A check meant for searching cars and crates threw every defuse out on its first frame, and tiny position nudges counted as "moving", which froze the timer. Both are fixed: in tests about 40% of attempts now succeed (it was close to none).</li>
 <li><b>A safe spot to defuse from.</b> The defuser stands <b>12px</b> back from the mine and holds still. That's clear of the 9px trigger even if they wobble a little. Tested: 9px kept setting mines off, 12px didn't.</li>
 <li><b>Defuse odds</b>: about <b>40%</b> for anybody, up to about <b>65%</b> with everything high and stacked (Sapper +12%, Techy, Slow and Steady, Calm, Optimal, Luck). Before, it was about 30% for anybody and up to 97% for a Sapper. A fumble sets the mine off in their hands.</li>
