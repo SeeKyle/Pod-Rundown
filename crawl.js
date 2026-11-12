@@ -438,7 +438,7 @@ const ABIL_DESC={
   cthulhu:'Call_of_Cthulhu · 15% of his life · 30s · 10s. His tentacles burrow and burst back up 200px in front of him, and a wave of terror rolls out from him and every tentacle: 2s of fear and 25% slower. For 10s every tentacle is 25% bigger (longer reach) and lashes 25% faster, and Spawn_Tentacle comes back twice as fast.',
   harvest:'Ritual_Harvest (passive) · built into his dagger: every dagger kill takes 1.5s off Spawn_Tentacle\'s cooldown.',
   blade:'Poisoned_Blade (passive) · a dagger hit that lands has a 25% chance to add a poison stack, and every dagger swing refreshes the poison already on the target.',
-  clone:'Shadow_Clone · 35 energy · 18s. A see-through copy of him steps out for 5s: it mirrors every sword hit he lands (+40% on the same target) and soaks 35% of the blows aimed at him.',
+  clone:'Shadow_Clone · 35 energy · 18s. A see-through copy of him with a faint purple glow steps out for 5s and goes its own way: it runs to a different zombie (one bothering an ally first), swings his sword at 40% damage, and every zombie it hits turns on it for a moment. While it\'s near him it also soaks 35% of the blows aimed at him.',
   momentum:'Momentum · Passive. Every sword hit within 2s of the last one gives +6% attack speed, stacking up to +30%. Stop swinging for 2s and it resets.',
   pin:'Pinning_Shot · 30 energy · 12s. An arrow that nails the biggest threat to the ground for 2.5s and marks it for 6s: marked enemies take 25% more damage from everyone.',
   wind:'Wind_Reading · Passive. He reads the wind: shots at anything more than about 450px away get +15 accuracy and +0.5x crit damage.',
@@ -1358,7 +1358,7 @@ class Game{
      if(ip==='omen'&&(h.omenCd||0)<=this.t){h.omenCd=this.t+12;this.text(h.x,this.G-52,'miss','#b8a0ff');return false;}
      if(ip==='haunt'&&from&&from.E&&!from.boss&&this.rng()<.2){from.retreatT=Math.max(from.retreatT||0,1.5);from.fearT=1.5;}
      if(ip==='shell'&&h.hp/h.max<.4&&(h.shellCd||0)<=this.t){h.shellCd=this.t+30;h.shellT=3;}}
-    if(h.cloneT>0&&from&&from.E&&this.rng()<(h.cloneDecoy||.35)){this.fx.push({k:'spark',x:h.x-(h.face||1)*10,y:this.G-22,t:0,c:'#9ad8ff'});return false;}   // Shadow_Clone soaks it
+    if(h.cloneT>0&&from&&from.E&&(this.clones||[]).some(c=>c.owner===h&&Math.abs(c.x-h.x)<40)&&this.rng()<(h.cloneDecoy||.35)){this.fx.push({k:'spark',x:h.x-(h.face||1)*10,y:this.G-22,t:0,c:'#9ad8ff'});return false;}   // Shadow_Clone soaks it
     if(h.smokeT>0&&this.rng()<.25){this.text(h.x,this.G-52,'dodge','#c8d0d8');return false;}   // ...and heroes inside the smoke are harder to hit
     if(h.invulnT>0){this.text(h.x,this.G-52,'miss','#9ae6ff');return false;}
     amt=mitigate(h,amt,'physical');if(from&&from.boss&&insP(h)==='mountain')amt*=.9;if(h.rageT>0)amt*=.75;if(h.shellT>0)amt*=.3;if(amt>0&&h.herbT>0)h.herbT=0;   // a hit stops a herb heal
@@ -1905,7 +1905,7 @@ class Game{
     this.proj=this.proj.filter(p=>!p.dead);
     // fx + text
     // 0.12.14 (Kyle): nothing lying on the ground slides along with the party: bodies, stuck arrows, thorns, scorch marks scroll with the ground
-    this.stepRevive(dt);this.stepGlNades(dt,scroll);this.stepWatchdog(dt);this.stepSandbags(dt,scroll);this.stepClimb(dt,scroll);this.stepHerbs(dt,scroll);this.stepDisarm(dt);
+    this.stepRevive(dt);this.stepGlNades(dt,scroll);this.stepClones(dt,scroll);this.stepWatchdog(dt);this.stepSandbags(dt,scroll);this.stepClimb(dt,scroll);this.stepHerbs(dt,scroll);this.stepDisarm(dt);
     for(const h of this.alive())this.obClamp(h,true);for(const e of this.enemies)if(!e.dead)this.obClamp(e,false);
     for(const x of this.fx){x.t+=dt;if(scroll&&GROUND_FX.has(x.k))x.x-=scroll*dt;}this.fx=this.fx.filter(x=>x.t<(x.life||.6));
     if(scroll)for(const h of this.heroes.concat(this.pets||[]))if(!h.alive&&h.x!=null)h.x-=scroll*dt;   // fallen heroes stay where they fell
@@ -2055,7 +2055,7 @@ class Game{
         {const RH=(C.abilities||[]).find(a=>a.id==='harvest');if(RH&&dealt&&mt.dead&&h.tnT>0){h.tnT=Math.max(0,h.tnT-RH.cut);this.text(h.x,this.G-58,'-'+RH.cut+'s','#b070ff');}}   /* 0.12.97 Ritual_Harvest */
         {const PBd=(C.abilities||[]).find(a=>a.id==='blade');if(PBd&&!mt.dead){if(mt.poison>0)mt.poisonT=POISON.dur;if(dealt&&this.rng()<PBd.ch*(LT?2:1))this.addPoison(mt,PBd.n*(LT?2:1));}}   /* 0.12.70 Poisoned_Blade */if(fell&&!mt.dead){if(!mt.boss)mt.stun=Math.max(mt.stun||0,RY.stun);this.text(mt.x,mt.y-34,'TIMBER!','#ffc860');this.shake=Math.max(this.shake||0,.12);}
         {const MO=(C.abilities||[]).find(a=>a.id==='momentum');if(MO){h.mom=this.t-(h.momT||0)<=MO.window?Math.min(MO.max,(h.mom||0)+1):1;h.momT=this.t;h.momPer=MO.per;}}   // Momentum
-        if(h.cloneT>0&&!mt.dead){this.hitEnemy(mt,roll*(h.cloneMirror||.4),h,{nocrit:1});this.fx.push({k:'slash',x:mt.x-2,y:mt.y-20,t:0});}   // the clone mirrors the hit   // knockback, Kyle's scale: 0-100, 100 = about a 40px shove
+        h._mt=mt;   /* 0.12.107: the Shadow_Clone no longer mirrors his hits from behind him; it peels off and swings on its own (stepClones) */   // knockback, Kyle's scale: 0-100, 100 = about a 40px shove
         if(dealt&&!mt.dead&&K>0){const res=mt.boss?.9:((mt.E&&mt.E.kbRes)||0);mt.kbv=Math.max(mt.kbv||0,K/100*40*8*(1-res));mt.kbDir=mt.x>=h.x?1:-1;}   
         if(h.surgeT>0&&!mt.dead)this.arcChain(h,mt);
         if(!C.melee.claw&&!C.melee.arc)this.fx.push({k:'slash',x:mt.x-6,y:mt.boss?mt.y-50:mt.y-24,t:0});});}return;}
@@ -2187,7 +2187,7 @@ class Game{
     // ---- Poultice (Chibi_Warrior): self heal over time when he's hurt
     const CL=AB_x(C,'clone');if(CL){if(h.clT==null)h.clT=CL.cd*.3;if(h.clT>0)h.clT-=dt;
       const close=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-h.x)<50).length,onMe=(this.bb&&this.bb.heat.get(h))||0;
-      if(h.clT<=0&&!(h.cloneT>0)&&(close>=2||(h.hp/h.max<.6&&onMe>=1))&&(h.en||0)>=CL.en&&spendEnergy(h,CL.en)){h.clT=CL.cd*(1-(h.cdr||0));h.cloneT=CL.dur;h.cloneMirror=CL.mirror;h.cloneDecoy=CL.decoy;
+      if(h.clT<=0&&!(h.cloneT>0)&&(close>=2||(h.hp/h.max<.6&&onMe>=1))&&(h.en||0)>=CL.en&&spendEnergy(h,CL.en)){h.clT=CL.cd*(1-(h.cdr||0));h.cloneT=CL.dur;h.cloneMirror=CL.mirror;h.cloneDecoy=CL.decoy;(this.clones=this.clones||[]).push({owner:h,x:h.x-(h.face||1)*10,gy:h.gy||this.G,face:h.face||1,t:0,life:CL.dur,atkT:.3,tgt:null,animM:0,walkT:0,moving:false,mirror:CL.mirror});   /* 0.12.107 (Kyle): the clone detaches and fights on its own */
         this.fx.push({k:'poof',x:h.x-(h.face||1)*10,y:this.G-20,t:0});this.ev('whoosh',{});Comms.say(this,h,'clone',{});}}
     const PO=AB_x(C,'poultice');if(PO){if(h.poT==null)h.poT=PO.cd*.2;if(h.poT>0)h.poT-=dt;
       if(h.poT<=0&&h.hp/h.max<PO.under&&!(h.hotT>0)&&(h.en||0)>=PO.en&&spendEnergy(h,PO.en)){h.poT=PO.cd*(1-(h.cdr||0));h.hotT=PO.dur;h.hotTick=0;h.hotSrc=h;h.hotAmt=h.max*PO.pct;h.hotEvery=PO.tick;h.poulticeT=PO.dur;
@@ -2613,6 +2613,25 @@ class Game{
         const right=px<L&&h.x>=L,left=px>R&&h.x<=R;if(!right&&!left)continue;
         if(h._tx!=null&&!this.exiting&&(right?h._tx<R+6:h._tx>L-6)){h.x=right?L:R;h._cpx=h.x;break;}   /* only climb when he's actually going somewhere past it; shuffling around next to it, he just stops at it */
         const low=b.k==='sandbag';h.climb={t:0,T:low?.45:.9,x0:right?L:R,x1:right?R+1:L-1,H:low?9:19};h.x=h.climb.x0;h._cpx=h.x;break;}}}
+  /* 0.12.107 Shadow_Clone, detached (Kyle). The copy steps out and goes its own way: it picks a zombie that ISN'T the one he's
+     fighting (one bothering an ally first, else the nearest other one), runs over at 1.5x his speed and swings his sword for
+     `mirror` of a normal hit (40%, 60% with Twin Shadows) on his swing timer. Every zombie it hits turns to fight it for a moment
+     (they stop going for the party). It fades when its time runs out or if he goes down. */
+  stepClones(dt,scroll){if(!this.clones||!this.clones.length)return;
+    for(const c of this.clones){const h=c.owner;c.t+=dt;c.x-=scroll*dt;if(c.animM>0)c.animM-=dt;if(!h.alive||c.t>=c.life){c.done=1;this.fx.push({k:'poof',x:c.x,y:c.gy-20,t:0});continue;}
+      const live=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x<this.W+4);const mine=h._mt&&!h._mt.dead?h._mt:null;
+      if(!c.tgt||c.tgt.dead){const bother=live.filter(e=>e!==mine&&this.alive().some(o=>o!==h&&!o.pet&&Math.abs(this.heroX(o)-e.x)<26));
+        const pool=(bother.length?bother:live.filter(e=>e!==mine)).length?(bother.length?bother:live.filter(e=>e!==mine)):live;
+        c.tgt=pool.sort((p,q)=>Math.abs(p.x-c.x)+Math.abs((p.gy||this.G)-c.gy)*2-Math.abs(q.x-c.x)-Math.abs((q.gy||this.G)-c.gy)*2)[0]||null;}
+      const T=c.tgt;if(!T){c.moving=false;const hx=this.heroX(h)-(h.face||1)*12;const d=hx-c.x;if(Math.abs(d)>2){c.x+=Math.sign(d)*Math.min(Math.abs(d),(MOVE.chibi||20)*1.5*dt);c.moving=true;c.face=d>0?1:-1;c.walkT+=dt;}continue;}
+      const tgy=T.gy!=null?T.gy:this.G;const dx=T.x-c.x-(T.x>c.x?9:-9),dz=tgy-c.gy;c.face=T.x>=c.x?1:-1;
+      if(Math.abs(dx)>1.5||Math.abs(dz)>1){const sp=(MOVE.chibi||20)*1.5*dt;c.x+=Math.sign(dx)*Math.min(Math.abs(dx),sp);c.gy+=Math.sign(dz)*Math.min(Math.abs(dz),sp*.6);c.moving=true;c.walkT+=dt;}else c.moving=false;
+      c.atkT-=dt;const C=h.base.char;
+      if(Math.abs(T.x-c.x)<=12&&Math.abs(tgy-c.gy)<=4&&c.atkT<=0){c.atkT=(C.melee.every||1.2)/((h.meleeSpd||1)*(h.aspd||1));c.animM=.35;
+        const roll=(this.rollDice(C.melee.dice)+(C.melee.flat||0)+(h.flatMelee||0))*(h.atk/h.base.atk)*(h.meleeDmg||1)*(h.cryDmg||1);
+        this.hitEnemy(T,roll*(c.mirror||.4),h,{nocrit:1});this.fx.push({k:'slash',x:T.x-2,y:(tgy)-20,t:0});
+        if(!T.dead&&!T.boss){T.distractT=Math.max(T.distractT||0,.9);T.distractX=c.x;}}}   /* the zombie turns on the clone */
+    this.clones=this.clones.filter(c=>!c.done);for(const h of this.heroes)if(h.cloneT>0&&!(this.clones||[]).some(c=>c.owner===h))h.cloneT=0;}
   stepRevive(dt){const downs=this.heroes.concat((this.pets||[]).filter(p=>p.dog)).filter(h=>!h.alive&&h.downed);if(!downs.length)return;
     const al=this.alive().filter(o=>!o.pet);const herald=o=>(o.base.char&&o.base.char.abilities||[]).some(a=>a.id==='herald');
     for(const d of downs){if(d.swT&&this.t>=d.swT){d.swT=0;this.text(d.x,(d.gy||this.G)-40,'SECOND WIND!','#7dff9a');this.revive(d);continue;}
@@ -2974,7 +2993,7 @@ const TAL_MOD={
   jp:{scope:{name:'Hollow Tip Scope',icon:'🎯',txt:'No_Scope pierces 5 zombies (was 3) and hits for 4d6 (was 3d6).',ab:'noscope',set:{pierce:5,dice:[4,6]}},
       familia:{name:'Familia Forever',icon:'🛡️',txt:'Protect_the_Familia shields for 75% (was 50%) and comes back in 15s (was 20s).',ab:'familia',set:{shield:.75,cd:15}},
       hotbox:{name:'Hotbox',icon:'🌿',txt:'Toke_Break lasts 3s (was 2s) and heals 10% (was 6%).',ab:'toke',set:{dur:3,heal:.1}}},
-  chibi:{twin:{name:'Twin Shadows',icon:'👥',txt:'Shadow_Clone lasts 7s (was 5s) and mirrors his hits at 60% (was 40%).',ab:'clone',set:{dur:7,mirror:.6}},
+  chibi:{twin:{name:'Twin Shadows',icon:'👥',txt:'Shadow_Clone lasts 7s (was 5s) and its own sword hits land at 60% (was 40%).',ab:'clone',set:{dur:7,mirror:.6}},
       tsunami:{name:'Tsunami Dash',icon:'🌊',txt:'Wave Dash rides 140px (was 100) and hits 50% harder.',ab:'dash',set:{dist:140,dmgMul:1.5}},
       hymn:{name:'Battle Hymn',icon:'📣',txt:'War Cry gives +35% damage (was 25%) for 9s (was 7s).',ab:'shout',set:{dmg:.35,dur:9}}},
   archer:{three:{name:'Five in Hand',icon:'🏹',txt:'One Nocked, Two in Hand fires 5 quick arrows (was 3).',ab:'rapid',set:{shots:5}},
@@ -3089,12 +3108,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794462453';const BGI=new Image();BGI.src='crawl_bg.png?v=1794462453';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794462453';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794462689';const BGI=new Image();BGI.src='crawl_bg.png?v=1794462689';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794462689';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794462453';XIMG.wave.src='crawl_wave.png?v=1794462453';XIMG.chibi.src='crawl_chibi.png?v=1794462453';XIMG.flannel.src='crawl_flannel.png?v=1794462453';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794462453';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794462453';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794462453';XIMG.rain.src='crawl_rain.png?v=1794462453';XIMG.druid.src='crawl_druid.png?v=1794462453';XIMG.camp.src='crawl_campfire.png?v=1794462453';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794462453';XIMG.tornado.src='crawl_fx_tornado.png?v=1794462453';XIMG.vine.src='crawl_fx_vine.png?v=1794462453';XIMG.thorn.src='crawl_fx_thorn.png?v=1794462453';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794462689';XIMG.wave.src='crawl_wave.png?v=1794462689';XIMG.chibi.src='crawl_chibi.png?v=1794462689';XIMG.flannel.src='crawl_flannel.png?v=1794462689';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794462689';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794462689';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794462689';XIMG.rain.src='crawl_rain.png?v=1794462689';XIMG.druid.src='crawl_druid.png?v=1794462689';XIMG.camp.src='crawl_campfire.png?v=1794462689';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794462689';XIMG.tornado.src='crawl_fx_tornado.png?v=1794462689';XIMG.vine.src='crawl_fx_vine.png?v=1794462689';XIMG.thorn.src='crawl_fx_thorn.png?v=1794462689';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794462453';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794462453';XIMG.obst.src='crawl_obst.png?v=1794462453';XIMG.cars.src='crawl_cars.png?v=1794462453';XIMG.robot.src='crawl_robot.png?v=1794462453';XIMG.cultist.src='crawl_cultist.png?v=1794462453';XIMG.tentacle.src='crawl_tentacle.png?v=1794462453';XIMG.boom.src='crawl_boom.png?v=1794462453';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794462689';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794462689';XIMG.obst.src='crawl_obst.png?v=1794462689';XIMG.cars.src='crawl_cars.png?v=1794462689';XIMG.robot.src='crawl_robot.png?v=1794462689';XIMG.cultist.src='crawl_cultist.png?v=1794462689';XIMG.tentacle.src='crawl_tentacle.png?v=1794462689';XIMG.boom.src='crawl_boom.png?v=1794462689';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3167,7 +3186,8 @@ function unitFrame(e,U){const A=e.animT>0&&U.atk?U.atk:U.walk;let fr;
   if(A===U.atk){const dur=e.E.animAtk||.3;fr=Math.min(A.n-1,Math.floor((1-e.animT/dur)*A.n));return [A,fr];}
   if(U.idle&&e.moving===false)return [U.idle,Math.floor(e.walkT*6)%U.idle.n];
   return [A,Math.floor(e.walkT*(e.E.fps||7))%A.n];}
-function drawUnit(ctx,A,fr,x,gy,sc,alpha,flash,rot,flip){const IM=A.img?XIMG[A.img]:UIMG;if(!IM||!IM.complete)return;ctx.save();ctx.translate(Math.round(x*RES)/RES,Math.round(gy*RES)/RES);if(rot)ctx.rotate(rot);ctx.scale(flip?-sc:sc,sc);if(alpha!=null)ctx.globalAlpha=alpha;
+let GHOST_A=1;   /* 0.12.107: <1 while drawing the Shadow_Clone */
+function drawUnit(ctx,A,fr,x,gy,sc,alpha,flash,rot,flip){const IM=A.img?XIMG[A.img]:UIMG;if(!IM||!IM.complete)return;ctx.save();ctx.translate(Math.round(x*RES)/RES,Math.round(gy*RES)/RES);if(rot)ctx.rotate(rot);ctx.scale(flip?-sc:sc,sc);if(alpha!=null)ctx.globalAlpha=alpha*GHOST_A;else if(GHOST_A<1)ctx.globalAlpha*=GHOST_A;
   if(A.art){ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';}const sx=A.x+fr*A.fw;ctx.drawImage(IM,sx,A.y,A.fw,A.fh,-A.ax,-A.ay-1,A.fw,A.fh);
   if(flash>0){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.min(1,flash*6)*.7;ctx.drawImage(IM,sx,A.y,A.fw,A.fh,-A.ax,-A.ay-1,A.fw,A.fh);}ctx.restore();}
 function drawBG(ctx,g,W,oy){
@@ -3445,6 +3465,11 @@ function drawGame(ctx,g,W,oy){
         ctx.fillStyle=`rgba(190,160,110,${.6*life})`;ctx.fillRect(sx-3+((i*7)%5),f.gy-hh-2-(1-life)*4,1.5,1.5);ctx.fillRect(sx+1,f.gy-hh-4-(1-life)*6,1,1);}ctx.restore();}const k=f.t/f.life;ctx.save();ctx.globalAlpha=1-k;ctx.fillStyle='#8a6a40';
       for(let i=0;i<8;i++){const x=f.x-f.w/2+(i+.5)*f.w/8;ctx.fillRect(x-1,f.gy-1-Math.sin((k+i*.13)*Math.PI)*4,2,2);}ctx.strokeStyle='#c8a060';ctx.beginPath();ctx.moveTo(f.x-f.w/2,f.gy);ctx.lineTo(f.x+f.w/2,f.gy);ctx.stroke();ctx.restore();}};
   const booms=()=>{for(const f of g.fx){if(f.k!=='boom')continue;const k=f.t/f.life,fr=Math.min(BOOM.n-1,Math.floor(k*BOOM.n));drawUnit(ctx,BOOM,fr,f.x,f.gy+2,f.small?.17:.32,k>.85?(1-k)/.15:1,0,0,false);}};
+  /* 0.12.107 Shadow_Clone: a see-through copy of Chibi with a faint purple glow, moving and swinging on its own */
+  const drawClone=(c)=>{const h=c.owner;if(!h)return;const fade=Math.min(1,(c.life-c.t)/.4,c.t/.25);
+    ctx.save();ctx.globalCompositeOperation='lighter';glow(ctx,c.x,c.gy-12,7,'#b066ff',.13*fade);glow(ctx,c.x,c.gy-12,3.5,'#d9a6ff',.08*fade);ctx.restore();
+    const ghost=Object.assign({},h,{x:c.x,gy:c.gy,face:c.face,ghost:1,moving:c.moving,walkT:c.walkT,animM:c.animM,animT:c.animM>0?.35-c.animM:0,swingAnim:h.swingAnim||'attack1',leapH:0,bleedT:0,shield:0,shieldT:0,hotT:0,cozyT:0,stealthT:0,cloneT:0,smoking:null,dash:null,whirl:null,perch:null,sbThrow:null,climb:null,sandbag:0,medkit:0,defib:0,herbs:0,kit:[],hitFlash:0,downed:0,riseT:0,shoutT:0,rageT:0,courage:0});
+    GHOST_A=.5*fade;try{drawHero(ghost);}finally{GHOST_A=1;}};
   const drawHero=(h)=>{const G0=h.gy||g.G;ctx.save();shrinkAt(ctx,h.x,G0,HS);drawHero0(h);ctx.restore();};
   const drawHero0=(h)=>{const G=h.gy||g.G;if(!h.alive){return;}
     if(h.bleedT>0){const p=.5+.5*Math.sin(g.t*10);ctx.save();ctx.globalCompositeOperation='lighter';
@@ -3507,8 +3532,7 @@ function drawGame(ctx,g,W,oy){
           ctx.strokeStyle='rgba(200,220,255,.30)';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(h.x+lx,G-11,26-i*2,7-i*.5,0,a0,a0+1.3);ctx.stroke();
           ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(h.x+lx,G-11,27-i*2,7.5-i*.5,0,a0+.2,a0+1.15);ctx.stroke();}
         ctx.strokeStyle='rgba(232,240,255,.45)';ctx.lineWidth=1.2;for(let i=0;i<2;i++){ctx.beginPath();ctx.ellipse(h.x+lx,G-10,16-i*3,5-i,0,sp*1.1+i*2,sp*1.1+i*2+2.2);ctx.stroke();}ctx.restore();}   // inner spin trail
-      if(h.cloneT>0){const cx=h.x+lx-(h.face||1)*10;ctx.save();ctx.globalCompositeOperation='lighter';glow(ctx,cx,G-22,14,'#4aa8ff',.12);ctx.restore();   // Shadow_Clone: a see-through copy just behind him
-        drawUnit(ctx,A,f,cx,G+bob,A.pre?ART_SCALE/A.pre/HS:A.art?ART_SCALE/HS:(A.sc||1),.38*Math.min(1,h.cloneT/.4),0,0,(h.face||1)>0);}
+      /* 0.12.107: the Shadow_Clone is drawn on its own now (drawClone) */
       if(rum){   /* rummage: dips down and digs (squash + lean toward the wreck), pops up, repeats; bits fly out where he digs */
         const ox=rum.o?rum.o.x+((OBST[rum.o.k]||{}).w||0)*.0:h.x+10;const dir=(rum.o&&rum.o.x<h.x-2)?-1:1;const ph=(g.t*2.3+(h.key.length*.37))%1;
         const dip=ph<.55?Math.sin(ph/.55*Math.PI):0;const jig=Math.sin(g.t*23)*.02*dip;const fx=h.x+lx;
@@ -3522,7 +3546,7 @@ function drawGame(ctx,g,W,oy){
     if(h.gritT>0){const p=.5+.5*Math.sin(g.t*9),fa=Math.min(1,h.gritT/.5);ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(230,175,90,${(.35+.3*p)*fa})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(Math.round(h.x+lx),G-24,13+p,26+p,0,0,7);ctx.stroke();
       ctx.fillStyle=`rgba(255,215,140,${.8*fa})`;for(let i=0;i<4;i++){const an=g.t*3+i*1.57;ctx.fillRect(Math.round(h.x+lx+Math.cos(an)*13),Math.round(G-24+Math.sin(an)*24),1.5,1.5);}ctx.restore();}   // Grit_Teeth: a steady amber brace around him
     if(h.shield>0){ctx.strokeStyle='rgba(154,230,255,.7)';ctx.beginPath();ctx.ellipse(Math.round(h.x+lx),G-24,15,27,0,0,7);ctx.stroke();}
-    const bx=h.x+(h.dodgeX||0)+(h.wanderX||0),G0=G;{const G=G0-(h.leapH||0)*1.2*HS;plate(ctx,h,bx,G-(hbOf(h).h+17),22,true);   /* 0.12.75: the plate rides up with a hero on the lookout or a jetpack */
+    const bx=h.x+(h.dodgeX||0)+(h.wanderX||0),G0=G;{const G=G0-(h.leapH||0)*1.2*HS;if(!h.ghost)plate(ctx,h,bx,G-(hbOf(h).h+17),22,true);   /* 0.12.75: the plate rides up with a hero on the lookout or a jetpack */
     {const cb=castBar(h);if(cb&&!PLATE_OFF){const w=18,x=Math.round(bx-w/2),y=Math.round(G-(hbOf(h).h+17))+6;const k=Math.max(0,Math.min(1,cb[0]));   /* 0.12.71: cast / channel / reload bar under the plate */
       ctx.fillStyle='#120a14';ctx.fillRect(x-1,y-1,w+2,3);ctx.fillStyle='#2a2430';ctx.fillRect(x,y,w,1);ctx.fillStyle=cb[1];ctx.fillRect(x,y,Math.max(1,Math.round(w*k)),1);
       if(cb[2]){ctx.fillStyle='#ffffff';ctx.globalAlpha=.55+.45*Math.sin(g.t*12);ctx.fillRect(x+Math.round(w*k)-1,y,1,1);ctx.globalAlpha=1;}}}}};
@@ -3612,7 +3636,7 @@ function drawGame(ctx,g,W,oy){
     if(T.anim==='idle')fr=Math.floor(g.t*9+T.x)%n;else if(T.anim==='emerge')fr=Math.min(n-1,Math.floor(T.aT/.5*n));else if(T.anim==='attack')fr=Math.min(n-1,Math.floor(T.aT/.6*n));else if(T.anim==='hit')fr=Math.min(n-1,Math.floor(T.aT/.25*n));else fr=Math.min(n-1,Math.floor(T.aT/.8*n));
     ctx.save();shrinkAt(ctx,T.x,T.gy,HS);shadow(ctx,T.x,T.gy,9);drawUnit(ctx,A,fr,T.x,T.gy+1,T.big||1,null,T.hitT>0?(T.hitT-=1/60):0,0,T.face>0);ctx.restore();   // 0.12.70: Call_of_Cthulhu makes them 25% bigger
     if(T.hp<T.max&&T.anim!=='death'){const w=12,y=T.gy-36;ctx.fillStyle='#000a';ctx.fillRect(Math.round(T.x-w/2)-1,y-1,w+2,3);ctx.fillStyle='#9a50e8';ctx.fillRect(Math.round(T.x-w/2),y,Math.max(0,w*T.hp/T.max),1);}};
-  const items=[...(g.blds||[]).map(b=>[b.gy-.3,-1,b.x,()=>drawBld(b)]),...(g.tentacles||[]).map(T=>[T.gy+.1,0,T.x,()=>drawTent(T)]),...(g.obst||[]).map(o=>[LANES[Math.max(...o.lanes)]+.2,-1,o.x,()=>drawOb(o)]),...hs.filter(h=>h.alive).map(h=>[h.gy||G,0,h.x,()=>drawHero(h)]),...es.map(e=>[e.boss?G-.5:(e.gy!=null&&!e.fly?e.gy:G+e.lane-5),1,-e.x,()=>drawEnemy(e)])]
+  const items=[...(g.blds||[]).map(b=>[b.gy-.3,-1,b.x,()=>drawBld(b)]),...(g.tentacles||[]).map(T=>[T.gy+.1,0,T.x,()=>drawTent(T)]),...(g.obst||[]).map(o=>[LANES[Math.max(...o.lanes)]+.2,-1,o.x,()=>drawOb(o)]),...hs.filter(h=>h.alive).map(h=>[h.gy||G,0,h.x,()=>drawHero(h)]),...(g.clones||[]).map(c=>[c.gy,0,c.x,()=>drawClone(c)]),...es.map(e=>[e.boss?G-.5:(e.gy!=null&&!e.fly?e.gy:G+e.lane-5),1,-e.x,()=>drawEnemy(e)])]
     .sort((a,b)=>a[0]-b[0]||a[1]-b[1]||a[2]-b[2]);
   // campfire (drawn behind the units) with sparks drifting up while it burns
   if(g.camp){const F=g.camp;let fr=0;if(F.state==='start')fr=1+Math.min(2,Math.floor(F.t/.3));else if(F.state==='burn')fr=4+Math.floor(g.t*8)%4;else if(F.state==='dying')fr=8+Math.min(2,Math.floor((F.dT||0)/.4));else fr=11;
@@ -3856,7 +3880,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.106</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.107</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
