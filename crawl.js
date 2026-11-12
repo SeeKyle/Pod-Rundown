@@ -397,7 +397,7 @@ const INSP={   /* 0.12.82 (Kyle): every deck now gives exactly TWO things (a pas
  'The Last of Us':{o:'Kyle',why:'Survivors who live off what they scrounge from the wrecks and slip every grab',passive:'scavenger',mod:{dodge:4}},
  'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming, and things that touch it get scared off',passive:'haunt',mod:{acc:6}},
  'Mothman Cometh!':{o:'Kyle',why:'A dark omen that is never quite where you hit, and never far behind',passive:'omen',sl:{lane:2}},
- 'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back; snow shows every tripwire',perk:'sapper',mod:{kb:30}},
+ 'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back; snow shows every tripwire',perk:'sapper',mod:{kb:40}},   // 0.12.101 review: knockback 30 -> 40 (Sapper is situational)
  'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger, stitched together from whatever is lying around, and stitches up whoever falls apart',perk:'medicine',mod:{stamina:2}},
  "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward, and faster every swing',passive:'onslaught',sl:{aggr:2}},
  // Cheez
@@ -415,12 +415,12 @@ const INSP={   /* 0.12.82 (Kyle): every deck now gives exactly TWO things (a pas
  'Primary Directive 2.0':{o:'Leon',why:'The rebuild: a stack of big mana rocks keeps the Autobots charged, and Memnarch\'s plating keeps them standing',mod:{enRegen:1,armor:5}},
  'Cosmic Spider':{o:'Leon',why:'Spider-Sense and web shooters: his sense tingles near traps',passive:'webs',perk:'sapper'},
  // Eddie
- 'Vivi':{o:'Eddie',why:'The Black Mage: his commander makes a pile of mana every turn and every spell hits harder',mod:{enRegen:1.5,rangedDmg:12}},
- 'Bruce Banner':{o:'Eddie',why:'Bruce reads everything, then the Hulk gets bigger and angrier the more he takes',mod:{xp:10,stamina:2}},
+ 'Vivi':{o:'Eddie',why:'The Black Mage: his commander makes a pile of mana every turn and every spell hits harder',mod:{enRegen:1,rangedDmg:12}},   // 0.12.101 review: energy regen 1.5 -> 1 (was the strongest stat pair)
+ 'Bruce Banner':{o:'Eddie',why:'Hulk smash: the longer he runs at you, the harder the first punch lands, and he soaks a lot getting there',passive:'onslaught',mod:{stamina:2}},   // 0.12.101 review: Onslaught instead of +10% XP (more fun, on theme)
  'Cloud':{o:'Eddie',why:'Omnislash: a suited-up SOLDIER whose every big hit is a Limit Break',mod:{critMul:.3,crit:3}},
  'Kasla, the Broken Halo':{o:'Eddie',why:'Convoke: the whole angel army chips in, so everything at camp costs less, and she flies in fast',passive:'haggler',mod:{move:10}},
- 'Master Splinter':{o:'Eddie',why:'Ninja training: never where the hit lands, and the shuriken fly twice as fast',mod:{dodge:4,rangedSpd:12}},
- 'Miles Morales':{o:'Eddie',why:'Spider-Man in the making: counters pile up fast and he grows with every fight',mod:{xp:8,luck:6}},
+ 'Master Splinter':{o:'Eddie',why:'Ninja training: never quite where the hit lands, and the shuriken fly fast',passive:'omen',mod:{rangedSpd:10}},   // 0.12.101 review: Dark Omen (a sure dodge every 12s) instead of +4% dodge
+ 'Miles Morales':{o:'Eddie',why:'Spider-Man in the making: web shooters to slow them down, and he grows with every fight',passive:'webs',mod:{xp:8}},   // 0.12.101 review: Web Shooter instead of +6 Luck
  'Narset, Enlightened Master':{o:'Eddie',why:'A monk who turns every attack into free spells: her abilities come back 20% faster, with a little more energy to spend',mod:{cdr:20,enMax:10}},   // 0.12.98 (Kyle): cooldown reduction
 };
 const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼',Eddie:'♠'};
@@ -434,7 +434,7 @@ const ABIL_DESC={
   plating:'Field_Plating (passive) · stay next to an ally for 3s and he straps a plate kit on them: +25% armor and +15% knockback resistance until they take 3 hits.',
   syphon:'Syphon_Life · free · 9s. A swirling black and purple beam from his chest into an enemy up to 330px away for 3s: it drains 3 life a second (more with damage buffs) and heals him for all of it. This is how he pays for everything else.',
   lethal:'Lethal_Strikes · 10% of his life · 20s · 12s. A frenzy: +75% dagger speed, 25% less per hit, Poisoned_Blade doubled (50% chance, 2 stacks), and he goes all-in up close.',
-  tentacle:'Spawn_Tentacle · 8% of his life · 9s. Raises a tentacle anywhere within 400px, right in the middle of the biggest pack. It can\'t move, lashes 1d6+2 out to its reach, heals off what it hits, and withers 5% a second.',
+  tentacle:'Spawn_Tentacle · 8% of his life · 10s. Raises a tentacle anywhere within 400px, right in the middle of the biggest pack. It can\'t move, lashes 1d6+2 out to its reach, heals off what it hits, and withers 5% a second.',
   cthulhu:'Call_of_Cthulhu · 15% of his life · 30s · 10s. His tentacles burrow and burst back up 200px in front of him, and a wave of terror rolls out from him and every tentacle: 2s of fear and 25% slower. For 10s every tentacle is 25% bigger (longer reach) and lashes 25% faster, and Spawn_Tentacle comes back twice as fast.',
   harvest:'Ritual_Harvest (passive) · built into his dagger: every dagger kill takes 1.5s off Spawn_Tentacle\'s cooldown.',
   blade:'Poisoned_Blade (passive) · a dagger hit that lands has a 25% chance to add a poison stack, and every dagger swing refreshes the poison already on the target.',
@@ -695,7 +695,7 @@ CHAR.cultist={name:'Void_Cultist',role:'Dagger + Void Bolts',combo:0,flatHp:0,st
     //   Poisoned_Blade doubled (50%, 2 stacks), and Shooter/Slasher goes to 10 (all slasher). 20s CD.
     {id:'lethal',name:'Lethal_Strikes',en:0,hpCost:.1,cd:20,dur:12,spd:.75,dmg:.25,want:'close'},
     // Spawn_Tentacle (8% of max life, keeps the old tentacle): placed anywhere within 400 screen px (133 world), in the middle of the biggest pack.
-    {id:'tentacle',name:'Spawn_Tentacle',en:0,hpCost:.08,cd:9,cast:.8,life:999,decay:.05,hp:15,steal:.2,reach:35,depth:10,every:1.4,dice:[1,6],flat:2,kb:20,range:133},   // 0.12.96 (Kyle): 9s (was 7s), 1d6+2 (was 2d6); wither unchanged
+    {id:'tentacle',name:'Spawn_Tentacle',en:0,hpCost:.08,cd:10,cast:.8,life:999,decay:.05,hp:15,steal:.2,reach:35,depth:10,every:1.4,dice:[1,6],flat:2,kb:20,range:133},   // 0.12.101 (Kyle): 10s (0.12.96 was 9s), 1d6+2; wither unchanged
     // Call_of_Cthulhu (15% of max life): 10s: Spawn_Tentacle's CD runs twice as fast, every tentacle is 25% bigger (reach too) and attacks 25% faster.
     //   On cast his tentacles burrow and re-emerge 200 screen px (67 world) in front of him, and a fear pulse goes out from him and from every tentacle:
     //   2s of fear and -25% move speed. IF 2+ tentacles are up OR 4+ zombies are coming, AND I can afford it THEN call. 30s CD.
@@ -2894,12 +2894,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794459469';const BGI=new Image();BGI.src='crawl_bg.png?v=1794459469';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794459469';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794459638';const BGI=new Image();BGI.src='crawl_bg.png?v=1794459638';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794459638';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794459469';XIMG.wave.src='crawl_wave.png?v=1794459469';XIMG.chibi.src='crawl_chibi.png?v=1794459469';XIMG.flannel.src='crawl_flannel.png?v=1794459469';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794459469';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794459469';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794459469';XIMG.rain.src='crawl_rain.png?v=1794459469';XIMG.druid.src='crawl_druid.png?v=1794459469';XIMG.camp.src='crawl_campfire.png?v=1794459469';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794459469';XIMG.tornado.src='crawl_fx_tornado.png?v=1794459469';XIMG.vine.src='crawl_fx_vine.png?v=1794459469';XIMG.thorn.src='crawl_fx_thorn.png?v=1794459469';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794459638';XIMG.wave.src='crawl_wave.png?v=1794459638';XIMG.chibi.src='crawl_chibi.png?v=1794459638';XIMG.flannel.src='crawl_flannel.png?v=1794459638';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794459638';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794459638';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794459638';XIMG.rain.src='crawl_rain.png?v=1794459638';XIMG.druid.src='crawl_druid.png?v=1794459638';XIMG.camp.src='crawl_campfire.png?v=1794459638';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794459638';XIMG.tornado.src='crawl_fx_tornado.png?v=1794459638';XIMG.vine.src='crawl_fx_vine.png?v=1794459638';XIMG.thorn.src='crawl_fx_thorn.png?v=1794459638';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794459469';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794459469';XIMG.obst.src='crawl_obst.png?v=1794459469';XIMG.cars.src='crawl_cars.png?v=1794459469';XIMG.robot.src='crawl_robot.png?v=1794459469';XIMG.cultist.src='crawl_cultist.png?v=1794459469';XIMG.tentacle.src='crawl_tentacle.png?v=1794459469';XIMG.boom.src='crawl_boom.png?v=1794459469';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794459638';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794459638';XIMG.obst.src='crawl_obst.png?v=1794459638';XIMG.cars.src='crawl_cars.png?v=1794459638';XIMG.robot.src='crawl_robot.png?v=1794459638';XIMG.cultist.src='crawl_cultist.png?v=1794459638';XIMG.tentacle.src='crawl_tentacle.png?v=1794459638';XIMG.boom.src='crawl_boom.png?v=1794459638';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3640,7 +3640,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.100</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.101</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
