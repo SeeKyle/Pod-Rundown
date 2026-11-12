@@ -1,5 +1,7 @@
 # Crypt Crawl — work queue for unattended sessions
 
+- 0.12.108 backup (Nov 12): talents, grenade launcher, detached clone, Downtown biome, camp radio/jukebox/map table.
+
 - 0.12.103 backup (Nov 12): damage pass, new camp upgrades, PD merged. Bundle is now just pod2/.
 
 The site is live at **0.12.63** (https://seekyle.github.io/Pod-Rundown/). Kyle (the owner) is on vacation.
