@@ -706,6 +706,8 @@ CHAR.cultist={name:'Void_Cultist',role:'Dagger + Void Bolts',combo:0,flatHp:0,st
     {id:'harvest',name:'Ritual_Harvest',passive:1,cut:1.5}]};
 const PAL_FRAC=1/3;
 // which cooldown timer each ability uses, so the planner can see what is ready
+/* 0.12.98 RULE for every ability now and later (Kyle): set its cooldown as  A.cd*(1-(h.cdr||0))  (internal cooldowns too: this.t+A.icd*(1-(h.cdr||0))).
+   h.cdr is the hero's cooldown reduction (capped at 50%), e.g. from Narset's inspiration. Tested 0.12.98: all 9 heroes' abilities come back 20% faster. */
 const CD_KEY={syphon:'syT',lethal:'leT',cthulhu:'ctT',nano:'nbT',tentacle:'tnT',pact:'paT',hex:'hxT',dread:'drT',clone:'clT',pin:'piT',surge:'suT',gatling:'gaT',missiles:'msT',smoke:'smT',grit:'grT',poultice:'poT',aimed:'abT',trip:'tbT',pal:'palT',camp:'caT',dash:'daT',shout:'shT',rapid:'raT',blowgun:'bgT',rain:'arT',mend:'mdT',bloom:'blT',thorns:'thT',cyclone:'cyT',
   whirl:'whT',chop:'cpT',leap:'lpT',rage:'rgT',roll:'rlT',brick:'brT',bottle:'boT'};
 const CLOSE_AB=new Set(['lethal','dread','clone','surge','grit','dash','whirl','chop','leap','rage','trip']),FAR_AB=new Set(['syphon','cthulhu','tentacle','hex','pin','gatling','missiles','smoke','aimed','rain','rapid','blowgun','thorns','cyclone','brick']);
@@ -1530,7 +1532,7 @@ class Game{
       if(this.hardcore)for(const o of this.alive()){if(Math.abs(this.heroX(o)-L.tx)<=r&&Math.abs((o.gy||this.G)-L.gy)<=Math.max(4,r*.75)){this.hurtHero(o,this.rollDice(dice)*.8,null);const S8=this.st8(h);S8.ff=(S8.ff||0)+1;}}}
     if(L.t>=LZ.charge+LZ.fire||L.tx<-4||L.tx>this.W+6){h.lz=null;h.lzReload=LZ.reload;}}
   /* Tactical_Retreat: an arc on the jetpack back to ~100 screen px from the left edge, then a slow landing. Same flight time from anywhere. */
-  startJet(h){const TR=(h.base.char.abilities||[]).find(a=>a.id==='retreat');if(!TR)return;h.jet={t:0,T:TR.T,x0:h.x,x1:TR.x1,A:TR,shot:0};h.trICD=this.t+TR.icd;h.lz=null;h.nano=null;h.plan=null;
+  startJet(h){const TR=(h.base.char.abilities||[]).find(a=>a.id==='retreat');if(!TR)return;h.jet={t:0,T:TR.T,x0:h.x,x1:TR.x1,A:TR,shot:0};h.trICD=this.t+TR.icd*(1-(h.cdr||0));h.lz=null;h.nano=null;h.plan=null;
     this.ev('whoosh',{});this.shake=Math.max(this.shake||0,.2);Comms.bubble(this,h,Comms.pick(['TACTICAL RETREAT.','JETS: ENGAGED.','DISENGAGING.','REPOSITIONING.']),true);}
   robotJet(h,dt){const J=h.jet,A=J.A;J.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;J.x1=A.x1;const u=Math.min(1,J.t/J.T);
     const ux=Math.min(1,u/.78),e=ux*ux*(3-2*ux);h.x=J.x0+(J.x1-J.x0)*e;h.face=J.x1<J.x0?-1:1;
@@ -1957,22 +1959,22 @@ class Game{
         if(done){h.repairing=null;}else{if(T.bld)T.hp=Math.min(T.max,T.hp+RP.bld*dt);else{this._mech=1;this.healHero(T,T.max*RP.mech*dt,true,h);this._mech=0;}if(Math.random()<dt*8)this.fx.push({k:'spark',x:(T.bld?T.x:this.heroX(T))+(Math.random()-.5)*8,gy:T.gy||this.G,t:0,life:.3,raw:1});return;}}
       const safe=near(40)===0&&!this.heroes.some(o=>!o.alive&&o.downed),en=h.en||0;   // a friend down comes first: no building until they're up
       // IF there's a fight AND no tower of mine AND it's quiet right here THEN put a watchtower up a little behind me
-      if(BU&&!tower&&h.twT<=0&&en>=BU.en&&(safe||near(25)<=1)&&live.length>=1&&spendEnergy(h,BU.en))   /* 0.12.95: builds more eagerly (one zombie close by is OK, any fight counts) */{h.twT=BU.tower.cd;h.building={k:'tower',tier:1,t:0,T:BU.tower.T[0],x:Math.max(20,Math.min(this.W-40,hx+45)),gy};   /* 0.12.76: well up the road so the team doesn't walk past it right away */h.walkTo=h.building.x;Comms.bubble(this,h,Comms.pick(['Putting up a tower.','Give me three seconds.','Cover me, building!']));return;}
+      if(BU&&!tower&&h.twT<=0&&en>=BU.en&&(safe||near(25)<=1)&&live.length>=1&&spendEnergy(h,BU.en))   /* 0.12.95: builds more eagerly (one zombie close by is OK, any fight counts) */{h.twT=BU.tower.cd*(1-(h.cdr||0));h.building={k:'tower',tier:1,t:0,T:BU.tower.T[0],x:Math.max(20,Math.min(this.W-40,hx+45)),gy};   /* 0.12.76: well up the road so the team doesn't walk past it right away */h.walkTo=h.building.x;Comms.bubble(this,h,Comms.pick(['Putting up a tower.','Give me three seconds.','Cover me, building!']));return;}
       // IF my tower can go higher AND it's quiet AND Modify is ready THEN add a tier
-      if(MO&&tower&&tower.tier<3&&h.moT<=0&&en>=MO.en&&(safe||near(25)<=1)&&Math.abs(tower.x-hx)<60&&spendEnergy(h,MO.en)){h.moT=MO.cd;h.building={k:'tier',tgt:tower,t:0,T:BU.tower.T[tower.tier],x:tower.x,gy:tower.gy};return;}
+      if(MO&&tower&&tower.tier<3&&h.moT<=0&&en>=MO.en&&(safe||near(25)<=1)&&Math.abs(tower.x-hx)<60&&spendEnergy(h,MO.en)){h.moT=MO.cd*(1-(h.cdr||0));h.building={k:'tier',tgt:tower,t:0,T:BU.tower.T[tower.tier],x:tower.x,gy:tower.gy};return;}
       // IF a pack of 3+ is coming down one lane 30-120 out THEN drop a concrete barrier in front of them
       if(BU&&h.brT2<=0&&en>=BU.en){let bl=null,bn=0;for(const l of LANES){const n=live.filter(e=>!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-l)<=BU.barrier.depth&&e.x-hx>30&&e.x-hx<120).length;if(n>bn){bn=n;bl=l;}}
-        if(bl!=null&&bn>=3&&!B.some(b=>b.k==='barrier'&&b.hp>0&&Math.abs(b.gy-bl)<6&&b.x>hx)&&spendEnergy(h,BU.en)){h.brT2=BU.barrier.cd;h.building={k:'barrier',t:0,T:BU.barrier.T,x:Math.min(this.W-20,hx+24),gy:bl};Comms.bubble(this,h,Comms.pick(['HESCO going up!','Wall them off!','Filling a HESCO!']));return;}}
+        if(bl!=null&&bn>=3&&!B.some(b=>b.k==='barrier'&&b.hp>0&&Math.abs(b.gy-bl)<6&&b.x>hx)&&spendEnergy(h,BU.en)){h.brT2=BU.barrier.cd*(1-(h.cdr||0));h.building={k:'barrier',t:0,T:BU.barrier.T,x:Math.min(this.W-20,hx+24),gy:bl};Comms.bubble(this,h,Comms.pick(['HESCO going up!','Wall them off!','Filling a HESCO!']));return;}}
       // IF 2+ zombies are within ~300 screen px THEN plant a tesla coil a little ahead
-      if(BU&&h.tsT<=0&&en>=BU.en&&near(100)>=2&&near(20)===0&&spendEnergy(h,BU.en)){h.tsT=BU.tesla.cd;h.building={k:'tesla',t:0,T:BU.tesla.T,x:Math.min(this.W-20,hx+16),gy};return;}
+      if(BU&&h.tsT<=0&&en>=BU.en&&near(100)>=2&&near(20)===0&&spendEnergy(h,BU.en)){h.tsT=BU.tesla.cd*(1-(h.cdr||0));h.building={k:'tesla',t:0,T:BU.tesla.T,x:Math.min(this.W-20,hx+16),gy};return;}
       // IF a wreck is right here with no turret AND it's quiet THEN bolt a turret onto it
-      if(MO&&h.moT<=0&&en>=MO.en&&safe){const car=(this.obst||[]).find(o=>/^car_/.test(o.k)&&!o.turret&&Math.abs(o.x-hx)<35&&o.x>20&&o.x<this.W-20);if(car&&spendEnergy(h,MO.en)){h.moT=MO.cd;h.building={k:'turret',car,t:0,T:MO.turret.T,x:car.x,gy:LANES[Math.max(...car.lanes)]};Comms.bubble(this,h,Comms.pick(['Let me mount something on this.','This wreck needs a gun.']));return;}}
+      if(MO&&h.moT<=0&&en>=MO.en&&safe){const car=(this.obst||[]).find(o=>/^car_/.test(o.k)&&!o.turret&&Math.abs(o.x-hx)<35&&o.x>20&&o.x<this.W-20);if(car&&spendEnergy(h,MO.en)){h.moT=MO.cd*(1-(h.cdr||0));h.building={k:'turret',car,t:0,T:MO.turret.T,x:car.x,gy:LANES[Math.max(...car.lanes)]};Comms.bubble(this,h,Comms.pick(['Let me mount something on this.','This wreck needs a gun.']));return;}}
       // Repair: IF a building of mine (or the Warhound) is hurt AND I'm beside it AND it's quiet THEN fix it
       if(RP&&safe){const T=B.filter(b=>b.hp>0&&b.hp<b.max*.75&&Math.abs(b.x-hx)<28).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0]||this.alive().find(o=>o.key==='robot'&&o.hp<o.max*.6&&Math.abs(this.heroX(o)-hx)<24);if(T){h.repairing={tgt:T,t:0};return;}}
       // satchel: IF 3+ zombies are bunched 30-100 out THEN toss one onto them (he sets it off later)
       if(SC&&h.scT<=0&&en>=SC.en&&!(this.satchels||[]).some(S=>S.owner===h&&!S.boom)){let best=null,bn=0;for(const e of live){const d=e.x-hx;if(e.fly||d<SC.min||d>SC.max)continue;const n=live.filter(o=>Math.abs(o.x-e.x)<20).length;if(n>bn){bn=n;best=e;}}
         if(!(best&&bn>=3)){const big=live.filter(e=>!e.fly&&e.x-hx>=SC.min&&e.x-hx<=SC.max+40&&(e.boss||e.elite||e.max>=60)).sort((p,q)=>q.max-p.max)[0];if(big){best=big;bn=3;}else if(best&&bn>=2&&live.length>=4){bn=3;}}   /* 0.12.79: bosses/big ones, or a pair when the field is busy */
-        if(best&&bn>=3&&spendEnergy(h,SC.en)){h.scT=SC.cd;h.animM=.45;h.face=1;(this.satchels=this.satchels||[]).push({x0:hx+3,x:hx,x1:best.x-6,gy0:gy,gy:best.gy!=null?best.gy:gy,gy1:best.gy!=null?best.gy:gy,t:0,T:SC.fly,A:SC,owner:h});this.ev('whoosh',{});return;}}}
+        if(best&&bn>=3&&spendEnergy(h,SC.en)){h.scT=SC.cd*(1-(h.cdr||0));h.animM=.45;h.face=1;(this.satchels=this.satchels||[]).push({x0:hx+3,x:hx,x1:best.x-6,gy0:gy,gy:best.gy!=null?best.gy:gy,gy1:best.gy!=null?best.gy:gy,t:0,T:SC.fly,A:SC,owner:h});this.ev('whoosh',{});return;}}}
     // ---- 0.12.70 Void_Cultist (Kyle's rework): life costs, all IF/THEN on the field; runs before the attack so Lethal_Strikes works up close
     if(h.key==='cultist'){const CB=id=>(C.abilities||[]).find(a=>a.id===id);const SY=CB('syphon'),LS=CB('lethal'),TN=CB('tentacle'),CT=CB('cthulhu');
       for(const [A,k] of [[SY,'syT'],[LS,'leT'],[TN,'tnT'],[CT,'ctT']])if(A){if(h[k]==null)h[k]=A.cd*.25;if(h[k]>0)h[k]-=dt*(k==='tnT'&&h.cthT>0?2:1);}
@@ -2203,15 +2205,15 @@ class Game{
        if(RL&&h.rlT<=0&&(lane.length>=2||lane.some(e=>e.boss||e.max>=40))&&en>=RL.en&&spendEnergy(h,RL.en)){h.rlT=RL.cd*(1-(h.cdr||0));h.face=1;h.animT=.32;h.lunge=4;
          (this.logs=this.logs||[]).push({x:h.x+8,gy:h.gy||this.G,x0:h.x+8,A:RL,h,hit:new Set(),mul,flat,t:0});this.ev('whoosh',{});return;}}
       // IF under half health AND Timber_Rage is ready THEN get angry
-      if(RG&&h.rgT<=0&&hp<RG.under&&en>=RG.en&&this.enemies.some(e=>!e.dead&&Math.abs(e.x-h.x)<120)&&spendEnergy(h,RG.en)){h.rgT=RG.cd;h.rageT=RG.dur;h.rageAnim=.7;this.ev('shout',{});}
+      if(RG&&h.rgT<=0&&hp<RG.under&&en>=RG.en&&this.enemies.some(e=>!e.dead&&Math.abs(e.x-h.x)<120)&&spendEnergy(h,RG.en)){h.rgT=RG.cd*(1-(h.cdr||0));h.rageT=RG.dur;h.rageAnim=.7;this.ev('shout',{});}
       // IF 2+ enemies are around me AND Whirl_Wind is ready THEN spin
-      if(WH&&h.whT<=0&&close.length>=2&&en>=WH.en&&spendEnergy(h,WH.en)){h.whT=WH.cd;h.whirl={t:0,tick:WH.every*.7};this.ev('whoosh',{});return;}
+      if(WH&&h.whT<=0&&close.length>=2&&en>=WH.en&&spendEnergy(h,WH.en)){h.whT=WH.cd*(1-(h.cdr||0));h.whirl={t:0,tick:WH.every*.7};this.ev('whoosh',{});return;}
       // IF an enemy is in my lane a little ahead (inside the shockwave) AND Ground_Chop is ready THEN chop
       const ahead=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x-h.x>0&&e.x-h.x<=CP.dist&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=CP.depth);
-      if(CP&&h.cpT<=0&&ahead.length&&en>=CP.en&&spendEnergy(h,CP.en)){h.cpT=CP.cd;h.chopping=CP.cast;h.chopT0=CP.cast;h.face=1;return;}
+      if(CP&&h.cpT<=0&&ahead.length&&en>=CP.en&&spendEnergy(h,CP.en)){h.cpT=CP.cd*(1-(h.cdr||0));h.chopping=CP.cast;h.chopT0=CP.cast;h.face=1;return;}
       // IF a big target is 24-60px away (too far to swing, close enough to jump) AND Hatchet_Leap is ready THEN leap onto it
       const lt=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-h.x)>=LP.min&&Math.abs(e.x-h.x)<=LP.range).sort((p,q)=>(q.max-p.max))[0];
-      if(LP&&h.lpT<=0&&lt&&en>=LP.en&&spendEnergy(h,LP.en)){h.lpT=LP.cd;h.leap={t:0,x0:h.x,x1:lt.x-(lt.x>h.x?10:-10)};faceToward(h,lt.x,1);h.laneI=lt.laneI!=null?lt.laneI:h.laneI;return;}}
+      if(LP&&h.lpT<=0&&lt&&en>=LP.en&&spendEnergy(h,LP.en)){h.lpT=LP.cd*(1-(h.cdr||0));h.leap={t:0,x0:h.x,x1:lt.x-(lt.x>h.x?10:-10)};faceToward(h,lt.x,1);h.laneI=lt.laneI!=null?lt.laneI:h.laneI;return;}}
     // ---- Druid abilities
     const AB_=id=>(C.abilities||[]).find(a=>a.id===id);const MD=AB_('mend'),BL=AB_('bloom'),TH=AB_('thorns'),CY=AB_('cyclone');
     if(MD||BL||TH||CY){for(const [A,k] of [[MD,'mdT'],[BL,'blT'],[TH,'thT'],[CY,'cyT']])if(A){if(h[k]==null)h[k]=A.cd*.2;if(h[k]>0)h[k]-=dt;}
@@ -2556,7 +2558,7 @@ class Game{
     this.fx.push({k:'ring',x:h.x,y:this.G-10,r:16,t:0,c:'#7dff9a'});this.ev('heal',{});this.text(h.x,this.G-56,'+'+Math.round(h.hp),'#7dff9a');
     Comms.bubble(this,h,Comms.pick(['Thanks!','I\'m up!','Back in it!','Not done yet!','Owe you one!','Still kicking!']));}
   tryResurge(h){if((this.resurgeT||-99)>this.t||h.pet)return false;const D=this.alive().find(o=>o!==h&&o.base&&o.base.char&&(o.base.char.abilities||[]).some(a=>a.id==='resurge'));if(!D)return false;
-    const A=D.base.char.abilities.find(a=>a.id==='resurge');this.resurgeT=this.t+(A.icd||25);h.hp=1;h.invulnT=A.dur;h.bleedT=0;h.hotT=A.dur;h.hotTick=0;h.hotSrc=D;h.hotEvery=.5;h.hotAmt=h.max*A.heal/(A.dur/.5);
+    const A=D.base.char.abilities.find(a=>a.id==='resurge');this.resurgeT=this.t+(A.icd||25)*(1-(D.cdr||0));h.hp=1;h.invulnT=A.dur;h.bleedT=0;h.hotT=A.dur;h.hotTick=0;h.hotSrc=D;h.hotEvery=.5;h.hotAmt=h.max*A.heal/(A.dur/.5);
     this.fx.push({k:'mend',x:this.heroX(h),gy:h.gy||this.G,t:0,life:1.2,raw:1});this.ev('heal',{});Comms.bubble(this,D,Comms.pick(['Not today!','I\'ve got you!','Stay with me!','Roots, hold!','Not yet!']));return true;}
   robotGat(h,dt,C){const G=h.gat,A=G.A;G.t+=dt;G.acc+=dt;h.pauseT=Math.max(h.pauseT||0,.05);
     const live=this.enemies.filter(e=>!e.dead&&e.x>h.x-6&&e.x-h.x<=A.range);
@@ -2892,12 +2894,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794459196';const BGI=new Image();BGI.src='crawl_bg.png?v=1794459196';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794459196';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794459375';const BGI=new Image();BGI.src='crawl_bg.png?v=1794459375';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794459375';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794459196';XIMG.wave.src='crawl_wave.png?v=1794459196';XIMG.chibi.src='crawl_chibi.png?v=1794459196';XIMG.flannel.src='crawl_flannel.png?v=1794459196';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794459196';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794459196';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794459196';XIMG.rain.src='crawl_rain.png?v=1794459196';XIMG.druid.src='crawl_druid.png?v=1794459196';XIMG.camp.src='crawl_campfire.png?v=1794459196';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794459196';XIMG.tornado.src='crawl_fx_tornado.png?v=1794459196';XIMG.vine.src='crawl_fx_vine.png?v=1794459196';XIMG.thorn.src='crawl_fx_thorn.png?v=1794459196';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794459375';XIMG.wave.src='crawl_wave.png?v=1794459375';XIMG.chibi.src='crawl_chibi.png?v=1794459375';XIMG.flannel.src='crawl_flannel.png?v=1794459375';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794459375';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794459375';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794459375';XIMG.rain.src='crawl_rain.png?v=1794459375';XIMG.druid.src='crawl_druid.png?v=1794459375';XIMG.camp.src='crawl_campfire.png?v=1794459375';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794459375';XIMG.tornado.src='crawl_fx_tornado.png?v=1794459375';XIMG.vine.src='crawl_fx_vine.png?v=1794459375';XIMG.thorn.src='crawl_fx_thorn.png?v=1794459375';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794459196';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794459196';XIMG.obst.src='crawl_obst.png?v=1794459196';XIMG.cars.src='crawl_cars.png?v=1794459196';XIMG.robot.src='crawl_robot.png?v=1794459196';XIMG.cultist.src='crawl_cultist.png?v=1794459196';XIMG.tentacle.src='crawl_tentacle.png?v=1794459196';XIMG.boom.src='crawl_boom.png?v=1794459196';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794459375';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794459375';XIMG.obst.src='crawl_obst.png?v=1794459375';XIMG.cars.src='crawl_cars.png?v=1794459375';XIMG.robot.src='crawl_robot.png?v=1794459375';XIMG.cultist.src='crawl_cultist.png?v=1794459375';XIMG.tentacle.src='crawl_tentacle.png?v=1794459375';XIMG.boom.src='crawl_boom.png?v=1794459375';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3638,7 +3640,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.98</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.99</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -3759,7 +3761,7 @@ function showTeam(){
   // Inspiration: player first, then that player's decks (each option shows its bonus). Saved per hero on this save slot.
   P.querySelectorAll('.cc-insp').forEach(box=>{const k=box.dataset.ik,H=s.heroes[k];const ip=box.querySelector('[data-ip]'),id=box.querySelector('[data-id]'),ib=box.querySelector('.cc-ibx');
     const fill=()=>{const p=ip.value;id.disabled=!p;id.innerHTML=p?`<option value="">Pick a deck…</option>`+Object.keys(INSP).filter(d=>INSP[d].o===p).map(d=>`<option value="${esc(d)}"${H.insp===d?' selected':''}>${esc(d)}: ${esc(inspText(d))}</option>`).join(''):'<option>Pick a player first</option>';show();};
-    const show=()=>{const d=H.insp;ib.innerHTML=d&&INSP[d]?`<b>${esc(d)}</b>: ${esc(inspText(d))}<br><span style="opacity:.7">${esc(INSP[d].why)}</span><ul style="margin:4px 0 0;padding-left:14px">${inspHelp(d).map(t=>`<li style="margin-top:2px">${esc(t)}</li>`).join('')}</ul>`:'<span style="opacity:.6">No inspiration yet</span>';
+    const show=()=>{const d=H.insp;ib.innerHTML=d&&INSP[d]?`<b>${esc(d)}</b>: ${esc(inspText(d))}<br><span style="opacity:.7">${esc(INSP[d].why)}</span><ul style="margin:4px 0 0;padding-left:14px">${inspHelp(d).map(t=>`<li style="margin-top:2px">${esc(t)}</li>`).join('')}</ul>${cdrTable(k,d)}`:'<span style="opacity:.6">No inspiration yet</span>';
       const b=box.parentNode.querySelector('.cc-hero');if(b){b.dataset.tiph=howTip(k,H.insp);const pt=b.querySelector('.dk b');if(pt)pt.textContent=personaTitle({key:k,insp:H.insp});const t=b.querySelector('.dk b');}};
     ip.onchange=()=>{if(!ip.value||(H.insp&&INSP[H.insp]&&INSP[H.insp].o!==ip.value)){H.insp=null;persist();}fill();};
     id.onchange=()=>{H.insp=id.value||null;persist();show();};fill();});
@@ -3920,6 +3922,14 @@ function endRun(s,victory){const r=s.run;if(!r)return;const tot=r.score;
 // ---------------------------------------------------------------- playing
 function ufTip(h){const C=CHAR[h.key]||{};const ab=abOrder(C.abilities||[]);   /* 0.12.81: phone unit-frame tip: abilities (actives first, passives last) */
   return `<div class="tt-h">${esc(h.def.name)} · LV ${h.lvl}</div>`+ab.map(A=>`<div class="tt-b"><b>${A.passive?'✦':'⚔'} ${esc((A.name||A.id).replace(/_/g,' '))}</b>${A.passive?' <span style="opacity:.6">(passive)</span>':''}<br>${esc(ABIL_DESC[A.id]||'')}</div>`).join('')+`<div class="tt-b" style="opacity:.7;margin-top:4px">Tap again to close.</div>`;}
+/* 0.12.99 (Kyle): when a deck gives cooldown reduction, show THIS hero's ability cooldowns before -> after so players can choose */
+function cdrTable(k,d){const I=INSP[d];const r=I&&I.mod&&I.mod.cdr;if(!r)return '';const C=CHAR[k]||{};const rows=[];
+  for(const A of abOrder(C.abilities||[])){if(A.passive&&!A.icd)continue;const nm=(A.name||A.id).replace(/_/g,' ');
+    if(A.book){for(const [bk,B] of Object.entries(A))if(B&&typeof B==='object'&&B.cd)rows.push([nm+' · '+bk,B.cd]);continue;}
+    if(A.cd)rows.push([nm,A.cd]);else if(A.icd)rows.push([nm+' (internal)',A.icd]);}
+  const sg=SIG[k];if(sg&&sg.fn&&String(sg.fn).indexOf('false')<0&&sg.cd)rows.push([sg.name,sg.cd]);
+  if(!rows.length)return '';const f=v=>(Math.round(v*10)/10)+'s';
+  return `<div style="margin-top:6px;font-size:11px"><b>⏱ ${esc(heroDef(k).name)} with −${r}% cooldowns</b><table style="border-collapse:collapse;margin-top:3px">${rows.map(([n,v])=>`<tr><td style="padding:1px 10px 1px 0">${esc(n)}</td><td style="opacity:.6">${f(v)}</td><td style="padding:0 6px">→</td><td style="color:#a6ff2e"><b>${f(v*(1-Math.min(.5,r/100)))}</b></td></tr>`).join('')}</table></div>`;}
 function beginStage(){
   const s=SLOT(),run=s.run;panel.hidden=true;CC.paused=false;
   /* 0.12.73 (Kyle) Retry: snapshot everything at the start of the stage (heroes, HP, items, herbs, kit, buffs, gold, parts, supplies, run state) */
