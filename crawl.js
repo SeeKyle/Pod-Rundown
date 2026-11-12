@@ -33,24 +33,24 @@ const CFG={
     // Kyle's zombie: 25 HP (0.12.3, was 15), 1d6 per hit, swings every 1.25s, 12px reach, very slow, 3 armor (=6% less damage), small-medium knockback resistance,
     // 25% on hit to Bleed (20 dmg over 5s), item 4% / small gold 17.5%. Three looks (skins), identical stats.
     zombie:  {undead:1,scale:.88,aimScale:.88,hp:25,dmgDie:6,spd:10.3,   /* 0.12.201 (Kyle): all base mobs a touch faster */   /* 0.12.136 (Kyle): 9.5 (was 8.8) */   /* 0.12.38 (Kyle): 12% smaller, about the size of our humanoids */atk:1.25,reach:12,armorPts:3,kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
-              itemChance:.04,goldChance:.25,goldAmt:[3,7],stack:true,xp:2,pts:10,cost:1.2,animAtk:.6,hitAt:.38,skins:['zombie','zombie_f','zombie_b']},
+              itemChance:.04,goldChance:.29,goldAmt:[3,7],stack:true,xp:2,pts:10,cost:1.2,animAtk:.6,hitAt:.38,skins:['zombie','zombie_f','zombie_b']},
     // 0.12.62 (Kyle) Fireman_Zombie: a zombie in turnout gear. A touch slower than a normal zombie, 1.25x the life, triple the armor,
     //   hits slightly harder, and can't be burned (fire and burn damage do nothing to him). Swings a heavy gloved arm.
     // 0.12.65 (Kyle): now 4x a zombie's health (100) and armor (12) at 2/5 its speed
     fireman: {undead:1,scale:.88,aimScale:.88,hp:100,dmgDie:7,spd:5.5,   /* 0.12.136 (Kyle): 5 (was 3.5) */atk:1.25,reach:15,armorPts:12,kbRes:1,ccHalf:1,cleave:1,   /* 0.12.201 (Kyle): longer reach, immune to knockback, slows/stuns/dazes last half as long, swings cleave everything in reach in front */bleed:{chance:.25,dmg:20,dur:5},fireImmune:1,name:'Fireman_Zombie',
-              itemChance:.05,goldChance:.30,goldAmt:[4,8],stack:true,xp:5,pts:30,cost:3.2,animAtk:.6,hitAt:.4,skins:['zombie_fire']},
+              itemChance:.05,goldChance:.35,goldAmt:[4,8],stack:true,xp:5,pts:30,cost:3.2,animAtk:.6,hitAt:.4,skins:['zombie_fire']},
     // 0.12.183 (Kyle) Skeleton_Archer (CraftPix free skeleton pack): hangs back near the right edge and shoots arrows (1d6) every 2.6s,
     //   with a 0.6s draw before each shot. Fragile, slow, can't bleed (no blood). From stage 3 on.
     skarcher:{undead:1,scale:.88,aimScale:.88,hp:18,dmgDie:6,spd:8.6,atk:2.6,ranged:1,stop:270,proj:'arrow',reach:12,armorPts:2,kbRes:.25,noBleed:1,name:'Skeleton_Archer',
-              itemChance:.05,goldChance:.28,goldAmt:[3,7],stack:true,xp:4,pts:25,cost:2.5,animAtk:1.0,shotAt:.6,hitAt:.5,skins:['skarcher']},
+              itemChance:.05,goldChance:.32,goldAmt:[3,7],stack:true,xp:4,pts:25,cost:2.5,animAtk:1.0,shotAt:.6,hitAt:.5,skins:['skarcher']},
     // 0.12.175 (Kyle) Screamer: a fast, lanky zombie woman (CraftPix freebie art). Fragile, hits light, runs. When she gets near the party she stops and
     //   SHRIEKS (1.4s): if she finishes it, 2-4 more zombies come running in (+1 every 5 stages, max 6). Kill or stun her mid-scream and nobody comes.
     //   Up to 2 shrieks, 14s apart. Stage 1: exactly one, in the last wave. Later stages: 1 (stage 2-4), 1-2 (5-9), 2 (10-14), 2-3 (15+), all in the back half of the waves.
     screamer:{undead:1,scale:.88,aimScale:.88,hp:23,dmgDie:4,spd:27,   /* 0.12.201 (Kyle): +3 HP, speed between zombie and werewolf */atk:1.0,reach:12,armorPts:1,kbRes:.15,name:'Screamer',fps:11,
-              itemChance:.04,goldChance:.27,goldAmt:[3,7],stack:true,xp:4,pts:25,cost:2,animAtk:.5,hitAt:.35,skins:['screamer'],scream:{r:115,T:1.4,cd:14,max:2,n:[2,4]}},
+              itemChance:.04,goldChance:.31,goldAmt:[3,7],stack:true,xp:4,pts:25,cost:2,animAtk:.5,hitAt:.35,skins:['screamer'],scream:{r:115,T:1.4,cd:14,max:2,n:[2,4]}},
     // Kyle's werewolf, the first fast enemy: zombie stats except 30 HP (0.12.3, was 40) and fast; hunts the back-line heroes first
     werewolf:{hp:38,dmgDie:7,spd:47,atk:1.2,reach:15,   /* 0.12.201 (Kyle): faster, a little more reach */armorPts:4,   /* 0.12.65: a bit sturdier and meaner (was 30 HP, 1d6, 3 armor) */kbRes:.35,bleed:{chance:.25,dmg:20,dur:5},
-              itemChance:.04,goldChance:.28,goldAmt:[3,7],xp:3,pts:16,cost:2.2,animAtk:.7,hitAt:.45,backline:true,fps:12,scale:.77,
+              itemChance:.04,goldChance:.32,goldAmt:[3,7],xp:3,pts:16,cost:2.2,animAtk:.7,hitAt:.45,backline:true,fps:12,scale:.77,
               leap:{dmg:10,gap:20,dur:.5,cd:8}},   // jumping attack: bounds over a 20px gap and lands for 10 damage
   },
   harvestLive:true,wraithLive:true,   /* 0.12.132 (Kyle): switched on */   /* 0.12.127 (Kyle): switched on to try him */
@@ -128,7 +128,7 @@ const SIG={
   knight:{name:'Shield_Wall · Crimson_Charge · Leap_Strike · Shield_Bash · Blood_Oath',cd:16,txt:'Holds the front in full crimson plate with a sword-and-shield combo. Throws up a Shield_Wall that pulls zombies onto him, Crimson_Charges through a lane of them, Leap_Strikes onto anything mauling a friend, and Shield_Bashes to stun (and interrupt shrieks and archers). Blood_Oath: every kill heals him and he hits harder when he\'s hurt.',fn:()=>false},
   carcher:{name:'Piercing_Shot · Tumble · Snare_Arrow · Hunters_Mark · Light_Feet',cd:10,txt:'Shoots a bow from long range, puts a Piercing_Shot through a whole line of zombies, Tumbles back out of reach when one gets on her, pins fast or dangerous zombies with a Snare_Arrow, and puts a Hunters_Mark on the one the team should focus. Light_Feet: quick and hard to pin down.',fn:()=>false},
   csorc:{name:'Chain_Lightning · Thunderclap · Static_Shield · Overcharge · Arcane_Flow',cd:11,txt:'Throws sparks of lightning, arcs Chain_Lightning through a pack, calls down a Thunderclap on a crowd, wraps a friend in a Static_Shield, and Overcharges his sparks so they jump. Arcane_Flow: every kill gives him energy back.',fn:()=>false},
-  soldier:{name:'Frag_Grenade · Smoke_Grenade · Suppressing_Fire · Ammo_Drop · Battle_Hardened',cd:14,txt:'Holds the middle with an Assault_Rifle (24-round mag) and a rifle-butt up close, lobs a Frag_Grenade into bunched-up zombies (4d6 blast and a 1.5s stun), pops Smoke_Grenades to cover hurt friends, lays down Suppressing_Fire to slow a lane, drops an Ammo_Drop crate for the shooters, and is Battle_Hardened: below half HP he takes 15% less damage and reloads 25% faster.',fn:()=>false},
+  soldier:{name:'Frag_Grenade · Smoke_Grenade · Covering_Fire · Ammo_Drop · Battle_Hardened',cd:14,txt:'Holds the middle with a hip-fired Machine_Gun (15-round mag: taps, or lets rip on big targets) and a rifle-butt up close, lobs a Frag_Grenade into bunched-up zombies (4d6 blast and a 1.5s stun), pops Smoke_Grenades to cover hurt friends, lays down aimed Covering_Fire to slow a lane, drops an Ammo_Drop crate for the shooters, and is Battle_Hardened: below half HP he takes 15% less damage and reloads 25% faster.',fn:()=>false},
   shoshi:{name:'Ctrl_Z · Turn_It_Off_And_On_Again · Tech_Support · Dad_Mode · Always_Online',cd:12,txt:'Taps zombies with an Automatic_Pistol (20-round mag; unloads on big targets), undoes the damage an ally just took, reboots allies in trouble, keeps everyone\'s cooldowns moving with Tech_Support, goes dad mode for anyone about to drop, and is Always_Online: pings when someone goes down, kills car alarms from his phone, and calls targets for everyone near him.',fn:()=>false},
   grim:{name:'Royal Cleave',cd:6,txt:'Sweeps every ground enemy in reach for 220% damage and shoves them back.',fn:(g,h,a)=>g.sigArea(h,46,a*2.2,{kb:1.4,ground:1,fx:'slash'})},
   vile:{name:'Hexburst',cd:5,txt:'A hex orb bursts on the nearest enemy for 160% and 80% around it.',fn:(g,h,a)=>g.sigShot(h,'orb',a*1.6,{splash:26})},
@@ -372,7 +372,7 @@ const CHAR={
       {id:'oath',name:'Blood_Oath',passive:1,heal:.03,under:.5,dmg:.15},
       {id:'wall',name:'Shield_Wall',en:46,cd:16,dur:4,dr:.6,r:50},
       {id:'charge',name:'Crimson_Charge',en:40,cd:12,min:25,max:90,dist:95,dice:[2,6],kb:40,spd:220},
-      {id:'kleap',name:'Leap_Strike',en:52,cd:18,min:30,max:110,dice:[3,6],splash:[1,6],stun:1,T:.6},
+      {id:'kleap',name:'Leap_Strike',en:52,cd:13,min:30,max:110,dice:[3,6],flat:4,   /* 0.12.202 (Kyle): +4 damage, 13s (was 18s), used more often */splash:[1,6],stun:1,T:.6},
       // 0.12.195 Shield_Bash: slams his shield into the zombie in front: 1d6 and a 1.5s stun (bosses 0.5s). It interrupts a Screamer's shriek and a Skeleton_Archer's draw. 23 energy, 8s.
       {id:'bash',name:'Shield_Bash',en:23,cd:8,reach:20,dice:[1,6],stun:1.5}]},
   // 0.12.178 (Kyle) Chibi_Archer (CraftPix chibi pack, the Archer): a little hooded archer. Long-range bow, light on her feet.
@@ -411,9 +411,9 @@ const CHAR={
   //   Frag_Grenade: he pulls a pin and lobs it 40-130 out onto a bunch of zombies; it lands, ticks for 0.5s and blows: 4d6 in a 30-wide blast
   //   (full in the middle, 60% at the edge) and everything caught is STUNNED for 1.5s. He won't throw it where an ally would be caught.
   //   Battle_Hardened (passive): below half HP he takes 15% less damage and reloads 25% faster.
-  soldier:{name:'Soldier',role:'Assault_Rifle + Frag_Grenade',flatHp:0,stamina:10,hpPerStamina:5,armorPts:8,dodge:.05,kbRes:.4,
+  soldier:{name:'Soldier',role:'Machine_Gun + Frag_Grenade',flatHp:0,stamina:10,hpPerStamina:5,armorPts:8,dodge:.05,kbRes:.4,
     melee:{dice:[1,6],every:1.2,reach:15,kb:24,hitAt:.15},   // rifle-butt
-    ranged:{dice:[1,6],flat:1,every:.5,range:240,clip:24,reload:2.8,pellets:1,anim:.3},   // assault rifle: ~2 rounds/s, 24-round mag, Recharge animation as the reload
+    ranged:{dice:[1,2],flat:1,every:.15,range:240,clip:15,reload:7,pellets:1,anim:.15,burst:1,burstGap:.5,tapAcc:-3,sprayAcc:-15},   // 0.12.202 (Kyle) machine gun, hip-fired: 15-round mag, a round every 0.15s when he lets rip (big target or one on a hurt friend), otherwise slower taps; 1d2+1; 7s reload. Wild from the hip: much less accurate than Covering_Fire
     acc:17,walkPenalty:8,crit:.1,critMul:1.8,luck:16,xp:0,run:2,turn:.2,enMax:100,enRegen:4.6,
     abilities:[
       {id:'hardened',name:'Battle_Hardened',passive:1,under:.5,dr:.15,reload:.25},
@@ -422,7 +422,7 @@ const CHAR={
       //   and move 25% slower; heroes inside are harder to hit. 40 energy, 16s.
       {id:'smokegren',name:'Smoke_Grenade',en:40,cd:16,min:0,max:100,r:30,dur:6.75,   /* 0.12.201 (Kyle): +0.75s */miss:.5,slow:.25,throw:.65,sprite:1,stealth:.3,rev:.25},   /* 0.12.199 (Kyle): up to 300 screen px; allies inside are unseen and revive 25% faster */
       // 0.12.199 Suppressing_Fire: plants and hoses one lane with his rifle (the pack's Shot_2 stance) for 1.6s: 10 rounds of 1d4, every zombie hit slowed 40% for 2s. 35 energy, 12s.
-      {id:'suppress',name:'Suppressing_Fire',en:40,cd:12,T:1.6,n:10,dice:[1,4],slow:.4,slowT:2,range:200},
+      {id:'suppress',name:'Covering_Fire',en:40,cd:12,T:1.8,n:9,dice:[1,4],flat:1,acc:18,slow:.4,slowT:2,range:220},   /* 0.12.202 (Kyle): now shouldered and aimed (+18 accuracy), 9 rounds of 1d4+1, and he picks off the zombies closest to his friends in that lane first */
       // 0.12.200 Ammo_Drop: drops an ammo crate (his Recharge animation) for 8s. Allies within 30 reload 50% faster and their shots hit 15% harder;
       //   each ally who steps right onto it gets one free full magazine, once per crate. 35 energy, 20s.
       {id:'ammodrop',name:'Ammo_Drop',en:40,cd:20,dur:8,r:30,reload:.5,dmg:.15}]},
@@ -549,7 +549,7 @@ const ABIL_DESC={
   oath:'Blood_Oath (passive) · every kill heals him 3% of his max HP, and below half HP he hits 15% harder.',
   wall:'Shield_Wall · 46 energy · 16s. When 3+ zombies are on him, or 2+ are mauling an ally under 45% near him, he plants his shield for 4s: 60% less damage, no knockback, and every zombie within 150px is taunted onto him.',
   charge:'Crimson_Charge · 40 energy · 12s. When 3+ zombies are lined up in one lane 75-270px ahead, he charges through the line (up to 285px): 2d6 to each and a big shove.',
-  kleap:'Leap_Strike · 52 energy · 18s. When a zombie is mauling an ally under 40% (or a Nemesis or boss is close), he leaps onto it from 90-330px away: 3d6 and a 1s stun to it, 1d6 to anything beside it.',
+  kleap:'Leap_Strike · 52 energy · 13s. Leaps 90-330px onto a zombie mauling a hurt ally, a Nemesis or boss, or into a pack of 3+: 3d6+4 and a 1s stun to it, 1d6 to anything beside it.',
   lightfeet:'Light_Feet (passive) · +12% dodge, and she moves quicker than most heroes.',
   pierce:'Piercing_Shot · 40 energy · 10s. When 3+ zombies are lined up ahead of her in one lane, she looses a heavy arrow that goes through all of them (up to 5): 2d6 each.',
   tumble:'Tumble · 29 energy · 12s. When a zombie gets right on her, she hops back about 135px and looses an arrow while she\'s in the air.',
@@ -558,9 +558,9 @@ const ABIL_DESC={
   thunder:'Thunderclap · 52 energy · 16s. When 3+ zombies are bunched 90-480px out, he charges for 0.9s and calls lightning down on them: 3d6 in a 180px-wide blast and a 1s stun (bosses 0.4s).',
   ammodrop:'Ammo_Drop · 40 energy · 20s. Drops an ammo crate for 8s: allies within 90px reload 50% faster and their shots hit 15% harder, and each ally who steps onto it gets one free full magazine (once per crate). Shooters nearby go grab it when they\'re low.',
   smokegren:'Smoke_Grenade · 40 energy · 16s. Lobs a smoke canister up to 300px out, first choice onto a downed ally: a 180px-wide cloud for 6.75s. Allies inside are unseen and revive 25% faster, and come back up with 15% more HP (the team is keener to go get someone down in the smoke); zombies inside miss half their swings and move 25% slower.',
-  suppress:'Suppressing_Fire · 40 energy · 12s. Plants and hoses one lane for 1.6s: 10 rounds of 1d4, and every zombie hit is slowed 40% for 2s.',
+  suppress:'Covering_Fire · 40 energy · 12s. Shoulders the gun and fires 9 aimed rounds (1d4+1, +18 accuracy) down one lane over 1.8s, picking off the zombies closest to his friends first. Every zombie hit is slowed 40% for 2s. Used when a lane fills up or something fast is coming.',
   frag:'Frag_Grenade · 40 energy · 14s. Pulls the pin and lobs it 40-130px out onto 3+ bunched zombies (or 2 with a big one). It lands, ticks for 0.5s and blows: 4d6 in a 90px-wide blast (full in the middle, 60% at the edge), and every zombie caught is STUNNED for 1.5s. He won\'t throw it where an ally would be caught.',
-  hardened:'Battle_Hardened (passive) · below half HP he takes 15% less damage and reloads 25% faster.',
+  hardened:'Battle_Hardened (passive) · below half HP: 15% less damage taken, 25% faster reloads. Every 15s he stashes a spare mag (max 2); a reload with one takes 3.5s instead of 7s.',
   online:'Always_Online (passive) · he always knows where his people are and everything is connected. When an ally goes down he gets a PING (+40% move speed for 4s, and he helps anyone up 30% faster). Car alarms within 450px are shut off from his phone in 1.5s. Allies within 300px get +5 accuracy from his target calls on the headset.',
   undo:'Ctrl_Z · 34 energy · 20s. When an ally within 270px (or he himself) has lost 25%+ of their max HP in the last 3s, he undoes it: they get all of it back.',
   reboot:'Turn_It_Off_And_On_Again · 29 energy · 12s. Reboots an ally within 210px: clears bleed, fear and slow, heals 8% and refreshes one of their cooldowns. Used on anyone bleeding, scared or slowed, or under half health with an ability waiting.',
@@ -1282,7 +1282,7 @@ const Comms={
     const talk=trait(u,'talk');g.callGap=g.callGap||0;g.callType=g.callType||{};
     if(!force){if((u.callT||0)>g.t)return false;if(g.t<g.callGap)return false;if((g.callType[type]||-99)>g.t-3.5)return false;
       // 0 = nearly never (2% for something urgent), 10 = practically every time it sees something
-      const urgent=type==='help'||type==='heal'||type==='danger'||type==='down';let p=Math.pow(talk,1.6)*.95+(urgent?.03:.004);if(/flank|lane|danger|boss/.test(type))p*=.4+1.2*trait(u,'perc');p*=.78;if(Math.random()>p)return false;}
+      const urgent=type==='help'||type==='heal'||type==='danger'||type==='down';let p=Math.pow(talk,1.6)*.95+(urgent?.03:.004);if(/flank|lane|danger|boss/.test(type))p*=.4+1.2*trait(u,'perc');p*=.78;if(Math.random()>p){if(urgent||/boss|flank/.test(type))this.roast(g,u,type);return false;}}
     u.callT=g.t+.8+9*(1-talk);g.callGap=g.t+.45;g.callType[type]=g.t;
     const pool=ctx.variant&&C[ctx.variant]?C[ctx.variant]:C.lines;this.bubble(g,u,this.fill(this.pick(pool),ctx),true);
     if(C.dur)this.broadcast(g,u,type,ctx,C);return true;},
@@ -1293,6 +1293,16 @@ const Comms={
         o.thinkT=Math.min(o.thinkT==null?0:o.thinkT,.08+.25*(1-trait(o,'pace')));   // drop what they're doing and rethink right away
         if(C.ack&&Math.random()<.15+.6*trait(o,'talk'))setTimeoutSafe(g,.35+Math.random()*.5,()=>{if(o.alive)this.bubble(g,o,this.fill(this.pick(C.ack),{tgt:ctx.tgt,ally:u,lane:ctx.lane}));});}
       else if(Math.random()<.05+.35*trait(o,'talk')*(1-L)){const pool=C.no||REFUSE;setTimeoutSafe(g,.4+Math.random()*.5,()=>{if(o.alive)this.bubble(g,o,this.pick(pool));});}}},
+  /* 0.12.202 (Kyle) JP's hidden passive (not on his sheet, no cooldown shown): IF a teammate sees something important and keeps quiet about it
+     AND JP is up THEN sometimes he roasts them for it. They answer back: agree (more likely the more they follow callouts) and for 30s
+     they're +1 Chatty and +1 Perception (they call things out more and notice more); or they brush him off and nothing changes. */
+  roast(g,u,type){if(!u||u.key==='jp'||!CHAR[u.key]||g.demo)return;const jp=g.alive().find(o=>o.key==='jp');if(!jp||(g.roastT||0)>g.t||Math.random()>.35)return;
+    if((u.moods||[]).some(m=>m.name==='roasted'))return;g.roastT=g.t+20;const nm=this.name(u);
+    const what={help:'they needed help',heal:'somebody needed healing',danger:'that was coming',down:'someone went DOWN',boss:'the BOSS',flank:'the flank'}[type.replace(/[^a-z]/g,'')]||'that';
+    setTimeoutSafe(g,.5,()=>{if(!jp.alive||!u.alive)return;this.bubble(g,jp,this.pick([nm+'! You saw '+what+' and said NOTHING?','Yo '+nm+', use your mouth words!','Bro. '+nm+'. Speak up next time.',nm+' out here playing the quiet game.','Did '+nm+' forget how to talk? Unreal.']),true);
+      setTimeoutSafe(g,1.1,()=>{if(!u.alive)return;const agree=Math.random()<.35+.45*trait(u,'listen');
+        if(agree){addMood(u,{talk:1,perc:1},30,'roasted');this.bubble(g,u,this.pick(['...Yeah, fair. My bad.','Okay okay, I\'ll call it out.','You\'re right. Eyes up.','Ugh. Fine. Noted.']),true);}
+        else this.bubble(g,u,this.pick(['Mind your business, JP.','You didn\'t see it either!','Says the guy who\'s always high.','Nah, I had it handled.']),true);});});},
   ord(u,g,types){const o=u.order;if(!o||g.t>o.until)return null;if(o.from&&!o.from.alive&&o.type!=='down')return null;return types.includes(o.type)?o:null;},
   // the scan: each hero looks at the field on its own clock (Chatty units look more often) and checks the IF side of every callout
   step(g,dt){if(!g.calls)g.calls=[];for(const c of g.calls)c.t+=dt;g.calls=g.calls.filter(c=>c.t<c.life&&c.u.alive!==false);
@@ -1508,7 +1518,7 @@ class Game{
     if(src&&src.items)this.procs(src,'onkill',e);
     if(!this.demo){const st=this.st;const r=this.rng();
       const PK=e.picked?{g:1.6,s:2,p:2.5,i:1.5}:{g:1,s:1,p:1,i:1};const gChance=e.boss?1:e.elite?1:Math.min(.95,(e.E.goldChance!=null?e.E.goldChance:.12)*((this.mods&&this.mods.gold)||1)*PK.g);if(r<gChance){const piles=e.boss?5:e.elite?2:1;   /* 0.12.38 (Kyle): every gold pile is small, 2-6 gold (bosses drop 5 piles, elites 2) */
-        for(let i=0;i<piles;i++)this.loot.push({kind:'gold',x:e.x+(this.rng()*14-7),gy:e.gy,amt:3+Math.floor(this.rng()*4.6),t:0,big:false});   /* 0.12.186 (Kyle): 3-7 gold a pile */   /* 0.12.93 (Kyle): smaller piles since there are more enemies now: 1-5 gold (avg 4.0 -> 2.8) */}
+        const al0=this.aliveHeroes(),lk=al0.length?al0.reduce((s2,o)=>s2+(o.luck||0),0)/al0.length:0;for(let i=0;i<piles;i++){let amt=5+Math.floor(this.rng()*4);if(this.rng()<lk/100)amt+=1+Math.floor(this.rng()*2);this.loot.push({kind:'gold',x:e.x+(this.rng()*14-7),gy:e.gy,amt,t:0,big:false,lucky:amt>8});}   /* 0.12.202 (Kyle): 5-8 gold a pile; the team's average Luck is the % chance a pile has +1-2 extra */   /* 0.12.186 (Kyle): 3-7 gold a pile */   /* 0.12.93 (Kyle): smaller piles since there are more enemies now: 1-5 gold (avg 4.0 -> 2.8) */}
       {const m=e.boss?6:e.nem?2:1;   /* 0.12.38 camp supplies off enemies (low odds): food or water 3%, spare parts 4% */
         /* 0.12.93 (Kyle): food and water each run their own "pity" roll PER HERO (summons, companions and pets don't roll). The first kill is a
            2% chance; every miss adds +0.3% (more with Supply boosts, Luck and a picked-up enemy) until it drops, then it resets to 2%.
@@ -1598,7 +1608,7 @@ class Game{
     if(h.hp<=0){if(from&&from.E&&!from.boss&&!from.dead&&!h.pet&&!h.dog)this.nemesis(from,h);this.heroDown(h);}
     return true;
   }
-  heroDown(h){if(this.tryResurge(h))return;if(!h.pet)for(const o of this.alive())if(o.key==='shoshi'&&o!==h){o.pingT=4;this.text(this.heroX(o),(o.gy||this.G)-50,'PING!','#b38cff');}   /* Circle_Ping */if(h.cap&&h.cap.last&&!h.lsUsed&&!h.pet){h.lsUsed=1;h.hp=1;h.alive=true;h.invulnT=3;this.text(this.heroX(h),(h.gy||this.G)-50,'LAST STAND!','#ffd23f');this.fx.push({k:'ring',x:this.heroX(h),y:(h.gy||this.G)-10,r:18,t:0,c:'#ffd23f'});return;}   /* 0.12.106 Last Stand talent */h.building=null;h.repairing=null;h.syph=null;h.jet=null;h.lz=null;h.nano=null;h.stealthT=0;h.leap=null;h.leapH=0;h.whirl=null;h.dash=null;h.rolling=null;   /* no frozen mid-move poses */for(const o of this.alive())if(o!==h&&Math.abs(this.heroX(o)-this.heroX(h))<90)Brain.panic(this,o,'down');if(h.key&&!this.demo)this.st8(h).downs++;if(!h.pet&&h.cap&&h.cap.wind&&!h.swUsed){h.swUsed=1;h.swT=this.t+3;}   /* Second Wind talent */if(!h.pet){h.downed=1;h.revT=0;h.downT=this.t;h.search=null;h.plan=null;h.alDecide=null;h.srDecide=null;h.building=null;h.repairing=null;h.smoking=null;h.rush=null;h.cast=null;}   /* 0.12.102 fix: going down drops whatever job I was in the middle of (alarm, search, build...) *//* 0.12.22: downed, not dead: an ally can help them up */if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
+  heroDown(h){if(this.tryResurge(h))return;if(!h.pet)for(const o of this.alive())if(o.key==='shoshi'&&o!==h){o.pingT=4;this.text(this.heroX(o),(o.gy||this.G)-50,'PING!','#b38cff');}   /* Circle_Ping */if(h.cap&&h.cap.last&&!h.lsUsed&&!h.pet){h.lsUsed=1;h.hp=1;h.alive=true;h.invulnT=3;this.text(this.heroX(h),(h.gy||this.G)-50,'LAST STAND!','#ffd23f');this.fx.push({k:'ring',x:this.heroX(h),y:(h.gy||this.G)-10,r:18,t:0,c:'#ffd23f'});return;}   /* 0.12.106 Last Stand talent */h.building=null;h.repairing=null;h.syph=null;h.jet=null;h.lz=null;h.nano=null;h.stealthT=0;h.leap=null;h.leapH=0;h.whirl=null;h.dash=null;h.rolling=null;   /* no frozen mid-move poses */for(const o of this.alive())if(o!==h&&Math.abs(this.heroX(o)-this.heroX(h))<90)Brain.panic(this,o,'down');if(h.key&&!this.demo)this.st8(h).downs++;if(!h.pet&&h.cap&&h.cap.wind&&!h.swUsed){h.swUsed=1;h.windT=this.t+3;}   /* Second Wind talent */if(!h.pet){h.downed=1;h.revT=0;h.downT=this.t;h.search=null;h.plan=null;h.alDecide=null;h.srDecide=null;h.building=null;h.repairing=null;h.smoking=null;h.rush=null;h.cast=null;}   /* 0.12.102 fix: going down drops whatever job I was in the middle of (alarm, search, build...) *//* 0.12.22: downed, not dead: an ally can help them up */if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
     if(!h.pet){for(const p of this.pets||[])if(p.owner===h&&p.alive&&!p.dog){p.alive=false;this.fx.push({k:'poof',x:p.x,y:this.G-20,t:0});}}   // she leaves when he goes down
     if(!this.aliveHeroes().length){this.over='defeat';this.ev('defeat');
       /* 0.12.150 (Kyle): a small "learned something" bonus for a loss so a stuck team can grind through: each hero gets
@@ -1991,9 +2001,10 @@ class Game{
             if(far&&this.rng()<.1){const alt=[e.laneI-1,e.laneI+1].filter(l=>l>=0&&l<LANES.length);e.laneI=alt[Math.floor(this.rng()*alt.length)];const t2=nearestIn(al.filter(h=>h.laneI===e.laneI));if(t2)e.target=t2;}   // random drift
             else if(this.rng()<.02){const c=nearestIn(al);if(c&&c!==e.target)e.target=c;}}   // rare: go after someone closer
           /* 0.12.58 (Kyle): every 1.5s a zombie has a 7% chance to wander into a neighbouring lane, wherever it is */
-          e.lsw=(e.lsw==null?this.rng()*1.5:e.lsw)-dt;if(e.lsw<=0){e.lsw=1.5;if(!e.leapA&&!e.stun&&this.rng()<.07){const alt=[e.laneI-1,e.laneI+1].filter(l=>l>=0&&l<LANES.length);e.laneI=alt[Math.floor(this.rng()*alt.length)];e.laneHold=this.t+2.5;const t2=nearestIn(al.filter(h=>h.laneI===e.laneI));if(t2&&Math.abs(this.heroX(t2)-e.x)<60)e.target=t2;}}
+          e.lsw=(e.lsw==null?this.rng()*1.5:e.lsw)-dt;if(e.lsw<=0){e.lsw=1.5;if(!e.leapA&&!e.stun&&this.rng()<.07){const hl=al.map(h=>h.laneI),dist=l=>Math.min(...hl.map(x=>Math.abs(x-l))),alt=[e.laneI-1,e.laneI+1].filter(l=>l>=0&&l<LANES.length&&(dist(l)<=dist(e.laneI)||this.rng()<.15));if(alt.length){e.laneI=alt[Math.floor(this.rng()*alt.length)];e.laneHold=this.t+(dist(e.laneI)?1:2.5);}   /* 0.12.202 (Kyle): wandering lanes mostly toward where the heroes are, not away */const t2=nearestIn(al.filter(h=>h.laneI===e.laneI));if(t2&&Math.abs(this.heroX(t2)-e.x)<60)e.target=t2;}}
           const T=e.target;
           this._ignoreMine=null;const wantL0=e.plan&&e.plan.lane!=null?e.plan.lane:T.laneI;const wantL=this.freeLane(wantL0,e.laneI,e.x-45,e.x+6);const dodgeOb=wantL!==wantL0||!!this.laneBlocked(e.laneI,e.x-45,e.x+6);
+          if(!al.some(h=>h.laneI===e.laneI)&&!e.plan){e.laneHold=0;}   /* 0.12.202 (Kyle): nobody in my lane? don't loiter there, head toward them */
           if(!(e.laneHold>this.t&&!dodgeOb)&&(dodgeOb||e.plan||e.E.backline||!far||!inLane.length||T.laneI!==e.laneI)){if(Math.abs(e.gy-LANES[e.laneI])<1&&wantL!==e.laneI)e.laneI+=Math.sign(wantL-e.laneI);}   // head for the chosen lane
           const ty=LANES[e.laneI];e.gy+=Math.sign(ty-e.gy)*Math.min(Math.abs(ty-e.gy),LANE_SPD*dt);e.y=e.gy;
           // queue politely behind a zombie already hitting this hero in this lane
@@ -2164,7 +2175,8 @@ class Game{
     if(h.cozyT>0){h.cozyT-=dt;h._cozyAcc=(h._cozyAcc||0)+dt;while(h._cozyAcc>=.5){h._cozyAcc-=.5;this.healHero(h,.25,true,h);h.en=Math.min(h.enMax||100,(h.en||0)+.25);}}
     h.mT=(h.mT||0)+dt*h.meleeSpd*spdB*(h.cozyT>0?1+COZY.melee:1)*(h.key==='jp'?(h.highT>0?1.2:(h.soberT||0)>10?.9:1):1)*(h.lethalT>0?1.75:1)*(h.hunger>0?1-HUNGER.spd[h.hunger]:1);h.rT=(h.rT||0)+dt*h.rangedSpd*spdB*(h.hunger>0?1-HUNGER.spd[h.hunger]:1)*(h.ammoBuffT>0?1.15:1);if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
     if(h.ammo==null)h.ammo=C.ranged?(C.ranged.clip||Infinity):0;   // clip 0 = never reloads
-    if(C.ranged&&h.ammo<=0&&C.ranged.clip>0){if(!h.reloadT&&C.ranged.reload>=1.5&&!C.ranged.quietReload)Comms.onReload(this,h);h.reloadT=(h.reloadT||0)+dt*h.rangedSpd*spdB*(h.key==='soldier'&&h.hp<h.max*.5?1.25:1)*(h.crateT>0?1.5:1);   /* 0.12.200 Ammo_Drop: 50% faster reloads near the crate */if(h.reloadT>=C.ranged.reload){h.reloadT=0;h.ammo=C.ranged.clip;}}
+    if(C.ranged&&h.ammo<=0&&C.ranged.clip>0){if(!h.reloadT&&C.ranged.reload>=1.5&&!C.ranged.quietReload)Comms.onReload(this,h);h.reloadT=(h.reloadT||0)+dt*h.rangedSpd*spdB*(h.key==='soldier'&&h.hp<h.max*.5?1.25:1)*(h.crateT>0?1.5:1);   /* 0.12.200 Ammo_Drop: 50% faster reloads near the crate */if(h.reloadT>=(h.key==='soldier'&&h.clipStk>0?3.5:C.ranged.reload)){if(h.key==='soldier'&&h.clipStk>0){h.clipStk--;this.text(this.heroX(h),(h.gy||this.G)-40,'SPARE MAG','#ffd27a');}h.reloadT=0;h.ammo=C.ranged.clip;}}
+    if(h.key==='soldier'){h.clipCT=(h.clipCT||0)+dt;if(h.clipCT>=15){h.clipCT=0;if((h.clipStk||0)<2)h.clipStk=(h.clipStk||0)+1;}}   /* 0.12.202 (Kyle) Battle_Hardened: a spare mag every 15s (max 2); a reload with one takes 3.5s instead of 7s */
     const reachPx=ENEMY_BODY+C.melee.reach*UNIT_SCALE;   // same body gap the zombies measure from, so a 20 reach out-reaches a 12 reach zombie
     /* 0.12.67 Stealth AI (works for any stealth source): IF I'm hidden AND (I'm hurt under 45% OR a friend is down) THEN hold my fire and stay hidden
        (let heals land, get revived, or slip over and revive them: reviving doesn't break it); IF I'm hidden and healthy THEN take the free opening shot (which reveals me) */
@@ -2209,7 +2221,7 @@ class Game{
         if(K.gone>=K.dist||nx<6||nx>this.W-6){h.charge=null;h.animM=0;}return;}
       if(h.kleap){const L=h.kleap;L.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;const u=Math.min(1,L.t/LS.T);h.x=L.x0+(L.x1-L.x0)*u;h.leapH=Math.sin(Math.PI*u)*34;
         if(u>=1){h.kleap=null;h.leapH=0;const tg=L.tg;this.fx.push({k:'ring',x:this.heroX(h)+L.dir*8,y:gy-2,t:0,r:16,c:'#ff5a5a'});this.ev('boom',{});this.shake=Math.max(this.shake||0,.3);
-          if(tg&&!tg.dead){this.hitEnemy(tg,this.rollDice(LS.dice)*(h.atk/h.base.atk)*(h.cryDmg||1),h,{sure:1});if(!tg.dead){tg.stun=Math.max(tg.stun||0,tg.boss?LS.stun*.4:LS.stun);this.text(tg.x,lane(tg)-26,'STUN','#ffe07a');}}
+          if(tg&&!tg.dead){this.hitEnemy(tg,(this.rollDice(LS.dice)+(LS.flat||0))*(h.atk/h.base.atk)*(h.cryDmg||1),h,{sure:1});if(!tg.dead){tg.stun=Math.max(tg.stun||0,tg.boss?LS.stun*.4:LS.stun);this.text(tg.x,lane(tg)-26,'STUN','#ffe07a');}}
           for(const e of this.enemies){if(e.dead||e===tg||e.fly)continue;if(Math.abs(e.x-(this.heroX(h)+L.dir*8))<16&&Math.abs(lane(e)-gy)<10)this.hitEnemy(e,this.rollDice(LS.splash)*(h.atk/h.base.atk),h,{sure:1});}}
         return;}
       const live=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>2&&e.x<this.W+2);const al=this.alive().filter(o=>o!==h&&!o.pet);
@@ -2218,7 +2230,7 @@ class Game{
       const T=k=>trait(h,k);
       /* 0.12.194 sliders: Selfless walls up to save allies sooner (under 55%), Selfish only when he's the one swarmed. Pack Hunters leap in for allies under 50%,
          Lone Wolves only under 30%. Blind Aggression charges a line of 2. Panicky won't charge or leap below half HP. */
-      const allyHp=T('self')<.4?.55:T('self')>.65?0:.45,leapHp=T('pack')<.4?.5:T('pack')>.65?.3:.4,shaky=T('nerve')>.6&&h.hp/h.max<.5;
+      const allyHp=T('self')<.4?.55:T('self')>.65?0:.45,leapHp=T('pack')<.4?.65:T('pack')>.65?.45:.55,shaky=T('nerve')>.6&&h.hp/h.max<.5;
       /* 0.12.195 Shield_Bash: ALWAYS IF a Screamer is shrieking or a Skeleton_Archer is drawing within reach THEN bash it (interrupt).
            ELSE IF Pack Hunter AND an ally under 40% has one on them within reach THEN bash that one.
            ELSE IF Blind Aggression THEN bash whatever's in front on cooldown. (Calculated keeps it for the first two.) */
@@ -2235,7 +2247,8 @@ class Game{
       // Leap_Strike
       if(LS&&h.lsT<=0&&(h.en||0)>=LS.en&&!shaky){let tg=null;for(const o of al){if(o.hp/o.max>=leapHp)continue;const ox=this.heroX(o);const m=live.filter(e=>Math.abs(e.x-ox)<16).sort((a,b)=>Math.abs(a.x-ox)-Math.abs(b.x-ox))[0];if(m&&Math.abs(m.x-hx)>=LS.min&&Math.abs(m.x-hx)<=LS.max){tg=m;break;}}
         if(!tg)tg=live.find(e=>(e.nem||e.boss)&&Math.abs(e.x-hx)>=LS.min&&Math.abs(e.x-hx)<=LS.max)||null;
-        if(tg&&spendEnergy(h,LS.en)){h.abWhy='LEAP: '+(tg.nem||tg.boss?'big threat':'ally in trouble');h.abWhyT=this.t+3;h.lsT=LS.cd*(1-(h.cdr||0));const dir=tg.x>=hx?1:-1;h.face=dir;h.kleap={t:0,x0:h.x,x1:h.x+(tg.x-dir*12-hx),tg,dir};Comms.bubble(this,h,Comms.pick(['Get off them!','For the oath!','Hyaa!']),true);return;}}
+        let pack=0;if(!tg){for(const e of live){if(e.fly)continue;const d=Math.abs(e.x-hx);if(d<LS.min||d>LS.max)continue;const n=live.filter(o=>!o.fly&&Math.abs(o.x-e.x)<16&&Math.abs(lane(o)-lane(e))<10).length;if(n>=3&&n>pack){pack=n;tg=e;}}}   /* 0.12.202 (Kyle): he also leaps into a pack of 3+ */
+        if(tg&&spendEnergy(h,LS.en)){h.abWhy='LEAP: '+(pack?'into a pack of '+pack:tg.nem||tg.boss?'big threat':'ally in trouble');h.abWhyT=this.t+3;h.lsT=LS.cd*(1-(h.cdr||0));const dir=tg.x>=hx?1:-1;h.face=dir;h.kleap={t:0,x0:h.x,x1:h.x+(tg.x-dir*12-hx),tg,dir};Comms.bubble(this,h,Comms.pick(['Get off them!','For the oath!','Hyaa!']),true);return;}}
       // Crimson_Charge
       if(CC&&h.ccT<=0&&(h.en||0)>=CC.en&&onMe<2&&!shaky){const cNeed=T('aggr')>.65?2:3;let best=null,bn=0;for(const e of live){const d=e.x-hx;if(Math.abs(d)<CC.min||Math.abs(d)>CC.max)continue;const n=live.filter(o=>Math.abs(lane(o)-lane(e))<6&&Math.sign(o.x-hx)===Math.sign(d)&&Math.abs(o.x-hx)<=CC.max+20).length;if(n>bn){bn=n;best=e;}}
         if(best&&bn>=cNeed&&spendEnergy(h,CC.en)){h.abWhy='CHARGE: '+bn+' in a lane';h.abWhyT=this.t+3;h.ccT=CC.cd*(1-(h.cdr||0));const dir=best.x>=hx?1:-1;h.face=dir;h.gy=lane(best);h.charge={dir,gone:0,dist:CC.dist,gy:lane(best),hit:new Set()};this.ev('whoosh',{});Comms.bubble(this,h,Comms.pick(['CHARGE!','Out of my way!','Crimson!']),true);return;}}}
@@ -2319,8 +2332,9 @@ class Game{
       {const C2=h.base.char;const SP=(C2.abilities||[]).find(a=>a.id==='suppress'),SG=(C2.abilities||[]).find(a=>a.id==='smokegren');const T=k=>trait(h,k);const hx=this.heroX(h),gy=h.gy||this.G;
         for(const k of ['spT','sgT'])if(h[k]>0)h[k]-=dt;if(h.spT==null){h.spT=SP?SP.cd*.3:0;h.sgT=SG?SG.cd*.3:0;}
         if(h.supp){const U=h.supp;U.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;h.face=U.dir;const every=U.T/U.n;while(U.fired<U.n&&U.t>=U.fired*every){U.fired++;
-            const tg=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs((e.gy!=null?e.gy:this.G)-U.gy)<7&&Math.sign(e.x-hx)===U.dir&&Math.abs(e.x-hx)<SP.range).sort((a,b)=>Math.abs(a.x-hx)-Math.abs(b.x-hx))[Math.floor(this.rng()*2)];
-            if(tg){const p=this.shoot(h,tg,'bullet',this.rollDice(SP.dice)*(h.atk/h.base.atk)*h.rangedDmg,{onHit:(e,d)=>{this.hitEnemy(e,d,h,{});if(!e.dead){e.slow=Math.max(e.slow||0,SP.slow);e.slowT=Math.max(e.slowT||0,SP.slowT);}}});this.aim(p,h,tg);}this.ev('gun',{});}
+            const fr=this.alive().filter(o=>o!==h&&!o.pet);const nearF=e=>fr.reduce((m,o)=>Math.min(m,Math.abs(this.heroX(o)-e.x)+Math.abs((o.gy||this.G)-(e.gy!=null?e.gy:this.G))*2),999);
+            const tg=this.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs((e.gy!=null?e.gy:this.G)-U.gy)<7&&Math.sign(e.x-hx)===U.dir&&Math.abs(e.x-hx)<SP.range).sort((a,b)=>nearF(a)-nearF(b))[0];
+            if(tg){h._accBonus=SP.acc||0;const p=this.shoot(h,tg,'bullet',(this.rollDice(SP.dice)+(SP.flat||0))*(h.atk/h.base.atk)*h.rangedDmg,{onHit:(e,d)=>{this.hitEnemy(e,d,h,{});if(!e.dead){e.slow=Math.max(e.slow||0,SP.slow);e.slowT=Math.max(e.slowT||0,SP.slowT);}}});this.aim(p,h,tg);h._accBonus=0;}this.ev('gun',{});}
           if(U.t>=U.T)h.supp=null;return;}
         const live=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>2&&e.x<this.W+2);const al=this.alive().filter(o=>!o.pet);const lane=e=>e.gy!=null?e.gy:this.G;
         /* 0.12.200 Ammo_Drop: IF 2+ shooters near me are low (under half a mag) or reloading, or I am and a fight is on THEN drop a crate.
@@ -2344,7 +2358,7 @@ class Game{
         if(SP&&h.spT<=0&&(h.en||0)>=SP.en&&!(h.throwT>0)){const FG2=(C2.abilities||[]).find(a=>a.id==='frag');const short=T('energy')>.6&&FG2&&(h.fgT||0)<3&&(h.en||0)-SP.en<FG2.en;
           let best=null,bn=0,fast=false;for(const L of [...new Set(live.map(lane))]){for(const dir of [1,-1]){const inL=live.filter(e=>Math.abs(lane(e)-L)<7&&Math.sign(e.x-hx)===dir&&Math.abs(e.x-hx)<SP.range);const f=inL.some(e=>(e.E.spd||0)>=15);if(inL.length+(f?2:0)>bn){bn=inL.length+(f?2:0);best={gy:L,dir};fast=f;}}}
           const need=T('aggr')>.65?2:T('exec')>.7?4:3;
-          if(best&&bn>=need&&!short&&spendEnergy(h,SP.en)){h.spT=SP.cd*(1-(h.cdr||0));h.supp={t:0,T:SP.T,n:SP.n,fired:0,gy:best.gy,dir:best.dir};h.face=best.dir;Comms.bubble(this,h,Comms.pick(['Suppressing!','Keep their heads down!','Laying it down!']),true);h.abWhy='SUPPRESS: '+(fast?'fast one coming':bn+' in a lane');h.abWhyT=this.t+3;return;}}}
+          if(best&&bn>=need&&!short&&spendEnergy(h,SP.en)){h.spT=SP.cd*(1-(h.cdr||0));h.supp={t:0,T:SP.T,n:SP.n,fired:0,gy:best.gy,dir:best.dir};h.face=best.dir;Comms.bubble(this,h,Comms.pick(['Covering you!','Keep their heads down!','I got your back!','Covering fire!']),true);h.abWhy='SUPPRESS: '+(fast?'fast one coming':bn+' in a lane');h.abWhyT=this.t+3;return;}}}
       const FG=(C.abilities||[]).find(a=>a.id==='frag');if(FG){if(h.fgT==null)h.fgT=FG.cd*.25;if(h.fgT>0)h.fgT-=dt;if(h.throwT>0){h.throwT-=dt;return;}
       if(h.fgT<=0&&(h.en||0)>=FG.en&&!(h.animM>0)){const hx=this.heroX(h),live=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x<this.W+4&&e.x>4);const al=this.alive().filter(o=>o!==h);
         const inR=(a,b,R)=>{const dx=a.x-b.x,dz=((a.gy!=null?a.gy:this.G)-(b.gy!=null?b.gy:this.G))/.45;return dx*dx+dz*dz<=R*R;};let best=null,bs=0;
@@ -3201,7 +3215,7 @@ class Game{
     this.clones=this.clones.filter(c=>!c.done);for(const h of this.heroes)if(h.cloneT>0&&!(this.clones||[]).some(c=>c.owner===h))h.cloneT=0;}
   stepRevive(dt){const downs=this.heroes.concat((this.pets||[]).filter(p=>p.dog)).filter(h=>!h.alive&&h.downed);if(!downs.length)return;
     const al=this.alive().filter(o=>!o.pet);const herald=o=>(o.base.char&&o.base.char.abilities||[]).some(a=>a.id==='herald');
-    for(const d of downs){if(d.swT&&this.t>=d.swT){d.swT=0;this.text(d.x,(d.gy||this.G)-40,'SECOND WIND!','#7dff9a');this.revive(d);continue;}
+    for(const d of downs){if(d.windT&&this.t>=d.windT){d.windT=0;   /* 0.12.202 fix: this shared a name with the Knight's Shield_Wall cooldown, so a downed Knight with Shield_Wall on cooldown got back up free */this.text(d.x,(d.gy||this.G)-40,'SECOND WIND!','#7dff9a');this.revive(d);continue;}
       if(!isFinite(d.gy))d.gy=LANES[d.laneI!=null&&LANES[d.laneI]?d.laneI:2];if(!isFinite(d.x))d.x=60;   /* 0.12.104 fix: the dog's body could end up with no lane height (NaN), so nobody could ever reach it */if(!d.dog){if(d.x<10)d.x=10;if(d.x>this.W-10)d.x=this.W-10;}   /* (a downed dog that scrolls off is still left behind, as before) */if(d.gy!=null){let bi=0;for(let i=1;i<LANES.length;i++)if(Math.abs(LANES[i]-d.gy)<Math.abs(LANES[bi]-d.gy))bi=i;d.laneI=bi;}   /* 0.12.104 fix: a body that was dragged (Protect_the_Familia) or knocked between lanes kept its old lane, so helpers knelt one lane off and never got anywhere */   /* 0.12.104 fix: a body that scrolled to the screen edge stays where helpers can reach it (the dog could slide off-screen and everyone kneeled at the edge forever) */
       const helpers=al.filter(o=>Math.abs(o.x-d.x)<9&&Math.abs((o.gy||this.G)-(d.gy||this.G))<4.5&&!(o.riseT>0));const need=(helpers.some(herald)?4:5)*(1-Math.min(.5,Math.max(0,...helpers.map(o=>o.revBonus||0))))*(1-[0,.2,.4][(!this.demo&&this.run&&upgT(this.run,'stretch'))||0]);d.revNeed=need;   /* 4s when the Herald is the one helping, 5s for everyone else */
       {const df=helpers.find(o=>o.defib);if(df){df.defib=0;this.fx.push({k:'ring',x:d.x,y:(d.gy||this.G)-10,t:0,r:16,c:'#9ad0ff'});this.fx.push({k:'arc',x:d.x,gy:d.gy||this.G,t:0,life:.4,dir:1,raw:1});this.ev('zap',{});Comms.bubble(this,df,Comms.pick(['Clear!','Shocking you awake!','Get up!']),true);this.st8(df).revives++;this.revive(d);continue;}}   /* 0.12.38 Defibrillator: one use, instant revive */
@@ -3763,12 +3777,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794506116';const BGI=new Image();BGI.src='crawl_bg.png?v=1794506116';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794506116';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794506369';const BGI=new Image();BGI.src='crawl_bg.png?v=1794506369';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794506369';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794506116';XIMG.wave.src='crawl_wave.png?v=1794506116';XIMG.chibi.src='crawl_chibi.png?v=1794506116';XIMG.flannel.src='crawl_flannel.png?v=1794506116';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794506116';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794506116';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794506116';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794506116';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794506116';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794506116';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794506116';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794506116';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794506116';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794506116';XIMG.rain.src='crawl_rain.png?v=1794506116';XIMG.druid.src='crawl_druid.png?v=1794506116';XIMG.camp.src='crawl_campfire.png?v=1794506116';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794506116';XIMG.tornado.src='crawl_fx_tornado.png?v=1794506116';XIMG.vine.src='crawl_fx_vine.png?v=1794506116';XIMG.thorn.src='crawl_fx_thorn.png?v=1794506116';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794506369';XIMG.wave.src='crawl_wave.png?v=1794506369';XIMG.chibi.src='crawl_chibi.png?v=1794506369';XIMG.flannel.src='crawl_flannel.png?v=1794506369';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794506369';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794506369';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794506369';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794506369';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794506369';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794506369';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794506369';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794506369';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794506369';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794506369';XIMG.rain.src='crawl_rain.png?v=1794506369';XIMG.druid.src='crawl_druid.png?v=1794506369';XIMG.camp.src='crawl_campfire.png?v=1794506369';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794506369';XIMG.tornado.src='crawl_fx_tornado.png?v=1794506369';XIMG.vine.src='crawl_fx_vine.png?v=1794506369';XIMG.thorn.src='crawl_fx_thorn.png?v=1794506369';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794506116';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794506116';XIMG.obst.src='crawl_obst.png?v=1794506116';XIMG.cityob.src='crawl_cityob.png?v=1794506116';XIMG.harvest.src='crawl_harvest.png?v=1794506116';XIMG.wraith.src='crawl_wraith.png?v=1794506116';XIMG.cars.src='crawl_cars.png?v=1794506116';XIMG.robot.src='crawl_robot.png?v=1794506116';XIMG.cultist.src='crawl_cultist.png?v=1794506116';XIMG.tentacle.src='crawl_tentacle.png?v=1794506116';XIMG.boom.src='crawl_boom.png?v=1794506116';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794506369';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794506369';XIMG.obst.src='crawl_obst.png?v=1794506369';XIMG.cityob.src='crawl_cityob.png?v=1794506369';XIMG.harvest.src='crawl_harvest.png?v=1794506369';XIMG.wraith.src='crawl_wraith.png?v=1794506369';XIMG.cars.src='crawl_cars.png?v=1794506369';XIMG.robot.src='crawl_robot.png?v=1794506369';XIMG.cultist.src='crawl_cultist.png?v=1794506369';XIMG.tentacle.src='crawl_tentacle.png?v=1794506369';XIMG.boom.src='crawl_boom.png?v=1794506369';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -4709,7 +4723,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.201</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.202</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
