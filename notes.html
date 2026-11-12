@@ -1,4 +1,8 @@
       <h2>What's new</h2>
+      <h3>📦 0.12.200 Soldier: Ammo_Drop</h3><ul>
+        <li><b>Ammo_Drop</b> (40 energy, 20s): he sets down an ammo crate (his Recharge animation) that lasts 8s. Allies within 90px reload 50% faster and their shots hit 15% harder. Each ally who steps onto it gets one free full magazine, once per crate.</li>
+        <li>When: 2+ shooters near him are under half a mag or reloading (or just him, if he's Squander or he's the one who's low). Preserve waits for 2+. Ally Awareness sets it down in the middle of the shooters; Selfish/Enemy Awareness at his own feet. Never while one of his crates is still out.</li>
+        <li>Shooters nearby (with a magazine, under 60% of it, or anyone if Squander) run over to grab their free mag when nothing's standing on the crate. Pack Hunters go a bit farther for it; Panicky won't go if zombies are within 90px of it. In tests each crate handed out about 2-3 free mags.</li></ul>
       <h3>💨 0.12.199 Soldier: Smoke_Grenade and Suppressing_Fire</h3><ul>
         <li><b>Smoke_Grenade</b> (40 energy, 16s): lobbed up to 300px, first choice onto a downed ally, then onto a hurt one with 2+ zombies on them (Selfish covers himself first; Takes Cover also smokes the front line when it gets crowded). Uses the pack's own smoke cloud, with its full-cloud frames reused as slow, drifting, mirrored layers so it hangs there for the whole 6s before it thins out.</li>
         <li>Inside the smoke: allies are unseen, revive 25% faster and come back up with 15% more HP (40% instead of 25%, 50% with Medicine), and everyone is far keener to go get a downed friend there. Zombies inside miss half their swings and move 25% slower.</li>
