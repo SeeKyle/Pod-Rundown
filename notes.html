@@ -1,5 +1,29 @@
       <h2>What's new</h2>
-      <h3>🧡 0.12.105 Grenade_Launcher, Radio Shack, Old Jukebox, Map Table, batteries for the Warhound only</h3><ul>
+      <h3>🧡 0.12.106 TALENTS: the level-up revamp</h3><ul>
+<li>Every level gives a <b>talent point</b>, spent at camp from cards on each hero. What you're offered depends on the level that earned the point (offers are rolled once and kept, so closing camp doesn't reroll them):
+  <ul><li><b>Most levels:</b> pick 1 of 3 STAT or PERSONALITY cards.</li>
+  <li><b>Every 3rd level</b> (3, 6, 9...): pick 1 of 3 🔮 <b>SKILL MODS</b> that change one of that hero's own abilities.</li>
+  <li><b>Level 5 and 10:</b> a ⭐ <b>CAPSTONE</b> fork. Pick 1 of 2.</li></ul></li>
+<li><b>Stat cards</b> (15, weighted to the hero: healers see Field Medic more, melee heroes see Brawn more, nobody without abilities sees energy cards): Toughness +5% HP · Power +4% damage · Aim +3 · Edge +2% crit · Fortune +4 Luck · Hide +1 armor · Quick Hands +5% attack speed · Fleet +4% move · Deep Well +10 max energy · Focus +0.35 energy/s · Haste −3% cooldowns · Brawn +10 knockback and +5% knockback resistance · Evasion +1.5% dodge · Field Medic +8% healing · Rescuer helps allies up 12% faster.</li>
+<li><b>Personality cards</b> (each one once): Nerves of Steel +2 Steady · Bloodlust +2 Blind Aggression · Cool Head +2 Calculated · Sharp Eyes +2 Perceptive · Brothers in Arms +2 Selfless and +1 Pack Hunter.</li>
+<li><b>Skill mods</b> (3 per hero, 27 in all):
+  <ul><li>JP: No_Scope pierces 5 at 4d6 · Familia shields 75% on a 15s cooldown · Toke_Break 3s with a 10% heal.</li>
+  <li>Chibi: Shadow_Clone 7s at 60% mirror · Wave Dash 140px and 50% harder · War Cry +35% for 9s.</li>
+  <li>Archer: 5 quick arrows · Arrow_Rain 26 arrows · Pin roots 4s with a 40% mark.</li>
+  <li>Flannel: Aimed Shot pierces 3 and crits 3× · True_Grit 65% for 11s · Proximity_Bomb 70 knockback on a 7s cooldown.</li>
+  <li>Druid: Bloom 12s · Thorn Wave 3d6 with 80% poison · Cyclone 8s with a stronger pull.</li>
+  <li>Lumber_Jack: Whirl 7s and wider · Ground_Chop 60px with a 1.4s stun · Timber_Rage +45% for 9s.</li>
+  <li>Cultist: tentacles 25 HP at 2d6+2 · Cthulhu 14s with a 3s fear · Syphon 5/s.</li>
+  <li>Engineer: HESCO 130 HP · tesla 40s, zapping every 1s · Satchel 8d4 with a bigger blast.</li>
+  <li>Warhound: 5 missiles · Smoke 9s with 65% misses · Nanites 8%/s.</li></ul>
+  Each mod only changes that hero's own copy of the ability.</li>
+<li><b>Capstones:</b>
+  <ul><li>Level 5: Glass Cannon (+15% damage, −10% HP) · Bulwark (+20% HP, +2 armor) · Adrenaline (under 40% HP: +25% attack speed, +15% move) · Second Wind (once a stage, gets back up by himself 3s after going down).</li>
+  <li>Level 10: Last Stand (once a stage, a downing hit leaves him at 1 HP and untouchable for 3s) · Executioner (+60% damage to anything under 25%) · Overclock (−20% cooldowns, abilities cost 20% less energy) · Juggernaut (+3 armor, +40% knockback resistance, every hit on him 10% softer).</li></ul></li>
+<li>Tested: every skill mod's numbers are read by its ability in a live stage (one exception, Familia's shield, only gets read when JP actually reaches an ally), every capstone does what its card says, and the camp cards render and save. Old stat points still count.</li>
+<li>Fix: Smoke_Screen's miss chance was hard-coded at 50%; it now uses the ability's own number. Wave Dash's damage multiplier wasn't being applied either; it is now.</li>
+</ul>
+<h3>🧡 0.12.105 Grenade_Launcher, Radio Shack, Old Jukebox, Map Table, batteries for the Warhound only</h3><ul>
 <li><b>Engineer: Grenade_Launcher</b> replaces the sawn-off shotgun. 3 rounds about 1.15s apart, then a 4.5s reload; 2d6 to whatever it hits and 55% to everything within about 42px.
   <ul><li>A grenade that reaches a zombie blows on impact.</li>
   <li>A miss lands a little short or long, rolls, and blows up when it touches a zombie or 0.45s after it stops.</li>

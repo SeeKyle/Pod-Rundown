@@ -299,7 +299,7 @@ function faceToward(u,tx,dt){if(u.face==null)u.face=u.key?1:-1;const want=tx>u.x
 //   Abilities will spend it with spendEnergy(unit, cost) once they come back.
 const ENERGY={max:u=>u.enMaxB||100,regen:u=>u.enRegenB||5};   // Kyle: base regen 2.5 every 0.5s (= 5/s)
 function regenEnergy(u,dt){const M=ENERGY.max(u);if(u.en==null)u.en=M;u.enMax=M;u.enTick=(u.enTick||0)+dt;while(u.enTick>=.5){u.enTick-=.5;u.en=Math.min(M,u.en+ENERGY.regen(u)*.5);}}   // ticks every 0.5s
-function spendEnergy(u,c){if((u.en||0)<c)return false;u.en-=c;unstealth(u);return true;}   // 0.12.67: using an ability breaks stealth
+function spendEnergy(u,c){c*=u.enCostM||1;if((u.en||0)<c)return false;u.en-=c;unstealth(u);return true;}   // 0.12.67: using an ability breaks stealth
 /* 0.12.67 Stealth (generic, for any future stealth source too): u.stealthT>0 = zombies can't pick you as a target and lose you if they had you.
    Attacking or using an ability breaks it (and a short lockout stops the same smoke cloud from re-hiding you instantly). */
 function onMeE(g,h){const x=g.heroX(h);return g.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-x)<16).length;}
@@ -1194,7 +1194,8 @@ class Game{
   makeHero(key){
     const sv=this.run.heroes[key];const lvl=(this.slot&&this.slot.heroes[key]||{lvl:1}).lvl;
     const insp=(this.slot&&this.slot.heroes[key]||{}).insp||null;
-    return {key,insp,def:heroDef(key),style:STYLE[key],lvl,base:heroBase(key,lvl,this.run.team.length),spells:ABILITIES_OFF?[]:sv.spells.map(s=>Object.assign({cdT:Math.random()*1.5},s)),
+    const TH=this.slot&&this.slot.heroes[key];const bse=heroBase(key,lvl,this.run.team.length);if(TH&&bse.char)bse.char=talChar(key,TH);   /* 0.12.106 skill-mod talents */
+    return {key,insp,def:heroDef(key),style:STYLE[key],lvl,base:bse,spells:ABILITIES_OFF?[]:sv.spells.map(s=>Object.assign({cdT:Math.random()*1.5},s)),
       items:sv.items.slice(),alive:true,x:0,atkT:Math.random()*.5,anim:0,animT:0,walkT:Math.random(),shield:0,shieldT:0,buffT:0,lowT:0,nearT:0,hitFlash:0,alt:0};
   }
   isMeleeHero(h){return h.style.atk==='melee'||h.style.atk==='duo'||h.style.atk==='blade';}
@@ -1225,6 +1226,15 @@ class Game{
         if(m.kbRes)h.kbRes+=m.kbRes/100;if(m.enMax)h.enMaxB+=m.enMax;if(m.enRegen)h.enRegenB+=m.enRegen;if(m.lifesteal)h.lifesteal+=m.lifesteal/100;if(m.move)h.mvMul+=m.move/100;
         if(m.meleeDmg)h.meleeDmg+=m.meleeDmg/100;if(m.rangedDmg)h.rangedDmg+=m.rangedDmg/100;if(m.meleeSpd)h.meleeSpd+=m.meleeSpd/100;if(m.rangedSpd)h.rangedSpd+=m.rangedSpd/100;if(m.kb)h.kbAdd+=m.kb;if(m.cdr)h.cdr=Math.min(.5,(h.cdr||0)+m.cdr/100);}
       {const H=this.slot&&this.slot.heroes&&this.slot.heroes[h.key];const P=(H&&H.pts)||{};   /* level-up stat points (chosen at camp) */
+        {const tl=talPicks(H);const m={};let hpP=0,dmP=0;h.healBonus=0;h.revBonus=0;h.cap={};
+          for(const id of tl){const [t,a,b]=id.split(':');if(t==='st'){const S=TAL_STAT[a];if(!S)continue;if(S.hpPct)hpP+=S.hpPct;if(S.dmgPct)dmP+=S.dmgPct;if(S.heal)h.healBonus+=S.heal/100;if(S.rev)h.revBonus+=S.rev/100;for(const [x,v] of Object.entries(S.mod||{}))m[x]=(m[x]||0)+v;}
+            else if(t==='cap')h.cap[b]=1;}
+          if(h.cap.glass){dmP+=15;hpP-=10;}if(h.cap.bulwark){hpP+=20;m.armor=(m.armor||0)+2;}if(h.cap.over)m.cdr=(m.cdr||0)+20;if(h.cap.jugg){m.armor=(m.armor||0)+3;m.kbRes=(m.kbRes||0)+40;}
+          h.enCostM=h.cap.over?.8:1;h.talDR=h.cap.jugg?.1:0;h.adrOn=0;
+          if(hpP)h.max*=1+hpP/100;if(dmP)h.atk*=1+dmP/100;
+          if(m.acc)h.acc+=m.acc;if(m.crit)h.crit+=m.crit/100;if(m.dodge)h.dodge+=m.dodge/100;if(m.armor)h.armorPts+=m.armor;if(m.luck)h.luck+=m.luck;
+          if(m.kbRes)h.kbRes+=m.kbRes/100;if(m.enMax)h.enMaxB+=m.enMax;if(m.enRegen)h.enRegenB+=m.enRegen;if(m.move)h.mvMul+=m.move/100;
+          if(m.meleeSpd)h.meleeSpd+=m.meleeSpd/100;if(m.rangedSpd)h.rangedSpd+=m.rangedSpd/100;if(m.kb)h.kbAdd+=m.kb;if(m.cdr)h.cdr=Math.min(.5,(h.cdr||0)+m.cdr/100);}   /* 0.12.106 talents */
         if(P.hp)h.max*=1+.04*P.hp;if(P.dmg)h.atk*=1+.03*P.dmg;if(P.acc)h.acc+=2*P.acc;if(P.crit)h.crit+=.01*P.crit;if(P.luck)h.luck+=3*P.luck;if(P.armor)h.armorPts+=P.armor;
         if(h.courage){h.atk*=1.2;h.acc-=10;}{const sv=this.run&&this.run.heroes&&this.run.heroes[h.key];const hu=(sv&&sv.hunger)||0,th=(sv&&sv.thirst)||0;h.hunger=hu;h.thirst=th;if(hu)h.acc-=HUNGER.acc[hu];}   /* 0.12.72 hunger: shaky aim */   /* Liquid Courage */const gt=upgT(this.run,'gen');if(gt)h.enRegenB+=[0,.25,.5,.75,1][gt];const bt=upgT(this.run,'bench');if(bt){h.flatRanged=(h.flatRanged||0)+bt;h.flatMelee=(h.flatMelee||0)+bt;}const sh=upgT(this.run,'shrine');if(sh)h.luck+=[5,10][sh-1];}
       if(insP(h)==='mountain')h.kbRes=Math.min(.95,(h.kbRes||0)+.5);h.luck+=2*(h.inevN||0);if(hasPerk(h,'superlucky'))h.luck*=2;   /* 0.12.56: The Mountain, Inevitable, Super Lucky */
@@ -1269,7 +1279,7 @@ class Game{
      if(ip==='pickpocket'&&!e.picked&&!e.boss){e.picked=1;if(this.rng()<.35)this.text(e.x,e.y-34,'$','#ffd23f');}   /* 0.12.45 (Kyle): picked pockets mean better drops when it dies */
      if(ip==='webs'&&!e.boss&&this.rng()<.15){e.slow=Math.max(e.slow||0,.6);e.slowT=Math.max(e.slowT||0,2);e.webT=2;}}
     amt=mitigate(e,amt,opt.type); if(e.shred>0)amt*=1.2;if(e.markT>0)amt*=1+(e.markAmp||.25);   // Pinning_Shot mark
-    if(opt.execute&&e.hp<e.max*.3)amt*=2;
+    if(opt.execute&&e.hp<e.max*.3)amt*=2;if(src&&src.cap&&src.cap.exec&&e.hp<e.max*.25)amt*=1.6;   /* Executioner talent */
     amt=Math.max(1,amt);e.hp-=amt;e.hitFlash=.12;this.lastHit=this.t;
     if(src&&src.key&&!this.demo){const S=this.st8(src);S.dmg+=amt;if(crit)S.crits++;if(opt.head)S.heads++;if(amt>S.biggest)S.biggest=amt;}   /* stage stats */
     this.splatter(e,amt,1,crit);
@@ -1325,7 +1335,7 @@ class Game{
     for(const h of al){const H=this.slot.heroes[h.key];const cu=Math.min(5,1+.4*Math.max(0,ref-H.lvl));H.xp+=xp*1.5*h.base.xpm*(1+(h.xpBonus||0)+[0,.1,.2,.3][upgT(this.run,'dummy')])*cu/al.length;
       while(H.xp>=needHeroXp(H.lvl)){H.xp-=needHeroXp(H.lvl);H.lvl++;this.ev('herolevel',{key:h.key,lvl:H.lvl});this.text(h.x,this.G-70,'LV '+H.lvl,'#7dff9a',true);}}
   }
-  healHero(h,amt,quiet,by){if(!h||!h.alive||amt<=0||h.dog)return;if(h.hunger>0)amt*=1-HUNGER.heal[h.hunger];   /* 0.12.72: a starving body heals badly */if(!fleshy(h)&&!this._mech)return;   /* 0.12.58: herbs, medkits and healing magic do nothing for the Warhound */{const M=by||this._healBy;if(M&&hasPerk(M,'medicine'))amt*=1.3;}/* 0.12.56 Medicine Man: heals he gives +30% */const before=h.hp;h.hp=Math.min(h.max,h.hp+amt);{const B=by||this._healBy||h;if(B&&B.key&&!this.demo)this.st8(B).heal+=h.hp-before;}if(!quiet&&h.hp-before>=1)this.text(h.x,this.G-56,'+'+Math.round(h.hp-before),'#7dff9a');}
+  healHero(h,amt,quiet,by){if(!h||!h.alive||amt<=0||h.dog)return;if(h.hunger>0)amt*=1-HUNGER.heal[h.hunger];   /* 0.12.72: a starving body heals badly */if(!fleshy(h)&&!this._mech)return;   /* 0.12.58: herbs, medkits and healing magic do nothing for the Warhound */{const M=by||this._healBy;if(M&&M.healBonus)amt*=1+M.healBonus;if(M&&hasPerk(M,'medicine'))amt*=1.3;}/* 0.12.56 Medicine Man: heals he gives +30% */const before=h.hp;h.hp=Math.min(h.max,h.hp+amt);{const B=by||this._healBy||h;if(B&&B.key&&!this.demo)this.st8(B).heal+=h.hp-before;}if(!quiet&&h.hp-before>=1)this.text(h.x,this.G-56,'+'+Math.round(h.hp-before),'#7dff9a');}
   weakest(){const a=this.alive().filter(fleshy);return a.length?a.reduce((m,h)=>h.hp/h.max<m.hp/m.max?h:m,a[0]):null;}
   // hit visual: a spray of blood thrown away from the blow, drops falling to the ground and leaving a fading spatter
   splatter(u,amt,dir,crit){if(this.demo&&this.rng()<.5)return;const boss=!!u.boss;const gy=u.gy!=null&&!u.fly?u.gy:this.G;
@@ -1341,7 +1351,7 @@ class Game{
       if(h.hits<=0){h.alive=false;h.downed=1;h.revT=0;h.downT=this.t;h.hp=0;h.plan=null;this.fx.push({k:'poof',x:h.x,y:this.G-14,t:0});Comms.bubble(this,h,'*yelp*',true);if(this.slot)this.st8(h).downs++;}return true;}if(from&&from.E){h.lastHitBy=from;h.grudgeT=1+19*trait(h,'grudge');}   // Forgiving forgets in a second; Vengeful holds it 20s
     if(this.rng()<h.dodge+this.eliteDodge(h)){this.text(h.x,this.G-52,'dodge','#9ae6ff');return false;}
     {const bc=h.base&&h.base.char&&h.base.char.blockCh;if(bc&&from&&!(h.smoking)&&this.rng()<bc){this.text(h.x,this.G-52,'BLOCK','#e8c890');this.ev('hit',{});h.blockT=.25;return false;}}   /* 0.12.79: shields block */
-    if(from&&from.smokeT>0&&this.rng()<.5){this.text(h.x,this.G-52,'miss','#c8d0d8');return false;}   // Smoke_Screen: blinded attackers miss half the time
+    if(from&&from.smokeT>0&&this.rng()<(from.smokeMiss||.5)){this.text(h.x,this.G-52,'miss','#c8d0d8');return false;}   // Smoke_Screen: blinded attackers miss half the time
     if(!this._bgRedirect&&from){const bg=this.alive().find(o=>o!==h&&insP(o)==='bodyguard'&&Math.abs(this.heroX(o)-this.heroX(h))<14&&Math.abs((o.gy||this.G)-(h.gy||this.G))<6);
       if(bg){this._bgRedirect=1;this.hurtHero(bg,amt*.3,from);this._bgRedirect=0;amt*=.7;}}   // Bodyguard takes 30% of the hit
     {const ip=insP(h);
@@ -1357,6 +1367,7 @@ class Game{
     if(h.kitHits>0){h.kitHits--;if(h.kitHits<=0){h.armorPts-=h.kitAdd||0;h.kbRes-=h.kitKb||0;h.kitAdd=0;h.kitKb=0;this.text(h.x,this.G-60,'plating gone','#b8c0cc');}}   /* Field_Plating */
     if(h.key==='robot'){if(h.jet)amt=Math.min(amt,(h.jet.A&&h.jet.A.cap)||5);if(from&&h.nbT>0&&this.rng()<.1){h.nbT/=2;this.text(h.x,this.G-60,'CD½','#7fe0ff');}}   /* 0.12.67 Tactical_Retreat shield; Nano-Tech's built-in CD halving */
     if(h.key==='jp'){if(h.highT>0)amt*=.8;if(h.trashT>0)amt*=.7;if(h.rushT>0)return false;}   /* JP: high 10% less, Trash_Talk 30% less, immune while rushing to family */   // True_Grit (0.12.63: this was hidden inside the comment above, so Grit never actually reduced damage)
+    if(h.talDR)amt*=1-h.talDR;   /* Juggernaut talent */
     if(h.shield>0){const s=Math.min(h.shield,amt);h.shield-=s;amt-=s;if(h.thorns&&from&&!from.dead)this.hitEnemy(from,s*.3,null,{nocrit:1,sure:1});}
     if(amt<=0)return false;
     {const was=h.hp/h.max;h.hp-=amt;if(h.key&&was>=.35&&h.hp/h.max<.35)Brain.panic(this,h,'hurt');
@@ -1378,7 +1389,7 @@ class Game{
     if(h.hp<=0)this.heroDown(h);
     return true;
   }
-  heroDown(h){if(this.tryResurge(h))return;h.building=null;h.repairing=null;h.syph=null;h.jet=null;h.lz=null;h.nano=null;h.stealthT=0;h.leap=null;h.leapH=0;h.whirl=null;h.dash=null;h.rolling=null;   /* no frozen mid-move poses */for(const o of this.alive())if(o!==h&&Math.abs(this.heroX(o)-this.heroX(h))<90)Brain.panic(this,o,'down');if(h.key&&!this.demo)this.st8(h).downs++;if(!h.pet){h.downed=1;h.revT=0;h.downT=this.t;h.search=null;h.plan=null;h.alDecide=null;h.srDecide=null;h.building=null;h.repairing=null;h.smoking=null;h.rush=null;h.cast=null;}   /* 0.12.102 fix: going down drops whatever job I was in the middle of (alarm, search, build...) *//* 0.12.22: downed, not dead: an ally can help them up */if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
+  heroDown(h){if(this.tryResurge(h))return;if(h.cap&&h.cap.last&&!h.lsUsed&&!h.pet){h.lsUsed=1;h.hp=1;h.alive=true;h.invulnT=3;this.text(this.heroX(h),(h.gy||this.G)-50,'LAST STAND!','#ffd23f');this.fx.push({k:'ring',x:this.heroX(h),y:(h.gy||this.G)-10,r:18,t:0,c:'#ffd23f'});return;}   /* 0.12.106 Last Stand talent */h.building=null;h.repairing=null;h.syph=null;h.jet=null;h.lz=null;h.nano=null;h.stealthT=0;h.leap=null;h.leapH=0;h.whirl=null;h.dash=null;h.rolling=null;   /* no frozen mid-move poses */for(const o of this.alive())if(o!==h&&Math.abs(this.heroX(o)-this.heroX(h))<90)Brain.panic(this,o,'down');if(h.key&&!this.demo)this.st8(h).downs++;if(!h.pet&&h.cap&&h.cap.wind&&!h.swUsed){h.swUsed=1;h.swT=this.t+3;}   /* Second Wind talent */if(!h.pet){h.downed=1;h.revT=0;h.downT=this.t;h.search=null;h.plan=null;h.alDecide=null;h.srDecide=null;h.building=null;h.repairing=null;h.smoking=null;h.rush=null;h.cast=null;}   /* 0.12.102 fix: going down drops whatever job I was in the middle of (alarm, search, build...) *//* 0.12.22: downed, not dead: an ally can help them up */if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
     if(!h.pet){for(const p of this.pets||[])if(p.owner===h&&p.alive&&!p.dog){p.alive=false;this.fx.push({k:'poof',x:p.x,y:this.G-20,t:0});}}   // she leaves when he goes down
     if(!this.aliveHeroes().length){this.over='defeat';this.ev('defeat');}}
   procs(h,trig,e,amt,ally){
@@ -1560,7 +1571,8 @@ class Game{
     if(this.over)return;this.t+=dt;
     const T=this;const al=this.alive();this.dropLost();for(const h of this.heroes)if(h.alive&&h.thirst>0&&!this.over){h.hp-=h.max*THIRST.drain[h.thirst]*dt;if(h.hp<1)h.hp=1;}   /* 0.12.72: dehydration drains a little life (never kills on its own) */for(const p of this.pets||[])if(p.dog&&!p.alive&&p.downed){p.x-=(this.scroll||0)*dt;if(p.x<-10)p.downed=0;}   /* a downed dog is left behind if nobody helps him up before he slides off screen */
     for(const p of this.pets||[])if(p.dog&&p.alive&&p.hits<p.hitsMax){p.hitRegT=(p.hitRegT||0)+dt;if(p.hitRegT>=p.hitRegEvery){p.hitRegT=0;p.hits++;p.hp=p.max*p.hits/p.hitsMax;}}   /* dog: one hit back every 15s (10s at Kennel III) */
-    if(!this._hearth){this._hearth=1;if(!this.demo&&this.run&&upgT(this.run,'hearth'))for(const h of al)giveCozy(h);if(!this.demo&&this.run&&upgT(this.run,'jukebox'))for(const h of al)if(!h.pet)addMood(h,{nerve:-2},1e9,'jukebox');   /* 0.12.105 Old Jukebox */
+    if(!this._hearth){this._hearth=1;if(!this.demo&&this.run&&upgT(this.run,'hearth'))for(const h of al)giveCozy(h);if(!this.demo&&this.run&&upgT(this.run,'jukebox'))for(const h of al)if(!h.pet)addMood(h,{nerve:-2},1e9,'jukebox');
+      if(!this.demo&&this.slot)for(const h of al){const H=this.slot.heroes[h.key];for(const id of talPicks(H))if(id.startsWith('ps:')){const P=TAL_PERSONA[id.slice(3)];if(P)addMood(h,P.shift,1e9,'talent');}}   /* 0.12.106 personality talents */   /* 0.12.105 Old Jukebox */
       const sb=!this.demo&&this.run&&upgT(this.run,'sandbag');if(sb){const pool=al.filter(h=>!h.pet).sort(()=>this.rng()-.5);for(const h of pool.slice(0,sb>=3?2:1)){h.sandbag=sb;Comms.bubble(this,h,Comms.pick(['Got the sandbags.','I\'ll carry the bags.','Sandbags on my back!']));}}}   /* 0.12.104 Sandbag Wall: random carriers */   /* Hearth camp upgrade: everyone starts the stage Cozy */
     for(const t of this.timers||[])t.t-=dt;
     if(this.timers){for(const t of this.timers.filter(t=>t.t<=0))t.fn();this.timers=this.timers.filter(t=>t.t>0);}
@@ -2031,7 +2043,7 @@ class Game{
       // IF at least 2 enemies are in the wave's path (or 1 if it's the last one around) THEN ride the wave through them
       if((inPath.length>=DA.minHits||(inPath.length&&this.enemies.filter(e=>!e.dead).length===1))&&spendEnergy(h,DA.en)){h.daT=DA.cd*(1-(h.cdr||0));h.face=1;
         const dmg=(this.rollDice(C.melee.dice)+(C.melee.flat||0)+(h.flatMelee||0))*(C.melee.dmgMul||1)*(h.atk/h.base.atk)*h.meleeDmg*(h.cryDmg||1);   /* 0.12.61 (Kyle): base = a plain sword hit (no 1.4x); buffs like War Cry and crits still apply */
-        h.dash={t:0,T:DA.dur,x0:h.x,x1:Math.min(this.W-12,h.x+DA.dist),hit:new Set(),dmg,A:DA,trail:[]};this.ev('dash',{});return;}}
+        h.dash={t:0,T:DA.dur,x0:h.x,x1:Math.min(this.W-12,h.x+DA.dist),hit:new Set(),dmg:dmg*(DA.dmgMul||1),A:DA,trail:[]};this.ev('dash',{});return;}}
     const tgt=mt||(C.ranged?(this.isMeleeHero(h)?(findT('melee'),findT('ranged')):findT('ranged')):(findT('melee'),null));const rd=faceToward(h,tgt?tgt.x:h.x+10,dt);if(!rd||!tgt)return;
     if(mt&&C.melee.flame){if(h.mT>=C.melee.every){h.mT=0;h.animM=.45;h.swingAnim=null;h.animT=0;unstealth(h);this.flameSpray(h,mt,C.melee.flame);}return;}   /* 0.12.67 Warhound: the flamethrower is his close-range attack */
     if(mt){if(h.mT>=C.melee.every){h.mT=0;unstealth(h);h.combo=(h.combo||0)+1;h.swingAnim=!C.combo?null:(h.moving?'runatk':(h.combo%2?'attack1':'attack2'));h.animM=h.swingAnim==='attack2'?.36:.45;h.animT=0;const roll=(this.rollDice(C.melee.dice)+(C.melee.flat||0)+(h.flatMelee||0))*(C.melee.dmgMul||1)*(h.atk/h.base.atk)*h.meleeDmg*(h.cryDmg||1);
@@ -2556,7 +2568,8 @@ class Game{
      Every job a unit walks to (helping someone up, an alarm, a search, a mine, an herb, a pickpocket try) must show progress:
      the unit is getting closer, or the job's own timer is going up. After 6s with neither, the job is dropped, the unit stands up
      and thinks again, and that same target is skipped for 5s. Units that went down or are mid-ability are left alone. */
-  stepWatchdog(dt){for(const h of this.heroes)if(h.alertT>0){h.alertT-=dt;if(h.alertT<=0)h.acc-=10;}   /* Radio Shack ALERT wears off */
+  stepWatchdog(dt){for(const h of this.heroes)if(h.alertT>0){h.alertT-=dt;if(h.alertT<=0)h.acc-=10;}
+    for(const h of this.heroes)if(h.cap&&h.cap.adren){const on=h.alive&&h.hp/h.max<.4;if(on&&!h.adrOn){h.adrOn=1;h.meleeSpd+=.25;h.rangedSpd+=.25;h.mvMul+=.15;}else if(!on&&h.adrOn){h.adrOn=0;h.meleeSpd-=.25;h.rangedSpd-=.25;h.mvMul-=.15;}}   /* Adrenaline talent */   /* Radio Shack ALERT wears off */
     const JOB=/^(revive|disarm|search|defuse|herb|sneak)$/;
     for(const u of this.heroes.concat(this.pets||[])){if(!isFinite(u.gy))u.gy=LANES[u.laneI!=null&&LANES[u.laneI]?u.laneI:2];if(!isFinite(u.x))u.x=60;}   /* bad numbers never stick: a unit with no lane height or position gets put back on a lane */
     for(const h of this.alive()){if(h.pet)continue;const P=h.plan;const tgt=P&&(P.reviveD||(P.goTo&&(P.goTo.ob||P.goTo.mine))||P.goTo);
@@ -2602,8 +2615,9 @@ class Game{
         const low=b.k==='sandbag';h.climb={t:0,T:low?.45:.9,x0:right?L:R,x1:right?R+1:L-1,H:low?9:19};h.x=h.climb.x0;h._cpx=h.x;break;}}}
   stepRevive(dt){const downs=this.heroes.concat((this.pets||[]).filter(p=>p.dog)).filter(h=>!h.alive&&h.downed);if(!downs.length)return;
     const al=this.alive().filter(o=>!o.pet);const herald=o=>(o.base.char&&o.base.char.abilities||[]).some(a=>a.id==='herald');
-    for(const d of downs){if(!isFinite(d.gy))d.gy=LANES[d.laneI!=null&&LANES[d.laneI]?d.laneI:2];if(!isFinite(d.x))d.x=60;   /* 0.12.104 fix: the dog's body could end up with no lane height (NaN), so nobody could ever reach it */if(!d.dog){if(d.x<10)d.x=10;if(d.x>this.W-10)d.x=this.W-10;}   /* (a downed dog that scrolls off is still left behind, as before) */if(d.gy!=null){let bi=0;for(let i=1;i<LANES.length;i++)if(Math.abs(LANES[i]-d.gy)<Math.abs(LANES[bi]-d.gy))bi=i;d.laneI=bi;}   /* 0.12.104 fix: a body that was dragged (Protect_the_Familia) or knocked between lanes kept its old lane, so helpers knelt one lane off and never got anywhere */   /* 0.12.104 fix: a body that scrolled to the screen edge stays where helpers can reach it (the dog could slide off-screen and everyone kneeled at the edge forever) */
-      const helpers=al.filter(o=>Math.abs(o.x-d.x)<9&&Math.abs((o.gy||this.G)-(d.gy||this.G))<4.5&&!(o.riseT>0));const need=(helpers.some(herald)?4:5)*(1-[0,.2,.4][(!this.demo&&this.run&&upgT(this.run,'stretch'))||0]);d.revNeed=need;   /* 4s when the Herald is the one helping, 5s for everyone else */
+    for(const d of downs){if(d.swT&&this.t>=d.swT){d.swT=0;this.text(d.x,(d.gy||this.G)-40,'SECOND WIND!','#7dff9a');this.revive(d);continue;}
+      if(!isFinite(d.gy))d.gy=LANES[d.laneI!=null&&LANES[d.laneI]?d.laneI:2];if(!isFinite(d.x))d.x=60;   /* 0.12.104 fix: the dog's body could end up with no lane height (NaN), so nobody could ever reach it */if(!d.dog){if(d.x<10)d.x=10;if(d.x>this.W-10)d.x=this.W-10;}   /* (a downed dog that scrolls off is still left behind, as before) */if(d.gy!=null){let bi=0;for(let i=1;i<LANES.length;i++)if(Math.abs(LANES[i]-d.gy)<Math.abs(LANES[bi]-d.gy))bi=i;d.laneI=bi;}   /* 0.12.104 fix: a body that was dragged (Protect_the_Familia) or knocked between lanes kept its old lane, so helpers knelt one lane off and never got anywhere */   /* 0.12.104 fix: a body that scrolled to the screen edge stays where helpers can reach it (the dog could slide off-screen and everyone kneeled at the edge forever) */
+      const helpers=al.filter(o=>Math.abs(o.x-d.x)<9&&Math.abs((o.gy||this.G)-(d.gy||this.G))<4.5&&!(o.riseT>0));const need=(helpers.some(herald)?4:5)*(1-Math.min(.5,Math.max(0,...helpers.map(o=>o.revBonus||0))))*(1-[0,.2,.4][(!this.demo&&this.run&&upgT(this.run,'stretch'))||0]);d.revNeed=need;   /* 4s when the Herald is the one helping, 5s for everyone else */
       {const df=helpers.find(o=>o.defib);if(df){df.defib=0;this.fx.push({k:'ring',x:d.x,y:(d.gy||this.G)-10,t:0,r:16,c:'#9ad0ff'});this.fx.push({k:'arc',x:d.x,gy:d.gy||this.G,t:0,life:.4,dir:1,raw:1});this.ev('zap',{});Comms.bubble(this,df,Comms.pick(['Clear!','Shocking you awake!','Get up!']),true);this.st8(df).revives++;this.revive(d);continue;}}   /* 0.12.38 Defibrillator: one use, instant revive */
       if(helpers.length){d.revT=(d.revT||0)+dt;if(!d.revCall){d.revCall=1;Comms.say(this,helpers[0],'reviving',{ally:d});}}
       else{d.revT=Math.max(0,(d.revT||0)-dt*.5);if(d.revT<=0)d.revCall=0;}
@@ -2668,7 +2682,7 @@ class Game{
         if(u>=1&&!N.done){N.done=1;(this.clouds=this.clouds||[]).push({x:N.x1,gy:N.gy,r:N.A.r,t:0,life:N.A.dur,A:N.A,seed:Math.floor(this.rng()*999)});this.ev('wind',{});}}
       this.nades=this.nades.filter(N=>!N.done);}
     if(this.clouds&&this.clouds.length){for(const S of this.clouds){S.t+=dt;S.x-=scroll*dt;const A=S.A;
-        for(const e of this.enemies){if(e.dead||e.fly||e.boss)continue;if(Math.abs(e.x-S.x)<S.r&&Math.abs((e.gy!=null?e.gy:this.G)-S.gy)<14){e.smokeT=.25;e.slow=Math.max(e.slow||0,A.slow);e.slowT=Math.max(e.slowT||0,.25);}}
+        for(const e of this.enemies){if(e.dead||e.fly||e.boss)continue;if(Math.abs(e.x-S.x)<S.r&&Math.abs((e.gy!=null?e.gy:this.G)-S.gy)<14){e.smokeT=.25;e.smokeMiss=A.miss||.5;e.slow=Math.max(e.slow||0,A.slow);e.slowT=Math.max(e.slowT||0,.25);}}
         for(const o of this.alive()){if(Math.abs(this.heroX(o)-S.x)<S.r&&Math.abs((o.gy||this.G)-S.gy)<14){o.smokeT=.25;if(A.stealth&&o.key!=='robot'&&!(o.stealthCd>0)){if(!(o.stealthT>0))this.text(o.x,this.G-56,'hidden','#c8d0d8');o.stealthT=A.stealth;}}}}
       this.clouds=this.clouds.filter(S=>S.t<S.life);}
     for(const e of this.enemies){if(e.smokeT>0)e.smokeT-=dt;if(e.markT>0)e.markT-=dt;if(e.rootT>0)e.rootT-=dt;}for(const o of this.alive()){if(o.smokeT>0)o.smokeT-=dt;if(o.stealthT>0)o.stealthT-=dt;if(o.stealthCd>0)o.stealthCd-=dt;}}
@@ -2927,6 +2941,94 @@ function scoutRoll(run){const t=upgT(run,'tower');if(!t)return null;const k=Obje
 function brewCourage(run,k){const t=upgT(run,'still');if(!t)return 'no';if((run.brewN||0)>=(t===1?1:2))return 'max';const cost=t===1?2:1;if((run.food||0)<cost-1e-9)return 'food';
   const cr=run.heroes[k].carry=run.heroes[k].carry||{kit:[]};if(cr.courage)return 'has';cr.courage=1;run.food=Math.round((run.food-cost)*2)/2;run.brewN=(run.brewN||0)+1;return 'ok';}
 const TRIAGE={med:[15,13,11],bat:[12,10,8],defib:[25,22,19],max:[1,1,2]};
+/* ======================================================================= 0.12.106 (Kyle) TALENTS: the level-up revamp
+   Every level gives a talent point. What you get offered depends on the level that earned it:
+     - most levels: pick 1 of 3 STAT cards (a bigger pool than before, weighted to what the hero actually uses) or, now and then, a PERSONALITY card
+     - every 3rd level (3, 6, 9, 12...): pick 1 of 3 SKILL MODS that change one of the hero's own abilities
+     - level 5 and level 10: a CAPSTONE fork, pick 1 of 2 big talents
+   Offers are rolled once per point and kept, so closing camp doesn't reroll them. */
+const TAL_STAT={
+  tough:{name:'Toughness',icon:'❤️',txt:'+5% max HP',hpPct:5},
+  power:{name:'Power',icon:'⚔️',txt:'+4% damage',dmgPct:4},
+  aim:{name:'Aim',icon:'🎯',txt:'+3 accuracy',mod:{acc:3}},
+  edge:{name:'Edge',icon:'✴️',txt:'+2% crit chance',mod:{crit:2}},
+  fortune:{name:'Fortune',icon:'🍀',txt:'+4 Luck',mod:{luck:4}},
+  hide:{name:'Hide',icon:'🛡️',txt:'+1 armor point',mod:{armor:1}},
+  quick:{name:'Quick Hands',icon:'⚡',txt:'+5% attack speed (melee and ranged)',mod:{meleeSpd:5,rangedSpd:5}},
+  fleet:{name:'Fleet',icon:'👟',txt:'+4% move speed',mod:{move:4}},
+  well:{name:'Deep Well',icon:'🔷',txt:'+10 max energy',mod:{enMax:10},abil:1},
+  focus:{name:'Focus',icon:'🌀',txt:'+0.35 energy per second',mod:{enRegen:.35},abil:1},
+  haste:{name:'Haste',icon:'⏱️',txt:'-3% cooldowns',mod:{cdr:3},abil:1},
+  brawn:{name:'Brawn',icon:'💪',txt:'+10 knockback, +5% knockback resistance',mod:{kb:10,kbRes:5},melee:1},
+  evade:{name:'Evasion',icon:'💨',txt:'+1.5% dodge',mod:{dodge:1.5}},
+  medic:{name:'Field Medic',icon:'🩹',txt:'+8% healing done',heal:8,healer:1},
+  rescue:{name:'Rescuer',icon:'🤝',txt:'helps allies up 12% faster',rev:12}};
+const TAL_PERSONA={
+  steady:{name:'Nerves of Steel',icon:'🧊',txt:'+2 Steady (panics less)',shift:{nerve:-2}},
+  fury:{name:'Bloodlust',icon:'🔥',txt:'+2 Blind Aggression (fights harder, backs off later)',shift:{aggr:2}},
+  calm:{name:'Cool Head',icon:'🧠',txt:'+2 Calculated Play (backs off earlier, picks safer fights)',shift:{aggr:-2}},
+  eyes:{name:'Sharp Eyes',icon:'👁️',txt:'+2 Perceptive (spots loot, mines and danger sooner)',shift:{perc:2}},
+  team:{name:'Brothers in Arms',icon:'🫂',txt:'+2 Selfless and +1 Pack Hunter',shift:{self:-2,pack:-1}}};
+/* skill mods: each one patches the hero's own ability numbers (only this hero, only while he has it) */
+const TAL_MOD={
+  jp:{scope:{name:'Hollow Tip Scope',icon:'🎯',txt:'No_Scope pierces 5 zombies (was 3) and hits for 4d6 (was 3d6).',ab:'noscope',set:{pierce:5,dice:[4,6]}},
+      familia:{name:'Familia Forever',icon:'🛡️',txt:'Protect_the_Familia shields for 75% (was 50%) and comes back in 15s (was 20s).',ab:'familia',set:{shield:.75,cd:15}},
+      hotbox:{name:'Hotbox',icon:'🌿',txt:'Toke_Break lasts 3s (was 2s) and heals 10% (was 6%).',ab:'toke',set:{dur:3,heal:.1}}},
+  chibi:{twin:{name:'Twin Shadows',icon:'👥',txt:'Shadow_Clone lasts 7s (was 5s) and mirrors his hits at 60% (was 40%).',ab:'clone',set:{dur:7,mirror:.6}},
+      tsunami:{name:'Tsunami Dash',icon:'🌊',txt:'Wave Dash rides 140px (was 100) and hits 50% harder.',ab:'dash',set:{dist:140,dmgMul:1.5}},
+      hymn:{name:'Battle Hymn',icon:'📣',txt:'War Cry gives +35% damage (was 25%) for 9s (was 7s).',ab:'shout',set:{dmg:.35,dur:9}}},
+  archer:{three:{name:'Five in Hand',icon:'🏹',txt:'One Nocked, Two in Hand fires 5 quick arrows (was 3).',ab:'rapid',set:{shots:5}},
+      monsoon:{name:'Monsoon',icon:'🌧️',txt:'Arrow_Rain drops 26 arrows (was 16).',ab:'rain',set:{count:26}},
+      deeppin:{name:'Deep Pin',icon:'📌',txt:'Pinning_Shot roots for 4s (was 2.5s) and its mark makes the target take 40% more (was 25%).',ab:'pin',set:{root:4,amp:.4}}},
+  flannel:{hollow:{name:'Hollow Point',icon:'🔫',txt:'Aimed Shot pierces 3 zombies (was 1) and crits for 3x (was 2.5x).',ab:'aimed',set:{pierce:3,critMul:3}},
+      nails:{name:'Hard as Nails',icon:'🪨',txt:'True_Grit blocks 65% of damage (was 50%) for 11s (was 8s).',ab:'grit',set:{dr:.65,dur:11}},
+      boom:{name:'Bigger Boom',icon:'💥',txt:'Proximity_Bomb throws zombies much harder (70 knockback, was 45) and is back in 7s (was 10s).',ab:'trip',set:{kb:70,cd:7}}},
+  druid:{overgrow:{name:'Overgrowth',icon:'🌸',txt:'Rejuvenating Bloom lasts 12s (was 8s).',ab:'bloom',set:{dur:12}},
+      bramble:{name:'Bramble Tide',icon:'🌵',txt:'Thorn Wave hits for 3d6 (was 2d6) and poisons 80% of the time (was 50%).',ab:'thorns',set:{dice:[3,6],poisonCh:.8}},
+      eye:{name:'Eye of the Storm',icon:'🌪️',txt:'Cyclone lasts 8s (was 5s) and pulls much harder.',ab:'cyclone',set:{dur:8,pull:26}}},
+  lumberjack:{widow:{name:'Widowmaker Spin',icon:'🌀',txt:'Whirl_Wind spins for 7s (was 5s) with a wider reach.',ab:'whirl',set:{dur:7,r:32}},
+      split:{name:'Earthsplitter',icon:'🪓',txt:'Ground_Chop splits the ground 60px out (was 40) and stuns for 1.4s (was 0.8s).',ab:'chop',set:{dist:60,stun:1.4}},
+      unbridled:{name:'Unbridled',icon:'😤',txt:'Timber_Rage gives +45% damage (was 30%) for 9s (was 6s).',ab:'rage',set:{dmg:.45,dur:9}}},
+  cultist:{arms:{name:'Many-Armed',icon:'🐙',txt:'Tentacles have 25 HP (was 15) and hit for 2d6+2 (was 1d6+2).',ab:'tentacle',set:{hp:25,dice:[2,6]}},
+      elder:{name:'Elder Sign',icon:'👁️',txt:'Call_of_Cthulhu lasts 14s (was 10s) and terrifies for 3s (was 2s).',ab:'cthulhu',set:{dur:14,fear:3}},
+      thirst:{name:'Thirsting Shadows',icon:'🩸',txt:'Syphon_Life drains 5 a second (was 3).',ab:'syphon',set:{dps:5}}},
+  eng:{cells:{name:'Reinforced Cells',icon:'🧱',txt:'His HESCO cell has 130 HP (was 80).',ab:'build',path:'barrier',set:{hp:130}},
+      coil:{name:'Overcharged Coil',icon:'⚡',txt:'His tesla coil lasts 40s (was 25s) and zaps every 1s (was 1.5s).',ab:'build',path:'tesla',set:{life:40,every:1}},
+      shaped:{name:'Shaped Charge',icon:'🧨',txt:'Satchel_Charge hits for 8d4 (was 6d4) over a bigger blast.',ab:'satchel',set:{dice:[8,4],r:42}}},
+  robot:{swarm:{name:'Swarm Protocol',icon:'🚀',txt:'Missile_Barrage fires 5 missiles (was 3).',ab:'missiles',set:{n:5}},
+      smoke:{name:'Thick Smoke',icon:'🌫️',txt:'Smoke_Screen lasts 9s (was 6s) and zombies inside miss 65% of the time (was 50%).',ab:'smoke',set:{dur:9,miss:.65}},
+      nanite:{name:'Nanite Overdrive',icon:'🔧',txt:'Nano-Tech_Repair_Bots fix 8% a second (was 5%).',ab:'nano',set:{per:.08}}}};
+/* capstones: real game changers. Level 5 and level 10 each offer two (rolled from the list, kept once rolled) */
+const TAL_CAP={
+  5:{glass:{name:'Glass Cannon',icon:'💥',txt:'+15% damage, but -10% max HP.'},
+     bulwark:{name:'Bulwark',icon:'🏰',txt:'+20% max HP and +2 armor.'},
+     adren:{name:'Adrenaline',icon:'💉',txt:'Under 40% HP he fights at +25% attack speed and moves 15% faster.'},
+     wind:{name:'Second Wind',icon:'🌬️',txt:'Once a stage, when he goes down he gets back up by himself after 3s.'}},
+  10:{last:{name:'Last Stand',icon:'🗿',txt:'Once a stage, a hit that would put him down leaves him at 1 HP and untouchable for 3s instead.'},
+      exec:{name:'Executioner',icon:'🪦',txt:'His hits deal +60% damage to anything under 25% health.'},
+      over:{name:'Overclock',icon:'⚙️',txt:'-20% cooldowns, and his abilities cost 20% less energy.'},
+      jugg:{name:'Juggernaut',icon:'🦏',txt:'+3 armor, +40% knockback resistance, and every hit on him lands 10% softer.'}}};
+function talKind(L){return L===5||L===10?'cap':L%3===0?'mod':'stat';}
+function talPicks(H){return (H&&H.tal)||[];}
+function talFree(H){const used=Object.values(H.pts||{}).reduce((a,b)=>a+b,0)+talPicks(H).length;return Math.max(0,(H.lvl||1)-1-used);}
+function talCard(id,k){const [t,a,b]=id.split(':');if(t==='st')return TAL_STAT[a];if(t==='ps')return TAL_PERSONA[a];if(t==='cap')return (TAL_CAP[a]||{})[b];if(t==='mod')return ((TAL_MOD[k]||{})[a]);return null;}
+/* the level a point came from: points are spent in order, so the next free point belongs to level (spent+2) */
+function talNextLevel(H){const used=Object.values(H.pts||{}).reduce((a,b)=>a+b,0)+talPicks(H).length;return used+2;}
+function talRoll(k,H,rng){rng=rng||Math.random;const L=talNextLevel(H),kind=talKind(L),have=new Set(talPicks(H));const C=CHAR[k]||{};const abil=(C.abilities||[]).some(a=>!a.passive);
+  const healer=k==='druid',melee=!!(C.melee&&!C.ranged)||k==='lumberjack'||k==='chibi';
+  if(kind==='cap'){const ids=Object.keys(TAL_CAP[L]).sort(()=>rng()-.5).slice(0,2);return {L,kind,ids:ids.map(x=>'cap:'+L+':'+x)};}
+  if(kind==='mod'){const ids=Object.keys(TAL_MOD[k]||{}).filter(x=>!have.has('mod:'+x)).sort(()=>rng()-.5).slice(0,3).map(x=>'mod:'+x);if(ids.length)return {L,kind,ids};}
+  const pool=[];for(const [x,S] of Object.entries(TAL_STAT)){if(S.abil&&!abil)continue;let w=1;if(S.healer)w=healer?2.5:.3;if(S.melee)w=melee?1.6:.5;if(x==='edge'&&healer)w=.4;pool.push(['st:'+x,w]);}
+  for(const x of Object.keys(TAL_PERSONA))if(!have.has('ps:'+x))pool.push(['ps:'+x,.35]);
+  const ids=[];while(ids.length<3&&pool.length){let tot=pool.reduce((a,p)=>a+p[1],0),r=rng()*tot,i=0;for(;i<pool.length;i++){r-=pool[i][1];if(r<=0)break;}ids.push(pool.splice(Math.min(i,pool.length-1),1)[0][0]);}
+  return {L,kind:'stat',ids};}
+function talOffer(k,H){if(talFree(H)<1){H.offer=null;return null;}const L=talNextLevel(H);if(!H.offer||H.offer.L!==L)H.offer=talRoll(k,H);return H.offer;}
+function talTake(k,H,id){const O=talOffer(k,H);if(!O||!O.ids.includes(id))return false;(H.tal=H.tal||[]).push(id);H.offer=null;return true;}
+/* the hero's ability set with his skill mods patched in (a private copy: nobody else's numbers change) */
+function talChar(k,H){const C=CHAR[k];const mods=talPicks(H).filter(x=>x.startsWith('mod:')).map(x=>(TAL_MOD[k]||{})[x.slice(4)]).filter(Boolean);if(!C||!mods.length)return C;
+  const C2=Object.assign({},C,{abilities:(C.abilities||[]).map(a=>JSON.parse(JSON.stringify(a)))});
+  for(const M of mods){const A=C2.abilities.find(a=>a.id===M.ab);if(!A)continue;const T=M.path?A[M.path]:A;if(T)Object.assign(T,JSON.parse(JSON.stringify(M.set)));}
+  return C2;}
 const LVPTS={hp:{name:'Toughness',icon:'❤️',txt:'+4% max HP'},dmg:{name:'Power',icon:'⚔️',txt:'+3% damage'},acc:{name:'Aim',icon:'🎯',txt:'+2 accuracy'},
   crit:{name:'Edge',icon:'✴️',txt:'+1% crit chance'},luck:{name:'Fortune',icon:'🍀',txt:'+3 Luck'},armor:{name:'Hide',icon:'🛡️',txt:'+1 armor point'}};
 /* 0.12.53 (Kyle): anyone can try to defuse a mine; a failure sets it off. Sapper makes it far safer, and fiddly-job traits help:
@@ -2987,12 +3089,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794462043';const BGI=new Image();BGI.src='crawl_bg.png?v=1794462043';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794462043';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794462453';const BGI=new Image();BGI.src='crawl_bg.png?v=1794462453';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794462453';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794462043';XIMG.wave.src='crawl_wave.png?v=1794462043';XIMG.chibi.src='crawl_chibi.png?v=1794462043';XIMG.flannel.src='crawl_flannel.png?v=1794462043';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794462043';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794462043';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794462043';XIMG.rain.src='crawl_rain.png?v=1794462043';XIMG.druid.src='crawl_druid.png?v=1794462043';XIMG.camp.src='crawl_campfire.png?v=1794462043';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794462043';XIMG.tornado.src='crawl_fx_tornado.png?v=1794462043';XIMG.vine.src='crawl_fx_vine.png?v=1794462043';XIMG.thorn.src='crawl_fx_thorn.png?v=1794462043';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794462453';XIMG.wave.src='crawl_wave.png?v=1794462453';XIMG.chibi.src='crawl_chibi.png?v=1794462453';XIMG.flannel.src='crawl_flannel.png?v=1794462453';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794462453';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794462453';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794462453';XIMG.rain.src='crawl_rain.png?v=1794462453';XIMG.druid.src='crawl_druid.png?v=1794462453';XIMG.camp.src='crawl_campfire.png?v=1794462453';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794462453';XIMG.tornado.src='crawl_fx_tornado.png?v=1794462453';XIMG.vine.src='crawl_fx_vine.png?v=1794462453';XIMG.thorn.src='crawl_fx_thorn.png?v=1794462453';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794462043';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794462043';XIMG.obst.src='crawl_obst.png?v=1794462043';XIMG.cars.src='crawl_cars.png?v=1794462043';XIMG.robot.src='crawl_robot.png?v=1794462043';XIMG.cultist.src='crawl_cultist.png?v=1794462043';XIMG.tentacle.src='crawl_tentacle.png?v=1794462043';XIMG.boom.src='crawl_boom.png?v=1794462043';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794462453';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794462453';XIMG.obst.src='crawl_obst.png?v=1794462453';XIMG.cars.src='crawl_cars.png?v=1794462453';XIMG.robot.src='crawl_robot.png?v=1794462453';XIMG.cultist.src='crawl_cultist.png?v=1794462453';XIMG.tentacle.src='crawl_tentacle.png?v=1794462453';XIMG.boom.src='crawl_boom.png?v=1794462453';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3754,7 +3856,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.105</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.106</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -3959,8 +4061,13 @@ function showCamp(){
           const tT=n.t?`Next stage: foggy head (Perception -${THIRST.perc[n.t]}, plans and focus -${THIRST.think[n.t]}, decisions ${Math.round((THIRST.slow[n.t]-1)*100)}% slower) and a slow life drain (${(THIRST.drain[n.t]*100).toFixed(2)}% of max HP a second).`:'Well watered.';
           return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0">🍖 <b style="color:${hc};cursor:help" title="${esc(hT)}">${HUNGER.names[n.h]}</b> ${n.h?btn(`data-feed="${k}|food" ${run.food>=fc?'':'disabled'}`,'🥫 Eat','Use '+(fc<1?'half a ration (smoked)':'1 food')+': Hunger -'+(upgT(run,'kitchen')?2:1)):''} · 💧 <b style="color:${tc};cursor:help" title="${esc(tT)}">${THIRST.names[n.t]}</b> ${n.t?btn(`data-feed="${k}|water" ${run.water>=1?'':'disabled'}`,'💧 Drink','Use 1 water: Thirst -'+(upgT(run,'purifier')?2:1)):''}${n.h||n.t?'<span style="opacity:.75"> · it only gets worse if ignored</span>':''}</div>`;})()
           :(k==='robot'?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0;opacity:.7">🔋 Runs on its own power: no food or water needed</div>`:'')}
-        ${(()=>{const fr=lvPtsFree(L),P=L.pts||{};const have=Object.keys(LVPTS).filter(x=>P[x]).map(x=>`${LVPTS[x].icon}${P[x]}`).join(' ');
-          return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${fr?`<b style="color:#a6ff2e">⬆ ${fr} stat point${fr>1?'s':''} to spend</b> `+Object.keys(LVPTS).map(x=>btn(`data-pt="${k}|${x}"`,LVPTS[x].icon+' '+LVPTS[x].name,LVPTS[x].txt+' per point')).join(' '):'Stat points: one per level gained.'}${have?` <span style="opacity:.8">· spent: ${have}</span>`:''}</div>`;})()}
+        ${(()=>{const fr=talFree(L),P=L.pts||{};const old=Object.keys(LVPTS).filter(x=>P[x]).map(x=>`${LVPTS[x].icon}${P[x]}`).join(' ');   /* 0.12.106 TALENTS (Kyle's level-up revamp) */
+          const got=talPicks(L).map(id=>{const c=talCard(id,k);return c?`<span class="cc-chip" title="${esc(c.txt)}" style="${id.startsWith('cap:')?'border-color:#ffd23f;color:#ffd23f':id.startsWith('mod:')?'border-color:#c792ff;color:#d8b8ff':''}">${c.icon} ${esc(c.name)}</span>`:'';}).join('');
+          const O=fr?talOffer(k,L):null;const kindName={cap:'⭐ CAPSTONE (pick 1 of 2)',mod:'🔮 SKILL MOD (pick 1)',stat:'⬆ Talent (pick 1)'};
+          const offer=O?`<div style="margin-top:6px"><b style="color:${O.kind==='cap'?'#ffd23f':O.kind==='mod'?'#d8b8ff':'#a6ff2e'}">Level ${O.L} ${kindName[O.kind]}</b>${fr>1?` <span style="opacity:.8">(${fr} points waiting)</span>`:''}
+            <div class="cc-offers" style="margin-top:6px">${O.ids.map(id=>{const c=talCard(id,k);if(!c)return '';const col=O.kind==='cap'?'#ffd23f':O.kind==='mod'?'#c792ff':id.startsWith('ps:')?'#7fd0ff':'#a6ff2e';
+              return `<div class="cc-offer" style="--rc:${col}"><span class="rar">${O.kind==='cap'?'CAPSTONE':O.kind==='mod'?'SKILL MOD':id.startsWith('ps:')?'PERSONALITY':'STAT'}</span><span class="cn">${c.icon} ${esc(c.name)}</span><span class="tx">${esc(c.txt)}</span><button class="cc-btn" data-tal="${k}|${id}">Take it</button></div>`;}).join('')}</div></div>`:'';
+          return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${got?`<div class="cc-chips" style="margin-top:2px">${got}</div>`:fr?'':'Talents: one per level gained (skill mods every 3rd level, capstones at 5 and 10).'}${old?` <span style="opacity:.8">· old stat points: ${old}</span>`:''}${offer}</div>`;})()}
         ${hv.carry&&(hv.carry.courage||hv.carry.medkit||hv.carry.defib||(hv.carry.kit||[]).length)?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0">🎒 Carrying into the stage: ${[hv.carry.courage?'Liquid Courage':'',hv.carry.medkit?'Medkit':'',hv.carry.defib?'Defibrillator':'',...(hv.carry.kit||[]).map(x=>x==='bat'?'Battery':'Medicine')].filter(Boolean).join(', ')}</div>`:''}</div></div>`;}).join('')}
       ${campPanel(s,run,btn)}
       <div class="cc-shopwrap" ${CAMP_SHOP?'':'hidden'}>${(()=>{const gold=s.gold||0;if(run.shopAt!==run.stage)return `<div class="cc-card"><b>🛒 Merchant</b> <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · the merchant sets up shop after each boss you beat.</span></div>`;if(!run.shop||run.shop.stage!==run.stage)stockShop(run);
@@ -3992,7 +4099,7 @@ function showCamp(){
     if(left.length&&!bg.dataset.sure){bg.dataset.sure=1;bg.textContent='Leave hungry/thirsty? '+left.map(k=>{const n=needsOf(run,k);return heroDef(k).name+(n.h?' '+HUNGER.names[n.h]:'')+(n.t?' '+THIRST.names[n.t]:'');}).join(', ')+' ▶';return;}campDepart(run);persist();beginStage();};
   {const fa=P.querySelector('[data-feedall]');if(fa)fa.onclick=()=>{if(feedAll(run)){sfx('level');persist();showCamp();}else{fa.textContent='Not enough supplies';}};}
   P.querySelectorAll('[data-feed]').forEach(b=>b.onclick=()=>{const [k,w]=b.dataset.feed.split('|');if(feedUnit(run,k,w)){sfx('level');persist();showCamp();}});
-  P.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>{const [k,x]=b.dataset.pt.split('|');const H=s.heroes[k];if(lvPtsFree(H)<1)return;H.pts=H.pts||{};H.pts[x]=(H.pts[x]||0)+1;sfx('level');persist();showCamp();});
+  P.querySelectorAll('[data-tal]').forEach(b=>b.onclick=()=>{const [k,...r]=b.dataset.tal.split('|');const id=r.join('|');const H=s.heroes[k];if(talTake(k,H,id)){sfx('level');persist();showCamp();}});
   P.querySelectorAll('[data-upgp]').forEach(b=>b.onclick=()=>{const id=b.dataset.upgp,pp=upgParts(run,id);if(run.upgBought||(s.parts||0)<pp)return;s.parts-=pp;run.upg=run.upg||{};run.upg[id]=(run.upg[id]||0)+1;run.upgBought=1;sfx('level');persist();showCamp();});
   P.querySelectorAll('[data-upg]').forEach(b=>b.onclick=()=>{const id=b.dataset.upg,pr=upgPrice(run,id);if(run.upgBought||(s.gold||0)<pr)return;s.gold-=pr;run.upg=run.upg||{};run.upg[id]=(run.upg[id]||0)+1;run.upgBought=1;sfx('level');persist();showCamp();});
   {const cb=P.querySelector('[data-con]');if(cb)cb.onclick=()=>{run.conOpen=!run.conOpen;persist();showCamp();};}
@@ -4139,7 +4246,7 @@ function finishStage(g){
     <div class="cc-load">${team.map(k=>`<div class="cc-card cc-lh"><span data-por="${k}"></span><div><b>${esc(heroDef(k).name)}</b><div class="cc-sub" style="margin:0">LV ${s.heroes[k].lvl} · ${fmt(s.heroes[k].xp)}/${fmt(needHeroXp(s.heroes[k].lvl))} XP</div></div></div>`).join('')}</div>
     <div class="cc-row" style="margin-top:12px"><button class="cc-btn go" data-again>SAME TEAM AGAIN</button><button class="cc-btn" data-team>New team</button><button class="cc-btn" data-saves>Saves</button></div>`);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por,48)));
-  P.querySelector('[data-again]').onclick=()=>{for(const k of team){const H=s.heroes[k];if(H){H.lvl=1;H.xp=0;H.pts={};}}   /* 0.12.58 (Kyle): same team again is a true restart: levels, XP and stat points reset (deck picks stay) */s.run=newRun(team,s);const M=s.lastModes||{};s.run.hardcore=!!M.hardcore;s.run.dnd=!!M.dnd;if(s.run.dnd)s.run.rolls=rollPersonas(team);s.runs++;persist();showCamp();};
+  P.querySelector('[data-again]').onclick=()=>{for(const k of team){const H=s.heroes[k];if(H){H.lvl=1;H.xp=0;H.pts={};H.tal=[];H.offer=null;}}   /* 0.12.58 (Kyle): same team again is a true restart: levels, XP and stat points reset (deck picks stay) */s.run=newRun(team,s);const M=s.lastModes||{};s.run.hardcore=!!M.hardcore;s.run.dnd=!!M.dnd;if(s.run.dnd)s.run.rolls=rollPersonas(team);s.runs++;persist();showCamp();};
   P.querySelector('[data-team]').onclick=showTeam;P.querySelector('[data-saves]').onclick=showSlots;
 }
 function showStranger(free){
