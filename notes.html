@@ -1,5 +1,14 @@
       <h2>What's new</h2>
-      <h3>💥 0.12.156 Rust mines bite</h3><ul><li>Enemy rust mines are dangerous again. A <b>spotted</b> mine still goes off almost at once if someone steps on it (before, it only had about a 2-in-a-second chance, so heroes strolled across them). The trigger zone is wider: about 54px in its lane and 27px one lane up or down (was 40 / 20).</li><li>They hit harder: <b>6d4</b> (was 4d4), +5% per stage, in a slightly bigger blast. Your own planted mines are unchanged.</li><li>Spotting a mine is still how you beat it: heroes steer around spotted mines, and a Sapper can defuse them.</li></ul>
+      <h3>💥 0.12.156 Rust mines, fixed top to bottom</h3><ul>
+<li><b>Defusing actually works now.</b> Two old bugs meant a defuse could almost never finish. A check meant for searching cars and crates threw every defuse out on its first frame, and tiny position nudges counted as "moving", which froze the timer. Both are fixed: in tests about 40% of attempts now succeed (it was close to none).</li>
+<li><b>A safe spot to defuse from.</b> The defuser stands <b>12px</b> back from the mine and holds still. That's clear of the 9px trigger even if they wobble a little. Tested: 9px kept setting mines off, 12px didn't.</li>
+<li><b>Defuse odds</b>: about <b>40%</b> for anybody, up to about <b>65%</b> with everything high and stacked (Sapper +12%, Techy, Slow and Steady, Calm, Optimal, Luck). Before, it was about 30% for anybody and up to 97% for a Sapper. A fumble sets the mine off in their hands.</li>
+<li><b>Spotted mines get walked around.</b> Heroes no longer stroll onto a mine they know about: they stop short in its lane, give it room one lane over, and a dodge or a shove can't carry them onto it.</li>
+<li><b>Unspotted mines still catch you</b>, and they hit harder: <b>8d4</b> (was 4d4), +5% per stage, in a slightly bigger blast. The trigger zone is a bit wider: about 54px in its lane and 27px one lane over.</li>
+<li><b>Spotting</b> is a touch harder.</li>
+<li><b>Kept mines get used.</b> A defused mine is often kept, and in tests the keeper planted it and it caught zombies.</li>
+<li><b>Jobs don't get dropped for no reason.</b> Every hero job (looting, defusing, cutting alarms, building) was traced across many sims. Heroes hold still while they work, a small shove pauses a job instead of ending it, and a defuse in progress isn't abandoned unless a zombie gets close.</li>
+</ul>
 <h3>🧡 0.12.155 No_Scope from the hip</h3><ul><li>JP's <b>No_Scope</b> tracer now fires from his hip, not high above his head, and goes to the middle of the last zombie it punches through. It angles down or up when that zombie is in another lane.</li></ul>
 <h3>🧡 0.12.154 Syphon_Life: 100 energy</h3><ul><li>Syphon_Life is the Cultist's only ability that costs energy, so it now costs a full <b>100</b>. It still heals 1.25× what it drains.</li></ul>
 <h3>🧡 0.12.153 Syphon_Life retune</h3><ul><li>The Cultist's <b>Syphon_Life</b> now costs <b>75 energy</b> (was free) and heals him for <b>1.25×</b> what it drains (was 1×).</li></ul>
