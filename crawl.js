@@ -381,37 +381,47 @@ const CHAR={
 
 // ---- 0.12.3 Inspiration Decks (Kyle): pick a player, then one of their decks. Each deck gives one small, unique bonus tied to
 //   what that deck is best at. sl = slider moves (a move that would go below 0 or above 10 doesn't happen). Easy to retune here.
-const INSP={   /* 0.12.4 (Kyle): every bonus doubled. 0.12.34: Herbalist x3 and Scavenger x3, each with one distinct stat and no slider nudge; every other deck has its own stat or passive and its own slider nudge */
+const INSP={   /* 0.12.82 (Kyle): every deck now gives exactly TWO things (a passive or perk, a stat, or a starting stash), as unique as possible and
+   tied to what the deck does best. A slider nudge is personality flavor, not one of the two. */
  // Kyle
- 'The Grim Throne':{o:'Kyle',why:'Kenrith\'s royal court: nobody haggles like royalty, and the throne always gets its due in the end',passive:'haggler',perk:'inevitable',mod:{crit:4}},
- 'Felothar':{o:'Kyle',why:'Walls of root and bark: the pod\'s top Survival, and the forest feeds whoever holds behind them',passive:'herbalist',mod:{armor:6,stamina:2}},
- 'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up: the pod\'s biggest Finish, built from a pile of spare parts',passive:'resourceful',mod:{meleeDmg:20},stash:{parts:6}},
- 'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen, and everyone else\'s hand ends up in yours',passive:'pickpocket',mod:{xp:12,crit:3}},
- 'Truly Fantastic':{o:'Kyle',why:'The Thing: a walking pile of orange rock that nothing shoves, and the team\'s deep mana pool',passive:'mountain',mod:{enMax:24,armor:4}},
- 'Dice Boys Casino':{o:'Kyle',why:'Mr. House runs the casino: the house always has money, and the dice always seem to land his way',passive:'bankroll',perk:'superlucky',sl:{flair:2}},   /* 0.12.42 (Kyle): starting gold instead of energy regen */
- 'Tame Depala':{o:'Kyle',why:'Dwarf mechanics who stand like an anvil: you\'d sooner move the mountain',passive:'mountain',mod:{kbRes:20,meleeDmg:10}},
- "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat',passive:'bounty',sl:{size:2},mod:{luck:3}},
- 'The Last of Us':{o:'Kyle',why:'Survivors who live off what they scrounge from the wrecks and slip every grab',passive:'scavenger',mod:{dodge:4},stash:{water:2}},
- 'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming',passive:'haunt',sl:{aware:-2},mod:{dodge:3}},
- 'Mothman Cometh!':{o:'Kyle',why:'A dark omen that is never quite where you hit',passive:'omen',sl:{lane:2},mod:{acc:6}},
- 'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back; snow shows every tripwire',mod:{kb:30,enRegen:1},perk:'sapper'},
- 'Build a Scare':{o:'Kyle',perk:'medicine',why:'Illuna mutates into something bigger, stitched together from whatever is lying around, and stitches up whoever falls apart',mod:{stamina:2,enMax:16}},
- "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward',passive:'onslaught',sl:{aggr:2},mod:{meleeSpd:10}},
+ 'The Grim Throne':{o:'Kyle',why:'Kenrith\'s royal court: nobody haggles like royalty, and the throne always gets its due in the end',passive:'haggler',perk:'inevitable'},
+ 'Felothar':{o:'Kyle',why:'Walls of root and bark: the pod\'s top Survival, and the forest feeds whoever holds behind them',passive:'herbalist',mod:{armor:6}},
+ 'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up from a pile of spare parts and hits the hardest in the pod',passive:'resourceful',mod:{meleeDmg:20}},
+ 'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen, and everyone else\'s hand ends up in yours',passive:'pickpocket',mod:{xp:12}},
+ 'Truly Fantastic':{o:'Kyle',why:'The Thing: a walking pile of orange rock that nothing shoves, and the team\'s deep mana pool',passive:'mountain',mod:{enMax:24}},
+ 'Dice Boys Casino':{o:'Kyle',why:'Mr. House runs the casino: the house always has money, and the dice always seem to land his way',passive:'bankroll',perk:'superlucky',sl:{flair:2}},
+ 'Tame Depala':{o:'Kyle',why:'Dwarf mechanics in plated rigs: hard to shove and they hit like a hammer',mod:{kbRes:20,meleeDmg:10}},
+ "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat and always gets paid',passive:'bounty',mod:{luck:6},sl:{size:2}},
+ 'The Last of Us':{o:'Kyle',why:'Survivors who live off what they scrounge from the wrecks and slip every grab',passive:'scavenger',mod:{dodge:4}},
+ 'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming, and things that touch it get scared off',passive:'haunt',mod:{acc:6},sl:{aware:-2}},
+ 'Mothman Cometh!':{o:'Kyle',why:'A dark omen that is never quite where you hit, and never far behind',passive:'omen',mod:{move:8},sl:{lane:2}},
+ 'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back; snow shows every tripwire',perk:'sapper',mod:{kb:30}},
+ 'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger, stitched together from whatever is lying around, and stitches up whoever falls apart',perk:'medicine',mod:{stamina:2}},
+ "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward, and faster every swing',passive:'onslaught',mod:{meleeSpd:10},sl:{aggr:2}},
  // Cheez
- 'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: fast flyers, and Zada the goblin can talk anyone down',passive:'haggler',mod:{move:12,dodge:3}},
- 'Double Dragons':{o:'Cheez',why:'Dragon fire, and two dragons means double the luck: every hoard they stumble on is a big one',perk:'superlucky',mod:{rangedDmg:16,crit:3}},
+ 'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: fast fliers that are hard to pin down',mod:{move:12,dodge:3}},
+ 'Double Dragons':{o:'Cheez',why:'Dragon fire, and two dragons means double the luck: every hoard they stumble on is a big one',perk:'superlucky',mod:{rangedDmg:16}},
  'Turtle Power':{o:'Cheez',why:'Shells and teamwork: when it gets bad, they pull in and wait it out',passive:'shell',mod:{armor:4},sl:{pack:-2}},
- 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills, and never travels without a snack',passive:'devour',sl:{exec:2},stash:{food:3}},
- 'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone',passive:'pickpocket',sl:{self:2},mod:{move:8}},
- 'Blood Suckers':{o:'Cheez',why:'Lifelinking bats: the night always comes, and every bite they miss only makes the next one surer',perk:'inevitable',mod:{lifesteal:5,move:8}},
- 'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman strips wrecks for parts to overclock his guns',passive:'scavenger',mod:{rangedSpd:15},stash:{parts:4}},
+ 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills, and never travels without a snack',passive:'devour',stash:{food:3},sl:{exec:2}},
+ 'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone, and his crew gets in and out before anyone notices',passive:'pickpocket',mod:{crit:4},sl:{self:2}},
+ 'Blood Suckers':{o:'Cheez',why:'Lifelinking bats: the night always comes, and every bite they miss only makes the next one surer',perk:'inevitable',mod:{lifesteal:5}},
+ 'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman strips wrecks for parts to overclock his guns',passive:'scavenger',mod:{rangedSpd:15}},
  // Leon
- 'Family Matters':{o:'Leon',perk:'medicine',why:'Zinnia\'s copies look out for each other and bandage each other up',passive:'bodyguard',sl:{aware:2}},
- 'Thranduil':{o:'Leon',why:'Elven eyes and forest lore: knows every herb in the woods and never misses a shot',passive:'herbalist',mod:{acc:8,enRegen:1}},
- 'Primary Directive':{o:'Leon',why:'Optimus transforms and swings fast; Autobots patch themselves up from salvage',passive:'resourceful',mod:{meleeSpd:20,armor:4}},
- 'Cosmic Spider':{o:'Leon',why:'Spider-Sense and web shooters: his sense tingles near traps',passive:'webs',perk:'sapper',mod:{dodge:4}},
+ 'Family Matters':{o:'Leon',why:'Zinnia\'s copies look out for each other and bandage each other up',passive:'bodyguard',perk:'medicine',sl:{aware:2}},
+ 'Thranduil':{o:'Leon',why:'Elven eyes and forest lore: knows every herb in the woods and never misses a shot',passive:'herbalist',mod:{acc:8}},
+ 'Primary Directive':{o:'Leon',why:'Optimus transforms and swings fast; Autobots patch themselves up from salvage',passive:'resourceful',mod:{meleeSpd:20}},
+ 'Primary Directive 2.0':{o:'Leon',why:'The rebuild: a stack of big mana rocks keeps the Autobots charged, and Memnarch\'s plating keeps them standing',mod:{enRegen:1,armor:5}},
+ 'Cosmic Spider':{o:'Leon',why:'Spider-Sense and web shooters: his sense tingles near traps',passive:'webs',perk:'sapper'},
+ // Eddie
+ 'Vivi':{o:'Eddie',why:'The Black Mage: his commander makes a pile of mana every turn and every spell hits harder',mod:{enRegen:1.5,rangedDmg:12}},
+ 'Bruce Banner':{o:'Eddie',why:'Bruce reads everything, then the Hulk gets bigger and angrier the more he takes',mod:{xp:10,stamina:2},sl:{aggr:2}},
+ 'Cloud':{o:'Eddie',why:'Omnislash: a suited-up SOLDIER whose every big hit is a Limit Break',mod:{critMul:.3,crit:3}},
+ 'Kasla, the Broken Halo':{o:'Eddie',why:'Convoke: the whole angel army chips in, so everything at camp costs less, and she flies in fast',passive:'haggler',mod:{move:10},sl:{pack:-2}},
+ 'Master Splinter':{o:'Eddie',why:'Ninja training: never where the hit lands, and the shuriken fly twice as fast',mod:{dodge:4,rangedSpd:12},sl:{noise:-2}},
+ 'Miles Morales':{o:'Eddie',why:'Spider-Man in the making: counters pile up fast and he grows with every fight',mod:{xp:8,luck:6}},
+ 'Narset, Enlightened Master':{o:'Eddie',why:'A first-strike monk who turns every attack into free spells: a deep well of energy and quick hands',mod:{enMax:20,meleeSpd:12}},
 };
-const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼'};
+const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼',Eddie:'♠'};
 // what each character is like in a fight (shown when you hover them on the party screen)
 // one line per ability for the party-screen hover boxes
 const ABIL_DESC={
@@ -2855,12 +2865,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794444038';const BGI=new Image();BGI.src='crawl_bg.png?v=1794444038';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794444038';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794444151';const BGI=new Image();BGI.src='crawl_bg.png?v=1794444151';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794444151';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794444038';XIMG.wave.src='crawl_wave.png?v=1794444038';XIMG.chibi.src='crawl_chibi.png?v=1794444038';XIMG.flannel.src='crawl_flannel.png?v=1794444038';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794444038';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794444038';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794444038';XIMG.rain.src='crawl_rain.png?v=1794444038';XIMG.druid.src='crawl_druid.png?v=1794444038';XIMG.camp.src='crawl_campfire.png?v=1794444038';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794444038';XIMG.tornado.src='crawl_fx_tornado.png?v=1794444038';XIMG.vine.src='crawl_fx_vine.png?v=1794444038';XIMG.thorn.src='crawl_fx_thorn.png?v=1794444038';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794444151';XIMG.wave.src='crawl_wave.png?v=1794444151';XIMG.chibi.src='crawl_chibi.png?v=1794444151';XIMG.flannel.src='crawl_flannel.png?v=1794444151';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794444151';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794444151';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794444151';XIMG.rain.src='crawl_rain.png?v=1794444151';XIMG.druid.src='crawl_druid.png?v=1794444151';XIMG.camp.src='crawl_campfire.png?v=1794444151';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794444151';XIMG.tornado.src='crawl_fx_tornado.png?v=1794444151';XIMG.vine.src='crawl_fx_vine.png?v=1794444151';XIMG.thorn.src='crawl_fx_thorn.png?v=1794444151';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794444038';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794444038';XIMG.obst.src='crawl_obst.png?v=1794444038';XIMG.cars.src='crawl_cars.png?v=1794444038';XIMG.robot.src='crawl_robot.png?v=1794444038';XIMG.cultist.src='crawl_cultist.png?v=1794444038';XIMG.tentacle.src='crawl_tentacle.png?v=1794444038';XIMG.boom.src='crawl_boom.png?v=1794444038';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794444151';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794444151';XIMG.obst.src='crawl_obst.png?v=1794444151';XIMG.cars.src='crawl_cars.png?v=1794444151';XIMG.robot.src='crawl_robot.png?v=1794444151';XIMG.cultist.src='crawl_cultist.png?v=1794444151';XIMG.tentacle.src='crawl_tentacle.png?v=1794444151';XIMG.boom.src='crawl_boom.png?v=1794444151';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3597,7 +3607,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.81</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.82</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
