@@ -24,9 +24,9 @@ const CFG={
   ],
   biomes:[
     {id:'grave',name:'Blackwater Lake',pool:{zombie:1,fireman:.14},boss:'gravelord'},
+  ],   /* 0.12.85 (Kyle): only the cabin-by-the-lake level for now; it just keeps going. Saved for later:
     {id:'manor',name:'Hollowmere Cemetery',pool:{zombie:1,fireman:.14},boss:'countess'},
-    {id:'bog',name:'The Cathedral Corridor',pool:{zombie:1,fireman:.14},boss:'maw'},
-  ],
+    {id:'bog',name:'The Cathedral Corridor',pool:{zombie:1,fireman:.14},boss:'maw'}, */
   enemies:{ // hp/dmg at stage 1; spd px/s; atk = seconds between hits; cost = spawn budget
     // rebuilt roster: only the zombie so far. animAtk = attack animation length (s), hitAt = when in it the blow lands (s)
     // Kyle's zombie: 25 HP (0.12.3, was 15), 1d6 per hit, swings every 1.25s, 12px reach, very slow, 3 armor (=6% less damage), small-medium knockback resistance,
@@ -2866,12 +2866,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794444780';const BGI=new Image();BGI.src='crawl_bg.png?v=1794444780';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794444780';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794444881';const BGI=new Image();BGI.src='crawl_bg.png?v=1794444881';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794444881';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794444780';XIMG.wave.src='crawl_wave.png?v=1794444780';XIMG.chibi.src='crawl_chibi.png?v=1794444780';XIMG.flannel.src='crawl_flannel.png?v=1794444780';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794444780';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794444780';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794444780';XIMG.rain.src='crawl_rain.png?v=1794444780';XIMG.druid.src='crawl_druid.png?v=1794444780';XIMG.camp.src='crawl_campfire.png?v=1794444780';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794444780';XIMG.tornado.src='crawl_fx_tornado.png?v=1794444780';XIMG.vine.src='crawl_fx_vine.png?v=1794444780';XIMG.thorn.src='crawl_fx_thorn.png?v=1794444780';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794444881';XIMG.wave.src='crawl_wave.png?v=1794444881';XIMG.chibi.src='crawl_chibi.png?v=1794444881';XIMG.flannel.src='crawl_flannel.png?v=1794444881';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794444881';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794444881';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794444881';XIMG.rain.src='crawl_rain.png?v=1794444881';XIMG.druid.src='crawl_druid.png?v=1794444881';XIMG.camp.src='crawl_campfire.png?v=1794444881';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794444881';XIMG.tornado.src='crawl_fx_tornado.png?v=1794444881';XIMG.vine.src='crawl_fx_vine.png?v=1794444881';XIMG.thorn.src='crawl_fx_thorn.png?v=1794444881';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794444780';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794444780';XIMG.obst.src='crawl_obst.png?v=1794444780';XIMG.cars.src='crawl_cars.png?v=1794444780';XIMG.robot.src='crawl_robot.png?v=1794444780';XIMG.cultist.src='crawl_cultist.png?v=1794444780';XIMG.tentacle.src='crawl_tentacle.png?v=1794444780';XIMG.boom.src='crawl_boom.png?v=1794444780';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794444881';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794444881';XIMG.obst.src='crawl_obst.png?v=1794444881';XIMG.cars.src='crawl_cars.png?v=1794444881';XIMG.robot.src='crawl_robot.png?v=1794444881';XIMG.cultist.src='crawl_cultist.png?v=1794444881';XIMG.tentacle.src='crawl_tentacle.png?v=1794444881';XIMG.boom.src='crawl_boom.png?v=1794444881';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3608,7 +3608,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.84</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.85</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -3954,6 +3954,18 @@ function finishStage(g){
     const rb=run.campLog2;run.campLog2=null;const P=showPanel(`<div class="cc-h">STAGE ${cleared} CLEAR!</div>${rb?`<p class="cc-sub" style="color:#a6ff2e">${rb}</p>`:''}<p class="cc-sub">+${fmt(g.stageScore+250*cleared*(1+run.prestige))} score · ${g.kills} kills · 💰 +${fmt(g.stageGold)} gold${g.stageParts?' · ⚙ +'+g.stageParts+' spare parts':''}${g.stageFood?' · 🥫 +'+g.stageFood+' food':''}${g.stageWater?' · 💧 +'+g.stageWater+' water':''}${found.length?'<br>Found: '+found.map(esc).join(', '):''}${lvls.length?'<br>'+lvls.join(', '):''}</p>${statsBrief(g)}<div class="cc-row"><button class="cc-btn go" data-c>TO CAMP ▶</button></div>`);
     P.querySelector('[data-c]').onclick=showCamp;return;}
   // defeat
+  /* 0.12.85 (Kyle): nobody loses a run any more. A wipe keeps EVERYTHING (gold, parts, food, water, items and XP picked up on the way),
+     the party limps back to camp at half health, and you can spend it all to grind out the stage you're stuck on. */
+  if(true){sfx('die');
+    for(const it of g.stageItems||[]){const where=giveItem(run,s,it);if(where)found.push(shortCard(it.card)+(where==='bag'?' (backpack)':''));else{const v=Math.round(itemPrice(it.rar,run.stage)/3);s.gold+=v;found.push(shortCard(it.card)+' (sold, no room: +'+v+'g)');}}
+    for(const k of run.team){const h=run.heroes[k];if(h){h.dead=false;h.hpf=Math.max(.5,h.hpf||0);}}
+    run.needFeed=run.team.filter(k=>k!=='robot');run.snap=null;run.retries=1;run.retryUsed=0;run.falls=(run.falls||0)+1;
+    persist();CC.game=null;
+    const P=showPanel(`<div class="cc-h" style="color:#ff9a3c">THE PARTY FELL BACK</div><div class="cc-h2">Stage ${run.stage}${run.prestige?' · ★'+run.prestige:''}</div>
+      <p class="cc-sub">Nothing is lost. Everything you picked up comes with you: 💰 +${fmt(g.stageGold)} gold${g.stageParts?` · 🔩 +${g.stageParts} parts`:''}${(g.stageFood||g.stageWater)?` · 🍖 +${g.stageFood||0} food · 💧 +${g.stageWater||0} water`:''}${found.length?'<br>Items: '+found.map(esc).join(', '):''}${lvls.length?'<br>Level ups: '+lvls.join(', '):''}</p>
+      <p class="cc-sub">Everyone gets back up at half health. Rest at camp, spend what you found, and take another run at stage ${run.stage}.</p>
+      <div class="cc-row" style="margin-top:12px"><button class="cc-btn go" data-c>⛺ BACK TO CAMP</button></div>`);
+    P.querySelector('[data-c]').onclick=showCamp;return;}
   if((run.retries==null?1:run.retries)>0&&run.snap){sfx('die');CC.game=null;   /* 0.12.73: one retry per run (doesn't stack); beating the stage gives it back */
     const P=showPanel(`<div class="cc-h" style="color:#ff5a5a">YOUR PARTY HAS FALLEN</div><div class="cc-h2">Stage ${run.stage}${run.prestige?' · ★'+run.prestige:''}</div>
       <p class="cc-sub">You have <b style="color:#a6ff2e">1 retry</b> left this run. Retrying puts everything back exactly as it was when this stage started: every hero's HP, items, herbs and kit, your gold, parts and supplies. Beat the stage this time and you get the retry back. Fall again and the run is over.</p>
