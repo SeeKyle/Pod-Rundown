@@ -1,5 +1,7 @@
 # Crypt Crawl — work queue for unattended sessions
 
+- 0.12.103 backup (Nov 12): damage pass, new camp upgrades, PD merged. Bundle is now just pod2/.
+
 The site is live at **0.12.63** (https://seekyle.github.io/Pod-Rundown/). Kyle (the owner) is on vacation.
 This file lists everything he asked for that is NOT done yet. Work top to bottom, tick items off
 (change `[ ]` to `[x]`), and push this file back to the `crawl-dev` branch after every release so the
