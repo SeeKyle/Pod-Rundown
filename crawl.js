@@ -2848,8 +2848,8 @@ class Game{
      for looting (shown by a gold glint and an alarm bell). */
   spawnFronts(){if(!(this.st.biome&&this.st.biome.id==='city')||typeof BGA==='undefined'||!BGA.city)return;const L=BGA.city.layers.find(l=>l.shops);if(!L)return;
     const s=L.w/L.r[2],T=L.tile,d=this.dist*L.sp;this.frontSeen=this.frontSeen||{};
-    for(const [ax,kind] of L.shops){const base=ax*s-d,k=Math.ceil((this.W+2-base)/T),x=base+k*T;if(x>this.W+30)continue;const id=k+':'+ax;if(this.frontSeen[id])continue;this.frontSeen[id]=1;
-      if(this.rng()<.3)this.obst.push({k:'city_front',x,lanes:[0],blk:0,par:L.sp,shop:kind});}}
+    for(const [ax,kind,bw] of L.shops){const base=ax*s-d,k=Math.ceil((this.W+2-base)/T),x=base+k*T;if(x>this.W+30)continue;const id=k+':'+ax;if(this.frontSeen[id])continue;this.frontSeen[id]=1;
+      if(this.rng()<.3)this.obst.push({k:'city_front',x,lanes:[0],blk:0,par:L.sp,shop:kind,bw:(bw||40)*s});}}
   // keep bodies out of obstacles: IF a unit ends up inside one in its lane THEN push it out the near side
   obClamp(u,isHero){if(!this.obst||!this.obst.length||u.fly||u.boss)return;const gy=u.gy;if(gy==null)return;
     for(const o of this.obst){if(OBST[o.k].flat)continue;const l=o.lanes.find(l=>Math.abs(LANES[l]-gy)<3.5);if(l==null)continue;const pad=isHero?3:2;const [a,b]=this.obSpan(o,l);if(u.x>a-pad&&u.x<b+pad)u.x=(u.x-(a+b)/2)>=0?b+pad:a-pad;}}   // where a hero actually stands right now
@@ -3210,12 +3210,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794467081';const BGI=new Image();BGI.src='crawl_bg.png?v=1794467081';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794467081';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794467123';const BGI=new Image();BGI.src='crawl_bg.png?v=1794467123';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794467123';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794467081';XIMG.wave.src='crawl_wave.png?v=1794467081';XIMG.chibi.src='crawl_chibi.png?v=1794467081';XIMG.flannel.src='crawl_flannel.png?v=1794467081';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794467081';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794467081';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794467081';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794467081';XIMG.rain.src='crawl_rain.png?v=1794467081';XIMG.druid.src='crawl_druid.png?v=1794467081';XIMG.camp.src='crawl_campfire.png?v=1794467081';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794467081';XIMG.tornado.src='crawl_fx_tornado.png?v=1794467081';XIMG.vine.src='crawl_fx_vine.png?v=1794467081';XIMG.thorn.src='crawl_fx_thorn.png?v=1794467081';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794467123';XIMG.wave.src='crawl_wave.png?v=1794467123';XIMG.chibi.src='crawl_chibi.png?v=1794467123';XIMG.flannel.src='crawl_flannel.png?v=1794467123';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794467123';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794467123';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794467123';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794467123';XIMG.rain.src='crawl_rain.png?v=1794467123';XIMG.druid.src='crawl_druid.png?v=1794467123';XIMG.camp.src='crawl_campfire.png?v=1794467123';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794467123';XIMG.tornado.src='crawl_fx_tornado.png?v=1794467123';XIMG.vine.src='crawl_fx_vine.png?v=1794467123';XIMG.thorn.src='crawl_fx_thorn.png?v=1794467123';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794467081';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794467081';XIMG.obst.src='crawl_obst.png?v=1794467081';XIMG.cityob.src='crawl_cityob.png?v=1794467081';XIMG.cars.src='crawl_cars.png?v=1794467081';XIMG.robot.src='crawl_robot.png?v=1794467081';XIMG.cultist.src='crawl_cultist.png?v=1794467081';XIMG.tentacle.src='crawl_tentacle.png?v=1794467081';XIMG.boom.src='crawl_boom.png?v=1794467081';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794467123';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794467123';XIMG.obst.src='crawl_obst.png?v=1794467123';XIMG.cityob.src='crawl_cityob.png?v=1794467123';XIMG.cars.src='crawl_cars.png?v=1794467123';XIMG.robot.src='crawl_robot.png?v=1794467123';XIMG.cultist.src='crawl_cultist.png?v=1794467123';XIMG.tentacle.src='crawl_tentacle.png?v=1794467123';XIMG.boom.src='crawl_boom.png?v=1794467123';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3720,7 +3720,17 @@ function drawGame(ctx,g,W,oy){
     ctx.save();const bx=x,by=fy-4;
     if(o.looted){ctx.fillStyle='#04070b';ctx.fillRect(x-3,fy+6,6,gy-fy-6);ctx.fillStyle='#2a3a4c';ctx.fillRect(x-6,fy+7,3,gy-fy-8);   // door kicked in, hanging open
       for(let i=0;i<9;i++){const sx=x-9+((i*37+Math.round(o.x*3))%18),sy=gy-1-(i%3)*.5;ctx.fillStyle=['#8c3c32','#aa9646','#c8c8c8','#46708c','#7aa8d0'][i%5];ctx.fillRect(sx,sy,i%4?.5:1,.5);}}
-    else if((g.t*.8+o.x*.013)%2.4<.22){const f=((g.t*.8+o.x*.013)%2.4)/.22;ctx.globalAlpha=Math.sin(f*3.14);ctx.fillStyle='#ffe9a0';const sx=x+2,sy=fy+9;ctx.fillRect(sx-1.5,sy,3,.5);ctx.fillRect(sx-.25,sy-1.25,.5,3);ctx.globalAlpha=1;}
+    else{   /* 0.12.120 (Kyle: make them obvious): the door is lit from inside, warm light spills on the sidewalk, a pulsing gold frame
+             around the shop front and a bobbing loot icon (a little bag with the shop's sign colour) over the door */
+      const hw=Math.max(10,(o.bw||36)/2-2),pu=.5+.5*Math.sin(g.t*3.2+o.x*.05);
+      ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.55;const lg=ctx.createRadialGradient(x,gy,1,x,gy,26);lg.addColorStop(0,'rgba(255,200,110,.75)');lg.addColorStop(1,'rgba(255,200,110,0)');ctx.fillStyle=lg;ctx.fillRect(x-28,gy-14,56,22);
+      ctx.globalAlpha=.85;ctx.fillStyle='#ffcf7a';ctx.fillRect(x-2.5,fy+6.5,5,gy-fy-7);ctx.globalAlpha=.4;ctx.fillStyle='#ffe2a8';ctx.fillRect(x-1.5,fy+7.5,3,gy-fy-9);
+      ctx.globalCompositeOperation='source-over';ctx.globalAlpha=.35+.45*pu;ctx.strokeStyle='#ffd23f';ctx.lineWidth=.6;ctx.strokeRect(x-hw,fy-1,hw*2,gy-fy+.5);ctx.globalAlpha=1;
+      const iy=fy-11+Math.sin(g.t*3+o.x)*1.2,col={grocery:'#e8b04a',pharmacy:'#5ad08a',pawn:'#7fb8ff',bank:'#ffd23f'}[o.shop]||'#ffd23f';
+      ctx.fillStyle='#1a1208';ctx.beginPath();ctx.arc(x,iy+1.6,3.2,0,7);ctx.fill();ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,iy+1.6,2.5,0,7);ctx.fill();ctx.fillRect(x-1,iy-2.2,2,1.6);
+      ctx.fillStyle='#1a1208';ctx.fillRect(x-1.5,iy-.8,3,.6);ctx.fillStyle='#fff6d0';ctx.fillRect(x-1.4,iy+.6,.8,.8);
+      glow(ctx,x,iy+1.6,6,col,.18*(.6+.4*pu));}
+    if(!o.looted&&(g.t*.8+o.x*.013)%2.4<.22){const f=((g.t*.8+o.x*.013)%2.4)/.22;ctx.globalAlpha=Math.sin(f*3.14);ctx.fillStyle='#ffe9a0';const sx=x+2,sy=fy+9;ctx.fillRect(sx-1.5,sy,3,.5);ctx.fillRect(sx-.25,sy-1.25,.5,3);ctx.globalAlpha=1;}
     const ring=o.alarmT>0,sh=ring?Math.sin(g.t*70)*.35:0;
     ctx.fillStyle='#1c1c22';ctx.fillRect(bx-2+sh,by-1,4,2.5);ctx.fillStyle=ring?'#ff3a2e':'#8a2420';ctx.beginPath();ctx.arc(bx+sh,by-1,1.6,Math.PI,0);ctx.fill();
     if(ring){const a=g.t*5.5;ctx.globalCompositeOperation='lighter';
@@ -4039,7 +4049,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.119</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.120</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
