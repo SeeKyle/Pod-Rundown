@@ -1,5 +1,21 @@
       <h2>What's new</h2>
-      <h3>🧡 0.12.103 Damage pass, and Bottle_Distraction aims smarter</h3><ul>
+      <h3>🧡 0.12.104 Sandbag Wall item, HESCO ladder, food and water passives, stuck-unit checks</h3><ul>
+<li><b>🧱 Sandbag Wall is now an item.</b> A random hero heads into each stage carrying it, as long as camp has at least Tier I. When a pack of 4+ comes down a lane (3+ late in the stage, or 3+ already close) he heaves it out in front of them, about 3/4 of the way across the screen. Zombies in that lane and the lanes next to it can't pass until they tear through it.
+  <ul><li>Tier I: 70 HP.</li><li>Tier II: 110 HP, and allies just behind it get +8 accuracy.</li><li>Tier III: two heroes carry one each, 140 HP, with barbed wire on top (every swing a zombie takes at it costs that zombie 3 HP).</li></ul>
+  You can see who's carrying it by the little burlap bag over their head.</li>
+<li><b>HESCO ladder:</b> the Engineer's HESCO cell has a little ladder on its left side. Allies heading past it climb up and over (about 0.9s), and they hop over Sandbag Walls (0.45s). Anyone just shuffling around next to a wall stops at it instead of climbing back and forth.</li>
+<li><b>New passives:</b>
+  <ul><li><b>Forager</b> (Master Splinter, with shuriken speed 10% → 15% since he loses Dark Omen): food from his kills comes about twice as often.</li>
+  <li><b>Rain Catcher</b> (Ominous Weather, in place of Sapper): the same for water.</li>
+  <li><b>🎒 Lucky Looter</b> (Korvold, beside Devour, in place of the 3-food starting stash): food and water from his kills both come about 1.7× as often.</li></ul></li>
+<li><b>Stuck-unit fixes:</b>
+  <ul><li>The dog could end up with no lane height after going down, so nobody could ever revive him. Fixed.</li>
+  <li>A body dragged or knocked between lanes kept its old lane, so helpers knelt one lane off. Fixed.</li>
+  <li>New watchdog: every job a unit walks to (helping someone up, an alarm, a search, a mine, an herb) has to show progress. If a helper is stuck for 2.5s he reaches over and pulls the body to him. Any other job that's stuck for 6s gets dropped, the unit thinks again, and skips that target for 5s.</li></ul></li>
+<li><b>Waves:</b> stage 1 only is bigger: 4 zombies in the first wave, 9–10 in the last (was 3 and 7–9). Later stages keep the old sizes; making them all bigger made stage 3 much harder in sims.</li>
+<li><b>Scaling:</b> enemy count +4% per stage (was 5%), XP per kill +10% per stage (was 19%). Enemy HP is ×0.54, so stage-1 hero damage still averages about 300 with the bigger waves.</li>
+</ul>
+<h3>🧡 0.12.103 Damage pass, and Bottle_Distraction aims smarter</h3><ul>
 <li><b>Hero damage toned down</b> so an average hero deals about 300 damage in stage 1 (sim, 54 stage-1 runs: about 292). Healers and utility heroes sit lower. Each hero's whole kit is scaled: basic attacks, abilities, and anything he summons or builds.
   <ul><li>JP ×0.61 · Chibi ×0.66 · Archer ×0.79 · Flannel_Man ×0.87 · Druid ×0.63 · Engineer ×0.63 · Lumber_Jack ×0.73 · Warhound ×0.58 · Void_Cultist ×0.42</li>
   <li>Stage-1 averages: Warhound 379 · JP 350 · Cultist 347 · Chibi 334 · Lumber_Jack 317 · Archer 305 · Druid 215 · Flannel_Man 210 · Engineer 173.</li>

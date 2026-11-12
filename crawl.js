@@ -59,8 +59,8 @@ const CFG={
       // 0.12.65 (Kyle): enemies get +3% health, armor and damage per stage (rounded down), nothing else
       hpMul:Math.pow(1.03,n-1)*Math.pow(2.2,P),
       dmgMul:Math.pow(1.03,n-1)*Math.pow(1.8,P),
-      countMul:1+.05*(n-1),   /* 0.12.87 (Kyle): 5% more enemies per stage, rounded down per wave */   // more enemies per stage stays (that is numbers, not stats)
-      xpMul:1+0.19*(n-1)+P*2.4};
+      countMul:1+.04*(n-1),   /* 0.12.104 (Kyle): 4% more enemies per stage (was 5%) */   /* 0.12.87 (Kyle): 5% more enemies per stage, rounded down per wave */   // more enemies per stage stays (that is numbers, not stats)
+      xpMul:1+0.10*(n-1)+P*2.4};   /* 0.12.104 (Kyle): XP per kill +10% per stage (was 19%) */
   },
 };
 // hero fighting styles (basic attack + body), keyed by deck
@@ -305,7 +305,8 @@ function spendEnergy(u,c){if((u.en||0)<c)return false;u.en-=c;unstealth(u);retur
 function onMeE(g,h){const x=g.heroX(h);return g.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-x)<16).length;}
 function unstealth(u){if(u&&u.stealthT>0){u.stealthT=0;u.stealthCd=1.2;}}
 // Werewolves come in a set number per stage (Kyle: 1 on stage 1, 2 on stage 3), spread along the stage instead of from the random pool
-const CLUSTERS={count:8,first:3,last:[7,9]};   // 0.12.84 (Kyle: good waves of regular zombies): 8 waves, 3 at the start to 7-9 at the end   // Kyle: first cluster 2, last cluster 6-7
+const CLUSTERS={count:8,first:3,last:[7,9],cap:7};
+const CLUSTERS1={count:8,first:4,last:[9,10],cap:8};   /* 0.12.104 (Kyle): stage 1 only: bigger waves, the last one most of all (other stages keep 3 -> 7-9) */   // 0.12.84 (Kyle: good waves of regular zombies): 8 waves, 3 at the start to 7-9 at the end   // Kyle: first cluster 2, last cluster 6-7
 const WOLVES_PER_STAGE=n=>n<2?0:Math.min(8,2+Math.floor((n-2)*.5));   // 0.12.84 (Kyle): no werewolves on stage 1; 2 on stage 2, one more every 2 stages, max 8   // 0.12.65 (Kyle: too weak / too few): 3 on stage 1, one more about every 2 stages   // 0.12.13 (Kyle): 2 on stage 1, then one more about every 2-3 stages (2,2,2,3,3,4,4,4,5...)
 const STRAYS_PER_STAGE=n=>3+Math.floor((n-1)/3);   // 0.12.84: one more lonely zombie per stage   // 0.12.13 (Kyle): a lonely zombie here or there between cluster waves
 const ENEMY_BODY=9;   // px between a melee enemy's centre and the front hero's centre before reach is added
@@ -397,14 +398,14 @@ const INSP={   /* 0.12.82 (Kyle): every deck now gives exactly TWO things (a pas
  'The Last of Us':{o:'Kyle',why:'Survivors who live off what they scrounge from the wrecks and slip every grab',passive:'scavenger',mod:{dodge:4}},
  'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming, and things that touch it get scared off',passive:'haunt',mod:{acc:6}},
  'Mothman Cometh!':{o:'Kyle',why:'A dark omen that is never quite where you hit, and never far behind',passive:'omen',sl:{lane:2}},
- 'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back; snow shows every tripwire',perk:'sapper',mod:{kb:40}},   // 0.12.101 review: knockback 30 -> 40 (Sapper is situational)
+ 'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back, and every storm fills the barrels',passive:'raincatch',mod:{kb:40}},   // 0.12.104: Rain Catcher instead of Sapper (Sapper stays on Cosmic Spider)   // 0.12.101 review: knockback 30 -> 40 (Sapper is situational)
  'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger, stitched together from whatever is lying around, and stitches up whoever falls apart',perk:'medicine',mod:{stamina:2}},
  "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward, and faster every swing',passive:'onslaught',sl:{aggr:2}},
  // Cheez
  'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: a flurry of cheap spells, one after another, from a flock that never sits still',mod:{cdr:15,move:8}},   // 0.12.100 (Kyle): 15% cooldown reduction, lighter second bonus
  'Double Dragons':{o:'Cheez',why:'Dragon fire, and two dragons means double the luck: every hoard they stumble on is a big one',perk:'superlucky',mod:{rangedDmg:16}},
  'Turtle Power':{o:'Cheez',why:'Shells and teamwork: when it gets bad, they pull in and wait it out',passive:'shell',mod:{armor:4}},
- 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills, and never travels without a snack',passive:'devour',stash:{food:3}},
+ 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills, and eats (and drinks) everything they were carrying',passive:'devour',perk:'looter'},   // 0.12.104: Lucky Looter instead of a 3-food starting stash
  'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone, and his crew gets in and out before anyone notices',passive:'pickpocket',sl:{self:2}},
  'Blood Suckers':{o:'Cheez',why:'Lifelinking bats: the night always comes, and every bite they miss only makes the next one surer',perk:'inevitable',mod:{lifesteal:5}},
  'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman strips wrecks for parts to overclock his guns',passive:'scavenger',mod:{rangedSpd:15}},
@@ -418,7 +419,7 @@ const INSP={   /* 0.12.82 (Kyle): every deck now gives exactly TWO things (a pas
  'Bruce Banner':{o:'Eddie',why:'Hulk smash: the longer he runs at you, the harder the first punch lands, and he soaks a lot getting there',passive:'onslaught',mod:{stamina:2}},   // 0.12.101 review: Onslaught instead of +10% XP (more fun, on theme)
  'Cloud':{o:'Eddie',why:'Omnislash: a suited-up SOLDIER whose every big hit is a Limit Break',mod:{critMul:.3,crit:3}},
  'Kasla, the Broken Halo':{o:'Eddie',why:'Convoke: the whole angel army chips in, so everything at camp costs less, and she flies in fast',passive:'haggler',mod:{move:10}},
- 'Master Splinter':{o:'Eddie',why:'Ninja training: never quite where the hit lands, and the shuriken fly fast',passive:'omen',mod:{rangedSpd:10}},   // 0.12.101 review: Dark Omen (a sure dodge every 12s) instead of +4% dodge
+ 'Master Splinter':{o:'Eddie',why:'A sewer rat knows where every scrap of food is, and his shuriken fly fast',passive:'forager',mod:{rangedSpd:15}},   // 0.12.104: Forager instead of Dark Omen (Omen stays on Mothman); shuriken speed 10 -> 15% to make up for it   // 0.12.101 review: Dark Omen (a sure dodge every 12s) instead of +4% dodge
  'Miles Morales':{o:'Eddie',why:'Spider-Man in the making: web shooters to slow them down, and he grows with every fight',passive:'webs',mod:{xp:8}},   // 0.12.101 review: Web Shooter instead of +6 Luck
  'Narset, Enlightened Master':{o:'Eddie',why:'A monk who turns every attack into free spells: her abilities come back 20% faster, with a little more energy to spend',mod:{cdr:20,enMax:10}},   // 0.12.98 (Kyle): cooldown reduction
 };
@@ -517,6 +518,8 @@ const INSP_PASSIVE={
  pickpocket:['Pickpocket','every enemy he lands a hit on gets its pockets picked: when it dies it is much more likely to drop gold (+60%), food and water (x2), spare parts (x2.5) and items (+50%). A truly Selfish thief (8+) also sometimes helps himself to whatever a nearby ally is carrying...'],
  bodyguard:['Bodyguard','a scripted behavior: he sticks to whichever ally is most hurt and stands by their side, and while he is within reach of them he takes 30% of every hit meant for them.'],
  webs:['Web Shooter','his hits have a 15% chance to web the target: 60% slower for 2s.'],
+ forager:['Forager','he knows what\'s edible: food drops from the enemies he kills come about twice as often (roughly one per 9 of his kills instead of one per 18).'],
+ raincatch:['Rain Catcher','he never lets a storm go to waste: water drops from the enemies he kills come about twice as often (roughly one per 9 of his kills instead of one per 18).'],
  mountain:['The Mountain','nothing moves him: +50% knockback resistance (up to 95%), so heavy hits, boss slams and blasts barely shove him, and boss hits deal 10% less to him.'],
 };
 /* 0.12.56 (Kyle): perks are a second, smaller bonus a deck can carry; each one shows up on 2 decks for now */
@@ -524,6 +527,7 @@ const PERKS={
  sapper:['🧨','Sapper','spots enemy mines far more easily and defuses them with good odds (about 82% before traits, versus about 30% for anyone else; a failure sets it off). Slow and Steady, Techy, Steady nerves, Optimal and Luck all help. Plants bombs and mines faster (-0.8s), and his own Trip Bomb (Flannel_Man) hits 25% harder. A defused mine is kept as a one-time item 75% of the time (40% for non-Sappers) and planted in front of zombies coming down his lane; otherwise it comes apart into spare parts.'],
  medicine:['🌿','Medicine Man','every heal he gives lands 30% stronger: healing spells, medkits, herbs, healing over time and his abilities\' heals. Allies he helps up come back with 35% HP instead of 25%.'],
  inevitable:['⏳','Inevitable','every time something he tries fails (a shot that hits nothing, an attack that\'s dodged, an empty search, a fumbled defuse) he gains +2 Luck and +1% crit chance, stacking up to 10 times. The next critical hit he lands cashes it all in and the stacks start over. Resets each stage.'],
+ looter:['🎒','Lucky Looter','nothing goes to waste: food AND water drops from the enemies he kills both come about 50% more often (roughly one of each per 12 of his kills instead of one per 18).'],
  superlucky:['🍀','Super Lucky','everything his Luck does, it does twice as well: his Luck counts double for finds when searching, rare drops, defusing and planting, and anything else Luck touches (Inevitable stacks included).'],
 };
 function deckSkills(name){const I=INSP[name];if(!I)return [];const out=[];if(I.passive&&INSP_PASSIVE[I.passive])out.push(['✦',INSP_PASSIVE[I.passive][0],'Deck passive: '+INSP_PASSIVE[I.passive][1]]);if(I.perk&&PERKS[I.perk])out.push([PERKS[I.perk][0],PERKS[I.perk][1],'Deck perk: '+PERKS[I.perk][2]]);return out;}
@@ -1302,8 +1306,8 @@ class Game{
            2% chance; every miss adds +0.3% (more with Supply boosts, Luck and a picked-up enemy) until it drops, then it resets to 2%.
            That's about one of each every ~18 kills per hero (0.12.94). Bosses and elites still drop extra. */
         const K=src&&!src.pet&&!src.minion&&this.run.team&&this.run.team.includes(src.key)?src:null;
-        if(K){const P=this.run.pity=this.run.pity||{},q=P[K.key]=P[K.key]||{food:0,water:0};const boost=((this.mods&&this.mods.supply)||1)*PK.s*(1+(K.luck||0)/200)*(1+[0,.15,.3][upgT(this.run,'forage')||0]);
-          for(const kind of ['food','water']){const ch=Math.min(1,(.02+.003*q[kind])*boost*m);if(this.rng()<ch){q[kind]=0;this.loot.push({kind,x:e.x+(this.rng()*10-5),gy:e.gy,amt:1,t:0});}else q[kind]++;}}
+        if(K){const P=this.run.pity=this.run.pity||{},q=P[K.key]=P[K.key]||{food:0,water:0};const boost=((this.mods&&this.mods.supply)||1)*PK.s*(1+(K.luck||0)/200)*(1+[0,.15,.3][upgT(this.run,'forage')||0]);const kp=insP(K);   /* 0.12.104 Forager / Rain Catcher / Lucky Looter */
+          for(const kind of ['food','water']){const ch=Math.min(1,(.02+.003*q[kind])*boost*m*((kp==='forager'&&kind==='food')||(kp==='raincatch'&&kind==='water')?2.5:hasPerk(K,'looter')?1.8:1));if(this.rng()<ch){q[kind]=0;this.loot.push({kind,x:e.x+(this.rng()*10-5),gy:e.gy,amt:1,t:0});}else q[kind]++;}}
         else if(m>1&&this.rng()<.03*m)this.loot.push({kind:this.rng()<.5?'water':'food',x:e.x+(this.rng()*10-5),gy:e.gy,amt:1,t:0});
         if(this.rng()<.04*m*((this.mods&&this.mods.parts)||1)*PK.p)this.loot.push({kind:'parts',x:e.x+(this.rng()*10-5),gy:e.gy,amt:1+(this.rng()<.5?1:0),t:0});}
       const iChance=(e.boss?1:e.elite?.1+.01*st.n:(e.E.itemChance!=null?e.E.itemChance:.004+.0012*st.n))*PK.i;if(this.rng()<iChance){const it=rollItem(this.run,this.rng,e.boss?'U':null,e.boss?'boss':e.elite?'elite':'mob');if(it)this.loot.push({kind:'item',x:e.x+6,item:it,t:0});}}
@@ -1473,8 +1477,8 @@ class Game{
     else if(W.k==='tesla'){const A=BU.tesla;B.push({bld:1,k:'tesla',x:W.x,gy:W.gy,hp:A.hp,max:A.hp,A,owner:h,t:0,zT:.5});}
     else if(W.k==='turret'){const A=MO.turret;const car=W.car;if(car){car.turret=1;B.push({bld:1,k:'turret',car,x:car.x,gy:LANES[Math.max(...car.lanes)],hp:A.hp,max:A.hp,A,owner:h,t:0,rl:0,shots:0,sT:0});}}}
   bldBlock(e,dt){for(const b of this.blds){if(b.hp<=0)continue;const ey=e.gy!=null?e.gy:this.G;
-      if(b.k==='barrier'&&Math.abs(ey-b.gy)<=b.A.depth&&e.x>b.x-2&&e.x<b.x+12){e.x=Math.max(e.x,b.x+10);e.bwT=(e.bwT||0)+dt;if(e.bwT>=(e.E&&e.E.atk||1.2)){e.bwT=0;e.anim=1;e.animT=.3;b.hp-=e.dmg;b.hitT=.15;}}
-      else if(b.k!=='barrier'&&b.k!=='turret'&&Math.abs(e.x-b.x)<9&&Math.abs(ey-b.gy)<5){e.bwT=(e.bwT||0)+dt*.5;if(e.bwT>=(e.E&&e.E.atk||1.2)){e.bwT=0;b.hp-=e.dmg;b.hitT=.15;}}}}
+      if((b.k==='barrier'||b.k==='sandbag')&&Math.abs(ey-b.gy)<=b.A.depth&&e.x>b.x-2&&e.x<b.x+12){e.x=Math.max(e.x,b.x+10);e.bwT=(e.bwT||0)+dt;if(e.bwT>=(e.E&&e.E.atk||1.2)){e.bwT=0;e.anim=1;e.animT=.3;b.hp-=e.dmg;b.hitT=.15;if(b.A.barb){e.hp-=b.A.barb;e.hitFlash=.1;if(e.hp<=0)this.hitEnemy(e,1,null,{sure:1,nocrit:1});}}}
+      else if(b.k!=='barrier'&&b.k!=='sandbag'&&b.k!=='turret'&&Math.abs(e.x-b.x)<9&&Math.abs(ey-b.gy)<5){e.bwT=(e.bwT||0)+dt*.5;if(e.bwT>=(e.E&&e.E.atk||1.2)){e.bwT=0;b.hp-=e.dmg;b.hitT=.15;}}}}
   satchelBoom(S){S.boom=1;const A=S.A,h=S.owner;this.fx.push({k:'boom',x:S.x,gy:S.gy,t:0,life:1.3,raw:1,big:1},{k:'crack',x:S.x,gy:S.gy,t:0,life:4,raw:1,r:A.r*.8},{k:'slam',x:S.x,gy:S.gy,t:0,life:.9,raw:1,r:A.r,seed:Math.random()*99});this.ev('boom',{});this.shake=Math.max(this.shake||0,1);
     const mul=h&&h.base?(h.atk/h.base.atk)*(h.rangedDmg||1)*(hasPerk(h,'sapper')?1.25:1):1;
     for(const e of this.enemies){if(e.dead)continue;const dx=Math.abs(e.x-S.x)-(e.boss?e.w*.4:0),dz=e.fly?0:Math.abs((e.gy!=null?e.gy:this.G)-S.gy);const d=Math.hypot(Math.max(0,dx),dz*1.6);if(d>A.r)continue;const f=1-.7*d/A.r;
@@ -1504,7 +1508,7 @@ class Game{
     for(const o of this.alive()){if(o.ammoBuffT>0)o.ammoBuffT-=dt;o._bAcc=o._bAcc||0;let acc=0;
       for(const b of B){if(b.hp<=0)continue;const dx=this.heroX(o)-b.x,ad=Math.abs(dx),dz=Math.abs((o.gy||this.G)-b.gy);
         if(b.k==='tower'&&ad<b.A.r){if(b.tier>=1)this.healHero(o,o.max*b.A.regen*dt,true,b.owner);if(b.tier>=2)o.ammoBuffT=.3;if(b.tier>=3&&!b.occ)acc=Math.max(acc,b.A.acc);}
-        if(b.k==='barrier'&&dx<0&&dx>-b.A.behind&&dz<=b.A.depth)acc=Math.max(acc,b.A.acc);}
+        if((b.k==='barrier'||b.k==='sandbag')&&b.A.acc&&dx<0&&dx>-b.A.behind&&dz<=b.A.depth)acc=Math.max(acc,b.A.acc);}
       if(acc!==o._bAcc){o.acc+=acc-o._bAcc;o._bAcc=acc;}}
     // lookout: IF the tower is tier 3 and empty THEN the nearest ranged ally (not the Engineer) climbs up
     for(const b of B){if(b.k!=='tower'||b.tier<3||b.hp<=0)continue;if(b.occ&&(!b.occ.alive||b.x<12)){const o=b.occ;o.perch=null;o.leapH=0;o.acc-=b.A.perchAcc;b.occ=null;}
@@ -1556,7 +1560,7 @@ class Game{
     if(this.over)return;this.t+=dt;
     const T=this;const al=this.alive();this.dropLost();for(const h of this.heroes)if(h.alive&&h.thirst>0&&!this.over){h.hp-=h.max*THIRST.drain[h.thirst]*dt;if(h.hp<1)h.hp=1;}   /* 0.12.72: dehydration drains a little life (never kills on its own) */for(const p of this.pets||[])if(p.dog&&!p.alive&&p.downed){p.x-=(this.scroll||0)*dt;if(p.x<-10)p.downed=0;}   /* a downed dog is left behind if nobody helps him up before he slides off screen */
     for(const p of this.pets||[])if(p.dog&&p.alive&&p.hits<p.hitsMax){p.hitRegT=(p.hitRegT||0)+dt;if(p.hitRegT>=p.hitRegEvery){p.hitRegT=0;p.hits++;p.hp=p.max*p.hits/p.hitsMax;}}   /* dog: one hit back every 15s (10s at Kennel III) */
-    if(!this._hearth){this._hearth=1;if(!this.demo&&this.run&&upgT(this.run,'hearth'))for(const h of al)giveCozy(h);const sb=!this.demo&&this.run&&upgT(this.run,'sandbag');if(sb)for(const h of al)if(!h.pet){h.shield=(h.shield||0)+h.max*[.1,.2,.3][sb-1];h.shieldT=Math.max(h.shieldT||0,20);}}   /* 0.12.102 Sandbag Wall */   /* Hearth camp upgrade: everyone starts the stage Cozy */
+    if(!this._hearth){this._hearth=1;if(!this.demo&&this.run&&upgT(this.run,'hearth'))for(const h of al)giveCozy(h);const sb=!this.demo&&this.run&&upgT(this.run,'sandbag');if(sb){const pool=al.filter(h=>!h.pet).sort(()=>this.rng()-.5);for(const h of pool.slice(0,sb>=3?2:1)){h.sandbag=sb;Comms.bubble(this,h,Comms.pick(['Got the sandbags.','I\'ll carry the bags.','Sandbags on my back!']));}}}   /* 0.12.104 Sandbag Wall: random carriers */   /* Hearth camp upgrade: everyone starts the stage Cozy */
     for(const t of this.timers||[])t.t-=dt;
     if(this.timers){for(const t of this.timers.filter(t=>t.t<=0))t.fn();this.timers=this.timers.filter(t=>t.t>0);}
     // 0.12.2 behavior AI: everyone reads the same snapshot of the battlefield, then each hero thinks on its own clock
@@ -1570,7 +1574,7 @@ class Game{
     const avgMv=al.reduce((m,h)=>m+(MOVE[h.key]||26),0)/Math.max(1,al.length);
     al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;let tx=this.exiting?this.W+60:(h.plan&&h.plan.reviveD&&!h.plan.reviveD.alive?h.plan.reviveD.x:h.plan&&h.plan.goTo&&h.plan.goTo.mine?h.plan.goTo.mine.x-9:h.plan&&h.plan.goTo&&h.plan.goTo.ob?(()=>{const o=h.plan.goTo.ob;if(/search|disarm/.test(h.plan.intent))return this.searchSpot(o,h).x;const [a,b]=this.obSpan(o,o.lanes[0]);return h.x<(a+b)/2?a-6:b+6;})():h.plan&&h.plan.goTo&&h.plan.goTo.alive?this.heroX(h.plan.goTo)+(h.plan.goTo.x<h.x?8:-8):this.home(h)+drift+(h.plan?(this._clear?Math.max(-6,h.plan.xoff):h.plan.xoff):0));tx=Math.max(8,Math.min(this.W-8,tx));   /* 0.12.58: with nothing near, nobody hangs far back (the march needs the party up front) */
       if(!this.exiting&&trait(h,'range')>.55&&!(h.plan&&(h.plan.intent==='retreat'||h.plan.reviveD||h.plan.goTo))){const foe=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&e.gy!=null&&Math.abs(e.gy-(h.gy||190))<4&&e.x>h.x&&e.x-h.x<90).reduce((b,e)=>!b||e.x<b.x?e:b,null);if(foe)tx=Math.max(tx,Math.min(this.home(h)+28,foe.x-12));}   // push forward into the fight
-      const x0=h.x;const C=h.base.char;const rm=C?((h.plan&&/retreat|charge|kite|cover|regroup|gather|revive|herb|guard|search|disarm|hunker|defuse/.test(h.plan.intent))||this.exiting?C.run:1):(h.plan?h.plan.runMul:1);h.running=C?rm>1:false;
+      h._tx=tx;const x0=h.x;const C=h.base.char;const rm=C?((h.plan&&/retreat|charge|kite|cover|regroup|gather|revive|herb|guard|search|disarm|hunker|defuse/.test(h.plan.intent))||this.exiting?C.run:1):(h.plan?h.plan.runMul:1);h.running=C?rm>1:false;
       const d=tx-h.x,st=mv*(h.mvMul||1)*dynMv(h)*(h.whirl?.5:1)*(this.exiting&&!C?2.6:1.6)*rm*(rm>1?.75:.85)*dt;/* 0.12.13 (Kyle): walking 15% slower, running 25% slower */if(!(h.pauseT>0)||this.exiting)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;h.moveT=h.moving?(h.moveT||0)+dt:0;});
     const f=this.front();if(!f)return;
     // blocking: walk unless something is close
@@ -1592,9 +1596,9 @@ class Game{
     else if(!stageDone&&!this.exiting){
       // 0.12.6 (Kyle): enemies come in CLUSTERS instead of a steady flow. 7 clusters per stage, spread along the stage with some
       //   randomness. Sizes grow from 2 at the start to 6-7 at the end (each a little random). A cluster walks in over ~1.5s, bunched.
-      if(!this.clusters){const N=CLUSTERS.count;this.clusters=[];
-        for(let i=0;i<N;i++){const t=i/(N-1);const size=i===0?CLUSTERS.first:i===N-1?CLUSTERS.last[0]+Math.floor(this.rng()*(CLUSTERS.last[1]-CLUSTERS.last[0]+1)):
-            Math.max(2,Math.min(7,Math.round(CLUSTERS.first+(CLUSTERS.last[0]+.5-CLUSTERS.first)*t+(this.rng()*2-1))));
+      if(!this.clusters){const CL=this.st.n===1?CLUSTERS1:CLUSTERS;const N=CL.count;this.clusters=[];
+        for(let i=0;i<N;i++){const t=i/(N-1);const size=i===0?CL.first:i===N-1?CL.last[0]+Math.floor(this.rng()*(CL.last[1]-CL.last[0]+1)):
+            Math.max(2,Math.min(CL.cap,Math.round(CL.first+(CL.last[0]+.5-CL.first)*t+(this.rng()*2-1))));
           const at=this.st.len*Math.max(.02,Math.min(.9,.04+.84*t+(this.rng()*2-1)*.04));const sz=Math.max(1,Math.floor(size*(this.st.countMul||1)*((this.mods&&this.mods.foes)||1)));this.clusters.push({at,size:sz,left:sz,t:0});}
         // strays: single zombies dropped in the quiet gaps between clusters (never right on top of one), some stages get none in a gap
         this.strays=[];const ats=this.clusters.map(q=>q.at);for(let i=0;i<STRAYS_PER_STAGE(this.st.n)*3&&this.strays.length<STRAYS_PER_STAGE(this.st.n);i++){
@@ -1888,7 +1892,7 @@ class Game{
     this.proj=this.proj.filter(p=>!p.dead);
     // fx + text
     // 0.12.14 (Kyle): nothing lying on the ground slides along with the party: bodies, stuck arrows, thorns, scorch marks scroll with the ground
-    this.stepRevive(dt);this.stepHerbs(dt,scroll);this.stepDisarm(dt);
+    this.stepRevive(dt);this.stepWatchdog(dt);this.stepSandbags(dt,scroll);this.stepClimb(dt,scroll);this.stepHerbs(dt,scroll);this.stepDisarm(dt);
     for(const h of this.alive())this.obClamp(h,true);for(const e of this.enemies)if(!e.dead)this.obClamp(e,false);
     for(const x of this.fx){x.t+=dt;if(scroll&&GROUND_FX.has(x.k))x.x-=scroll*dt;}this.fx=this.fx.filter(x=>x.t<(x.life||.6));
     if(scroll)for(const h of this.heroes.concat(this.pets||[]))if(!h.alive&&h.x!=null)h.x-=scroll*dt;   // fallen heroes stay where they fell
@@ -2547,9 +2551,57 @@ class Game{
   gainParts(h,o){const n=1+(this.rng()<.5?1:0);this.stageParts=(this.stageParts||0)+n;this.text(o?o.x:h.x,(o?LANES[o.lanes[0]]:this.G)-30,'+'+n+' PARTS','#c8d0d8');if(h)Comms.bubble(this,h,Comms.pick(['Spare parts!','Useful bits.','Gears and wire!']));}
   gainSupply(h,o){const w=this.rng()<.5;if(w)this.stageWater=(this.stageWater||0)+1;else this.stageFood=(this.stageFood||0)+1;this.text(o?o.x:h.x,(o?LANES[o.lanes[0]]:this.G)-36,w?'+1 WATER':'+1 FOOD',w?'#7fd0ff':'#e8b060');
     if(h)Comms.bubble(this,h,w?Comms.pick(['Clean water!','A bottle!','Water!']):Comms.pick(['Canned food!','Rations!','Still sealed!']));}
+  /* 0.12.104 (Kyle): a mechanical check that keeps units on track (no thinking, just "is this job actually moving?").
+     Every job a unit walks to (helping someone up, an alarm, a search, a mine, an herb, a pickpocket try) must show progress:
+     the unit is getting closer, or the job's own timer is going up. After 6s with neither, the job is dropped, the unit stands up
+     and thinks again, and that same target is skipped for 5s. Units that went down or are mid-ability are left alone. */
+  stepWatchdog(dt){const JOB=/^(revive|disarm|search|defuse|herb|sneak)$/;
+    for(const u of this.heroes.concat(this.pets||[])){if(!isFinite(u.gy))u.gy=LANES[u.laneI!=null&&LANES[u.laneI]?u.laneI:2];if(!isFinite(u.x))u.x=60;}   /* bad numbers never stick: a unit with no lane height or position gets put back on a lane */
+    for(const h of this.alive()){if(h.pet)continue;const P=h.plan;const tgt=P&&(P.reviveD||(P.goTo&&(P.goTo.ob||P.goTo.mine))||P.goTo);
+      if(!P||!JOB.test(P.intent||'')||!tgt||h.cast||h.rush){h._wd=null;continue;}
+      const prog=(tgt.revT||0)+(h.search&&h.search.t||0)+(tgt.disT||0),dist=Math.abs((tgt.x!=null?tgt.x:h.x)-h.x);
+      const W=h._wd;if(!W||W.tgt!==tgt||W.intent!==P.intent){h._wd={tgt,intent:P.intent,t:0,prog,dist};continue;}
+      if(prog>W.prog+.05||dist<W.dist-3){W.t=0;W.prog=prog;W.dist=dist;continue;}
+      W.t+=dt;
+      if(P.intent==='revive'&&W.t>=2.5&&tgt.downed&&dist<60){tgt.x=h.x+(tgt.x>h.x?5:-5);tgt.gy=h.gy||tgt.gy;tgt.laneI=h.laneI!=null?h.laneI:tgt.laneI;W.t=0;W.dist=0;   /* blocked by a wreck or a lane: he reaches over and pulls the body to him */
+        if(this.debugWD)this.debugWD.push([h.key,'pull',+this.t.toFixed(1)]);continue;}
+      if(W.t<6)continue;
+      h._wd=null;h.plan=null;h.thinkT=0;h.revDecide={D:P.reviveD||null,until:this.t+5,go:false};h.alDecide=P.intent==='disarm'?{o:tgt,until:this.t+5,go:false}:h.alDecide;
+      if(h.search)h.search=null;if(h.defuse&&P.intent==='defuse')h.defuse=null;h.pauseT=0;h.animM=0;
+      if(this.debugWD)this.debugWD.push([h.key,P.intent,+this.t.toFixed(1),Math.round(h.x),Math.round(h.gy||0),tgt.key||tgt.k,Math.round(tgt.x),Math.round(tgt.gy||0),!!tgt.alive,!!tgt.downed,+(tgt.revT||0).toFixed(1),!!(h.riseT>0),h.moving]);}}
+  /* 0.12.104 Sandbag Wall (camp item). IF I carry sandbags AND a pack of 4+ is coming down a lane (3+ late in the stage, or 3+ already close)
+     THEN heave the wall into that lane, as far out as it can still land in front of them: aim for about 3/4 across the screen
+     (mid-to-far right), never behind the zombies, never in my own face. 0.7s heave, then it lands. */
+  stepSandbags(dt,scroll){const SB=[null,{hp:70,acc:0,barb:0},{hp:110,acc:8,barb:0},{hp:140,acc:8,barb:3}];
+    for(const h of this.alive()){if(!h.sandbag||h.pet)continue;
+      if(h.sbThrow){const T=h.sbThrow;T.t+=dt;T.x-=scroll*dt;h.pauseT=Math.max(h.pauseT||0,.05);if(T.t<.7)continue;h.sbThrow=null;
+        const A=Object.assign({depth:8,behind:40},SB[h.sandbag]);const B=this.blds=this.blds||[];B.push({bld:1,k:'sandbag',x:T.x,gy:T.gy,hp:A.hp,max:A.hp,A,owner:h,t:0});h.sandbag=0;
+        this.fx.push({k:'puff',x:T.x,y:T.gy-2,t:0,life:.6,s:2});this.text(T.x,T.gy-34,'SANDBAGS!','#d8c08a');this.shake=Math.max(this.shake||0,.15);continue;}
+      if((h.sbCd||0)>this.t)continue;h.sbCd=this.t+.4;
+      const hx=this.heroX(h),live=this.enemies.filter(e=>!e.dead&&!e.fly&&!e.boss&&e.x<this.W+30&&e.x>hx+20);let best=null;
+      for(let li=0;li<LANES.length;li++){const l=LANES[li],ln=live.filter(e=>Math.abs((e.gy!=null?e.gy:this.G)-l)<=8);if(!ln.length)continue;
+        const front=Math.min(...ln.map(e=>e.x)),close=ln.filter(e=>e.x-hx<110).length;
+        if((ln.length>=(this.dist>this.st.len*.6?3:4)||close>=3)&&(!best||ln.length>best.n))best={l,n:ln.length,front};}
+      if(!best)continue;if((this.blds||[]).some(b=>b.k==='sandbag'&&b.hp>0&&Math.abs(b.gy-best.l)<=8&&b.x>hx))continue;
+      const tx=Math.min(this.W*.78,best.front-14);if(tx<hx+22)continue;   /* too late to get it in front of them */
+      h.sbThrow={t:0,x:tx,gy:best.l};h.animM=.5;h.face=1;Comms.bubble(this,h,Comms.pick(['Sandbags out!','Wall going down!','Heads up, bags!']),true);this.ev('whoosh',{});}}
+  /* 0.12.104 (Kyle): allies don't walk through a HESCO cell any more. It has a little ladder on its left side: a unit
+     that reaches it climbs up and drops down the far side (about 0.9s). Coming back from the right he climbs over it too.
+     A Sandbag Wall is low, so it's a quick hop (0.45s). Downed bodies, pets and anyone mid-ability are left alone. */
+  stepClimb(dt,scroll){const B=(this.blds||[]).filter(b=>(b.k==='barrier'||b.k==='sandbag')&&b.hp>0);
+    for(const h of this.alive()){if(h.dog)continue;const px=h._cpx;h._cpx=h.x;
+      if(h.climb){const C=h.climb;C.t+=dt;C.x0-=scroll*dt;C.x1-=scroll*dt;const u=Math.min(1,C.t/C.T);h.x=C.x0+(C.x1-C.x0)*(u<.55?u*.25/.55:.25+(u-.55)/.45*.75);
+        h.leapH=C.H*(u<.55?u/.55:Math.max(0,1-(u-.55)/.45*1.2));h.pauseT=Math.max(h.pauseT||0,.05);h.face=C.x1>C.x0?1:-1;h._cpx=h.x;
+        if(u>=1){h.climb=null;h.leapH=0;h.x=C.x1;h._cpx=h.x;}continue;}
+      if(px==null||h.jet||h.rush||h.perch||h.sbThrow)continue;
+      for(const b of B){if(Math.abs((h.gy||this.G)-b.gy)>b.A.depth)continue;const L=b.x-8,R=b.x+9;
+        const right=px<L&&h.x>=L,left=px>R&&h.x<=R;if(!right&&!left)continue;
+        if(h._tx!=null&&!this.exiting&&(right?h._tx<R+6:h._tx>L-6)){h.x=right?L:R;h._cpx=h.x;break;}   /* only climb when he's actually going somewhere past it; shuffling around next to it, he just stops at it */
+        const low=b.k==='sandbag';h.climb={t:0,T:low?.45:.9,x0:right?L:R,x1:right?R+1:L-1,H:low?9:19};h.x=h.climb.x0;h._cpx=h.x;break;}}}
   stepRevive(dt){const downs=this.heroes.concat((this.pets||[]).filter(p=>p.dog)).filter(h=>!h.alive&&h.downed);if(!downs.length)return;
     const al=this.alive().filter(o=>!o.pet);const herald=o=>(o.base.char&&o.base.char.abilities||[]).some(a=>a.id==='herald');
-    for(const d of downs){const helpers=al.filter(o=>Math.abs(o.x-d.x)<9&&Math.abs((o.gy||this.G)-(d.gy||this.G))<4.5&&!(o.riseT>0));const need=(helpers.some(herald)?4:5)*(1-[0,.2,.4][(!this.demo&&this.run&&upgT(this.run,'stretch'))||0]);d.revNeed=need;   /* 4s when the Herald is the one helping, 5s for everyone else */
+    for(const d of downs){if(!isFinite(d.gy))d.gy=LANES[d.laneI!=null&&LANES[d.laneI]?d.laneI:2];if(!isFinite(d.x))d.x=60;   /* 0.12.104 fix: the dog's body could end up with no lane height (NaN), so nobody could ever reach it */if(d.x<10)d.x=10;if(d.x>this.W-10)d.x=this.W-10;if(d.gy!=null){let bi=0;for(let i=1;i<LANES.length;i++)if(Math.abs(LANES[i]-d.gy)<Math.abs(LANES[bi]-d.gy))bi=i;d.laneI=bi;}   /* 0.12.104 fix: a body that was dragged (Protect_the_Familia) or knocked between lanes kept its old lane, so helpers knelt one lane off and never got anywhere */   /* 0.12.104 fix: a body that scrolled to the screen edge stays where helpers can reach it (the dog could slide off-screen and everyone kneeled at the edge forever) */
+      const helpers=al.filter(o=>Math.abs(o.x-d.x)<9&&Math.abs((o.gy||this.G)-(d.gy||this.G))<4.5&&!(o.riseT>0));const need=(helpers.some(herald)?4:5)*(1-[0,.2,.4][(!this.demo&&this.run&&upgT(this.run,'stretch'))||0]);d.revNeed=need;   /* 4s when the Herald is the one helping, 5s for everyone else */
       {const df=helpers.find(o=>o.defib);if(df){df.defib=0;this.fx.push({k:'ring',x:d.x,y:(d.gy||this.G)-10,t:0,r:16,c:'#9ad0ff'});this.fx.push({k:'arc',x:d.x,gy:d.gy||this.G,t:0,life:.4,dir:1,raw:1});this.ev('zap',{});Comms.bubble(this,df,Comms.pick(['Clear!','Shocking you awake!','Get up!']),true);this.st8(df).revives++;this.revive(d);continue;}}   /* 0.12.38 Defibrillator: one use, instant revive */
       if(helpers.length){d.revT=(d.revT||0)+dt;if(!d.revCall){d.revCall=1;Comms.say(this,helpers[0],'reviving',{ally:d});}}
       else{d.revT=Math.max(0,(d.revT||0)-dt*.5);if(d.revT<=0)d.revCall=0;}
@@ -2800,8 +2852,8 @@ function newSlot(player){const heroes={};for(const h of DATA.heroes)heroes[h.key
 //   Triage crafting, and level-up stat points. Gold, spare parts, supplies and upgrades all belong to the run (gold and parts reset in newRun).
 // ======================================================================================================================
 /* 0.12.103 (Kyle: average hero damage in stage 1 about 300, healer and utility heroes lower). Scales ALL of a hero's damage: basic attacks, abilities and anything he summons or builds. */
-const ENEMY_HP=.63;   /* every enemy's HP; heroes hit for about .76 of before on average, so time-to-kill stays about the same and the numbers land near 300 */
-const HERO_DMG={jp:.61,chibi:.66,archer:.79,flannel:.87,druid:.63,eng:.63,lumberjack:.73,robot:.58,cultist:.42};
+const ENEMY_HP=.54;   /* 0.12.104: .63 -> .52 with the bigger waves, to hold ~300 */   /* every enemy's HP; heroes hit for about .76 of before on average, so time-to-kill stays about the same and the numbers land near 300 */
+const HERO_DMG={jp:.48,chibi:.58,archer:.64,flannel:.72,druid:.50,eng:.53,lumberjack:.61,robot:.46,cultist:.36};
 const CAMP_UPG={
   water:{name:'Water Filtration System',icon:'💧',tiers:[100,175,275],txt:t=>`${[25,50,75][t-1]}% chance to give one hungry unit water by itself when you get back to camp.`},
   triage:{name:'Triage Station',icon:'🩺',tiers:[125,200,300],txt:t=>`Build a Medkit (${TRIAGE.med[t-1]} spare parts), a Battery (${TRIAGE.bat[t-1]}) or a Defibrillator (${TRIAGE.defib[t-1]}) for a unit to carry into the next stage. ${t>=3?'Up to 2 builds':'1 build'} per camp.`},
@@ -2824,7 +2876,7 @@ const CAMP_UPG={
   still:{name:'Moonshine Still',icon:'🫙',tiers:[100,175],txt:t=>`Brew Liquid Courage from ${t===1?2:1} food (${t===1?1:2} per camp). Whoever drinks it fights the next stage with +20% damage, -10 accuracy and steadier nerves. *hic*`},
   // 0.12.63 (Kyle): Radio Tower removed
   stretch:{name:'Stretchers',icon:'🩼',tiers:[100,175],txt:t=>`Helping a downed ally up takes ${[20,40][t-1]}% less time (normally 5s).`},   /* 0.12.102 */
-  sandbag:{name:'Sandbag Wall',icon:'🧱',tiers:[100,175,275],txt:t=>`Everyone sets out behind cover: each stage starts with a shield worth ${[10,20,30][t-1]}% of max HP that lasts 20s.`},   /* 0.12.102 */
+  sandbag:{name:'Sandbag Wall',icon:'🧱',tiers:[100,175,275],txt:t=>['One random hero heads into each stage carrying a Sandbag Wall (70 HP). When a pack comes down the road he heaves it out into their path, toward the far right of the screen: zombies in that lane and the ones next to it can\'t pass until they tear through it.','The wall is heavier (110 HP), and allies standing just behind it get +8 accuracy.','TWO heroes carry one each (140 HP), and they\'re barbed: every swing a zombie takes at the wall costs it 3 HP.'][t-1]},   /* 0.12.104 (Kyle): an item a hero carries in, not a shield */
   forage:{name:'Foraging Packs',icon:'🎒',tiers:[100,175],txt:t=>`Food and water drop from kills ${[15,30][t-1]}% more often.`},   /* 0.12.102 */
   hearth:{name:'Hearth',icon:'🔥',tiers:[90],txt:t=>`Everyone sets out warm: each stage starts with COZY (10s: +0.25 life and energy every 0.5s, +10% melee attack speed and move speed).`},
 };
@@ -2901,12 +2953,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794460299';const BGI=new Image();BGI.src='crawl_bg.png?v=1794460299';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794460299';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794461563';const BGI=new Image();BGI.src='crawl_bg.png?v=1794461563';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794461563';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794460299';XIMG.wave.src='crawl_wave.png?v=1794460299';XIMG.chibi.src='crawl_chibi.png?v=1794460299';XIMG.flannel.src='crawl_flannel.png?v=1794460299';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794460299';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794460299';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794460299';XIMG.rain.src='crawl_rain.png?v=1794460299';XIMG.druid.src='crawl_druid.png?v=1794460299';XIMG.camp.src='crawl_campfire.png?v=1794460299';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794460299';XIMG.tornado.src='crawl_fx_tornado.png?v=1794460299';XIMG.vine.src='crawl_fx_vine.png?v=1794460299';XIMG.thorn.src='crawl_fx_thorn.png?v=1794460299';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794461563';XIMG.wave.src='crawl_wave.png?v=1794461563';XIMG.chibi.src='crawl_chibi.png?v=1794461563';XIMG.flannel.src='crawl_flannel.png?v=1794461563';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794461563';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794461563';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794461563';XIMG.rain.src='crawl_rain.png?v=1794461563';XIMG.druid.src='crawl_druid.png?v=1794461563';XIMG.camp.src='crawl_campfire.png?v=1794461563';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794461563';XIMG.tornado.src='crawl_fx_tornado.png?v=1794461563';XIMG.vine.src='crawl_fx_vine.png?v=1794461563';XIMG.thorn.src='crawl_fx_thorn.png?v=1794461563';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794460299';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794460299';XIMG.obst.src='crawl_obst.png?v=1794460299';XIMG.cars.src='crawl_cars.png?v=1794460299';XIMG.robot.src='crawl_robot.png?v=1794460299';XIMG.cultist.src='crawl_cultist.png?v=1794460299';XIMG.tentacle.src='crawl_tentacle.png?v=1794460299';XIMG.boom.src='crawl_boom.png?v=1794460299';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794461563';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794461563';XIMG.obst.src='crawl_obst.png?v=1794461563';XIMG.cars.src='crawl_cars.png?v=1794461563';XIMG.robot.src='crawl_robot.png?v=1794461563';XIMG.cultist.src='crawl_cultist.png?v=1794461563';XIMG.tentacle.src='crawl_tentacle.png?v=1794461563';XIMG.boom.src='crawl_boom.png?v=1794461563';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3186,6 +3238,7 @@ function drawGame(ctx,g,W,oy){
       if(e.fearT>0){ctx.fillStyle='#c080ff';ctx.fillRect(Math.round(e.x)-.5,Math.round(y-18),1,3);ctx.fillRect(Math.round(e.x)-.5,Math.round(y-14),1,1);}}
     for(const h of g.alive())if(h.key==='cultist'&&!(h.riseT>0)){const d=h.face||1,ey=(h.gy||g.G)-14.6;ctx.save();ctx.globalCompositeOperation='lighter';for(const ox of[-.1,1.7])glow(ctx,g.heroX(h)+d*(1.2+ox),ey,1.3,'#ff2a20',.32+.12*Math.sin(g.t*3+ox));ctx.restore();}   // his eyes glow red in the dark
     for(const h of g.alive())if(h.defib){const x=Math.round(g.heroX(h)+(h.medkit?12:6)),y=Math.round((h.gy||g.G)-31);ctx.fillStyle='#202020';ctx.fillRect(x-1,y-1,5,5);ctx.fillStyle='#f2d23a';ctx.fillRect(x,y,3,3);ctx.fillStyle='#202020';ctx.fillRect(x+1,y,1,2);ctx.fillRect(x,y+1,1,1);ctx.fillRect(x+2,y+1,1,1);}   /* carrying a Defibrillator: a little yellow pad with a bolt */
+    for(const h of g.alive())if(h.sandbag&&!h.sbThrow){const x=Math.round(g.heroX(h)-7),y=Math.round((h.gy||g.G)-31);ctx.fillStyle='#3a2c18';ctx.fillRect(x-1,y-1,6,5);ctx.fillStyle='#b89c68';ctx.fillRect(x,y,4,3);ctx.fillStyle='#8a7048';ctx.fillRect(x,y+1,4,.6);}   /* 0.12.104 carrying the Sandbag Wall: a little burlap bag */
     for(const h of g.alive())if(h.medkit){const x=Math.round(g.heroX(h)+6),y=Math.round((h.gy||g.G)-31);ctx.fillStyle='#202020';ctx.fillRect(x-1,y-1,5,5);ctx.fillStyle='#f2f2f2';ctx.fillRect(x,y,3,3);ctx.fillStyle='#e02020';ctx.fillRect(x+1,y,1,3);ctx.fillRect(x,y+1,3,1);}   /* carrying an ambulance Medkit */
     for(const h of g.alive()){if(h.kit&&h.kit.length){const y=(h.gy||g.G)-30;h.kit.forEach((it,i)=>{const x=g.heroX(h)-3+i*3;if(it==='med'){ctx.fillStyle='#f0f0f0';ctx.fillRect(x,y-1,2,2);ctx.fillStyle='#e02020';ctx.fillRect(x+.5,y-.5,1,1);}else{ctx.fillStyle='#ffd23f';ctx.fillRect(x,y-1.5,1.5,2.5);ctx.fillStyle='#404040';ctx.fillRect(x+.2,y-2,1,.6);}});}
       if(h.herbs>0){const y=(h.gy||g.G)-30;for(let i=0;i<h.herbs;i++){const x=g.heroX(h)-3+i*3;ctx.fillStyle='#2e7a2a';ctx.fillRect(x,y,2,1.5);ctx.fillStyle='#8fe36a';ctx.fillRect(x,y-.6,1.2,1);}}   // Scavenger: herbs carried
@@ -3378,6 +3431,14 @@ function drawGame(ctx,g,W,oy){
       ctx.fillStyle='#7a5a34';ctx.fillRect(x+W+3,top-2,1,gy-top+2);ctx.fillRect(x+W+7,top-2,1,gy-top+2);for(let y=gy-2;y>top;y-=3)ctx.fillRect(x+W+3,y,5,.8);   // ladder all the way up
       if(b.tier>=3){ctx.fillStyle='#3a3f48';ctx.fillRect(x-W-3,top-14,2,9);ctx.fillRect(x+W+1,top-14,2,9);ctx.fillStyle='#6a4a2a';ctx.fillRect(x-W-4,top-15,2*W+8,2);}   // lookout roof
       if(b.hp<b.max){const w=20;ctx.fillStyle='#000a';ctx.fillRect(x-w/2-1,top-20,w+2,3);ctx.fillStyle='#ffd23f';ctx.fillRect(x-w/2,top-19,w*Math.max(0,b.hp/b.max),1);}}
+    else if(b.k==='sandbag'){shadow(ctx,x,gy,12);   /* 0.12.104 Sandbag Wall: a low, wide pile of burlap bags, staggered like bricks (shorter and wider than a HESCO cell) */
+      const rows=[[-9,-3,3,9],[-6,0,6],[-3,3]];const bw=6.4,bh=3.6;
+      rows.forEach((r,ri)=>{const yy=gy-bh*(ri+1)+ri*.6;for(const dx of r){const cx=x+dx;ctx.fillStyle=ri%2?'#b89c68':'#a88c5a';ctx.beginPath();ctx.ellipse(cx,yy+bh/2,bw/2,bh/2,0,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='rgba(255,240,200,.25)';ctx.fillRect(cx-bw/2+1,yy+.5,bw-3,.7);ctx.fillStyle='rgba(60,40,20,.45)';ctx.fillRect(cx+bw/2-1.2,yy+1,.6,bh-1.5);   /* lit top edge, tied-off end */
+        if(b.A&&b.A.barb){ctx.strokeStyle='rgba(70,70,74,.9)';ctx.lineWidth=.4;}}});
+      if(b.A&&b.A.barb){const T=gy-bh*3+1;ctx.strokeStyle='#5b5f63';ctx.lineWidth=.45;ctx.beginPath();for(let k=0;k<=12;k++){const px=x-10+k*1.7,py=T-1.2+Math.sin(k*1.9)*1.1;k?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();ctx.fillStyle='#8a8f94';for(let k=0;k<12;k+=2)ctx.fillRect(x-10+k*1.7,T-1.6+Math.sin(k*1.9)*1.1,.8,.8);}   /* barbed wire along the top (tier III) */
+      if(b.hp<b.max*.5){ctx.fillStyle='#c8b080';for(let k=0;k<5;k++)ctx.fillRect(x-6+k*3,gy-.8,1.4,.8);}   /* split bags, sand spilling */
+      if(b.hp<b.max){ctx.fillStyle='#000a';ctx.fillRect(x-8,gy-17,16,3);ctx.fillStyle='#ffd23f';ctx.fillRect(x-7,gy-16,14*Math.max(0,b.hp/b.max),1);}}
     else if(b.k==='barrier'){const w=7,h=17,L=x-w,R=x+w,T=gy-h;shadow(ctx,x,gy,10);   /* 0.12.76 (Kyle): one HESCO_Barrier cell, like his photos */
       ctx.fillStyle='#a8946c';ctx.fillRect(L,T,2*w,h);ctx.fillStyle='#c2ad84';ctx.fillRect(L+1,T+1,w-1,h-2);ctx.fillStyle='#8e7a56';ctx.fillRect(x+3,T+1,w-3,h-2);   // geotextile, lit from the left
       for(let yy=T+2;yy<gy;yy+=2.6){ctx.fillStyle='rgba(120,100,70,.35)';ctx.fillRect(L,yy,2*w,.5);}   // fabric bulging between the wires
@@ -3385,6 +3446,7 @@ function drawGame(ctx,g,W,oy){
       ctx.fillStyle='#3e4246';for(const cx of[L,x,R-1])ctx.fillRect(cx,T-1,1,h+1);ctx.fillStyle='#7a8086';for(let yy=T;yy<gy;yy+=1.6)for(const cx of[L,x,R-1])ctx.fillRect(cx,yy,1,.6);   // coil-joint rods
       ctx.fillStyle='#5a4228';ctx.beginPath();ctx.moveTo(L-.5,T+.5);ctx.quadraticCurveTo(x-3,T-4,x,T-2.6);ctx.quadraticCurveTo(x+4,T-4.5,R+.5,T+.5);ctx.closePath();ctx.fill();ctx.fillStyle='#7a5c38';ctx.fillRect(x-4,T-2.6,3,1);   // dirt heaped over the top
       ctx.fillStyle='#c8b48a';ctx.fillRect(L,T,2*w,1);   // the fabric lip folded over the rim
+      {ctx.fillStyle='#6b4a2a';ctx.fillRect(L-3.2,T-1,.8,h+1);ctx.fillRect(L-1.2,T-1,.8,h+1);ctx.fillStyle='#8a6438';for(let yy=T+1;yy<gy-.5;yy+=2.6)ctx.fillRect(L-3.2,yy,2.8,.7);}   // 0.12.104 (Kyle): a little wooden ladder up the left side
       if(b.hp<b.max*.6){ctx.strokeStyle='#4a3a22';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(x-3,T+4);ctx.lineTo(x-1,T+8);ctx.lineTo(x-3,T+11);ctx.stroke();ctx.fillStyle='#6a5030';ctx.fillRect(x-2,gy-1,4,1);}   // torn, dirt spilling
       if(b.hp<b.max){ctx.fillStyle='#000a';ctx.fillRect(x-8,T-8,16,3);ctx.fillStyle='#ffd23f';ctx.fillRect(x-7,T-7,14*Math.max(0,b.hp/b.max),1);}}
     else if(b.k==='tesla'){shadow(ctx,x,gy,6);ctx.fillStyle='#3a3f48';ctx.fillRect(x-4,gy-4,8,4);ctx.fillStyle='#22262c';ctx.fillRect(x-1,gy-16,2,12);
@@ -3647,7 +3709,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.103</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.104</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
