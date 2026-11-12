@@ -381,43 +381,43 @@ const CHAR={
 
 // ---- 0.12.3 Inspiration Decks (Kyle): pick a player, then one of their decks. Each deck gives one small, unique bonus tied to
 //   what that deck is best at. sl = slider moves (a move that would go below 0 or above 10 doesn't happen). Easy to retune here.
-const INSP={   /* 0.12.82 (Kyle): every deck now gives exactly TWO things (a passive or perk, a stat, or a starting stash), as unique as possible and
-   tied to what the deck does best. A slider nudge is personality flavor, not one of the two. */
+const INSP={   /* 0.12.82 (Kyle): every deck now gives exactly TWO things (a passive or perk, a stat, a starting stash, or a slider nudge), as unique as possible and
+   tied to what the deck does best. A slider nudge only counts as one of the two when the other bonus is a particularly strong passive. */
  // Kyle
  'The Grim Throne':{o:'Kyle',why:'Kenrith\'s royal court: nobody haggles like royalty, and the throne always gets its due in the end',passive:'haggler',perk:'inevitable'},
  'Felothar':{o:'Kyle',why:'Walls of root and bark: the pod\'s top Survival, and the forest feeds whoever holds behind them',passive:'herbalist',mod:{armor:6}},
  'Modular Beatdown':{o:'Kyle',why:'Gilgamesh suits up from a pile of spare parts and hits the hardest in the pod',passive:'resourceful',mod:{meleeDmg:20}},
  'A Vile Smashing':{o:'Kyle',why:'Wheels: the most cards seen, and everyone else\'s hand ends up in yours',passive:'pickpocket',mod:{xp:12}},
  'Truly Fantastic':{o:'Kyle',why:'The Thing: a walking pile of orange rock that nothing shoves, and the team\'s deep mana pool',passive:'mountain',mod:{enMax:24}},
- 'Dice Boys Casino':{o:'Kyle',why:'Mr. House runs the casino: the house always has money, and the dice always seem to land his way',passive:'bankroll',perk:'superlucky',sl:{flair:2}},
+ 'Dice Boys Casino':{o:'Kyle',why:'Mr. House runs the casino: the house always has money, and the dice always seem to land his way',passive:'bankroll',perk:'superlucky'},
  'Tame Depala':{o:'Kyle',why:'Dwarf mechanics in plated rigs: hard to shove and they hit like a hammer',mod:{kbRes:20,meleeDmg:10}},
- "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat and always gets paid',passive:'bounty',mod:{luck:6},sl:{size:2}},
+ "Life Swappin' Bounty Poppin'":{o:'Kyle',why:'Mathas puts bounties on the biggest threat and always gets paid',passive:'bounty',sl:{size:2}},
  'The Last of Us':{o:'Kyle',why:'Survivors who live off what they scrounge from the wrecks and slip every grab',passive:'scavenger',mod:{dodge:4}},
- 'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming, and things that touch it get scared off',passive:'haunt',mod:{acc:6},sl:{aware:-2}},
- 'Mothman Cometh!':{o:'Kyle',why:'A dark omen that is never quite where you hit, and never far behind',passive:'omen',mod:{move:8},sl:{lane:2}},
+ 'House on Haunted Hill':{o:'Kyle',why:'The house always sees you coming, and things that touch it get scared off',passive:'haunt',mod:{acc:6}},
+ 'Mothman Cometh!':{o:'Kyle',why:'A dark omen that is never quite where you hit, and never far behind',passive:'omen',sl:{lane:2}},
  'Ominous Weather':{o:'Kyle',why:'Isu\'s winter storms push everything back; snow shows every tripwire',perk:'sapper',mod:{kb:30}},
  'Build a Scare':{o:'Kyle',why:'Illuna mutates into something bigger, stitched together from whatever is lying around, and stitches up whoever falls apart',perk:'medicine',mod:{stamina:2}},
- "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward, and faster every swing',passive:'onslaught',mod:{meleeSpd:10},sl:{aggr:2}},
+ "Thunder's Decree":{o:'Kyle',why:'Zurgo only knows one way: forward, and faster every swing',passive:'onslaught',sl:{aggr:2}},
  // Cheez
  'Kykar, Zada & Feather':{o:'Cheez',why:'Wind\'s Fury: fast fliers that are hard to pin down',mod:{move:12,dodge:3}},
  'Double Dragons':{o:'Cheez',why:'Dragon fire, and two dragons means double the luck: every hoard they stumble on is a big one',perk:'superlucky',mod:{rangedDmg:16}},
- 'Turtle Power':{o:'Cheez',why:'Shells and teamwork: when it gets bad, they pull in and wait it out',passive:'shell',mod:{armor:4},sl:{pack:-2}},
- 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills, and never travels without a snack',passive:'devour',stash:{food:3},sl:{exec:2}},
- 'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone, and his crew gets in and out before anyone notices',passive:'pickpocket',mod:{crit:4},sl:{self:2}},
+ 'Turtle Power':{o:'Cheez',why:'Shells and teamwork: when it gets bad, they pull in and wait it out',passive:'shell',mod:{armor:4}},
+ 'Korvold Eats Everything':{o:'Cheez',why:'Korvold feeds on what he kills, and never travels without a snack',passive:'devour',stash:{food:3}},
+ 'Armed Robbery':{o:'Cheez',why:'Kotis steals from everyone, and his crew gets in and out before anyone notices',passive:'pickpocket',sl:{self:2}},
  'Blood Suckers':{o:'Cheez',why:'Lifelinking bats: the night always comes, and every bite they miss only makes the next one surer',perk:'inevitable',mod:{lifesteal:5}},
  'Mechanized Mayhem':{o:'Cheez',why:'Dr. Eggman strips wrecks for parts to overclock his guns',passive:'scavenger',mod:{rangedSpd:15}},
  // Leon
- 'Family Matters':{o:'Leon',why:'Zinnia\'s copies look out for each other and bandage each other up',passive:'bodyguard',perk:'medicine',sl:{aware:2}},
+ 'Family Matters':{o:'Leon',why:'Zinnia\'s copies look out for each other and bandage each other up',passive:'bodyguard',perk:'medicine'},
  'Thranduil':{o:'Leon',why:'Elven eyes and forest lore: knows every herb in the woods and never misses a shot',passive:'herbalist',mod:{acc:8}},
  'Primary Directive':{o:'Leon',why:'Optimus transforms and swings fast; Autobots patch themselves up from salvage',passive:'resourceful',mod:{meleeSpd:20}},
  'Primary Directive 2.0':{o:'Leon',why:'The rebuild: a stack of big mana rocks keeps the Autobots charged, and Memnarch\'s plating keeps them standing',mod:{enRegen:1,armor:5}},
  'Cosmic Spider':{o:'Leon',why:'Spider-Sense and web shooters: his sense tingles near traps',passive:'webs',perk:'sapper'},
  // Eddie
  'Vivi':{o:'Eddie',why:'The Black Mage: his commander makes a pile of mana every turn and every spell hits harder',mod:{enRegen:1.5,rangedDmg:12}},
- 'Bruce Banner':{o:'Eddie',why:'Bruce reads everything, then the Hulk gets bigger and angrier the more he takes',mod:{xp:10,stamina:2},sl:{aggr:2}},
+ 'Bruce Banner':{o:'Eddie',why:'Bruce reads everything, then the Hulk gets bigger and angrier the more he takes',mod:{xp:10,stamina:2}},
  'Cloud':{o:'Eddie',why:'Omnislash: a suited-up SOLDIER whose every big hit is a Limit Break',mod:{critMul:.3,crit:3}},
- 'Kasla, the Broken Halo':{o:'Eddie',why:'Convoke: the whole angel army chips in, so everything at camp costs less, and she flies in fast',passive:'haggler',mod:{move:10},sl:{pack:-2}},
- 'Master Splinter':{o:'Eddie',why:'Ninja training: never where the hit lands, and the shuriken fly twice as fast',mod:{dodge:4,rangedSpd:12},sl:{noise:-2}},
+ 'Kasla, the Broken Halo':{o:'Eddie',why:'Convoke: the whole angel army chips in, so everything at camp costs less, and she flies in fast',passive:'haggler',mod:{move:10}},
+ 'Master Splinter':{o:'Eddie',why:'Ninja training: never where the hit lands, and the shuriken fly twice as fast',mod:{dodge:4,rangedSpd:12}},
  'Miles Morales':{o:'Eddie',why:'Spider-Man in the making: counters pile up fast and he grows with every fight',mod:{xp:8,luck:6}},
  'Narset, Enlightened Master':{o:'Eddie',why:'A first-strike monk who turns every attack into free spells: a deep well of energy and quick hands',mod:{enMax:20,meleeSpd:12}},
 };
@@ -2865,12 +2865,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794444151';const BGI=new Image();BGI.src='crawl_bg.png?v=1794444151';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794444151';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794444291';const BGI=new Image();BGI.src='crawl_bg.png?v=1794444291';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794444291';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794444151';XIMG.wave.src='crawl_wave.png?v=1794444151';XIMG.chibi.src='crawl_chibi.png?v=1794444151';XIMG.flannel.src='crawl_flannel.png?v=1794444151';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794444151';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794444151';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794444151';XIMG.rain.src='crawl_rain.png?v=1794444151';XIMG.druid.src='crawl_druid.png?v=1794444151';XIMG.camp.src='crawl_campfire.png?v=1794444151';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794444151';XIMG.tornado.src='crawl_fx_tornado.png?v=1794444151';XIMG.vine.src='crawl_fx_vine.png?v=1794444151';XIMG.thorn.src='crawl_fx_thorn.png?v=1794444151';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794444291';XIMG.wave.src='crawl_wave.png?v=1794444291';XIMG.chibi.src='crawl_chibi.png?v=1794444291';XIMG.flannel.src='crawl_flannel.png?v=1794444291';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794444291';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794444291';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794444291';XIMG.rain.src='crawl_rain.png?v=1794444291';XIMG.druid.src='crawl_druid.png?v=1794444291';XIMG.camp.src='crawl_campfire.png?v=1794444291';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794444291';XIMG.tornado.src='crawl_fx_tornado.png?v=1794444291';XIMG.vine.src='crawl_fx_vine.png?v=1794444291';XIMG.thorn.src='crawl_fx_thorn.png?v=1794444291';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794444151';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794444151';XIMG.obst.src='crawl_obst.png?v=1794444151';XIMG.cars.src='crawl_cars.png?v=1794444151';XIMG.robot.src='crawl_robot.png?v=1794444151';XIMG.cultist.src='crawl_cultist.png?v=1794444151';XIMG.tentacle.src='crawl_tentacle.png?v=1794444151';XIMG.boom.src='crawl_boom.png?v=1794444151';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794444291';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794444291';XIMG.obst.src='crawl_obst.png?v=1794444291';XIMG.cars.src='crawl_cars.png?v=1794444291';XIMG.robot.src='crawl_robot.png?v=1794444291';XIMG.cultist.src='crawl_cultist.png?v=1794444291';XIMG.tentacle.src='crawl_tentacle.png?v=1794444291';XIMG.boom.src='crawl_boom.png?v=1794444291';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
