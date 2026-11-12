@@ -2855,12 +2855,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794443459';const BGI=new Image();BGI.src='crawl_bg.png?v=1794443459';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794443459';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794444038';const BGI=new Image();BGI.src='crawl_bg.png?v=1794444038';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794444038';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794443459';XIMG.wave.src='crawl_wave.png?v=1794443459';XIMG.chibi.src='crawl_chibi.png?v=1794443459';XIMG.flannel.src='crawl_flannel.png?v=1794443459';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794443459';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794443459';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794443459';XIMG.rain.src='crawl_rain.png?v=1794443459';XIMG.druid.src='crawl_druid.png?v=1794443459';XIMG.camp.src='crawl_campfire.png?v=1794443459';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794443459';XIMG.tornado.src='crawl_fx_tornado.png?v=1794443459';XIMG.vine.src='crawl_fx_vine.png?v=1794443459';XIMG.thorn.src='crawl_fx_thorn.png?v=1794443459';
+const XIMG={cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794444038';XIMG.wave.src='crawl_wave.png?v=1794444038';XIMG.chibi.src='crawl_chibi.png?v=1794444038';XIMG.flannel.src='crawl_flannel.png?v=1794444038';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794444038';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794444038';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794444038';XIMG.rain.src='crawl_rain.png?v=1794444038';XIMG.druid.src='crawl_druid.png?v=1794444038';XIMG.camp.src='crawl_campfire.png?v=1794444038';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794444038';XIMG.tornado.src='crawl_fx_tornado.png?v=1794444038';XIMG.vine.src='crawl_fx_vine.png?v=1794444038';XIMG.thorn.src='crawl_fx_thorn.png?v=1794444038';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794443459';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794443459';XIMG.obst.src='crawl_obst.png?v=1794443459';XIMG.cars.src='crawl_cars.png?v=1794443459';XIMG.robot.src='crawl_robot.png?v=1794443459';XIMG.cultist.src='crawl_cultist.png?v=1794443459';XIMG.tentacle.src='crawl_tentacle.png?v=1794443459';XIMG.boom.src='crawl_boom.png?v=1794443459';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794444038';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794444038';XIMG.obst.src='crawl_obst.png?v=1794444038';XIMG.cars.src='crawl_cars.png?v=1794444038';XIMG.robot.src='crawl_robot.png?v=1794444038';XIMG.cultist.src='crawl_cultist.png?v=1794444038';XIMG.tentacle.src='crawl_tentacle.png?v=1794444038';XIMG.boom.src='crawl_boom.png?v=1794444038';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -3465,11 +3465,17 @@ let FTIP=null;function installTips(){if(FTIP)return;FTIP=document.createElement(
   const place=el=>{const r=el.getBoundingClientRect(),W=innerWidth,H=innerHeight;const tw=FTIP.offsetWidth,th=FTIP.offsetHeight;
     let x=r.left+r.width/2-tw/2;x=Math.max(8,Math.min(W-tw-8,x));let y=r.top-th-8;if(y<8)y=r.bottom+8;if(y+th>H-8)y=Math.max(8,H-th-8);FTIP.style.left=x+'px';FTIP.style.top=y+'px';};
   const show=el=>{if(el.title){el.dataset.tipt=el.title;el.removeAttribute('title');}const h=el.dataset.tiph;FTIP.innerHTML=h!=null?h:esc(el.dataset.tipt||'').replace(/\n/g,'<br>');
-    if(!FTIP.innerHTML){hide();return;}FTIP.style.display='block';cur=el;place(el);};
+    if(!FTIP.innerHTML){hide();return;}FTIP.style.display='block';cur=el;const rr=el.closest('.rot-side');if(rr){if(FTIP.parentNode!==rr)rr.appendChild(FTIP);FTIP.classList.add('inrot');FTIP.style.left='';FTIP.style.top='';}else{if(FTIP.parentNode!==document.body)document.body.appendChild(FTIP);FTIP.classList.remove('inrot');place(el);}};
   const hide=()=>{FTIP.style.display='none';cur=null;};
-  document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('[data-tiph],[title],[data-tipt]');if(el===cur)return;if(!el){hide();return;}show(el);},true);
-  document.addEventListener('focusin',e=>{const el=e.target.closest&&e.target.closest('[data-tiph],[title],[data-tipt]');if(el)show(el);});
-  document.addEventListener('scroll',()=>{if(cur&&cur.isConnected)place(cur);else hide();},true);document.addEventListener('mousedown',()=>hide(),true);}
+  document.addEventListener('mouseover',e=>{if(Date.now()-lastT<800)return;const el=e.target.closest&&e.target.closest('[data-tiph],[title],[data-tipt]');if(el===cur)return;if(!el){hide();return;}show(el);},true);
+  document.addEventListener('focusin',e=>{if(Date.now()-lastT<800||(e.target.matches&&e.target.matches(':focus-visible')===false))return;const el=e.target.closest&&e.target.closest('[data-tiph],[title],[data-tipt]');if(el)show(el);});
+  document.addEventListener('scroll',()=>{if(cur&&cur.isConnected){if(!FTIP.classList.contains('inrot'))place(cur);}else hide();},true);document.addEventListener('mousedown',()=>{if(Date.now()-lastT>800)hide();},true);
+  // 0.12.81 phones: tap (or long-press) anything with a tip to view it; tap again or tap elsewhere to close. No text selection.
+  let lastT=0;const TSEL='[data-tiph],[title],[data-tipt]';document.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')lastT=Date.now();},true);
+  document.addEventListener('pointerup',e=>{if(e.pointerType!=='touch')return;lastT=Date.now();const el=e.target.closest&&e.target.closest(TSEL);
+    if(e.target.closest&&e.target.closest('#cc-ftip')){hide();return;}if(!el){hide();return;}if(el.closest('button,a,input,select,label')){hide();return;}if(cur===el){hide();return;}show(el);},true);   // buttons act on tap; long-press them to read the tip
+  document.addEventListener('contextmenu',e=>{const el=e.target.closest&&e.target.closest(TSEL);if(el&&el.closest('#cc')){e.preventDefault();show(el);}},true);
+  }
 function portrait(key,size){const U=UNITS[key];if(U&&U.idle&&!SP['h_'+key]){const c=document.createElement('canvas');const A=U.idle;c.width=A.fw;c.height=A.fh;c.className='cc-por';
     const go=()=>{const x=c.getContext('2d');x.imageSmoothingEnabled=false;const k=A.pk||(A.art?3.4:A.pre?3.4*A.pre:1),w=30*k,hh=46*k,z=A.art?1:2,sx=A.x+A.ax-w/2,sy=A.y+A.ay-hh;c.width=w*z;c.height=hh*z;x.imageSmoothingEnabled=!!A.art;x.translate(c.width,0);x.scale(-z,z);x.drawImage(A.img?XIMG[A.img]:UIMG,sx,sy,w,hh,0,0,w,hh);};
     const IM0=A.img?XIMG[A.img]:UIMG;if(IM0.complete)go();else IM0.addEventListener('load',go,{once:true});if(size)c.style.width=size+'px';return c;}
@@ -3525,6 +3531,8 @@ canvas.cc-fire{display:block;width:100%;image-rendering:pixelated;image-renderin
 .cc-dots.bad{animation:ccshake .3s}@keyframes ccshake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .cc-heroes{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;align-items:start}
 .cc-hero{background:#120a18;border:2px solid #2a1838;border-radius:10px;padding:8px;text-align:left;position:relative}
+[data-tiph],[data-tipt]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#cc-ftip.inrot{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%);max-height:85%;overflow:auto;pointer-events:auto}
 #cc-ftip{position:fixed;z-index:9999;display:none;pointer-events:none;max-width:min(340px,calc(100vw - 16px));background:#0d0712;border:1px solid #a6ff2e;border-radius:8px;padding:8px 10px;color:#e8dff5;font:11px/1.4 system-ui,sans-serif;box-shadow:0 8px 22px #000c;text-align:left;white-space:normal}#cc-ftip .tt-h{font-weight:700;color:#ffd23f;font-size:12px}#cc-ftip .tt-r{opacity:.7;font-size:10px;margin-bottom:5px}#cc-ftip .tt-b{margin-bottom:6px}#cc-ftip .tt-s{display:grid;grid-template-columns:1fr 64px 1fr;gap:2px 6px;align-items:center;font-size:9.5px}#cc-ftip .tt-s .l{text-align:right;opacity:.55}#cc-ftip .tt-s .r{opacity:.55}#cc-ftip .tt-s .on{opacity:1;color:#a6ff2e;font-weight:700}#cc-ftip .tt-s i{position:relative;height:5px;background:#2a1838;border-radius:3px}#cc-ftip .tt-s i b{position:absolute;top:-2px;width:5px;height:9px;margin-left:-2.5px;background:#ffd23f;border-radius:2px}.cc-ab .cc-tip{display:none!important}.cc-ab.pas{color:#9ad8ff;border-color:#2a4a60;background:#121c28}.cc-hw{display:flex;flex-direction:column;align-self:start}.cc-abl{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.cc-ab{position:relative;font-size:10.5px;background:#1e1228;border:1px solid #3a2850;border-radius:6px;padding:2px 6px;color:#ffd23f;cursor:help}.cc-ab .cc-tip{display:none;position:absolute;left:0;bottom:calc(100% + 6px);z-index:20;width:220px;background:#0d0712;border:1px solid #a6ff2e;border-radius:8px;padding:7px 9px;color:#e8dff5;font-size:11px;line-height:1.4;box-shadow:0 6px 18px #000a;white-space:normal}.cc-ab:hover .cc-tip,.cc-ab:focus .cc-tip{display:block}.cc-hw .cc-hero{height:auto}.cc-insp{background:#0d0712;border:1px solid #2a1838;border-top:0;border-radius:0 0 10px 10px;padding:4px 8px 8px}.cc-insp select{width:100%;margin-top:3px;background:#120a18;color:#e8dff5;border:1px solid #3a2850;border-radius:6px;font-size:11px;padding:3px}.cc-insp select:disabled{opacity:.45}.cc-ibx{font-size:10.5px;color:#b8aecb;margin-top:4px;line-height:1.35}
 .cc-hero[aria-pressed=true]{border-color:#a6ff2e;box-shadow:0 0 0 2px #a6ff2e44}
 .cc-hero .cc-por{width:64px;height:64px;float:left;margin-right:6px}
@@ -3552,6 +3560,17 @@ canvas.cc-fire{display:block;width:100%;image-rendering:pixelated;image-renderin
 .cc-hud.tall .sp{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
 .cc-sp{position:relative;font-size:11px;padding:3px 6px 5px;border-radius:6px;background:#1e1228;border:1px solid #3a2450;overflow:hidden}.cc-sp.it{border-style:dashed;color:#b8aecb}
 .cc-sp i{position:absolute;left:0;bottom:0;height:2px;background:#a6ff2e;width:0}
+#cc .cc-uf{display:none}
+#cc.phone .cc-hud{display:none!important}
+#cc.phone .cc-uf{display:flex;flex-direction:column;gap:3px;position:absolute;left:4px;top:4px;z-index:3;pointer-events:auto}
+#cc.phone.land .cc-uf{top:22px}
+#cc .uf{display:flex;align-items:center;gap:4px;background:rgba(7,4,10,.62);border:1px solid #a6ff2e55;border-radius:6px;padding:2px 5px 2px 2px;width:118px;cursor:help}
+#cc .uf .cc-por{width:22px!important;height:22px!important;border-radius:4px;flex:0 0 auto}
+#cc .uf .ufb{flex:1;min-width:0}
+#cc .uf .ufn{font-size:9px;line-height:1.1;color:#eee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#cc .uf .ufn span{color:#ffd23f}
+#cc .uf .ufh,#cc .uf .ufe{height:5px;background:#2a1020;border-radius:2px;margin-top:2px;overflow:hidden}#cc .uf .ufe{height:3px;background:#101a2a}
+#cc .uf .ufh i,#cc .uf .ufe i{display:block;height:100%;width:100%;background:linear-gradient(#5ee07a,#1f9a3c)}#cc .uf .ufe i{background:#3fb6ff}
+#cc .uf.dead{opacity:.45;filter:grayscale(1)}
 #cc.land .cc-info{position:absolute;top:0;left:0;z-index:2;background:rgba(7,4,10,.6);padding:3px 8px}
 #cc.land .cc-hud{position:absolute;bottom:0;left:0;z-index:2;background:rgba(7,4,10,.55);grid-auto-flow:column;padding:3px 6px}
 #cc.land .cc-hc{padding:1px 4px;border-width:1px}
@@ -3581,7 +3600,7 @@ function build(){
   root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.81</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
-    <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
+    <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
   document.body.appendChild(root);
   cv=$('#cc-cv',root);ctx=cv.getContext('2d');panel=$('.cc-panel',root);hud=$('.cc-hud',root);info=$('.cc-info',root);bossEl=$('.cc-boss',root);banner=$('.cc-banner',root);
   root.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
@@ -3605,7 +3624,7 @@ function build(){
    Desktop is unchanged (Auto = whole field). The 🔍 button cycles Auto / 1x / 1.5x / 2x. */
 let CAMZ=(()=>{try{return +(localStorage.getItem('cc-zoom')||0)||0;}catch(e){return 0;}})(),CAM={sc:1,vw:0,vh:0,cw:0,ch:0,on:false,x:null};
 const handset=()=>!!(window.PodSideways&&PodSideways.isPhone());
-function layout(){if(!root||root.hidden)return;const main=$('.cc-main',root);const W=main.clientWidth,H=main.clientHeight;const wrap=$('.cc-cvw',root);
+function layout(){if(!root||root.hidden)return;root.classList.toggle('phone',handset());const main=$('.cc-main',root);const W=main.clientWidth,H=main.clientHeight;const wrap=$('.cc-cvw',root);
   const land=W>H*1.25&&H<620;root.classList.toggle('land',land);
   hud.classList.toggle('tall',!land&&H>W*1.2);
   const reserved=land?0:(info.offsetHeight+hud.offsetHeight+4);const avH=Math.max(120,H-reserved);let w=Math.min(W,avH*16/9);
@@ -3853,6 +3872,8 @@ function showReplace(o){
 function endRun(s,victory){const r=s.run;if(!r)return;const tot=r.score;
   if(r.prestige*100+r.stage>s.best.prestige*100+s.best.stage){s.best.stage=r.stage;s.best.prestige=r.prestige;}s.best.score=Math.max(s.best.score,tot);s.run=null;persist();}
 // ---------------------------------------------------------------- playing
+function ufTip(h){const C=CHAR[h.key]||{};const ab=abOrder(C.abilities||[]);   /* 0.12.81: phone unit-frame tip: abilities (actives first, passives last) */
+  return `<div class="tt-h">${esc(h.def.name)} · LV ${h.lvl}</div>`+ab.map(A=>`<div class="tt-b"><b>${A.passive?'✦':'⚔'} ${esc((A.name||A.id).replace(/_/g,' '))}</b>${A.passive?' <span style="opacity:.6">(passive)</span>':''}<br>${esc(ABIL_DESC[A.id]||'')}</div>`).join('')+`<div class="tt-b" style="opacity:.7;margin-top:4px">Tap again to close.</div>`;}
 function beginStage(){
   const s=SLOT(),run=s.run;panel.hidden=true;CC.paused=false;
   /* 0.12.73 (Kyle) Retry: snapshot everything at the start of the stage (heroes, HP, items, herbs, kit, buffs, gold, parts, supplies, run state) */
@@ -3862,6 +3883,9 @@ function beginStage(){
   hud.innerHTML=CC.game.heroes.map(h=>`<div class="cc-hc" data-h="${h.key}"><span data-por="${h.key}"></span><div style="flex:1;min-width:0"><div class="n">${esc(h.def.name)} <span style="color:#ffd23f">${h.lvl}</span></div><div class="bar"><i></i></div>
     <div class="sp"><span class="cc-sp" data-sig style="border-color:#ffd23f"><b>⚡ ${esc(SIG[h.key].name)}</b><i></i></span>${h.spells.map((s,i)=>`<span class="cc-sp" data-s="${i}"><b>${s.r>=CFG.maxRank?'✦ ':''}${esc(sname(h.key,s.card))}</b> r${s.r}<i></i></span>`).join('')}${h.items.map(it=>`<span class="cc-sp it"><b>${esc(shortCard(it.card))}</b> ${ITEM[it.arch].label} r${it.r}</span>`).join('')}</div></div></div>`).join('');
   hud.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
+  /* 0.12.81 (Kyle) phones: small WoW-style unit frames in the top-left of the sky instead of the panels under the stage; tap one to see its abilities */
+  const uf=$('.cc-uf',root);uf.innerHTML=CC.game.heroes.map(h=>`<div class="uf" data-h="${h.key}" data-tiph="${esc(ufTip(h))}"><span data-por="${h.key}"></span><div class="ufb"><div class="ufn">${esc(h.def.name)} <span>${h.lvl}</span></div><div class="ufh"><i></i></div><div class="ufe"><i></i></div></div></div>`).join('');
+  uf.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
   const st=CC.game.st;flash(`STAGE ${run.stage}`,1400);if(st.boss)setTimeout(()=>{},0);
   root.querySelector('[data-a=restart]').hidden=false;layout();CC.last=performance.now();cancelAnimationFrame(CC.raf);CC.raf=requestAnimationFrame(loop);
 }
@@ -3876,6 +3900,8 @@ function loop(now){
   const run=g.run;info.innerHTML=`<span class="px" style="font-size:10px;color:#a6ff2e">STAGE ${run.stage}${run.prestige?' ★'+run.prestige:''}</span><span>${esc(g.st.biome.name)}</span><span>Score <b>${fmt(run.score+g.stageScore)}</b></span><span>💰 <b>${fmt((SLOT().gold||0)+g.stageGold)}</b></span>
     <span class="cc-xp" title="Next upgrade"><i style="width:${Math.min(100,(run.xp||0)/(8+6*(run.lv||0))*100)}%"></i></span>${run.pending?`<b style="color:#a6ff2e">⬆${run.pending}</b>`:''}`;
   bossEl.textContent=g.boss&&!g.boss.dead?g.boss.B.name.toUpperCase():'';
+  if(root.classList.contains('phone'))for(const h of g.heroes){const f=root.querySelector(`.cc-uf [data-h="${h.key}"]`);if(!f)continue;f.classList.toggle('dead',!h.alive);
+    f.querySelector('.ufh i').style.width=Math.max(0,h.hp/h.max*100)+'%';f.querySelector('.ufe i').style.width=h.enMax?Math.max(0,Math.min(100,(h.en||0)/h.enMax*100))+'%':'0%';}
   for(const h of g.heroes){const el=hud.querySelector(`[data-h="${h.key}"]`);if(!el)continue;el.classList.toggle('dead',!h.alive);el.querySelector('.bar i').style.width=Math.max(0,h.hp/h.max*100)+'%';
     el.querySelector('.n span').textContent=SLOT().heroes[h.key].lvl;
     if(hud.classList.contains('tall')){const sc=el.querySelector('[data-sig] i');if(sc)sc.style.width=Math.max(0,Math.min(100,(1-(h.sigT||0)/(SIG[h.key].cd*(1-h.cdr)))*100))+'%';}
