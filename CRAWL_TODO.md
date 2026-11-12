@@ -195,7 +195,7 @@ next session knows where to resume.
       4 actives + 1 passive. Kar98 ranged, homemade-looking wooden shield + real sword. Orange hoodie, dark blue jeans, white, short hair + beard.
       Smooth the sprite edges so he doesn't look blocky; double-check every animation. Put JP FIRST in the roster (before Flannel_Man).
       Same smoothing/animation care for the Engineer.
-- [ ] LAST: Magic deck "Primary Directive 2.0" (Leon's robots deck, decks/robots.py + raw_lists.json key Primary_Directive): copy the list, consider adding
+- [x] DONE 0.12.80: Magic deck "Primary Directive 2.0" (Leon's robots deck, decks/robots.py + raw_lists.json key Primary_Directive): copy the list, consider adding
       Hulking Metamorph, Repair and Recharge, Digsite Engineer, Dispatch, Liberty Prime Recharged, Combustible Gearhulk (MUST), Memnarch the Warden (MUST),
       Dauntless Scrapbot, Moxite Refinery, Guidelight Synergist, Marketback Walker (MUST), Hedron Archive, Gilded Lotus, Thran Dynamo, Reaver Titan.
       Don't cut mana (he had mana trouble), add the mana rocks if possible; cut from stats the deck is high in to raise low ones; tag + score it
@@ -209,3 +209,9 @@ next session knows where to resume.
 PWR/SPD bars, Proximity_Bomb v1/v2, screen-push rules, stuck-action fix, Lumber_Jack fixes, Warhound repair bots v1 + robot voice + no food,
 druid run/staff swing, dog trot, food AND water, universal searching, zombie lane rules, Hardcore AoE friendly fire, Wave Dash = plain sword hit,
 Fireman_Zombie, Warhound flamethrower (as ranged — still to move to "melee", see queue).
+
+## 0.12.80 (11-11) Eddie added
+- Eddie's 7 decks live (decks/eddie_*.py, takeaways_eddie.py, repair_eddie.py, plan_tags tail). PD2 = decks/robots2.py.
+- NOT done: Pod Sim for Eddie/PD2 (Kyle: skip, too heavy; they're filtered out of the sim picker), Crypt INSP bonuses for the 8 new decks, custom dice per player.
+- Queue from Kyle: (1) clicking buttons in Crypt Crawl (camp feed/water etc.) jumps the page scroll, stop that; (2) phone: ability tooltips need tap-to-view (long-press selects text now);
+  (3) phone: hide the unit life panels under the stage, use small WoW-style unit frames in the top-left sky instead; (4) Leon's green jellyfish icon: cooler, a bit more realistic.
