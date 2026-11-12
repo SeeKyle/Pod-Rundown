@@ -1302,6 +1302,7 @@ class Game{
   /* 0.12.56 Inevitable: IF something I try fails THEN +2 Luck and +1% crit (up to 10 stacks) until my next crit */
   failAct(h){if(!h||!h.key||this.demo||!hasPerk(h,'inevitable')||(h.inevN||0)>=10)return;h.inevN=(h.inevN||0)+1;h.luck+=2*(hasPerk(h,'superlucky')?2:1);}
   hitEnemy(e,amt,src,opt){
+    if(src&&src.perch&&src.perch.roofP&&src.perch.st==='fight')amt*=1.15;   /* 0.12.124 (Kyle): shooting down from a storefront roof: +15% damage from the height */
     if(e.dead||amt<=0)return 0;opt=opt||{};{let o=src,n=0;while(o&&o.owner&&!o.base&&n++<4)o=o.owner;const M=o&&o.base&&HERO_DMG[o.key];if(M)amt*=M;}   /* 0.12.103 (Kyle): every hero's damage tuned so a stage-1 hero averages about 300; healers and utility lower */if(opt.fire&&e.E&&e.E.fireImmune){if(!opt.quiet&&this.rng()<.3)this.text(e.x,e.y-40,'immune','#9ab');return 0;}if(src&&src.key){e.lastHitBy=src;e.grudgeT=1+14*trait(e,'grudge');}
     if(!opt.sure&&e.E&&e.E.dodge&&this.rng()<e.E.dodge){this.text(e.x,e.y-30,'miss','#9aa');this.failAct(src);return 0;}
     let crit=false;if(src&&!opt.nocrit&&this.rng()<src.crit+(opt.critAdd||0)+.01*(src.inevN||0)+(src.laughT>0?.05:0)){amt*=(opt.critMul||src.critMul||1.75);crit=true;if(src.raT>0&&src.key==='archer')src.raT*=.5;   /* One Nocked passive: any crit halves its remaining cooldown */if(src.inevN){src.luck-=2*src.inevN*(hasPerk(src,'superlucky')?2:1);src.inevN=0;}
@@ -2862,9 +2863,9 @@ class Game{
         const free=(h,r)=>!h.pet&&h.key!=='robot'&&!h.perch&&!h.jet&&!h.search&&!h.building&&!h.repairing&&Math.abs(this.heroX(h)-lx)<(r||40)&&h.hp/h.max>.4;
         const near=(L)=>L.sort((p,q)=>Math.abs(this.heroX(p)-lx)-Math.abs(this.heroX(q)-lx))[0];
         let h=null,why=null;
-        if(R.wait<=0){R.wait=1.5;const sh=near(this.alive().filter(h=>free(h,70)&&h.base.char&&h.base.char.ranged&&!this.isMeleeHero(h)));if(sh&&foes(lx)>=2&&this.rng()<.45){h=sh;why='fight';}}
-        if(!h&&R.crate&&quiet){h=near(this.alive().filter(free));why='crate';}
-        if(h){R.occ=h;h.perch=R;h.roofBusy=1;R.st='up';R.t=0;R.why=why;R.idle=0;h.x=lx;h.laneI=0;h.gy=LANES[0];
+        if(R.crate&&quiet){h=near(this.alive().filter(h=>free(h)));why='crate';}   /* 0.12.124 (Kyle): the crate first */
+        if(!h&&R.wait<=0){R.wait=2;const sh=near(this.alive().filter(h=>free(h,60)&&h.base.char&&h.base.char.ranged&&!this.isMeleeHero(h)));if(sh&&foes(lx)>=3&&this.rng()<.25){h=sh;why='fight';}}   /* the high ground second */
+        if(h){R.roofP=1;R.occ=h;h.perch=R;h.roofBusy=1;R.st='up';R.t=0;R.why=why;R.idle=0;h.x=lx;h.laneI=0;h.gy=LANES[0];
           Comms.bubble(this,h,Comms.pick(why==='fight'?['Taking the roof!','High ground!','I\'ll cover you from up here.']:['Crate on the roof!','Grabbing that crate.','Be right back down.']),true);}}
       if(R.occ){const h=R.occ,lift=Math.max(10,(h.gy||this.G)-R.y)/(1.2*UNIT_SCALE);R.t+=dt;
         const down=()=>{R.st='down';R.t=0;R.dt2=0;h.roofBusy=1;if(R.acc){h.acc-=R.acc;R.acc=0;}};
@@ -2872,7 +2873,8 @@ class Game{
           Comms.bubble(this,h,Comms.pick(['Rooftop stash!','Someone hid this up here.','Found a crate up top!']));};
         if(R.st==='up'){h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;h.x+=(lx-h.x)*Math.min(1,dt*12);h.leapH=lift*Math.min(1,R.t/1.1);
           if(R.t>=1.1){R.t=0;if(R.why==='fight'){R.st='fight';h.roofBusy=0;R.acc=6;h.acc+=6;}else R.st='loot';}}
-        else if(R.st==='loot'){h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;h.x+=(o.x-hw*.45-h.x)*Math.min(1,dt*6);h.leapH=lift;if(R.t>=1.5){lootCrate();down();}}
+        else if(R.st==='loot'){h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;h.x+=(o.x-hw*.45-h.x)*Math.min(1,dt*6);h.leapH=lift;if(R.t>=1.5){lootCrate();   /* a shooter with targets stays up to use the height */
+          if(h.base.char&&h.base.char.ranged&&!this.isMeleeHero(h)&&foes(h.x)>=1&&h.hp/h.max>.4){R.st='fight';R.t=0;R.idle=0;h.roofBusy=0;R.acc=6;h.acc+=6;Comms.bubble(this,h,Comms.pick(['Staying up, good angle!','Nice view from up here.']),true);}else down();}}
         else if(R.st==='fight'){h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;h.leapH=lift;const spot=o.x+hw*.25;h.x+=(spot-h.x)*Math.min(1,dt*6);h.face=1;
           if(R.crate&&R.t>1.5)lootCrate();
           R.idle=foes(h.x)?0:R.idle+dt;if(R.idle>2||h.hp/h.max<.3||o.x<16)down();}
@@ -3264,12 +3266,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794467968';const BGI=new Image();BGI.src='crawl_bg.png?v=1794467968';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794467968';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794468016';const BGI=new Image();BGI.src='crawl_bg.png?v=1794468016';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794468016';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794467968';XIMG.wave.src='crawl_wave.png?v=1794467968';XIMG.chibi.src='crawl_chibi.png?v=1794467968';XIMG.flannel.src='crawl_flannel.png?v=1794467968';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794467968';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794467968';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794467968';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794467968';XIMG.rain.src='crawl_rain.png?v=1794467968';XIMG.druid.src='crawl_druid.png?v=1794467968';XIMG.camp.src='crawl_campfire.png?v=1794467968';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794467968';XIMG.tornado.src='crawl_fx_tornado.png?v=1794467968';XIMG.vine.src='crawl_fx_vine.png?v=1794467968';XIMG.thorn.src='crawl_fx_thorn.png?v=1794467968';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794468016';XIMG.wave.src='crawl_wave.png?v=1794468016';XIMG.chibi.src='crawl_chibi.png?v=1794468016';XIMG.flannel.src='crawl_flannel.png?v=1794468016';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794468016';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794468016';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794468016';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794468016';XIMG.rain.src='crawl_rain.png?v=1794468016';XIMG.druid.src='crawl_druid.png?v=1794468016';XIMG.camp.src='crawl_campfire.png?v=1794468016';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794468016';XIMG.tornado.src='crawl_fx_tornado.png?v=1794468016';XIMG.vine.src='crawl_fx_vine.png?v=1794468016';XIMG.thorn.src='crawl_fx_thorn.png?v=1794468016';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794467968';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794467968';XIMG.obst.src='crawl_obst.png?v=1794467968';XIMG.cityob.src='crawl_cityob.png?v=1794467968';XIMG.cars.src='crawl_cars.png?v=1794467968';XIMG.robot.src='crawl_robot.png?v=1794467968';XIMG.cultist.src='crawl_cultist.png?v=1794467968';XIMG.tentacle.src='crawl_tentacle.png?v=1794467968';XIMG.boom.src='crawl_boom.png?v=1794467968';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794468016';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794468016';XIMG.obst.src='crawl_obst.png?v=1794468016';XIMG.cityob.src='crawl_cityob.png?v=1794468016';XIMG.cars.src='crawl_cars.png?v=1794468016';XIMG.robot.src='crawl_robot.png?v=1794468016';XIMG.cultist.src='crawl_cultist.png?v=1794468016';XIMG.tentacle.src='crawl_tentacle.png?v=1794468016';XIMG.boom.src='crawl_boom.png?v=1794468016';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -4138,7 +4140,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.123</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.124</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
