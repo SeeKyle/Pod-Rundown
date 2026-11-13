@@ -37,7 +37,7 @@ const CFG={
     // 0.12.62 (Kyle) Fireman_Zombie: a zombie in turnout gear. A touch slower than a normal zombie, 1.25x the life, triple the armor,
     //   hits slightly harder, and can't be burned (fire and burn damage do nothing to him). Swings a heavy gloved arm.
     // 0.12.65 (Kyle): now 4x a zombie's health (100) and armor (12) at 2/5 its speed
-    fireman: {undead:1,scale:.88,aimScale:.88,hp:100,dmgDie:7,spd:5.5,   /* 0.12.136 (Kyle): 5 (was 3.5) */atk:1.25,reach:15,armorPts:12,kbRes:1,ccHalf:1,cleave:1,   /* 0.12.201 (Kyle): longer reach, immune to knockback, slows/stuns/dazes last half as long, swings cleave everything in reach in front */bleed:{chance:.25,dmg:20,dur:5},fireImmune:1,name:'Fireman_Zombie',
+    fireman: {undead:1,scale:.88,aimScale:.88,hp:100,dmgDie:7,spd:5.5,   /* 0.12.136 (Kyle): 5 (was 3.5) */atk:1.25,reach:15+5/3,armorPts:12,kbRes:1,ccHalf:1,cleave:1,   /* 0.12.238 (Kyle): reach +5 screen px (15 -> 16.7). 0.12.201 (Kyle): longer reach, immune to knockback, slows/stuns/dazes last half as long, swings cleave everything in reach in front */bleed:{chance:.25,dmg:20,dur:5},fireImmune:1,name:'Fireman_Zombie',
               itemChance:.05,goldChance:.35,goldAmt:[4,8],stack:true,xp:5,pts:30,cost:3.2,animAtk:.6,hitAt:.4,skins:['zombie_fire']},
     // 0.12.183 (Kyle) Skeleton_Archer (CraftPix free skeleton pack): hangs back near the right edge and shoots arrows (1d6) every 2.6s,
     //   with a 0.6s draw before each shot. Fragile, slow, can't bleed (no blood). From stage 3 on.
@@ -102,7 +102,7 @@ const STYLE={
   soldier:{atk:'gunner',proj:'bullet',reach:15,range:240,hp:1,dmg:1},   // 0.12.175 Soldier: assault rifle
   shoshi:{atk:'gunner',proj:'bullet',reach:1,range:230,hp:1,dmg:1},
   edward:{atk:'gunner',proj:'bullet',reach:14,range:210,hp:1,dmg:1},   // 0.12.207 Edward: nail gun
-  cheez:{atk:'blade',proj:'kunai',reach:18,range:0,hp:1,dmg:1},   // 0.12.234 Cheez: beam katana, no ranged   // 0.12.110 Shoshi: machine pistol
+  cheez:{atk:'blade',proj:'kunai',reach:21,range:0,hp:1,dmg:1},   // 0.12.234 Cheez: beam katana, no ranged   // 0.12.110 Shoshi: machine pistol
   eng:{atk:'gunner',proj:'nade',reach:20,range:165,hp:1,dmg:1},   // 0.12.105 Engineer: wrench + Grenade_Launcher
   flannel:{atk:'gunner',proj:'bullet',reach:20,range:250,hp:1,dmg:1},
   lumberjack:{atk:'blade',proj:'yarrow',reach:22,range:200,hp:1,dmg:1},
@@ -134,7 +134,7 @@ const SIG={
   knight:{name:'Shield_Wall · Crimson_Charge · Leap_Strike · Shield_Bash · Blood_Oath',cd:16,txt:'Holds the front in full crimson plate with a sword-and-shield combo. Throws up a Shield_Wall that pulls zombies onto him, Crimson_Charges through a lane of them, Leap_Strikes onto anything mauling a friend, and Shield_Bashes to stun (and interrupt shrieks and archers). Blood_Oath: every kill heals him and he hits harder when he\'s hurt.',fn:()=>false},
   carcher:{name:'Piercing_Shot · Tumble · Snare_Arrow · Hunters_Mark · Light_Feet',cd:10,txt:'Shoots a bow from long range, puts a Piercing_Shot through a whole line of zombies, Tumbles back out of reach when one gets on her, pins fast or dangerous zombies with a Snare_Arrow, and puts a Hunters_Mark on the one the team should focus. Light_Feet: quick and hard to pin down.',fn:()=>false},
   csorc:{name:'Chain_Lightning · Thunderclap · Static_Shield · Overcharge · Arcane_Flow',cd:11,txt:'Throws sparks of lightning, arcs Chain_Lightning through a pack, calls down a Thunderclap on a crowd, wraps a friend in a Static_Shield, and Overcharges his sparks so they jump. Arcane_Flow: every kill gives him energy back.',fn:()=>false},
-  cheez:{name:'Iaijutsu · Sake_Break · Error_Code_Fix · Host_With_The_Most · Perfect_Attendance',cd:9,txt:'A drunken techno-samurai with a beam katana. Cuts down whole lines of zombies with an Iaijutsu draw-slash, gets loose and fast on Sake_Break, fixes friends (or glitches the big ones) with Error_Code_Fix, plants a DICE BOYS banner as Host_With_The_Most, and never misses game night (Perfect_Attendance).',fn:()=>false},
+  cheez:{name:'Iaijutsu · Sake_Break · Error_Code_Fix · Dice-Boys_Banner · Perfect_Attendance',cd:9,txt:'A drunken techno-samurai with a beam katana. Cuts down whole lines of zombies with an Iaijutsu draw-slash, gets loose and fast on Sake_Break, fixes friends (or glitches the big ones) with Error_Code_Fix, plants a DICE BOYS banner as Dice-Boys_Banner, and never misses game night (Perfect_Attendance).',fn:()=>false},
   edward:{name:'Nail_Strip · Toolbox_Toss · Chutzpah · Power_of_Friendship · Loyal_to_a_Fault',cd:14,txt:'Fires a Nail_Gun from mid range and smacks anything that gets close with it. Dumps a Nail_Strip down a crowded lane (and leaves the nails on the ground), heaves his Toolbox_Toss at the biggest threat, powers up with the Power_of_Friendship when his people are hurting, and takes hits for anyone about to drop, getting energy back for every one (Loyal_to_a_Fault).',fn:()=>false},
   soldier:{name:'Frag_Grenade · Smoke_Grenade · Covering_Fire · Ammo_Drop · Battle_Hardened',cd:14,txt:'Holds the middle with a hip-fired Machine_Gun (15-round mag: taps, or lets rip on big targets) and a rifle-butt up close, lobs a Frag_Grenade into bunched-up zombies (4d6 blast and a 1.5s stun), pops Smoke_Grenades to cover hurt friends, lays down aimed Covering_Fire to slow a lane, drops an Ammo_Drop crate for the shooters, and is Battle_Hardened: below half HP he takes 15% less damage and reloads 25% faster.',fn:()=>false},
   shoshi:{name:'Ctrl_Z · Turn_It_Off_And_On_Again · Tech_Support · Dad_Mode · Always_Online',cd:12,txt:'Taps zombies with an Automatic_Pistol (20-round mag; unloads on big targets), undoes the damage an ally just took, reboots allies in trouble, keeps everyone\'s cooldowns moving with Tech_Support, goes dad mode for anyone about to drop, and is Always_Online: pings when someone goes down, kills car alarms from his phone, and calls targets for everyone near him.',fn:()=>false},
@@ -373,11 +373,11 @@ const CHAR={
   //   Crimson_Charge: IF 3+ zombies are lined up in one lane 25-90 ahead THEN he charges through the line (up to 95px): 2d6 to each and a big shove. 35 energy, 12s.
   //   Leap_Strike: IF a zombie is mauling an ally under 40% (or a Nemesis/boss is) 30-110 away THEN he leaps onto it: 3d6 and a 1s stun to it, 1d6 to anything beside it. 45 energy, 18s.
   //   Blood_Oath (passive): every kill heals him 3% of his max HP, and below half HP he hits 15% harder.
-  knight:{name:'Crimson_Knight',role:'Sword & Shield Tank',combo:1,flatHp:0,stamina:12,hpPerStamina:5,armorPts:12,dodge:.03,kbRes:.6,
+  knight:{name:'Crimson_Knight',role:'Sword & Shield Tank',combo:1,flatHp:0,stamina:12,hpPerStamina:5,armorPts:24,   /* 0.12.238 (Kyle): armor doubled (was 12) */dodge:.03,kbRes:.6,
     melee:{dice:[1,8],flat:1,every:1.15,reach:20,kb:20,hitAt:.2},
     acc:12,walkPenalty:4,crit:.08,critMul:1.75,luck:14,xp:0,run:2,turn:.2,enMax:100,enRegen:4.6,
     abilities:[
-      {id:'oath',name:'Blood_Oath',passive:1,heal:.03,under:.5,dmg:.15},
+      {id:'oath',name:'Blood_Oath',passive:1,heal:.03,under:.5,dmg:.15,regen:.2,regR:125/3},   /* 0.12.238: +0.20 HP/s per zombie within 125px */
       {id:'wall',name:'Shield_Wall',en:46,cd:16,dur:4,dr:.6,r:50},
       {id:'charge',name:'Crimson_Charge',en:40,cd:12,min:25,max:90,dist:95,dice:[2,6],kb:40,spd:220},
       {id:'kleap',name:'Leap_Strike',en:52,cd:13,min:30,max:110,dice:[3,6],flat:4,   /* 0.12.202 (Kyle): +4 damage, 13s (was 18s), used more often */splash:[1,6],stun:1,T:.6},
@@ -438,18 +438,18 @@ const CHAR={
   //     and now and then a hiccup stagger (0.3s). 28 energy, 18s. Preserve saves it for 4+ or a boss.
   //   Error_Code_Fix (his casino job): IF a friend within 450px is under 50% (Ally Awareness: 60%) or bleeding/slowed/stunned THEN REBOOT: heal 20% of their max HP and clear it;
   //     ELSE IF a Fireman/Nemesis is within 180px THEN OVERRIDE it: 2s stun and its armor halved for 6s. 35 energy, 20s.
-  //   Host_With_The_Most: IF 2+ friends are within 300px of him and a fight is on (3+ zombies on screen) THEN he plants a waving neon DICE BOYS banner: for 8s friends within
+  //   Dice-Boys_Banner: IF 2+ friends are within 300px of him and a fight is on (3+ zombies on screen) THEN he plants a waving neon DICE BOYS banner: for 8s friends within
   //     300px of it hit 10% harder and get +1 energy a second; if all three heroes are by it everyone shouts DICE BOYS! (+5% crit for the 8s). 40 energy, 25s.
   //   Perfect_Attendance (passive): never misses game night: once a stage, a hit that would drop him leaves him at 1 HP and untouchable for 2s.
   cheez:{name:'Cheez',role:'Beam Katana + Sake',flatHp:0,stamina:10,hpPerStamina:5,armorPts:6,dodge:.07,kbRes:.3,
-    melee:{dice:[1,8],flat:1,every:.9,reach:18,kb:16,hitAt:.15},
+    melee:{dice:[1,8],flat:1,every:.9,reach:21,kb:16,hitAt:.15},   /* 0.12.238 (Kyle): longer beam blade, reach 21 (was 18) */
     acc:14,walkPenalty:4,crit:.1,critMul:1.9,luck:15,xp:0,run:2,turn:.2,enMax:100,enRegen:5,
     abilities:[
       {id:'attend',name:'Perfect_Attendance',passive:1,hold:2},
       {id:'iai',name:'Iaijutsu',en:30,cd:9,range:140,dice:[2,8],hold:.25,spd:200},   /* 0.12.236: a wave, 600px/s for ~420px, one blink to it */
       {id:'sake',name:'Sake_Break',en:28,cd:18,dur:8,spd:.25,dodge:.15,acc:10,hic:.15},
       {id:'errfix',name:'Error_Code_Fix',en:35,cd:20,heal:.2,r:150,stun:2,arm:6},
-      {id:'host',name:'Host_With_The_Most',en:40,cd:25,dur:8,r:100,dmg:.1,crit:.05}]},
+      {id:'host',name:'Dice-Boys_Banner',en:40,cd:25,dur:8,r:100,dmg:.1,crit:.05}]},
   edward:{name:'Edward',role:'Nail_Gun + Toolbox',flatHp:0,stamina:10,hpPerStamina:5,armorPts:7,dodge:.05,kbRes:.35,
     melee:{dice:[1,6],flat:1,every:2.1,reach:14,kb:55,hitAt:.3},   /* 0.12.214 (Kyle): the nailer butt-strike is slow but sends them flying */
     ranged:{dice:[1,4],flat:0,every:.45,range:210,clip:18,   /* 0.12.226 (Kyle): 1d4 a nail; 0.12.227: every 0.45s, 3s reload */reload:3,pellets:1,anim:.3},
@@ -595,7 +595,7 @@ const ABIL_DESC={
   static:'Static_Shield · 40 energy · 14s. Wraps an ally (or himself) within 180px in static for 6s: a shield worth 20% of their max HP, and anything that hits them is zapped for 1d4.',
   overcharge:'Overcharge · 29 energy · 12s. His next 3 sparks hit 50% harder and each jumps to a second zombie close by for half.',
   bash:'Shield_Bash · 23 energy · 8s. Slams his shield into the zombie in front: 1d6 and a 1.5s stun (bosses 0.5s). Interrupts a Screamer\'s shriek or a Skeleton_Archer\'s draw.',
-  oath:'Blood_Oath (passive) · every kill heals him 3% of his max HP, and below half HP he hits 15% harder.',
+  oath:'Blood_Oath (passive) · every kill heals him 3% of his max HP, below half HP he hits 15% harder, and he regenerates 0.20 HP a second for every zombie within 125px of him.',
   wall:'Shield_Wall · 46 energy · 16s. When 3+ zombies are on him, or 2+ are mauling an ally under 45% near him, he plants his shield for 4s: 60% less damage, no knockback, and every zombie within 150px is taunted onto him.',
   charge:'Crimson_Charge · 40 energy · 12s. When 3+ zombies are lined up in one lane 75-270px ahead, he charges through the line (up to 285px): 2d6 to each and a big shove.',
   kleap:'Leap_Strike · 52 energy · 13s. Leaps 90-330px onto a zombie mauling a hurt ally, a Nemesis or boss, or into a pack of 3+: 3d6+4 and a 1s stun to it, 1d6 to anything beside it.',
@@ -611,9 +611,9 @@ const ABIL_DESC={
   frag:'Frag_Grenade · 40 energy · 14s. Lobs it 120-390px onto 3+ bunched zombies (or 2 with a big one). After a 0.5s tick: 4d6 in a 90px blast (60% at the edge) and a 1.5s stun. Never where an ally would be caught.',
   attend:'Perfect_Attendance (passive) · never misses game night: once a stage, a hit that would drop him leaves him at 1 HP and untouchable for 2s. Each stage cleared with nobody going down: +2% team damage next stage (max +6%).',
   iai:'Iaijutsu · 30 energy · 9s. Half damage, half movement. A quick draw-slash throws a cyan wave down his lane (fast, about 420px): 2d8 to everything it passes, the first a guaranteed crit. While it\'s out he can reactivate ONCE to blink to wherever the wave is. Used on 2+ lined up or a Screamer, archer or Nemesis; when he\'s hurt and mobbed he throws it backward and rides it out. He blinks to finish a priority target, save a friend in trouble at the wave, escape a mob, or take free ground.',
-  sake:'Sake_Break · 28 energy · 18s. A swig of neon sake: 8s of Drunken_Style: +25% attack speed and +15% dodge, but -10 accuracy and the odd hiccup stagger. Used with 3+ zombies close or a big one near.',
+  sake:'Sake_Break · 28 energy · 18s. A swig of neon sake: 8s of Drunken_Style: +25% attack speed and +15% dodge, but -10 accuracy and the odd hiccup stagger. Used with 3+ zombies close or a big one near. SHARE: once per swig he can pass the bottle to a friend within 150px: they get half the effect for half the time and his remaining cooldown is halved and 14 energy comes back. Share with a friend standing in his Dice-Boys_Banner and it\'s even better: they get the FULL effect for the full 8s, and 75% of his remaining cooldown is wiped and 21 energy comes back. He shares with a friend in a fight, a friend in the banner first.',
   errfix:'Error_Code_Fix · 35 energy · 20s. Casino tech mode. REBOOT a friend under 50% (or bleeding, slowed, stunned) within 450px: heal 20% of their max HP and clear it. No one to fix: OVERRIDE a Fireman or Nemesis within 540px: 2s stun and half armor for 6s.',
-  host:'Host_With_The_Most · 40 energy · 25s. "Game night at my place!" Plants a waving neon DICE BOYS banner: for 8s friends within 300px of it hit 10% harder and get +1 energy a second. All three heroes by it: everyone yells DICE BOYS! for +5% crit.',
+  host:'Dice-Boys_Banner · 40 energy · 25s. "Game night at my place!" Plants a waving neon DICE BOYS banner: for 8s friends within 300px of it hit 10% harder and get +1 energy a second. All three heroes by it: everyone yells DICE BOYS! for +5% crit.',
   loyal:'Loyal_to_a_Fault (passive) · a friend within 480px under 30% HP: 40% of every hit they take lands on Edward instead, and every hit he takes for them gives him +3 energy (works two jobs, never runs out of gas).',
   toolbox:'Toolbox_Toss · 38 energy · 14s. Heaves his toolbox 120-420px at the biggest threat (a Nemesis, boss or Fireman, whichever zombie has hurt his friends most, or the one on the most-hurt friend): 2d8 and a 1.2s stun, 1d4 to anything beside it.',
   nails:'Nail_Strip · 35 energy · 13s. Dumps a whole strip of nails down one lane: every zombie in it up to 300px out takes 1d4 and bleeds, and the nails stay on the ground for 5s, slowing anything walking over them by 30%. Used on a lane with 3+ zombies coming, or a fast one.',
@@ -1443,7 +1443,7 @@ class Game{
     this.W=opt.W||CFG.W;this.H=CFG.H;this.G=CFG.GROUND;
     this.rng=opt.rng||Math.random;this.demo=!!opt.demo;this.run=opt.run;this.slot=opt.slot;if(!this.demo)setRunModes(this.run);this.hardcore=!this.demo&&!!(this.run&&this.run.hardcore);
     this.st=CFG.stage(this.run.stage,this.run.prestige);
-    this.nemQ=(this.run.nemeses||[]).filter(n=>n.stage<this.st.n).slice(0,1);   /* 0.12.136: one returning Nemesis per stage, 40% of the way in */
+    this.nemQ=[];   /* 0.12.238 (Kyle): promoted zombies never just show up; they only come from the promotion system (a zombie that downs a hero) */   /* 0.12.136: one returning Nemesis per stage, 40% of the way in */
     this.dist=0;this.t=0;this.events=[];this.enemies=[];this.proj=[];this.fx=[];this.minions=[];this.texts=[];
     this.budget=2;this.bossSpawned=false;this.over=null;this.kills=0;this.shake=0;this.devourStacks=0;
     this.banners=[];this.waves=[];this.stageXp=0;this.stageScore=0;this.loot=[];this.stageGold=0;this.stageItems=[];this.stageFood=0;this.stageWater=0;this.stageParts=0;this.stats={};
@@ -1534,8 +1534,8 @@ class Game{
   nemRank(e,h){const N=e.nem;if(N.rank>=3){e.hp=e.max;return;}N.rank++;if(h)N.kills.push(h.key);
     e.nemHas=t=>(N.traits||[]).includes(t);if(N.rank===1&&!(N.traits||[]).length)this.nemTrait(e);else if(N.rank===3&&(N.traits||[]).length<2)this.nemTrait(e);
     const r=()=>this.rng();   /* 0.12.136 (Kyle): no two promotions alike: every rank-up rolls its own boosts */
-    let hpM=N.rank===1?1.5+r()*.7:1.2+r()*.35;const dmM=1.1+r()*.3,arm=1+Math.floor(r()*6);
-    if(!e.nemBase){e.nemBase=1;hpM=5;e.armorPts=(e.armorPts||0)*3;e.E=Object.create(e.E);if(e.E.reach!=null)e.E.reach*=1.2;e.E.spd*=1.2;}   /* 0.12.201 (Kyle): on promotion 5x HP (fully healed), triple armor, +20% reach, +20% speed */
+    let hpM=N.rank===1?1.5+r()*.7:1.2+r()*.35;const dmM=1.1+r()*.3,arm=1+Math.floor(r()*3);   /* 0.12.238 (Kyle): less armor on promotions: x1.75 base (was x3), +1-3 a rank (was +1-6) */
+    if(!e.nemBase){e.nemBase=1;hpM=5;e.armorPts=Math.round((e.armorPts||0)*1.75);e.E=Object.create(e.E);if(e.E.reach!=null)e.E.reach*=1.2;e.E.spd*=1.2;}   /* 0.12.201 (Kyle): on promotion 5x HP (fully healed), triple armor, +20% reach, +20% speed */
     e.max=Math.round(e.max*hpM);e.hp=e.max;e.dmg*=dmM;e.dmgMul*=dmM;e.armorPts=(e.armorPts||0)+arm;
     if(N.col==null){N.col=['#ff2a1a','#ff8a1a','#b04aff','#4aff7a','#ffd23f','#4ad8ff'][Math.floor(r()*6)];N.size=.95+r()*.25;}
     const R=(this.run.nemeses||[]).find(n=>n.id===N.id);if(R){R.rank=N.rank;R.kills=N.kills.slice();R.stage=this.st.n;R.traits=(N.traits||[]).slice();R.col=N.col;R.size=N.size;}
@@ -1651,7 +1651,7 @@ class Game{
     const y=boss?gy-30:u.fly?u.y:gy-(u.type==='werewolf'?8:12);   // chest height on the half-size units
     this.fx.push({k:'blood',raw:1,x:u.x,y,gy:boss?gy:gy,dir,n:Math.min(18,6+Math.round(amt*1.2))+(crit?8:0),big:crit||boss,seed:this.rng()*1000,t:0,life:.9});}
   // Bleed: damage over time that ignores armor; reapplying refreshes it (doesn't stack)
-  bleed(h,total,dur){const fresh=!(h.bleedT>0);h.bleedT=dur;h.bleedDps=total/dur;h.bleedTick=h.bleedTick||0;if(fresh)this.text(h.x,this.G-66,'BLEED','#ff3a4a');}
+  bleed(h,total,dur){if(h&&!fleshy(h))return;   /* 0.12.238 (Kyle): the Warhound can't bleed (or be poisoned) */const fresh=!(h.bleedT>0);h.bleedT=dur;h.bleedDps=total/dur;h.bleedTick=h.bleedTick||0;if(fresh)this.text(h.x,this.G-66,'BLEED','#ff3a4a');}
   hurtHero(h,amt,from){
     if(!h||!h.alive)return;
     /* 0.12.65 (Kyle) Guard Dog: no HP, he can take 5 hits (6 with a Tier III Kennel) before he goes down; one hit comes back every 15s (10s at Tier III).
@@ -1882,6 +1882,9 @@ class Game{
       if(W.left<=0||W.x<-6||W.x>this.W+6)W.gone=1;}
     for(const W of this.waves)if(W.gone&&W.src&&W.src.wave===W){W.src.wave=null;W.src.blinkOK=0;}
     this.waves=this.waves.filter(W=>!W.gone);}
+  /* 0.12.238 Sake buff (Cheez's own Drunken_Style, or a shared swig): +25% attack speed (melee and ranged), +15% dodge, -10 accuracy, times 'mul' */
+  sakeBuff(o,mul,dur,SK){if(o.sakeB)this.sakeEnd(o);const B={T:dur,sp:SK.spd*mul,dg:SK.dodge*mul,ac:SK.acc*mul};o.sakeB=B;o.meleeSpd*=1+B.sp;o.rangedSpd=(o.rangedSpd||1)*(1+B.sp);o.dodge+=B.dg;o.acc-=B.ac;}
+  sakeEnd(o){const B=o.sakeB;if(!B)return;o.meleeSpd/=1+B.sp;o.rangedSpd/=1+B.sp;o.dodge-=B.dg;o.acc+=B.ac;o.sakeB=null;}
   unperch(b,sl){const o=b[sl];if(!o)return;o.perch=null;o.leapH=0;o.acc-=o.perchAddAcc||0;o.perchAddAcc=0;o.perchR=0;o.perchDmg=0;o.perchSl=null;b[sl]=null;}
   unperchAll(b){this.unperch(b,'occ');this.unperch(b,'occ2');}
   /* 0.12.70 Void_Cultist: pay life for an ability (never below 25%) */
@@ -2290,6 +2293,7 @@ class Game{
     // 0.12.14 (Kyle): nothing lying on the ground slides along with the party: bodies, stuck arrows, thorns, scorch marks scroll with the ground
     this.stepRevive(dt);this.stepKennel(dt);if(this.banners&&this.banners.length){for(const B of this.banners){B.t-=dt;B.x-=(this.scroll||0)*dt;for(const o of this.alive())if(!o.pet&&Math.abs(this.heroX(o)-B.x)<B.r)o.en=Math.min(o.enMax||100,(o.en||0)+dt);}this.banners=this.banners.filter(B=>B.t>0&&B.x>-20);}
     if(this.waves&&this.waves.length)this.stepWaves(dt);
+    for(const o of this.heroes)if(o.sakeB){o.sakeB.T-=dt;if(o.sakeB.T<=0||!o.alive)this.sakeEnd(o);}
     for(const o of this.heroes)if(o.hostT>0){o.hostT-=dt;if(o.hostT<=0){if(o.hostOn){o.atk/=1.1;o.hostOn=0;}if(o.hostCrit){o.crit-=o.hostCrit;o.hostCrit=0;}}}
     for(const e of this.enemies)if(e.armorCut>0){e.armorCut-=dt;if(e.armorCut<=0&&e.armor0!=null){e.armorPts=e.armor0;e.armor0=null;}}   /* 0.12.234 Cheez: banner, host buff, override */this.stepBarrels(dt,this.scroll||0);this.stepRadio(dt,this.scroll||0);if(this.nailFields&&this.nailFields.length){for(const F of this.nailFields){F.t-=dt;F.x0-=(this.scroll||0)*dt;F.x1-=(this.scroll||0)*dt;for(const e of this.enemies){if(e.dead||e.fly||e.boss)continue;if(e.x>=F.x0&&e.x<=F.x1&&Math.abs((e.gy!=null?e.gy:this.G)-F.gy)<6){e.slow=Math.max(e.slow||0,F.slow);e.slowT=Math.max(e.slowT||0,.25);}}}this.nailFields=this.nailFields.filter(F=>F.t>0);}   /* 0.12.211 Edward's Nail_Strip nails on the ground */this.stepGlNades(dt,scroll);this.stepClones(dt,scroll);this.stepWatchdog(dt);this.stepSandbags(dt,scroll);this.stepClimb(dt,scroll);this.stepHerbs(dt,scroll);this.stepDisarm(dt);
     for(const h of this.alive()){this.obClamp(h,true);this.mineClamp(h);}for(const e of this.enemies)if(!e.dead)this.obClamp(e,false);
@@ -2352,8 +2356,8 @@ class Game{
       for(const k of ['iaT','skT','efT','hoT'])if(h[k]>0)h[k]-=dt;if(h.sipT>0)h.sipT-=dt;if(h.iaT==null){h.iaT=IA.cd*.3;h.skT=SK.cd*.3;h.efT=EF.cd*.3;h.hoT=HO.cd*.4;}
       const live=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>2&&e.x<this.W+2);const lane=e=>e.gy!=null?e.gy:this.G;const al=this.alive().filter(o=>!o.pet);
       // Drunken_Style running
-      if(h.sakeOn>0){h.sakeOn-=dt;if(this.rng()<dt*SK.hic*1.2&&!(h.hicT>0)){h.hicT=.3;h.pauseT=Math.max(h.pauseT||0,.3);this.text(hx,gy-48,'*hic*','#b8ff7a');}if(h.hicT>0)h.hicT-=dt;
-        if(h.sakeOn<=0){h.meleeSpd/=1+SK.spd;h.dodge-=SK.dodge;h.acc+=SK.acc;}}
+      if(h.sakeOn>0){h.sakeOn-=dt;if(h.sakeOn<=0)h.sakeShared=0;if(this.rng()<dt*SK.hic*1.2&&!(h.hicT>0)){h.hicT=.3;h.pauseT=Math.max(h.pauseT||0,.3);this.text(hx,gy-48,'*hic*','#b8ff7a');}if(h.hicT>0)h.hicT-=dt;
+      }
       /* 0.12.236 (Kyle) Iaijutsu is now a WAVE: a short sheathe, then the draw-slash throws a cyan crescent down his lane (fast, ~600px a second, ~420px):
          2d8 to everything it passes, the first one a guaranteed crit. He does NOT dash. While the wave is out he can reactivate ONCE to blink to wherever
          the wave is right now. Half damage skill, half movement skill: he thinks about the blink 10 times a second. */
@@ -2393,9 +2397,17 @@ class Game{
           h.abWhyT=this.t+3;return;}}
       /* Sake_Break: IF 3+ within 180px or a boss/Nemesis close (Preserve: 4+ or a big one) */
       if(SK&&h.skT<=0&&!(h.sakeOn>0)&&(h.en||0)>=SK.en){const near=live.filter(e=>Math.abs(e.x-hx)<60);const bigN=this.enemies.some(e=>!e.dead&&(e.boss||e.nem)&&Math.abs(e.x-hx)<120);
-        if((near.length>=(T('energy')>.65?4:3)||bigN)&&spendEnergy(h,SK.en)){h.skT=SK.cd*(1-(h.cdr||0));h.sakeOn=SK.dur;h.meleeSpd*=1+SK.spd;h.dodge+=SK.dodge;h.acc-=SK.acc;h.sipT=.6;h.pauseT=Math.max(h.pauseT||0,.5);
+        if((near.length>=(T('energy')>.65?4:3)||bigN)&&spendEnergy(h,SK.en)){h.skT=SK.cd*(1-(h.cdr||0));h.sakeOn=SK.dur;h.sakeShared=0;this.sakeBuff(h,1,SK.dur,SK);h.sipT=.6;h.pauseT=Math.max(h.pauseT||0,.5);
           this.text(hx,gy-50,'SAKE BREAK','#b8ff7a');h.abWhy='SAKE: '+(bigN?'a big one is here':near.length+' close');h.abWhyT=this.t+3;Comms.bubble(this,h,Comms.pick(['Kanpai!','Liquid courage, activate!','One for me, none for the zombies.','Drunken master mode.']),true);return;}}
-      /* Host_With_The_Most: IF 2+ friends within 300px of him and a fight is on (3+ zombies on screen) */
+      /* 0.12.238 (Kyle) Sake_Break, SHARE: while he's drunk he can pass the bottle once to a friend within 150px. They get half the effect for half the time
+         (full effect and full time if they're standing in his Dice-Boys_Banner), and his remaining cooldown is halved and half the energy cost comes back.
+         AI: a friend in a fight (2+ zombies on them) or a friend in the banner, the banner first; Team Player (pack) shares sooner. */
+      if(SK&&h.sakeOn>0&&!h.sakeShared&&h.sakeOn<SK.dur-1){const cands=al.filter(o=>o!==h&&!o.sakeB&&Math.abs(this.heroX(o)-hx)<50&&o.alive).map(o=>{const fight=live.filter(e=>Math.abs(e.x-this.heroX(o))<20).length;return {o,fight,inB:o.hostT>0};})
+          .filter(c=>c.inB||c.fight>=(T('pack')>.6?1:2)).sort((a,b)=>(b.inB-a.inB)||(b.fight-a.fight));const c=cands[0];
+        if(c){h.sakeShared=1;const full=c.inB;this.sakeBuff(c.o,full?1:.5,full?SK.dur:SK.dur/2,SK);h.skT=Math.max(0,h.skT*(full?.25:.5));h.en=Math.min(h.enMax||100,(h.en||0)+SK.en*(full?.75:.5));   /* 0.12.238 (Kyle): sharing with a Dice Boy in the banner is really good: their full effect + full time, 75% of his remaining cooldown gone and 3/4 of the energy back */h.sipT=.4;
+          this.text(this.heroX(c.o),(c.o.gy||this.G)-50,full?'SAKE! (full, Dice Boys)':'SAKE (half)','#b8ff7a');h.abWhy='SAKE SHARE: '+Comms.name(c.o)+(full?' (in the banner)':'');h.abWhyT=this.t+3;
+          Comms.bubble(this,h,Comms.pick(['Here, take a swig.','Kanpai, '+Comms.name(c.o)+'!','Sharing is caring.','Drink up, buttercup.']),true);if(this.rng()<.6)Comms.bubble(this,c.o,Comms.pick(['Kanpai!','Oh that burns. Good burn.','Okay, NOW I can fight.']));return;}}
+      /* Dice-Boys_Banner: IF 2+ friends within 300px of him and a fight is on (3+ zombies on screen) */
       if(HO&&h.hoT<=0&&(h.en||0)>=HO.en){const by=al.filter(o=>o!==h&&Math.abs(this.heroX(o)-hx)<HO.r);
         if(by.length>=2&&live.length>=3&&spendEnergy(h,HO.en)){h.hoT=HO.cd*(1-(h.cdr||0));const B={x:hx-(h.face||1)*6,gy,t:HO.dur,T:HO.dur,r:HO.r,dmg:HO.dmg,own:h};(this.banners=this.banners||[]).push(B);h.animM=.4;
           const inB=al.filter(o=>Math.abs(this.heroX(o)-B.x)<B.r);for(const o of inB){o.hostT=HO.dur;if(!o.hostOn){o.hostOn=1;o.atk*=1+HO.dmg;}}
@@ -2403,7 +2415,7 @@ class Game{
           h.abWhy='HOST: '+inB.length+' at the banner';h.abWhyT=this.t+3;return;}}
     }
     if(h.key==='knight'){const AB=id=>(C.abilities||[]).find(a=>a.id===id);const SW=AB('wall'),CC=AB('charge'),LS=AB('kleap'),BO=AB('oath');for(const k of ['swT','ccT','lsT'])if(h[k]>0)h[k]-=dt;if(h.swT==null){h.swT=SW.cd*.3;h.ccT=CC.cd*.3;h.lsT=LS.cd*.4;}
-      h.oathOn=!!(BO&&h.hp<h.max*BO.under);h.cryDmg=(h.cryDmg||1)*(h.oathOn?1+BO.dmg:1);
+      h.oathOn=!!(BO&&h.hp<h.max*BO.under);if(BO&&BO.regen){const n=this.enemies.filter(e=>!e.dead&&Math.abs(e.x-this.heroX(h))<=BO.regR&&Math.abs((e.gy!=null?e.gy:this.G)-(h.gy||this.G))<=BO.regR).length;if(n)this.healHero(h,BO.regen*n*dt,true,h);}   /* 0.12.238 Blood_Oath regen */h.cryDmg=(h.cryDmg||1)*(h.oathOn?1+BO.dmg:1);
       const hx=this.heroX(h),gy=h.gy||this.G;const lane=e=>e.gy!=null?e.gy:this.G;
       if(h.wallT>0){h.wallT-=dt;h.kbv=0;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;{const fw=h.face||1,front=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&(e.x-hx)*fw>0&&(e.x-hx)*fw<22&&Math.abs((e.gy!=null?e.gy:this.G)-(h.gy||this.G))<8);if(front.length){h.x+=fw*5*dt;h.wallDrag=.2;for(const e of front){const res=(e.E&&e.E.kbRes)||0;if(res<1)e.x+=fw*7*dt*(1-res);}}else if(h.wallDrag>0)h.wallDrag-=dt;}   /* 0.12.214 (Kyle): Shield_Wall drags forward, shoving the zombies on it back */for(const e of this.enemies)if(!e.dead&&!e.boss&&Math.abs(e.x-hx)<SW.r&&!(e.tauntT>0)){e.tauntT=.6;e.tauntBy=h;e.target=h;}if(h.wallT<=0){h.wallT=0;h.kbRes=h.kbRes0;}else return;}
       if(h.charge){const K=h.charge;const st=K.dir*CC.spd*dt;h.x+=st;K.gone+=Math.abs(st);h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;const nx=this.heroX(h);
@@ -3106,7 +3118,7 @@ class Game{
     if(b.t4<=0){b.t4=12*P;const xs=al.map(h=>this.heroX(h)),x0=Math.min(...xs)-6,x1=Math.max(...xs)+6;this.zone((x0+x1)/2,(x1-x0)/2+8,.7,b.dmg*.9,b,'dash','#5ae0e8');go('dash',.9,.7,()=>{this.shake=Math.max(this.shake,.35);});return;}
     if(b.t3<=0){b.t3=10*P;go('cast',.8,.45,()=>{for(let i=0;i<3;i++){const t=al[Math.floor(this.rng()*al.length)];this.proj.push({enemy:true,kind:'wisp',x:b.x-10,y:b.y-70,tx:t,dmg:b.dmg*.55,src:b,spd:110+i*20,t:0});}});return;}
     if(b.t2<=0){b.t2=9*P;const t=al[Math.floor(this.rng()*al.length)];const tx=this.heroX(t);const z=this.zone(tx,10,.6,b.dmg*.8,b,'drain','#5ae0e8');
-      go('claw',.95,.6,()=>{if(t.alive&&Math.abs(this.heroX(t)-tx)<14){t.bleedT=3;t.bleedDps=b.dmg*.3;t.bleedTick=0;b.hp=Math.min(b.max,b.hp+b.dmg*1.2);this.text(b.x,this.G-70,'+'+Math.round(b.dmg*1.2),'#5ae0e8');}});return;}
+      go('claw',.95,.6,()=>{if(t.alive&&Math.abs(this.heroX(t)-tx)<14){if(fleshy(t)){t.bleedT=3;t.bleedDps=b.dmg*.3;t.bleedTick=0;}b.hp=Math.min(b.max,b.hp+b.dmg*1.2);this.text(b.x,this.G-70,'+'+Math.round(b.dmg*1.2),'#5ae0e8');}});return;}
     if(b.t1<=0){b.t1=3.5*P;this.zone(b.x-24,16,.5,b.dmg*1.1,b,'sweep','#5ae0e8');go('sweep',1,.5,null);return;}}
   bossAI(b,dt,sp,f){
     const al=this.alive();const k=b.type;b.walkT+=dt;b.age=(b.age||0)+dt;if(b.age>90&&!b.enraged){b.enraged=1;this.ev('enrage');}if(b.enraged)b.dmg*=1+.012*dt;   // enrage after 90s so fights always end
@@ -3969,7 +3981,7 @@ const TAL_MOD={
       flow:{name:'Overflow',icon:'🔋',txt:'Arcane_Flow gives +6 energy a kill (was +3).',ab:'arcflow',set:{en:6}}},
   cheez:{blitz:{name:'Battou',icon:'⚡',txt:'The Iaijutsu wave flies 540px (was 420px) and costs 22 energy (was 30).',ab:'iai',set:{range:180,en:22}},
       bar:{name:'Open Bar',icon:'🍶',txt:'Sake_Break lasts 12s (was 8s) and drops the hiccups.',ab:'sake',set:{dur:12,hic:0}},
-      party:{name:'House Party',icon:'🎉',txt:'Host_With_The_Most banner lasts 14s (was 8s) and gives +15% damage (was +10%).',ab:'host',set:{dur:14,dmg:.15}}},
+      party:{name:'House Party',icon:'🎉',txt:'Dice-Boys_Banner banner lasts 14s (was 8s) and gives +15% damage (was +10%).',ab:'host',set:{dur:14,dmg:.15}}},
   edward:{heavy:{name:'Heavy Toolbox',icon:'🧰',txt:'Toolbox_Toss hits for 3d8 (was 2d8) and stuns for 2s (was 1.2s).',ab:'toolbox',set:{dice:[3,8],stun:2}},
       nakama:{name:'Nakama',icon:'✨',txt:'Power_of_Friendship lasts 9s (was 6s) and friends get +20% (was +10%).',ab:'friend',set:{dur:9,ally:.2}},
       nerve:{name:'Big Nerve',icon:'😤',txt:'Chutzpah lasts 5s (was 3s) and he takes 45% less (was 30%).',ab:'chutz',set:{dur:5,dr:.45}},
@@ -4082,12 +4094,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794539698';const BGI=new Image();BGI.src='crawl_bg.png?v=1794539698';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794539698';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794543927';const BGI=new Image();BGI.src='crawl_bg.png?v=1794543927';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794543927';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794539698';XIMG.wave.src='crawl_wave.png?v=1794539698';XIMG.chibi.src='crawl_chibi.png?v=1794539698';XIMG.flannel.src='crawl_flannel.png?v=1794539698';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794539698';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794539698';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794539698';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794539698';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794539698';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794539698';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794539698';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794539698';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794539698';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794539698';XIMG.rain.src='crawl_rain.png?v=1794539698';XIMG.druid.src='crawl_druid.png?v=1794539698';XIMG.camp.src='crawl_campfire.png?v=1794539698';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794539698';XIMG.tornado.src='crawl_fx_tornado.png?v=1794539698';XIMG.vine.src='crawl_fx_vine.png?v=1794539698';XIMG.thorn.src='crawl_fx_thorn.png?v=1794539698';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794543927';XIMG.wave.src='crawl_wave.png?v=1794543927';XIMG.chibi.src='crawl_chibi.png?v=1794543927';XIMG.flannel.src='crawl_flannel.png?v=1794543927';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794543927';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794543927';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794543927';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794543927';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794543927';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794543927';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794543927';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794543927';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794543927';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794543927';XIMG.rain.src='crawl_rain.png?v=1794543927';XIMG.druid.src='crawl_druid.png?v=1794543927';XIMG.camp.src='crawl_campfire.png?v=1794543927';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794543927';XIMG.tornado.src='crawl_fx_tornado.png?v=1794543927';XIMG.vine.src='crawl_fx_vine.png?v=1794543927';XIMG.thorn.src='crawl_fx_thorn.png?v=1794543927';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794539698';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794539698';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1794539698';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1794539698';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1794539698';XIMG.obst.src='crawl_obst.png?v=1794539698';XIMG.cityob.src='crawl_cityob.png?v=1794539698';XIMG.harvest.src='crawl_harvest.png?v=1794539698';XIMG.wraith.src='crawl_wraith.png?v=1794539698';XIMG.cars.src='crawl_cars.png?v=1794539698';XIMG.robot.src='crawl_robot.png?v=1794539698';XIMG.cultist.src='crawl_cultist.png?v=1794539698';XIMG.tentacle.src='crawl_tentacle.png?v=1794539698';XIMG.boom.src='crawl_boom.png?v=1794539698';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794543927';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794543927';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1794543927';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1794543927';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1794543927';XIMG.obst.src='crawl_obst.png?v=1794543927';XIMG.cityob.src='crawl_cityob.png?v=1794543927';XIMG.harvest.src='crawl_harvest.png?v=1794543927';XIMG.wraith.src='crawl_wraith.png?v=1794543927';XIMG.cars.src='crawl_cars.png?v=1794543927';XIMG.robot.src='crawl_robot.png?v=1794543927';XIMG.cultist.src='crawl_cultist.png?v=1794543927';XIMG.tentacle.src='crawl_tentacle.png?v=1794543927';XIMG.boom.src='crawl_boom.png?v=1794543927';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -5113,7 +5125,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.237</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.238</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
