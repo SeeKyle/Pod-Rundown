@@ -1513,7 +1513,7 @@ class Game{
       {const H=this.slot&&this.slot.heroes&&this.slot.heroes[h.key];const P=(H&&H.pts)||{};   /* level-up stat points (chosen at camp) */
         {const tl=talPicks(H);const m={};let hpP=0,dmP=0;h.healBonus=0;h.revBonus=0;h.cap={};
           for(const id of tl){const [t,a,b]=id.split(':');if(t==='st'){const S=TAL_STAT[a];if(!S)continue;if(S.hpPct)hpP+=S.hpPct;if(S.dmgPct)dmP+=S.dmgPct;if(S.heal)h.healBonus+=S.heal/100;if(S.rev)h.revBonus+=S.rev/100;for(const [x,v] of Object.entries(S.mod||{}))m[x]=(m[x]||0)+v;}
-            else if(t==='cap'){h.cap[b]=1;const Cp=HCAP[h.key]&&HCAP[h.key][a]&&HCAP[h.key][a][b];if(Cp&&Cp.stat){if(Cp.stat.hpPct)hpP+=Cp.stat.hpPct;if(Cp.stat.dmgPct)dmP+=Cp.stat.dmgPct;for(const [x,v] of Object.entries(Cp.stat.mod||{}))m[x]=(m[x]||0)+v;}}}
+            else if(t==='cap'){h.cap[b]=1;const Cp=HCAP[h.key]&&HCAP[h.key][a]&&HCAP[h.key][a][b];if(Cp&&Cp.also)for(const x of Cp.also)h.cap[x]=1;   /* 0.12.287 hero capstones can switch on the big generic tricks too */if(Cp&&Cp.stat){if(Cp.stat.heal)h.healBonus+=Cp.stat.heal/100;if(Cp.stat.hpPct)hpP+=Cp.stat.hpPct;if(Cp.stat.dmgPct)dmP+=Cp.stat.dmgPct;for(const [x,v] of Object.entries(Cp.stat.mod||{}))m[x]=(m[x]||0)+v;}}}
           {const LM=luckyStatMod(H);if(LM){hpP+=LM.hpPct;for(const [x,v] of Object.entries(LM.mod))m[x]=(m[x]||0)+v;}}   /* 0.12.286 Lucky Die stat rungs */
           h.capF=Object.keys(h.cap).filter(x=>CAPFX[x]);
           if(h.cap.glass){dmP+=15;hpP-=10;}if(h.cap.bulwark){hpP+=20;m.armor=(m.armor||0)+2;}if(h.cap.over)m.cdr=(m.cdr||0)+20;if(h.cap.jugg){m.armor=(m.armor||0)+3;m.kbRes=(m.kbRes||0)+40;}
@@ -1521,6 +1521,7 @@ class Game{
           if(hpP)h.max*=1+hpP/100;if(dmP)h.atk*=1+dmP/100;
           if(m.acc)h.acc+=m.acc;if(m.crit)h.crit+=m.crit/100;if(m.dodge)h.dodge+=m.dodge/100;if(m.armor)h.armorPts+=m.armor;if(m.luck)h.luck+=m.luck;
           if(m.kbRes)h.kbRes+=m.kbRes/100;if(m.enMax)h.enMaxB+=m.enMax;if(m.enRegen)h.enRegenB+=m.enRegen;if(m.move)h.mvMul+=m.move/100;
+          if(m.meleeDmg)h.meleeDmg+=m.meleeDmg/100;if(m.rangedDmg)h.rangedDmg+=m.rangedDmg/100;if(m.lifesteal)h.lifesteal+=m.lifesteal/100;if(m.critMul)h.critMul+=m.critMul/100;if(m.xp)h.xpBonus+=m.xp/100;   /* 0.12.287 these talent stats now apply */
           if(m.meleeSpd)h.meleeSpd+=m.meleeSpd/100;if(m.rangedSpd)h.rangedSpd+=m.rangedSpd/100;if(m.kb)h.kbAdd+=m.kb;if(m.cdr)h.cdr=Math.min(.5,(h.cdr||0)+m.cdr/100);}   /* 0.12.106 talents */
         if(P.hp)h.max*=1+.04*P.hp;if(P.dmg)h.atk*=1+.03*P.dmg;if(P.acc)h.acc+=2*P.acc;if(P.crit)h.crit+=.01*P.crit;if(P.luck)h.luck+=3*P.luck;if(P.armor)h.armorPts+=P.armor;
         if(h.courage){h.courageAcc=this.run&&upgT(this.run,'still')>=4?.85:.8;h.atk*=1.2;h.acc*=h.courageAcc;   /* 0.12.256 (Kyle): Still IV's better brew: -15% accuracy */h.meleeSpd*=1.1;h.rangedSpd*=1.1;}   /* 0.12.252 (Kyle): +20% dmg, +10% atk speed, -20% accuracy (and 10% less damage taken) */{const sv=this.run&&this.run.heroes&&this.run.heroes[h.key];const hu=(sv&&sv.hunger)||0,th=(sv&&sv.thirst)||0;h.hunger=hu;h.thirst=th;if(hu)h.acc-=HUNGER.acc[hu];}   /* 0.12.72 hunger: shaky aim */   /* Liquid Courage */const gt=upgT(this.run,'gen');if(gt)h.enRegenB+=[0,.25,.5,.75,1][gt];const bt=upgT(this.run,'bench');if(bt){h.flatRanged=(h.flatRanged||0)+bt;h.flatMelee=(h.flatMelee||0)+bt;}const sh=upgT(this.run,'shrine');if(sh)h.luck+=[5,10][sh-1];}
@@ -1967,7 +1968,7 @@ class Game{
     const T=this;const al=this.alive();this.dropLost();for(const h of this.heroes)if(h.alive&&h.thirst>0&&!this.over){h.hp-=h.max*THIRST.drain[h.thirst]*dt;if(h.hp<1)h.hp=1;}   /* 0.12.72: dehydration drains a little life (never kills on its own) */for(const p of this.pets||[])if(p.dog&&!p.alive&&p.downed){p.x-=(this.scroll||0)*dt;if(p.x<-10)p.downed=0;}   /* a downed dog is left behind if nobody helps him up before he slides off screen */
     for(const p of this.pets||[])if(p.dog&&p.alive&&p.hits<p.hitsMax){p.hitRegT=(p.hitRegT||0)+dt;if(p.hitRegT>=p.hitRegEvery){p.hitRegT=0;p.hits++;p.hp=p.max*p.hits/p.hitsMax;}}   /* dog: one hit back every 15s (10s at Kennel III) */
     if(!this._hearth){this._hearth=1;if(!this.demo&&this.run&&upgT(this.run,'hearth'))for(const h of al)giveCozy(h);if(!this.demo&&this.run&&upgT(this.run,'jukebox'))for(const h of al)if(!h.pet)addMood(h,{nerve:-2},1e9,'jukebox');
-      if(!this.demo&&this.slot)for(const h of al){const H=this.slot.heroes[h.key];for(const id of talPicks(H))if(id.startsWith('ps:')){const P=TAL_PERSONA[id.slice(3)];if(P)addMood(h,P.shift,1e9,'talent');}}   /* 0.12.106 personality talents */   /* 0.12.105 Old Jukebox */
+      if(!this.demo&&this.slot)for(const h of al){const H=this.slot.heroes[h.key];for(const id of talPicks(H))if(id.startsWith('ps:')){const P=TAL_PERSONA[id.slice(3)];if(P)addMood(h,P.shift,1e9,'talent');}else if(id.startsWith('cap:')){const [,L,b]=id.split(':');const Cp=HCAP[h.key]&&HCAP[h.key][L]&&HCAP[h.key][L][b];if(Cp&&Cp.shift)addMood(h,Cp.shift,1e9,'capstone');}}   /* 0.12.287 capstones reshape how the AI plays him */   /* 0.12.106 personality talents */   /* 0.12.105 Old Jukebox */
       const sb=!this.demo&&this.run&&upgT(this.run,'sandbag');if(sb){const pool=al.filter(h=>!h.pet).sort(()=>this.rng()-.5);for(const h of pool.slice(0,sb>=3?2:1)){h.sandbag=sb;Comms.bubble(this,h,Comms.pick(['Got the sandbags.','I\'ll carry the bags.','Sandbags on my back!']));}}}   /* 0.12.104 Sandbag Wall: random carriers */   /* Hearth camp upgrade: everyone starts the stage Cozy */
     for(const t of this.timers||[])t.t-=dt;
     if(this.timers){for(const t of this.timers.filter(t=>t.t<=0))t.fn();this.timers=this.timers.filter(t=>t.t>0);}
@@ -3999,7 +4000,15 @@ const TAL_STAT={
   brawn:{name:'Brawn',icon:'💪',txt:'+15 knockback, +10% knockback resistance',mod:{kb:15,kbRes:10},melee:1},
   evade:{name:'Evasion',icon:'💨',txt:'+2.5% dodge',mod:{dodge:2.5}},
   medic:{name:'Field Medic',icon:'🩹',txt:'+12% healing done',heal:12,healer:1},
-  rescue:{name:'Rescuer',icon:'🤝',txt:'helps allies up 20% faster',rev:20}};
+  rescue:{name:'Rescuer',icon:'🤝',txt:'helps allies up 20% faster',rev:20},
+  marks:{name:'Marksman',icon:'🔭',txt:'+10% ranged damage',mod:{rangedDmg:10},ranged:1},
+  bruiser:{name:'Bruiser',icon:'👊',txt:'+10% melee damage',mod:{meleeDmg:10},melee:1},
+  leech:{name:'Vampiric',icon:'🧛',txt:'heals 3% of the damage he deals',mod:{lifesteal:3}},
+  brutal:{name:'Brutal Crits',icon:'💥',txt:'crits hit 20% harder',mod:{critMul:20}},
+  scholar:{name:'Quick Study',icon:'📚',txt:'+10% XP',mod:{xp:10}},
+  bulky:{name:'Built Different',icon:'🧱',txt:'+5% max HP and +1 armor',hpPct:5,mod:{armor:1}},
+  steady:{name:'Steady Aim',icon:'🫴',txt:'+3 accuracy and +4% attack speed',mod:{acc:3,meleeSpd:4,rangedSpd:4}},
+  lucky:{name:'Lucky Charm',icon:'🧿',txt:'+3 Luck and +1.5% crit chance',mod:{luck:3,crit:1.5}}};
 const TAL_PERSONA={
   steady:{name:'Nerves of Steel',icon:'🧊',txt:'+2 Steady (panics less)',shift:{nerve:-2}},
   fury:{name:'Bloodlust',icon:'🔥',txt:'+2 Blind Aggression (fights harder, backs off later)',shift:{aggr:2}},
@@ -4066,29 +4075,103 @@ const TAL_MOD={
    stat: {hpPct, dmgPct, mod:{...}} same keys as the stat talents. The behavior lives in CAPFX (hit / kill / hurt / tick / down / cast hooks). */
 const HCAP={
  cheez:{5:{
-   cz_ronin:{name:'Nat_20_Ronin',icon:'🎲',txt:'Iaijutsu: 3d8, flies 540px, 6s cooldown. Every Beam_Katana CRIT also fires a free mini-wave down his lane (1d8+2, no blink). +8% crit.',patch:[{ab:'iai',set:{dice:[3,8],range:180,cd:6}}],stat:{mod:{crit:8}}},
-   cz_happy:{name:'Happy_Hour',icon:'🍻',txt:'Sake_Break is shared with EVERY friend within 150px (banner rules apply to each). While he\'s in Drunken_Style he heals 10% of the damage he deals. +15% max HP.',stat:{hpPct:15}}},
+   cz_ronin:{name:'Nat_20_Ronin',icon:'🎲',txt:'Iaijutsu: 3d8, flies 540px, 6s cooldown. Every Beam_Katana CRIT also fires a free mini-wave down his lane (1d8+2, no blink). +8% crit.',patch:[{ab:'iai',set:{dice:[3,8],range:180,cd:6,en:20}}],stat:{mod:{crit:8}}},
+   cz_happy:{name:'Happy_Hour',icon:'🍻',txt:'Sake_Break lasts 14s with no hiccups and is shared with EVERY friend within 150px (banner rules apply to each). While he\'s in Drunken_Style he heals 10% of the damage he deals. +15% max HP.',patch:[{ab:'sake',set:{dur:14,hic:0}}],stat:{hpPct:15},shift:{self:-2}}},
   10:{
-   cz_boss:{name:'Final_Boss_of_Game_Night',icon:'👑',txt:'Dice-Boys_Banner lasts 16s on an 18s cooldown, all-in crit is +15%, and the banner pulses neon every 2s: 1d6+2 to every zombie within 300px of it.',patch:[{ab:'host',set:{dur:16,cd:18,crit:.15}}]},
+   cz_boss:{name:'Final_Boss_of_Game_Night',icon:'👑',txt:'Dice-Boys_Banner lasts 16s on an 18s cooldown, gives +20% damage, all-in crit is +15%, and the banner pulses neon every 2s: 1d6+2 to every zombie within 300px of it.',patch:[{ab:'host',set:{dur:16,cd:18,crit:.15,dmg:.2}}]},
    cz_speed:{name:'Speedrun_Any%',icon:'🏆',txt:'Perfect_Attendance saves him TWICE a stage. Every save and every Iaijutsu blink starts a 4s SPEEDRUN: +50% attack speed, +30% move speed, and Iaijutsu\'s cooldown resets. +10% damage.',stat:{dmgPct:10}}}},
  edward:{5:{
-   ed_frame:{name:'Framing_Crew',icon:'🔨',txt:'Nail_Gun holds 30 nails, +10% ranged damage, and every 5th nail is a FRAMING NAIL: triple damage and it pins the zombie in place for 1s.',patch:[{ab:'_ranged',set:{clip:30}}],stat:{mod:{rangedDmg:10}}},
-   ed_jobs:{name:'Works_Two_Jobs',icon:'💼',txt:'+30% energy regen. Every ability gives back 30% of its energy when a friend is within 300px. Toolbox_Toss: 3d8 on a 9s cooldown.',patch:[{ab:'toolbox',set:{dice:[3,8],cd:9}}],stat:{mod:{enRegen:1.65}}}},
+   ed_frame:{name:'Framing_Crew',icon:'🔨',txt:'Nail_Gun holds 30 nails, Nail_Strip reaches 450px and stays 8s, +10% ranged damage, and every 5th nail is a FRAMING NAIL: triple damage and it pins the zombie in place for 1s.',patch:[{ab:'_ranged',set:{clip:30}},{ab:'nails',set:{range:150,field:8}}],stat:{mod:{rangedDmg:10}}},
+   ed_jobs:{name:'Works_Two_Jobs',icon:'💼',txt:'+30% energy regen. Every ability gives back 30% of its energy when a friend is within 300px. Toolbox_Toss: 3d8, stuns 2s, 9s cooldown.',patch:[{ab:'toolbox',set:{dice:[3,8],cd:9,stun:2}}],stat:{mod:{enRegen:1.65}}}},
   10:{
    ed_nakama:{name:'Nakama_Unleashed',icon:'🌟',txt:'Power_of_Friendship lasts 10s, friends within 300px get the FULL +30% damage AND +30% attack speed, and it heals the whole team 15% when it starts. +15% max HP.',patch:[{ab:'friend',set:{dur:10,ally:.3}}],stat:{hpPct:15}},
-   ed_bond:{name:'Unbreakable_Bond',icon:'🤝',txt:'Loyal_to_a_Fault starts at 60% and takes 60% of the hits. Every hit he soaks heals that friend 4% of their max HP, and soaked hits land 25% softer on him. +3 armor.',patch:[{ab:'loyal',set:{under:.6,share:.6}}],stat:{mod:{armor:3}}}}},
+   ed_bond:{name:'Unbreakable_Bond',icon:'🤝',txt:'Loyal_to_a_Fault starts at 60% and takes 60% of the hits. Every hit he soaks heals that friend 4% of their max HP, and soaked hits land 25% softer on him. Chutzpah lasts 5s and blocks 45%. +3 armor.',patch:[{ab:'loyal',set:{under:.6,share:.6}},{ab:'chutz',set:{dur:5,dr:.45}}],stat:{mod:{armor:3}},shift:{self:-3}}}},
  knight:{5:{
    kn_bastion:{name:'Crimson_Bastion',icon:'🏰',txt:'Shield_Wall lasts 6s and blocks 75%, and everything it blocks is thrown back at the attacker as crimson fire. +4 armor.',patch:[{ab:'wall',set:{dur:6,dr:.75}}],stat:{mod:{armor:4}}},
-   kn_blood:{name:'Blood_Knight',icon:'🩸',txt:'Every hit heals him 2% of his max HP. Blood_Oath: +35% damage under half HP (was 15%) and 0.40 HP/s per zombie near him (was 0.20). +10% max HP.',patch:[{ab:'oath',set:{dmg:.35,regen:.4}}],stat:{hpPct:10}}},
+   kn_blood:{name:'Blood_Knight',icon:'🩸',txt:'Every hit heals him 2% of his max HP. Blood_Oath: +35% damage under half HP (was 15%) and 0.40 HP/s per zombie near him (was 0.20), 6% heal per kill. +10% max HP.',patch:[{ab:'oath',set:{dmg:.35,regen:.4,heal:.06}}],stat:{hpPct:10},shift:{aggr:2}}},
   10:{
    kn_avatar:{name:'Avatar_of_the_Oath',icon:'👼',txt:'Once a stage, when he would go down he rises in crimson fire at 60% HP, untouchable for 3s, and every zombie within 150px takes 3d6 and is blown away.'},
-   kn_jugg:{name:'Unstoppable',icon:'🐎',txt:'Crimson_Charge: 3d6 on a 6s cooldown. Any kill resets Crimson_Charge and Shield_Bash (once every 2s). He can\'t be knocked back. +20% damage.',patch:[{ab:'charge',set:{dice:[3,6],cd:6}}],stat:{dmgPct:20,mod:{kbRes:100}}}}},
+   kn_jugg:{name:'Unstoppable',icon:'🐎',txt:'Crimson_Charge: 3d6 on a 6s cooldown. Any kill resets Crimson_Charge and Shield_Bash (once every 2s). He can\'t be knocked back. +20% damage.',patch:[{ab:'charge',set:{dice:[3,6],cd:6,dist:140}}],stat:{dmgPct:20,mod:{kbRes:100}}}}},
  robot:{5:{
    rb_inferno:{name:'Inferno_Protocol',icon:'🔥',txt:'Flamethrower: 50% longer cone, 5 on contact, burns 3d4 over 3s. Anything burning takes 20% more from all his damage. +15% max HP.',patch:[{ab:'_melee',path:'flame',set:{len:84,hit:5,burnDice:[3,4]}}],stat:{hpPct:15}},
    rb_swarm:{name:'Hunter-Killer_Swarm',icon:'🚀',txt:'Missile_Barrage: 6 missiles on a 9s cooldown. Carpet_Bomb drops 15. +10% ranged damage.',patch:[{ab:'missiles',set:{n:6,cd:9}},{ab:'directive',path:'carpet',set:{shots:15}}],stat:{mod:{rangedDmg:10}}}},
   10:{
    rb_titan:{name:'Titan_Frame',icon:'🛡️',txt:'+40% max HP, +6 armor, immune to stuns and slows. Nano-Tech_Repair_Bots heal 10% a second and he keeps moving and shooting while they work.',patch:[{ab:'nano',set:{per:.1}}],stat:{hpPct:40,mod:{armor:6}}},
-   rb_omega:{name:'Omega_Directive',icon:'⚡',txt:'Primary_Directive: 15s cooldown for both choices, twice the missiles in the air, and his landing smash hits 4d6 in 210px and stuns for 1.5s.',patch:[{ab:'directive',path:'retreat',set:{icd:15,shots:6}},{ab:'directive',path:'carpet',set:{cd:15,shots:18}}]}}},
+   rb_omega:{name:'Omega_Directive',icon:'⚡',txt:'Primary_Directive: 15s cooldown for both choices, twice the missiles in the air, and his landing smash hits 4d6 in 210px and stuns for 1.5s. Smoke_Screen lasts 9s, zombies inside miss 65%.',patch:[{ab:'directive',path:'retreat',set:{icd:15,shots:6}},{ab:'directive',path:'carpet',set:{cd:15,shots:18}},{ab:'smoke',set:{dur:9,miss:.65}}]}}},
+ /* 0.12.287 (Kyle): capstones for everyone. Each one is a whole new way to play the hero: several abilities pushed hard, big stats,
+    a personality shift (so the slider AI actually plays the new style) and sometimes a once-a-stage trick. */
+ jp:{5:{
+   jp_ghost:{name:'Ghost_Sniper',icon:'👻',txt:'Plays from the very back. No_Scope: 5d6, pierces 7, 9s cooldown, +25% crit on it. +10 accuracy, +10% crit. Anything under 25% HP takes +60% from him.',patch:[{ab:'noscope',set:{dice:[5,6],pierce:7,cd:9,crit:.4}}],stat:{mod:{acc:10,crit:10}},also:['exec'],shift:{range:-3,aggr:-2}},
+   jp_fam:{name:'Familia_First',icon:'🛡️',txt:'Lives for the crew. Protect_the_Familia shields 90% on a 10s cooldown; Toke_Break lasts 4s and heals 15%; Trash_Talk lasts 7s. +20% max HP. Way more selfless.',patch:[{ab:'familia',set:{shield:.9,cd:10}},{ab:'toke',set:{dur:4,heal:.15}},{ab:'trash',set:{dur:7}}],stat:{hpPct:20},shift:{self:-4,pack:-2,courage:2}}},
+  10:{
+   jp_oneshot:{name:'One_Shot_One_Kill',icon:'💀',txt:'No_Scope: 8d6, pierces 12, 7s cooldown. +25% damage and +20% crit, but -10% max HP.',patch:[{ab:'noscope',set:{dice:[8,6],pierce:12,cd:7}}],stat:{dmgPct:10,mod:{crit:20}},also:['glass']},
+   jp_don:{name:'Don_of_the_Block',icon:'👑',txt:'Protect_the_Familia shields 100% on an 8s cooldown and the bash stuns 2s. Once a stage a killing hit leaves him at 1 HP, untouchable 3s. +4 armor, braver.',patch:[{ab:'familia',set:{shield:1,cd:8,bashStun:2}}],stat:{mod:{armor:4}},also:['last'],shift:{courage:3,self:-2}}}},
+ chibi:{5:{
+   ch_legion:{name:'Shadow_Legion',icon:'👥',txt:'Shadow_Clone lasts 10s, hits at 80%, back in 12s. +15% attack speed. Fights far more aggressively.',patch:[{ab:'clone',set:{dur:10,mirror:.8,cd:12}}],stat:{mod:{meleeSpd:15}},shift:{aggr:3}},
+   ch_tide:{name:'Tidal_Blade',icon:'🌊',txt:'Wave Dash rides 180px, hits 2x as hard, 9s cooldown. +15% move speed. Under 40% HP: +25% attack speed and 15% faster.',patch:[{ab:'dash',set:{dist:180,dmgMul:2,cd:9}}],stat:{mod:{move:15}},also:['adren']}},
+  10:{
+   ch_warlord:{name:'Warlord',icon:'📯',txt:'War Cry: +50% damage and +35% speed for 12s. +25% max HP, +3 armor, can barely be knocked back and every hit lands 10% softer.',patch:[{ab:'shout',set:{dmg:.5,spd:.35,dur:12}}],stat:{hpPct:25,mod:{armor:3}},also:['jugg'],shift:{courage:3}},
+   ch_cuts:{name:'Thousand_Cuts',icon:'⚔️',txt:'Shadow_Clone lasts 14s and hits at 100%. +30% attack speed, +10% crit, +15% damage but -10% max HP.',patch:[{ab:'clone',set:{dur:14,mirror:1}}],stat:{mod:{meleeSpd:30,crit:10}},also:['glass'],shift:{aggr:2}}}},
+ archer:{5:{
+   ar_storm:{name:'Storm_of_Arrows',icon:'🌧️',txt:'One Nocked fires 7 arrows; Arrow_Rain drops 30. +15% ranged attack speed.',patch:[{ab:'rapid',set:{shots:7}},{ab:'rain',set:{count:30}}],stat:{mod:{rangedSpd:15}}},
+   ar_hunt:{name:'Huntress',icon:'🏹',txt:'Pinning_Shot roots 5s and marks for +50%; Blow_Gun every 6s. +10% crit and her hits deal +60% to anything under 25% HP. Keeps her distance.',patch:[{ab:'pin',set:{root:5,amp:.5}},{ab:'blowgun',set:{cd:6}}],stat:{mod:{crit:10}},also:['exec'],shift:{range:-2}}},
+  10:{
+   ar_sky:{name:'Sky_Breaker',icon:'☄️',txt:'Arrow_Rain drops 50 arrows on a 12s cooldown; One Nocked fires 9. +15% damage, -10% max HP.',patch:[{ab:'rain',set:{count:50,cd:12}},{ab:'rapid',set:{shots:9}}],also:['glass']},
+   ar_whisper:{name:'Whisper_of_Death',icon:'🌙',txt:'Pinning_Shot roots 6s and marks for +75% on a 7s cooldown. +20% crit, +10 accuracy, +15% ranged damage.',patch:[{ab:'pin',set:{root:6,amp:.75,cd:7}}],stat:{mod:{crit:20,acc:10,rangedDmg:15}},shift:{aggr:-2}}}},
+ flannel:{5:{
+   fl_hollow:{name:'Hollow_Point_Pro',icon:'🎯',txt:'Aimed Shot pierces 4, crits for 3.5x, 9s cooldown. +8% crit.',patch:[{ab:'aimed',set:{pierce:4,critMul:3.5,cd:9}}],stat:{mod:{crit:8}}},
+   fl_iron:{name:'Steel_Flannel',icon:'🦾',txt:'Turns brawler: True_Grit blocks 75% for 14s. +20% max HP, +4 armor, unshakable. He wades in close instead of hanging back.',patch:[{ab:'grit',set:{dr:.75,dur:14}}],stat:{hpPct:20,mod:{armor:4}},also:['jugg'],shift:{range:4,courage:3,aggr:2}}},
+  10:{
+   fl_demo:{name:'Demolition_Man',icon:'💣',txt:'Proximity_Bomb throws zombies 90 and is back in 5s. +15% damage, and +60% to anything under 25% HP.',patch:[{ab:'trip',set:{kb:90,cd:5}}],stat:{dmgPct:15},also:['exec']},
+   fl_last:{name:'Last_Man_Standing',icon:'🗿',txt:'True_Grit blocks 80% for 16s. Once a stage a killing hit leaves him at 1 HP, untouchable 3s; under 40% HP he fights 25% faster.',patch:[{ab:'grit',set:{dr:.8,dur:16}}],also:['last','adren'],shift:{courage:3}}}},
+ druid:{5:{
+   dr_grove:{name:'Grove_Warden',icon:'🌳',txt:'Pure healer: Rejuvenating Bloom lasts 16s, Mend every 3s. +30% healing done. Stays with the team.',patch:[{ab:'bloom',set:{dur:16}},{ab:'mend',set:{cd:3}}],stat:{heal:30},shift:{self:-3,aggr:-2}},
+   dr_wild:{name:'Wild_Druid',icon:'🐺',txt:'Battle druid: Thorn Wave 4d6 that always poisons, Cyclone 8s with a hard pull. +20% damage. Fights up front.',patch:[{ab:'thorns',set:{dice:[4,6],poisonCh:1}},{ab:'cyclone',set:{dur:8,pull:26}}],stat:{dmgPct:20},shift:{aggr:3,range:2}}},
+  10:{
+   dr_tree:{name:'World_Tree',icon:'🌲',txt:'Bloom lasts 20s, Mend heals 18%. +50% healing done. Once a stage when she goes down she gets back up by herself after 3s.',patch:[{ab:'bloom',set:{dur:20}},{ab:'mend',set:{heal:.18}}],stat:{heal:50},also:['wind']},
+   dr_hurricane:{name:'Hurricane',icon:'🌪️',txt:'Cyclone lasts 12s and pulls hard; Thorn Wave 5d6. -20% cooldowns and abilities cost 20% less. +15% damage, -10% max HP.',patch:[{ab:'cyclone',set:{dur:12,pull:34}},{ab:'thorns',set:{dice:[5,6]}}],also:['over','glass']}}},
+ lumberjack:{5:{
+   lj_widow:{name:'Widowmaker',icon:'🌀',txt:'Whirl_Wind spins 8s with a wide reach on a 9s cooldown. +10% attack speed.',patch:[{ab:'whirl',set:{dur:8,r:36,cd:9}}],stat:{mod:{meleeSpd:10}},shift:{aggr:2}},
+   lj_quake:{name:'Earthshaker',icon:'🪓',txt:'Ground_Chop splits 70px out and stuns 1.8s, every 5s. Can barely be knocked back, +3 armor, hits on him land 10% softer.',patch:[{ab:'chop',set:{dist:70,stun:1.8,cd:5}}],also:['jugg']}},
+  10:{
+   lj_bunyan:{name:'Paul_Bunyan',icon:'🌲',txt:'Timber_Rage: +60% damage for 12s and it kicks in anytime. +30% max HP, +3 armor.',patch:[{ab:'rage',set:{dmg:.6,dur:12,under:1}}],stat:{hpPct:30,mod:{armor:3}}},
+   lj_berserk:{name:'Berserker',icon:'😡',txt:'+25% attack speed, +15% damage, -10% max HP; under 40% HP +25% more speed. Never backs off.',patch:[{ab:'rage',set:{dmg:.5}}],stat:{mod:{meleeSpd:25}},also:['glass','adren'],shift:{aggr:4,courage:4}}}},
+ cultist:{5:{
+   cu_arms:{name:'Many-Armed',icon:'🐙',txt:'Tentacles have 35 HP and hit 3d6+2, back every 6s.',patch:[{ab:'tentacle',set:{hp:35,dice:[3,6],cd:6}}]},
+   cu_priest:{name:'Blood_Priest',icon:'🩸',txt:'Syphon_Life drains 6 a second and heals 1.6x. Every hit he lands heals him 5%.',patch:[{ab:'syphon',set:{dps:6,heal:1.6}}],stat:{mod:{lifesteal:5}}}},
+  10:{
+   cu_elder:{name:'Elder_God',icon:'🦑',txt:'Call_of_Cthulhu lasts 18s, terrifies 4s, back in 20s. +15% damage.',patch:[{ab:'cthulhu',set:{dur:18,fear:4,cd:20}}],stat:{dmgPct:15}},
+   cu_leech:{name:'Leech_Lord',icon:'🧛',txt:'Syphon_Life drains 9 a second from 160px. 10% lifesteal. Once a stage a killing hit leaves him at 1 HP, untouchable 3s.',patch:[{ab:'syphon',set:{dps:9,range:160}}],stat:{mod:{lifesteal:10}},also:['last']}}},
+ eng:{5:{
+   en_fort:{name:'Fortress',icon:'🏰',txt:'Turtle builder: HESCO cell 180 HP, tesla lasts 40s. +3 armor. Stays behind his walls.',patch:[{ab:'build',path:'barrier',set:{hp:180}},{ab:'build',path:'tesla',set:{life:40}}],stat:{mod:{armor:3}},shift:{aggr:-3}},
+   en_bomb:{name:'Mad_Bomber',icon:'🧨',txt:'Satchel_Charge 10d4 in a huge blast, 10s cooldown. +10% damage. Gets in closer to throw.',patch:[{ab:'satchel',set:{dice:[10,4],r:48,cd:10}}],stat:{dmgPct:10},shift:{aggr:2}}},
+  10:{
+   en_tesla:{name:'Tesla_Lord',icon:'⚡',txt:'Tesla coil lasts 60s and zaps every 0.7s. -20% cooldowns, abilities 20% cheaper.',patch:[{ab:'build',path:'tesla',set:{life:60,every:.7}}],also:['over']},
+   en_siege:{name:'Siege_Engineer',icon:'🏗️',txt:'Satchel_Charge 12d4 in a 55px blast. HESCO cell 150 HP. +15% damage, and +60% to anything under 25% HP.',patch:[{ab:'satchel',set:{dice:[12,4],r:55}},{ab:'build',path:'barrier',set:{hp:150}}],stat:{dmgPct:15},also:['exec']}}},
+ carcher:{5:{
+   ca_broad:{name:'Broadhead_Master',icon:'🏹',txt:'Piercing_Shot 4d6 through 9, 7s cooldown.',patch:[{ab:'pierce',set:{dice:[4,6],n:9,cd:7}}]},
+   ca_acro:{name:'Acrobat',icon:'🤸',txt:'Tumble goes twice as far every 5s. +8% dodge, +15% move. Under 40% HP +25% speed. Dances in and out.',patch:[{ab:'tumble',set:{dist:90,cd:5}}],stat:{mod:{dodge:8,move:15}},also:['adren'],shift:{range:2,aggr:1}}},
+  10:{
+   ca_steel:{name:'Rain_of_Steel',icon:'🗡️',txt:'Piercing_Shot 5d6 through 12, 5s cooldown. Hunters_Mark +45% for 10s. +15% crit.',patch:[{ab:'pierce',set:{dice:[5,6],n:12,cd:5}},{ab:'hmark',set:{amp:.45,dur:10}}],stat:{mod:{crit:15}}},
+   ca_ghost:{name:'Untouchable',icon:'💨',txt:'Tumble every 3s. +15% dodge. Once a stage a killing hit leaves her at 1 HP, untouchable 3s.',patch:[{ab:'tumble',set:{cd:3}}],stat:{mod:{dodge:15}},also:['last']}}},
+ csorc:{5:{
+   cs_storm:{name:'Storm_Caller',icon:'⛈️',txt:'Chain_Lightning jumps 8 and stuns 1s.',patch:[{ab:'chain',set:{n:8,stun:1}}]},
+   cs_thunder:{name:'Thunder_God',icon:'🔨',txt:'Thunderclap 5d6, stuns 2s, 10s cooldown.',patch:[{ab:'thunder',set:{dice:[5,6],stun:2,cd:10}}]}},
+  10:{
+   cs_flow:{name:'Overflow',icon:'🔮',txt:'Arcane_Flow gives +10 energy a kill. -20% cooldowns, abilities 20% cheaper. Casts nonstop.',patch:[{ab:'arcflow',set:{en:10}}],also:['over'],shift:{energy:3}},
+   cs_living:{name:'Living_Storm',icon:'🌩️',txt:'Chain_Lightning jumps 12, Thunderclap 6d6. +15% damage, -10% max HP.',patch:[{ab:'chain',set:{n:12}},{ab:'thunder',set:{dice:[6,6]}}],also:['glass']}}},
+ soldier:{5:{
+   so_gren:{name:'Grenadier',icon:'💣',txt:'Frag_Grenade 6d6 in a big blast, blows on landing, stuns 2s, 9s cooldown.',patch:[{ab:'frag',set:{dice:[6,6],r:46,fuse:.05,stun:2,cd:9}}]},
+   so_vet:{name:'Iron_Veteran',icon:'🎖️',txt:'Battle_Hardened kicks in under 75% and blocks 35%. +3 armor, can barely be knocked back, hits land 10% softer.',patch:[{ab:'hardened',set:{under:.75,dr:.35}}],also:['jugg'],shift:{courage:3}}},
+  10:{
+   so_danger:{name:'Danger_Close',icon:'☢️',txt:'Frag_Grenade 8d6 in a 55px blast, 7s cooldown. +60% damage to anything under 25% HP.',patch:[{ab:'frag',set:{dice:[8,6],r:55,cd:7}}],also:['exec']},
+   so_unkill:{name:'Unkillable',icon:'🪖',txt:'Battle_Hardened blocks 45%. +30% max HP. Once a stage a killing hit leaves him at 1 HP, untouchable 3s.',patch:[{ab:'hardened',set:{dr:.45}}],stat:{hpPct:30},also:['last']}}},
+ shoshi:{5:{
+   sh_vc:{name:'Version_Control',icon:'💾',txt:'Ctrl_Z reaches back 7s and triggers at 12% lost; Turn_It_Off_And_On_Again refreshes 3 cooldowns and heals 20%.',patch:[{ab:'undo',set:{win:7,min:.12}},{ab:'reboot',set:{n:3,heal:.2}}]},
+   sh_dad:{name:'Dad_Mode_MAX',icon:'🧔',txt:'Dad_Mode blocks 70% with a shield worth 45% of their HP. +20% max HP. Far more protective.',patch:[{ab:'dad',set:{dr:.7,shield:.45}}],stat:{hpPct:20},shift:{self:-3,courage:3}}},
+  10:{
+   sh_sysadmin:{name:'Sysadmin_God',icon:'🖥️',txt:'Tech_Support cuts cooldowns 35% and gives +12 energy. -20% cooldowns, abilities 20% cheaper.',patch:[{ab:'trial',set:{cut:.35,energy:12}}],also:['over']},
+   sh_super:{name:'Super_Dad',icon:'🦸',txt:'Dad_Mode blocks 80% with a 60% shield. +4 armor. Once a stage when he goes down he gets back up by himself after 3s.',patch:[{ab:'dad',set:{dr:.8,shield:.6}}],stat:{mod:{armor:4}},also:['wind']}}},
 };
 /* temporary buffs anyone can carry (capstones hand them out): +attack speed, +move, +damage for a while */
 function tbuff(o,B,dur){const b={T:dur,sp:B.sp||0,mv:B.mv||0,dm:B.dm||0};(o.tb=o.tb||[]).push(b);o.meleeSpd*=1+b.sp;o.rangedSpd=(o.rangedSpd||1)*(1+b.sp);o.mvMul=(o.mvMul||1)+b.mv;o.atk*=1+b.dm;}
@@ -4121,7 +4204,7 @@ const TAL_CAP={
       exec:{name:'Executioner',icon:'🪦',txt:'His hits deal +60% damage to anything under 25% health.'},
       over:{name:'Overclock',icon:'⚙️',txt:'-20% cooldowns, and his abilities cost 20% less energy.'},
       jugg:{name:'Juggernaut',icon:'🦏',txt:'+3 armor, +40% knockback resistance, and every hit on him lands 10% softer.'}}};
-function talKind(L){return L===5||L===10?'cap':'stat';}   /* 0.12.249 (Kyle): 5 and 10 are capstone forks; every other level is a 1-of-3 upgrade with a signature (hero-only) card in the mix */
+function talKind(L){return L===5||L===10?'cap':'stat';}   /* 0.12.249 (Kyle): 5 and 10 are capstone forks; every other level is a 1-of-3 stat/personality upgrade (0.12.287: signature ability cards moved into the capstones) */
 function talPicks(H){return (H&&H.tal)||[];}
 function talFree(H){const used=Object.values(H.pts||{}).reduce((a,b)=>a+b,0)+talPicks(H).length;return Math.max(0,(H.lvl||1)-1-used);}
 function talCard(id,k){const [t,a,b]=id.split(':');if(t==='st')return TAL_STAT[a];if(t==='ps')return TAL_PERSONA[a];if(t==='cap')return (HCAP[k]&&HCAP[k][a]&&HCAP[k][a][b])||(TAL_CAP[a]||{})[b];if(t==='mod')return ((TAL_MOD[k]||{})[a]);return null;}
@@ -4133,9 +4216,9 @@ function talRoll(k,H,rng){rng=rng||Math.random;const L=talNextLevel(H),kind=talK
   const healer=k==='druid',melee=!!(C.melee&&!C.ranged)||k==='lumberjack'||k==='chibi';
   if(kind==='cap'){const own=HCAP[k]&&HCAP[k][L];const ids=own?Object.keys(own):Object.keys(TAL_CAP[L]).sort(()=>rng()-.5).slice(0,2);return {L,kind,ids:ids.map(x=>'cap:'+L+':'+x)};}
   const sig=Object.keys(TAL_MOD[k]||{}).filter(x=>!have.has('mod:'+x)).sort(()=>rng()-.5);
-  const pool=[];for(const [x,S] of Object.entries(TAL_STAT)){if(S.abil&&!abil)continue;let w=1;if(S.healer)w=HEAL_W[k]||.25;   /* 0.12.270 (Kyle): heal-boost cards mostly for heroes who heal; it also boosts medkits and herbs they use, so everyone else still sees it now and then */if(S.melee)w=melee?1.6:.5;if(x==='edge'&&healer)w=.4;pool.push(['st:'+x,w]);}
+  const pool=[];for(const [x,S] of Object.entries(TAL_STAT)){if(S.abil&&!abil)continue;let w=1;if(S.healer)w=HEAL_W[k]||.25;   /* 0.12.270 (Kyle): heal-boost cards mostly for heroes who heal; it also boosts medkits and herbs they use, so everyone else still sees it now and then */if(S.melee)w=melee?1.6:.5;if(S.ranged)w=C.ranged&&!melee?1.6:.15;if(x==='edge'&&healer)w=.4;pool.push(['st:'+x,w]);}
   for(const x of Object.keys(TAL_PERSONA))if(!have.has('ps:'+x))pool.push(['ps:'+x,.35]);
-  const ids=sig.length?['mod:'+sig[0]]:[];if(sig.length>1&&rng()<.35)ids.push('mod:'+sig[1]);while(ids.length<3&&pool.length){let tot=pool.reduce((a,p)=>a+p[1],0),r=rng()*tot,i=0;for(;i<pool.length;i++){r-=pool[i][1];if(r<=0)break;}ids.push(pool.splice(Math.min(i,pool.length-1),1)[0][0]);}
+  const ids=[];   /* 0.12.287 (Kyle): ability changes live in the capstones now; level-ups are stats and personality only */while(ids.length<3&&pool.length){let tot=pool.reduce((a,p)=>a+p[1],0),r=rng()*tot,i=0;for(;i<pool.length;i++){r-=pool[i][1];if(r<=0)break;}ids.push(pool.splice(Math.min(i,pool.length-1),1)[0][0]);}
   return {L,kind:'stat',ids};}
 function talOffer(k,H){if(talFree(H)<1){H.offer=null;return null;}const L=talNextLevel(H);if(!H.offer||H.offer.L!==L)H.offer=talRoll(k,H);return H.offer;}
 function talTake(k,H,id){const O=talOffer(k,H);if(!O||!O.ids.includes(id))return false;(H.tal=H.tal||[]).push(id);H.offer=null;return true;}
@@ -4268,12 +4351,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794581381';const BGI=new Image();BGI.src='crawl_bg.png?v=1794581381';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794581381';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794581618';const BGI=new Image();BGI.src='crawl_bg.png?v=1794581618';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794581618';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794581381';XIMG.wave.src='crawl_wave.png?v=1794581381';XIMG.chibi.src='crawl_chibi.png?v=1794581381';XIMG.flannel.src='crawl_flannel.png?v=1794581381';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794581381';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794581381';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794581381';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794581381';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794581381';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794581381';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794581381';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794581381';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794581381';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794581381';XIMG.rain.src='crawl_rain.png?v=1794581381';XIMG.druid.src='crawl_druid.png?v=1794581381';XIMG.camp.src='crawl_campfire.png?v=1794581381';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794581381';XIMG.tornado.src='crawl_fx_tornado.png?v=1794581381';XIMG.vine.src='crawl_fx_vine.png?v=1794581381';XIMG.thorn.src='crawl_fx_thorn.png?v=1794581381';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794581618';XIMG.wave.src='crawl_wave.png?v=1794581618';XIMG.chibi.src='crawl_chibi.png?v=1794581618';XIMG.flannel.src='crawl_flannel.png?v=1794581618';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794581618';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794581618';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794581618';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794581618';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794581618';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794581618';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794581618';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794581618';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794581618';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794581618';XIMG.rain.src='crawl_rain.png?v=1794581618';XIMG.druid.src='crawl_druid.png?v=1794581618';XIMG.camp.src='crawl_campfire.png?v=1794581618';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794581618';XIMG.tornado.src='crawl_fx_tornado.png?v=1794581618';XIMG.vine.src='crawl_fx_vine.png?v=1794581618';XIMG.thorn.src='crawl_fx_thorn.png?v=1794581618';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794581381';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794581381';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1794581381';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1794581381';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1794581381';XIMG.obst.src='crawl_obst.png?v=1794581381';XIMG.cityob.src='crawl_cityob.png?v=1794581381';XIMG.harvest.src='crawl_harvest.png?v=1794581381';XIMG.wraith.src='crawl_wraith.png?v=1794581381';XIMG.cars.src='crawl_cars.png?v=1794581381';XIMG.robot.src='crawl_robot.png?v=1794581381';XIMG.cultist.src='crawl_cultist.png?v=1794581381';XIMG.tentacle.src='crawl_tentacle.png?v=1794581381';XIMG.boom.src='crawl_boom.png?v=1794581381';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794581618';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794581618';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1794581618';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1794581618';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1794581618';XIMG.obst.src='crawl_obst.png?v=1794581618';XIMG.cityob.src='crawl_cityob.png?v=1794581618';XIMG.harvest.src='crawl_harvest.png?v=1794581618';XIMG.wraith.src='crawl_wraith.png?v=1794581618';XIMG.cars.src='crawl_cars.png?v=1794581618';XIMG.robot.src='crawl_robot.png?v=1794581618';XIMG.cultist.src='crawl_cultist.png?v=1794581618';XIMG.tentacle.src='crawl_tentacle.png?v=1794581618';XIMG.boom.src='crawl_boom.png?v=1794581618';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -5311,7 +5394,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.286</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.287</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -5524,7 +5607,7 @@ function showCamp(){
           const offer=O?`<div style="margin-top:6px"><b style="color:${O.kind==='cap'?'#ffd23f':O.kind==='mod'?'#d8b8ff':'#a6ff2e'}">Level ${O.L} ${kindName[O.kind]}</b>${fr>1?` <span style="opacity:.8">(${fr} points waiting)</span>`:''}${O.kind==='stat'?` <button class="cc-btn" data-talrr="${k}" ${run.rerolls>=1?'':'disabled'} style="margin-left:6px;padding:2px 8px;font-size:11px" title="Spend 1 reroll die for 3 new upgrade picks">🎲 Reroll · ${diceStr(run)}</button>`:''}
             <div class="cc-offers" style="margin-top:6px">${O.ids.map(id=>{const c=talCard(id,k);if(!c)return '';const col=O.kind==='cap'?'#ffd23f':O.kind==='mod'||id.startsWith('mod:')?'#c792ff':id.startsWith('ps:')?'#7fd0ff':'#a6ff2e';
               return `<div class="cc-offer" style="--rc:${col}"><span class="rar">${O.kind==='cap'?'CAPSTONE':O.kind==='mod'||id.startsWith('mod:')?'SIGNATURE':id.startsWith('ps:')?'PERSONALITY':'STAT'}</span><span class="cn">${c.icon} ${esc(c.name)}</span><span class="tx">${esc(c.txt)}</span><button class="cc-btn" data-tal="${k}|${id}">Take it</button></div>`;}).join('')}</div></div>`:'';
-          return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${got?`<div class="cc-chips" style="margin-top:2px">${got}</div>`:fr?'':'Talents: one per level gained: pick 1 of 3 upgrades (with a hero-only SIGNATURE card in the mix), and a hero capstone fork at levels 5 and 10.'}${old?` <span style="opacity:.8">· old stat points: ${old}</span>`:''}${offer}</div>`;})()}
+          return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${got?`<div class="cc-chips" style="margin-top:2px">${got}</div>`:fr?'':'Talents: one per level gained: pick 1 of 3 stat or personality upgrades, and a hero CAPSTONE fork at levels 5 and 10 that changes how they play.'}${old?` <span style="opacity:.8">· old stat points: ${old}</span>`:''}${offer}</div>`;})()}
         ${(()=>{const C=talChar(k,L)||{};const T=luckyTargets(C);if(!T.length)return '';const lu=L.lucky||{};   /* 0.12.281 basic attack dice + Lucky Die */
           const d=w=>{const D=C[w].dice;const tag=lu[w]?` <span style="color:#7dff9a" title="Changed by a Lucky Die (base d${(CHAR[k][w]||{}).dice?CHAR[k][w].dice[1]:'?'})">🍀</span>`:'';return `${w==='melee'?'⚔️':'🏹'} ${D[0]}d${D[1]}${C[w].flat?'+'+C[w].flat:''}${tag} <span style="opacity:.6">(${Math.round(luckyOdds(D[0])*100)}% up)</span>`;};
           const ll=L.luckyLast;const llT=ll?` <b style="color:${ll.jackpot?'#ffd23f':ll.up?'#7dff9a':ll.down?'#ff6a6a':'#ccc'}">${ll.jackpot?'💰 JACKPOT!':ll.up?'🍀 LUCKY!':ll.down?'💀 Unlucky:':'Stayed:'} ${ll.kind==='stat'?`${ll.icon} ${ll.name} ${ll.from} → ${ll.to}`:`${ll.w} ${ll.n}d${ll.from} → ${ll.n}d${ll.to}`}</b>`:'';
