@@ -152,7 +152,7 @@ const SIG={
   korvold:{name:'Gorge',cd:6,txt:'Bites the front enemy for 260% and heals for 30% of it.',fn:(g,h,a)=>g.sigFront(h,a*2.6,{heal:.3})},
   thranduil:{name:'Volley',cd:6,txt:'Looses 3 heavy arrows at random enemies for 115% each.',fn:(g,h,a)=>g.sigMulti(h,'arrow',a*1.15,3)},
   cultist:{name:'Syphon_Life · Lethal_Strikes · Spawn_Tentacle · Call_of_Cthulhu · Ritual_Blade',cd:12,txt:'A hooded void cultist with a poisoned ritual dagger who pays for his magic in blood.',fn:()=>false},
-  robot:{name:'Arc_Surge · Missile_Barrage · Smoke_Screen · Nano-Tech_Repair_Bots · Tactical_Retreat · Carpet_Bomb',cd:12,txt:'A hunched olive war-walker: a flamethrower up close, a Targeted Lazer at range, and a jetpack for getting out of trouble.',fn:()=>false},
+  robot:{name:'Arc_Surge · Missile_Barrage · Smoke_Screen · Nano-Tech_Repair_Bots · Primary_Directive',cd:12,txt:'A hunched olive war-walker: a flamethrower up close, a Targeted Lazer at range, and a jetpack for getting out of trouble.',fn:()=>false},
   lumberjack:{name:'Whirl_Wind · Ground_Chop · Hatchet_Leap · Timber_Rage · Feller\'s_Rhythm',cd:14,txt:'An axeman with a hunting bow.',fn:()=>false},
   druid:{name:'Mend · Rejuvenating Bloom · Thorn Wave · Cyclone',cd:4,txt:'Mend (20 energy, 5s): instantly heals the most-hurt ally 10%. Rejuvenating Bloom (40 energy, 14s): heals an ally 4% of max HP every second for 8s. Thorn Wave (35 energy, 14s): a wave of thorns erupts along the ground down her lane; everything it bursts under takes 2d6 and bleeds. Cyclone (40 energy, 18s): a tornado wanders in front of her for 5s, pulling nearby enemies in and grinding down everything inside it.',fn:()=>false},
   archer:{name:'Arrow_Rain · One Nocked, Two in Hand · Blow_Gun',cd:14,txt:'Arrow_Rain (40 energy, 18s cooldown): looses a volley into the air and 16 arrows rain down on the thickest group of enemies (1d6 each, about 70px wide and 2 lanes up and down). Blow_Gun (25 energy, 9s cooldown): puffs a poison dart that always adds 1 poison stack to a living target (75% chance of a 2nd, 50% of a 3rd); each stack deals 3% of max HP every 1.5s for 7.5s, and any new stack resets the timer. Undead are immune. One Nocked, Two in Hand (30 energy, 14s cooldown): he nocks one arrow and holds two more ready, his next 3 arrows fly much faster (a third of the usual wait, quicker draw). Longbow shots (1d10) and a close-range bow strike (1d8).',fn:()=>false},
@@ -373,7 +373,7 @@ const CHAR={
   //   Crimson_Charge: IF 3+ zombies are lined up in one lane 25-90 ahead THEN he charges through the line (up to 95px): 2d6 to each and a big shove. 35 energy, 12s.
   //   Leap_Strike: IF a zombie is mauling an ally under 40% (or a Nemesis/boss is) 30-110 away THEN he leaps onto it: 3d6 and a 1s stun to it, 1d6 to anything beside it. 45 energy, 18s.
   //   Blood_Oath (passive): every kill heals him 3% of his max HP, and below half HP he hits 15% harder.
-  knight:{name:'Crimson_Knight',role:'Sword & Shield Tank',combo:1,flatHp:0,stamina:12,hpPerStamina:5,armorPts:24,   /* 0.12.238 (Kyle): armor doubled (was 12) */dodge:.03,kbRes:.6,
+  knight:{name:'Crimson_Knight',role:'Sword & Shield Tank',combo:1,flatHp:0,stamina:12,hpPerStamina:5,armorPts:8,   /* 0.12.245 (Kyle): base armor 8 */dodge:.03,kbRes:.6,
     melee:{dice:[1,8],flat:1,every:1.15,reach:20,kb:20,hitAt:.2},
     acc:12,walkPenalty:4,crit:.08,critMul:1.75,luck:14,xp:0,run:2,turn:.2,enMax:100,enRegen:4.6,
     abilities:[
@@ -641,11 +641,10 @@ const ABIL_DESC={
   pin:'Pinning_Shot · 34 energy · 12s. An arrow that nails the biggest threat to the ground for 2.5s and marks it for 6s: marked enemies take 25% more damage from everyone.',
   wind:'Wind_Reading · Passive. He reads the wind: shots at anything more than about 450px away get +15 accuracy and +0.5x crit damage.',
   resurge:'Verdant_Resurgence · Passive · 25s cooldown. When an ally would die, vines catch them: they stay up, can\'t be hurt for 2s and heal 30% of their max HP.',
-  nano:'Nano-Tech_Repair_Bots · 40 energy · 20s. Under 55% he stops and repair bots restore 5% of his max life every second for 5s (he\'s a machine: no bandages, herbs or heal spells). He can\'t move or attack meanwhile and cuts it short if swarmed. Every hit he takes has a 10% chance to halve the remaining cooldown.',
-  surge:'Arc_Surge · 34 energy · 15s · 8s. Overcharges the Targeted Lazer: 2d4 every 0.35s, a 25 px blast at the tip that sweeps 210 px instead of 150, and every lazer hit sets them on fire. He leans 3 toward Shooter while it lasts.',
-  retreat:'Tactical_Retreat · free · 40s. When he drops under 30% he blasts off on a blue-flame jetpack in a big arc back to the rear and lands slowly. In the air a blue shield caps every hit at 5, and he fires about 3 single missiles at random zombies on the way. Lands with a GROUND SMASH: 2d6 to everything within 135px, knocked hard away from him.',
-  carpet:'Carpet_Bomb · 45 energy · 30s. Jetpacks FORWARD about 360px over the horde and lets loose 9 missiles onto whatever is under him (same blue shield in the air), then lands with a GROUND SMASH: 2d6 to everything within 135px, knocked hard away from him. Used on 4+ zombies (or a boss) ahead while he\'s over 45%.',
-  missiles:'Missile_Barrage · 52 energy · 15s. The pod on his back pops open and lobs 3 missiles high over the fight onto a group, spread wide; each one 2d4 in a small blast.',
+  nano:'Nano-Tech_Repair_Bots · 40 energy · 20s. Under 55% he stops and repair bots restore 7% of his max life every second for 5s (he\'s a machine: no bandages, herbs or heal spells). He can\'t move or attack meanwhile and cuts it short if swarmed. Every hit he takes has a 15% chance to halve the remaining cooldown.',
+  surge:'Arc_Surge · 45 energy · 20s · 15s. Overcharges the Targeted Lazer: 2d4 every 0.35s, a 25 px blast at the tip that sweeps 210 px instead of 150, and every lazer hit sets them on fire. He leans 3 toward Shooter while it lasts.',
+  directive:'Primary_Directive · one skill, two choices, one shared cooldown. TACTICAL_RETREAT (free, 40s): when he drops under 30% he jetpacks in a big arc back to the rear; a blue shield caps every hit at 5 in the air and he fires about 3 missiles on the way. CARPET_BOMB (45 energy, 30s): jetpacks FORWARD about 360px over the horde and drops 9 missiles onto whatever is under him (same shield). Either one lands with a GROUND SMASH: 2d6 to everything within 135px, knocked hard away from him. Using either puts both on cooldown. He bombs on 4+ zombies (or a boss) ahead while over 45%, and saves it to bail out when he\'s low.',
+  missiles:'Missile_Barrage · 55 energy · 15s. The pod on his back pops open and lobs 3 missiles high over the fight onto a group, spread wide; each one 2d4 in a small blast.',
   smoke:'Smoke_Screen · 40 energy · 16s. Lobs smoke between a hurt ally and the zombies on them: a 180px cloud for 6s. Zombies inside move 30% slower and miss half their attacks. Allies inside dodge 25% of hits and are STEALTHED (zombies lose track of them) until 5s after they step out or attack.',
   toke:'Toke_Break · no energy · 22s · 2s. He sparks up a big one and keeps walking but does nothing else while he smokes; then he\'s HIGH for 30s (see Wake_n_Bake) and feels 6% better.',
   familia:'Protect_the_Familia · 57 energy · 20s (starts after the dash). When a friend within 660px drops under 55% with a zombie near (or under 35%), he dashes in front of them, untouchable and setting off nothing. Both get a shield worth 50% of his max HP for 5s and the friend is shoved 75px back. A zombie right beside him is bashed: 2d4, a 1s stun, sent flying into its friends (1d4 each).',
@@ -838,33 +837,35 @@ CHAR.lumberjack={name:'Lumber_Jack',role:'Axe + Bow',combo:0,flatHp:0,stamina:11
 CHAR.robot={name:'Warhound',role:'Targeted Lazer + Flamethrower',combo:0,flatHp:0,stamina:12,hpPerStamina:5,armorPts:12,dodge:.02,kbRes:.6,
   /* 0.12.67 (Kyle): the arc blade is gone: up close he hoses them with the flamethrower (his "melee"); a wide cone about 210 screen px long,
      everything it touches burns for 2s, 1d4 every 0.25s (numbers only on crits) */
-  melee:{dice:[1,4],every:1.5,reach:46,kb:0,hitAt:0,flame:{len:56,w0:8,w1:19,burn:1.5,tick:.35,dice:[1,4],dur:.75}},   // 0.12.93 (Kyle: way too much DPS): ticks .25->.35s, burn 2->1.5s, every 1.3->1.5s   // 0.12.77: Kyle's burst sprite; a bit shorter, much wider
+  melee:{dice:[1,4],every:1.5,reach:46,kb:0,hitAt:0,flame:{len:56,w0:8,w1:19,burn:1.5,tick:.35,dice:[1,4],flat:2,dur:.75}},   // 0.12.93 (Kyle: way too much DPS): ticks .25->.35s, burn 2->1.5s, every 1.3->1.5s   // 0.12.77: Kyle's burst sprite; a bit shorter, much wider
   /* Targeted Lazer (ranged basic): 0.5s charge-up, then a 2s beam. The tip starts ~10 screen px in front of a target 200-500 screen px away and
      (0.12.77) now: starts 50 px in front of the target and sweeps 150 px forward in 1s; 2d4 every 0.25s to everything within 20 px of the tip, with a little ground fire riding along.
      2s reload that only starts once the beam is done. (All in screen px; world = /3.) */
   ranged:{dice:[2,4],flat:0,every:0,range:167,clip:0,reload:0,pellets:1,anim:.45,
-    lazer:{charge:.5,fire:1,min:30,max:167,lead:50/3,travel:50,tick:.35,r:20/3,dice:[1,4],reload:5,travelS:70,rS:25/3,diceS:[2,4]}},   // 0.12.93 (Kyle: way too much DPS): 1d4 every .35s (was 2d4 every .25s), 3.25s between shots, Arc_Surge 2d4   // 0.12.77 (Kyle): starts 50px in front of the target, sweeps 150px in 1s; 2.75s between shots
+    lazer:{charge:.5,fire:1,min:30,max:167,lead:50/3,travel:50,tick:.35,r:20/3,dice:[1,4],flat:1,reload:5,travelS:70,rS:25/3,diceS:[2,4]}},   // 0.12.93 (Kyle: way too much DPS): 1d4 every .35s (was 2d4 every .25s), 3.25s between shots, Arc_Surge 2d4   // 0.12.77 (Kyle): starts 50px in front of the target, sweeps 150px in 1s; 2.75s between shots
   acc:10,walkPenalty:8,crit:.08,critMul:1.8,luck:10,xp:0,run:1/* 0.12.38 (Kyle): the Warhound only walks */,turn:.3,enMax:100,enRegen:4.6,
   abilities:[
     // Arc_Surge (0.12.67, now activated): IF the lazer is up (or 3+ enemies are in lazer range) THEN 30 energy, 15s CD, 8s:
     //   Shooter/Slasher -3 (toward shooter); lazer 3d4 per 0.25s, 25 px radius, sweeps 210 px, and lazer hits Burn.
-    {id:'surge',name:'Arc_Surge',en:34,cd:15,dur:8,slide:-3,burn:2},
+    {id:'surge',name:'Arc_Surge',en:45,cd:20,dur:15,slide:-3,burn:2},
     // Missile_Barrage: IF 3+ enemies are bunched (or a boss is up) 40-260px out THEN 3 missiles arc onto them, 2d4 each. 45 energy, 15s.
-    {id:'missiles',name:'Missile_Barrage',en:52,cd:15,n:3,gap:.18,fly:.95,range:260,min:40,r:9,dice:[2,4],spread:24},
+    {id:'missiles',name:'Missile_Barrage',en:55,cd:15,n:3,gap:.18,fly:.95,range:260,min:40,r:9,dice:[2,4],spread:24},
     // Smoke_Screen: IF an ally under 50% has enemies on them (or I'm swarmed by 3+) THEN smoke the spot for 6s. Allies (not me) inside are
     //   stealthed until they basic-attack or use an ability; it lasts 5s after they leave the smoke, re-entering refreshes it.
     {id:'smoke',name:'Smoke_Screen',en:40,cd:16,dur:6,r:30,slow:.3,miss:.5,dodge:.25,under:.5,throw:.55,stealth:5},
     // Nano-Tech_Repair_Bots (0.12.67): IF I'm under 55% AND nothing is on top of me (or I'm under 30%) THEN 35 energy, 20s CD: I stop ("use")
     //   and the bots restore 5% max life per second for 5s. I can't move or attack, but I cancel early if I get swarmed (2+ on me).
     //   Built in: 10% chance whenever I'm hit to halve the remaining cooldown.
-    {id:'nano',name:'Nano-Tech_Repair_Bots',en:40,cd:20,dur:5,per:.05,under:.55,halveCh:.1},
+    {id:'nano',name:'Nano-Tech_Repair_Bots',en:40,cd:20,dur:5,per:.07,under:.55,halveCh:.15},   /* 0.12.245 (Kyle): 7%/s, 15% halve chance */
     // Tactical_Retreat (passive, 0.12.67): when I drop under 30% I blast off on a blue-flame jetpack in an arc back to 100 px from the left edge
     //   and land slowly. While flying: every hit is capped at 5 damage (blue shield) and I fire ~3 single missiles at random enemies. 40s ICD.
-    {id:'retreat',name:'Tactical_Retreat',en:0,cd:40,under:.3,icd:40,T:2.6,H:38,shots:3,cap:5,x1:100/3},
+    // 0.12.245 (Kyle) PRIMARY_DIRECTIVE: one skill, two choices that share one cooldown: Tactical_Retreat (free, under 30%: back) or Carpet_Bomb (45 energy: forward). Using either one puts both on cooldown (retreat 40s, bomb 30s).
+    {id:'directive',name:'Primary_Directive',en:0,cd:30,
+     retreat:{id:'retreat',name:'Tactical_Retreat',en:0,cd:40,under:.3,icd:40,T:2.6,H:38,shots:3,cap:5,x1:100/3},
     // 0.12.236 (Kyle) Carpet_Bomb (active, the other jetpack mode): IF 4+ zombies (or a boss) are 40-390px ahead of me AND I'm over 45% THEN I jetpack FORWARD
     //   ~360px and let loose 9 missiles (triple the retreat's 3) onto whatever is under my flight path. Same blue shield in the air. 45 energy, 30s.
     // Both modes (0.12.236): when I land, a GROUND SMASH: 2d6 to everything within 135px and a big knockback away from me on either side.
-    {id:'carpet',name:'Carpet_Bomb',en:45,cd:30,T:2.4,H:42,shots:9,cap:5,dist:120}]};
+     carpet:{id:'carpet',name:'Carpet_Bomb',en:45,cd:30,T:2.4,H:42,shots:9,cap:5,dist:120}}]};
 const JET_SMASH={r:45,dice:[2,6],kb:4};   /* 0.12.236 jetpack landing smash: 135 screen px, 2d6, major knockback */
 // 0.12.75 Engineer (Kyle): hard hat, red shirt + overalls, a heavy wrench and a sawn-off shotgun. Builds things.
 CHAR.eng={name:'Engineer',role:'Wrench + Grenade_Launcher',combo:0,flatHp:0,stamina:9,hpPerStamina:5,armorPts:7,dodge:.04,kbRes:.35,
@@ -927,7 +928,7 @@ const PAL_FRAC=1/3;
    gives for how far you got, is part of it now.) */
 const FF={xp:[0,.1,.15,.2],gold:[0,.2,.3,.4],keep:[0,.1,.2,.3]};
 const ffT=(run,k)=>run&&run.ff?FF[k][Math.min(3,run.ff)]:0;
-const CD_KEY={retreat:'trT',carpet:'cbT',undo:'unT',reboot:'rbT',trial:'frT',dad:'ddT',syphon:'syT',lethal:'leT',cthulhu:'ctT',nano:'nbT',tentacle:'tnT',pact:'paT',hex:'hxT',dread:'drT',clone:'clT',pin:'piT',surge:'suT',gatling:'gaT',missiles:'msT',smoke:'smT',grit:'grT',poultice:'poT',aimed:'abT',trip:'tbT',pal:'palT',camp:'caT',dash:'daT',shout:'shT',rapid:'raT',blowgun:'bgT',rain:'arT',mend:'mdT',bloom:'blT',thorns:'thT',cyclone:'cyT',
+const CD_KEY={directive:'pdT',undo:'unT',reboot:'rbT',trial:'frT',dad:'ddT',syphon:'syT',lethal:'leT',cthulhu:'ctT',nano:'nbT',tentacle:'tnT',pact:'paT',hex:'hxT',dread:'drT',clone:'clT',pin:'piT',surge:'suT',gatling:'gaT',missiles:'msT',smoke:'smT',grit:'grT',poultice:'poT',aimed:'abT',trip:'tbT',pal:'palT',camp:'caT',dash:'daT',shout:'shT',rapid:'raT',blowgun:'bgT',rain:'arT',mend:'mdT',bloom:'blT',thorns:'thT',cyclone:'cyT',
   whirl:'whT',chop:'cpT',leap:'lpT',rage:'rgT',roll:'rlT',brick:'brT',bottle:'boT'};
 const CLOSE_AB=new Set(['lethal','dread','clone','surge','grit','dash','whirl','chop','leap','rage','trip']),FAR_AB=new Set(['syphon','cthulhu','tentacle','hex','pin','gatling','missiles','smoke','aimed','rain','rapid','blowgun','thorns','cyclone','brick']);
 function abilityPlan(h){const C=h.base&&h.base.char;if(!C||!C.abilities||!C.abilities.length)return {};let close=0,far=0,farRange=0,ready=0;
@@ -1709,7 +1710,7 @@ class Game{
        else if(h.plan&&h.plan.reviveD&&Math.random()<.05+.45*pl){h.revDecide={D:h.plan.reviveD,until:this.t+1.5,go:false};h.plan=null;h.thinkT=0;}}}
     /* 0.12.56: heavy hits shove heroes back a little (boss hits and anything over 15% of max HP); knockback resistance and The Mountain cut it */
     if(from&&from.E&&h.key&&(from.boss||amt>=h.max*.15)){const v=(from.boss?48:24)*(1-Math.min(.95,h.kbRes||0));if(v>1){h.kbv=Math.max(h.kbv||0,v);h.kbDir=(from.x>=this.heroX(h))?-1:1;}}
-    if(h.key==='robot'&&h.alive&&h.hp>0&&h.hp/h.max<.3&&!h.jet&&!(h.trICD>this.t)&&(h.base.char.abilities||[]).some(a=>a.id==='retreat'))this.startJet(h);
+    if(h.key==='robot'&&h.alive&&h.hp>0&&h.hp/h.max<.3&&!h.jet&&!(h.pdT>0)&&(h.base.char.abilities||[]).some(a=>a.id==='directive'))this.startJet(h);
     h.hitFlash=.12;this.text(h.x+4,this.G-52,Math.round(amt),'#ff5a5a');if(h.key&&!this.demo)this.st8(h).taken+=amt;
     {const PL=h.base&&h.base.char&&(h.base.char.abilities||[]).find(a=>a.id==='plating');if(PL){h.plStacks=(h.plStacks||0)+1;   // Reactive_Plating
       if(h.plStacks>=PL.stacks&&!(h.plCd>this.t)){h.plStacks=0;h.plCd=this.t+PL.cd;h.shield=Math.max(h.shield||0,h.max*PL.shield);h.shieldT=PL.shieldT;this.shake=Math.max(this.shake||0,.3);
@@ -1913,12 +1914,12 @@ class Game{
     L.tx+=L.dir*(S?LZ.travelS:LZ.travel)/LZ.fire*dt;   /* 0.12.77: a smooth fast sweep */if(this.pools&&this.pools.length)this.igniteAt(L.tx,L.gy,6);   /* 0.12.216 the lazer lights oil */
     L.dt+=dt;if(L.dt>=LZ.tick||L.first==null){L.first=1;if(L.dt>=LZ.tick)L.dt-=LZ.tick;else L.dt=0;const r=S?LZ.rS:LZ.r,dice=S?LZ.diceS:LZ.dice,mul=(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);L.puff=1;
       for(const e of this.enemies){if(e.dead)continue;const dx=Math.abs(e.x-L.tx)-(e.boss?e.w*.5:0),dz=e.fly?0:Math.abs((e.gy!=null?e.gy:this.G)-L.gy);if(dx>r||dz>Math.max(4,r*.75))continue;
-        this.hitEnemy(e,(this.rollDice(dice)+(h.flatRanged||0))*mul,h,{sure:1});if(S&&!e.dead)e.fb={T:(h.base.char.abilities.find(a=>a.id==='surge')||{}).burn||2,tick:e.fb?e.fb.tick:.2,src:h,mul};}
+        this.hitEnemy(e,(this.rollDice(dice)+(S?0:(LZ.flat||0))+(h.flatRanged||0))*mul,h,{sure:1});   /* 0.12.245 (Kyle): basic lazer 1d4+1 */if(S&&!e.dead)e.fb={T:(h.base.char.abilities.find(a=>a.id==='surge')||{}).burn||2,tick:e.fb?e.fb.tick:.2,src:h,mul};}
       if(this.hardcore)for(const o of this.alive()){if(Math.abs(this.heroX(o)-L.tx)<=r&&Math.abs((o.gy||this.G)-L.gy)<=Math.max(4,r*.75)){this.hurtHero(o,this.rollDice(dice)*.8,null);const S8=this.st8(h);S8.ff=(S8.ff||0)+1;}}}
     if(L.t>=LZ.charge+LZ.fire||L.tx<-4||L.tx>this.W+6){h.lz=null;h.lzReload=LZ.reload;}}
   /* Tactical_Retreat: an arc on the jetpack back to ~100 screen px from the left edge, then a slow landing. Same flight time from anywhere. */
-  startJet(h,mode){const CB=mode==='carpet'&&(h.base.char.abilities||[]).find(a=>a.id==='carpet');const TR=CB||(h.base.char.abilities||[]).find(a=>a.id==='retreat');if(!TR)return;
-    if(CB){h.jet={t:0,T:CB.T,x0:h.x,x1:Math.min(this.W-20,h.x+CB.dist),A:CB,shot:0,carpet:1};h.cbT=CB.cd*(1-(h.cdr||0));}else{h.jet={t:0,T:TR.T,x0:h.x,x1:TR.x1,A:TR,shot:0};h.trICD=this.t+TR.icd*(1-(h.cdr||0));h.trT=TR.icd*(1-(h.cdr||0));}h.lz=null;h.nano=null;h.plan=null;
+  startJet(h,mode){const PD=(h.base.char.abilities||[]).find(a=>a.id==='directive');if(!PD)return;const CB=mode==='carpet'&&PD.carpet;const TR=CB||PD.retreat;
+    if(CB){h.jet={t:0,T:CB.T,x0:h.x,x1:Math.min(this.W-20,h.x+CB.dist),A:CB,shot:0,carpet:1};h.pdT=CB.cd*(1-(h.cdr||0));}else{h.jet={t:0,T:TR.T,x0:h.x,x1:TR.x1,A:TR,shot:0};h.pdT=TR.icd*(1-(h.cdr||0));}   /* one shared Primary_Directive cooldown */h.lz=null;h.nano=null;h.plan=null;
     this.ev('whoosh',{});this.shake=Math.max(this.shake||0,.2);Comms.bubble(this,h,CB?Comms.pick(['CARPET BOMB: INBOUND.','PAYLOAD: ARMED.','CLEARING THE ROAD.','DANGER CLOSE.']):Comms.pick(['TACTICAL RETREAT.','JETS: ENGAGED.','DISENGAGING.','REPOSITIONING.']),true);}
   robotJet(h,dt){const J=h.jet,A=J.A;J.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;if(J.carpet)J.x1-=(this.scroll||0)*dt;else J.x1=A.x1;const u=Math.min(1,J.t/J.T);
     const ux=Math.min(1,u/.78),e=ux*ux*(3-2*ux);h.x=J.x0+(J.x1-J.x0)*e;h.face=J.x1<J.x0?-1:1;
@@ -1933,7 +1934,7 @@ class Game{
     this.fx.push({k:'flame',x:x0,gy,dir,len:FL.len,w0:FL.w0,w1:FL.w1,t:0,life:FL.dur,raw:1,src:h});this.ev('whoosh',{});
     const inCone=(x,y)=>{const d=(x-x0)*dir;if(d<-2||d>FL.len)return false;return Math.abs(y-gy)<=FL.w0+(FL.w1-FL.w0)*Math.max(0,d)/FL.len;};
     for(const e of this.enemies){if(e.dead||e.fly)continue;const ey=e.gy!=null?e.gy:this.G;if(!(inCone(e.x,ey)||(e.boss&&Math.abs(e.x-x0)<FL.len+e.w&&Math.sign(e.x-x0)===dir)))continue;
-      e.fb={T:FL.burn,tick:e.fb?e.fb.tick:.2,src:h,mul};}
+      e.fb={T:FL.burn,tick:e.fb?e.fb.tick:.2,src:h,mul,flat:FL.flat||0};}
     if(this.hardcore)for(const o of this.alive()){if(o===h||o.pet&&o.owner===h)continue;if(inCone(this.heroX(o),o.gy||this.G)){this.hurtHero(o,this.rollDice([2,4]),null);const S=this.st8(h);S.ff=(S.ff||0)+1;}}}
   dropLost(){const off=x=>x==null||x<14||x>this.W+8;
     for(const h of this.alive()){let lost=false;const S=h.search,D=h.defuse,P=h.plan;
@@ -2083,7 +2084,7 @@ class Game{
     for(const e of this.enemies){if(e.dead)continue;const al=alE;if(e.target&&(e.target.stealthT>0||(e.target.perch&&e.target.perch.hp>0))&&alSeen.length&&!(e.tauntT>0)){e.target=null;e.plan=null;}
       if(!e.boss)regenEnergy(e,dt);e.walkT+=dt;if(e.hitFlash>0)e.hitFlash-=dt;if(e.animT>0)e.animT-=dt;if(e.shred>0)e.shred-=dt;
 
-      if(e.fb){const F=e.fb;F.T-=dt;F.tick+=dt;while(F.tick>=.25&&!e.dead){F.tick-=.25;this.hitEnemy(e,this.rollDice([1,4])*F.mul,F.src&&F.src.alive?F.src:null,{fire:1,quiet:1,sure:1});}if(F.T<=0||e.dead)e.fb=null;}   /* 0.12.62 flamethrower burn: 1d4 every 0.25s for 2s */
+      if(e.fb){const F=e.fb;F.T-=dt;F.tick+=dt;while(F.tick>=.25&&!e.dead){F.tick-=.25;this.hitEnemy(e,(this.rollDice([1,4])+(F.flat||0))*F.mul,F.src&&F.src.alive?F.src:null,{fire:1,quiet:1,sure:1});}if(F.T<=0||e.dead)e.fb=null;}   /* 0.12.62 flamethrower burn: 1d4 every 0.25s for 2s */
       if(e.burnT>0){e.burnT-=dt;e.hp-=e.burn*dt*(e.E&&e.E.fireImmune?.25:1);   /* 0.12.236 Firemen take 25% from burns */if(e.hp<=0){this.kill(e,null);continue;}}
       if(e.poisonT>0){e.poisonT-=dt;e.poisonTick=(e.poisonTick||0)+dt;
         if(e.poisonTick>=POISON.tick){e.poisonTick-=POISON.tick;const d=e.max*POISON.pct*e.poison;e.hp-=d;this.text(e.x+4,e.y-38,Math.round(d),'#7dff6a');if(e.hp<=0){this.kill(e,null);continue;}}
@@ -2341,7 +2342,7 @@ class Game{
     if(h.gat){this.robotGat(h,dt,C);return;}
     // ---- 0.12.67 Warhound (Kyle's rework): everything IF/THEN on what's on the field; runs before the attack so it works up close too
     if(h.key==='robot'){const RB=id=>(C.abilities||[]).find(a=>a.id===id);const SU=RB('surge'),MS=RB('missiles'),SM=RB('smoke'),NB=RB('nano'),LZ=C.ranged&&C.ranged.lazer;
-      for(const [A,k] of [[SU,'suT'],[MS,'msT'],[SM,'smT'],[NB,'nbT'],[RB('carpet'),'cbT']])if(A){if(h[k]==null)h[k]=A.cd*.25;if(h[k]>0)h[k]-=dt;}if(h.trT>0)h.trT-=dt;
+      for(const [A,k] of [[SU,'suT'],[MS,'msT'],[SM,'smT'],[NB,'nbT']])if(A){if(h[k]==null)h[k]=A.cd*.25;if(h[k]>0)h[k]-=dt;}if(h.pdT>0)h.pdT-=dt;
       if(h.surgeT>0)h.surgeT-=dt;if(h.launchT>0)h.launchT-=dt;if(h.throwT>0)h.throwT-=dt;if(h.lzReload>0)h.lzReload-=dt*h.rangedSpd*spdB;
       if(h.jet){this.robotJet(h,dt);return;}   // Tactical_Retreat flight
       const live=this.enemies.filter(e=>!e.dead&&e.x<this.W+4),en=h.en||0,hx=this.heroX(h);const onMe=live.filter(e=>!e.fly&&Math.abs(e.x-hx)<16).length;
@@ -2361,7 +2362,7 @@ class Game{
           setTimeoutSafe(this,.25,()=>{if(!h.alive)return;this.ev('whoosh',{});(this.nades=this.nades||[]).push({x0:h.x,x:h.x,x1:spot,gy0:h.gy||this.G,gy,t:0,T:SM.throw,A:SM,src:h});});
           Comms.say(this,h,'smoke',{x:spot,ally:who});return;}}
       /* 0.12.236 Carpet_Bomb: IF 4+ zombies (or a boss) are 40-390px ahead AND I'm over 45% THEN jetpack forward and bomb the road (Calculated Play wants 5+) */
-      {const CB=RB('carpet');if(CB&&h.cbT<=0&&en>=CB.en&&!h.lz&&!h.nano&&h.hp/h.max>.45&&!this.exiting){const ahead=live.filter(e=>!e.fly&&e.x-hx>=13&&e.x-hx<=CB.dist+10);const need=trait(h,'aggr')<.35?5:4;
+      {const PD=RB('directive'),CB=PD&&PD.carpet;if(CB&&!(h.pdT>0)&&en>=CB.en&&!h.lz&&!h.nano&&h.hp/h.max>.45&&!this.exiting){const ahead=live.filter(e=>!e.fly&&e.x-hx>=13&&e.x-hx<=CB.dist+10);const need=trait(h,'aggr')<.35?5:4;
         if((ahead.length>=need||ahead.some(e=>e.boss))&&spendEnergy(h,CB.en)){h.abWhy='CARPET BOMB: '+ahead.length+' ahead';h.abWhyT=this.t+3;this.startJet(h,'carpet');return;}}}
       // IF 3+ enemies are bunched 40-260px out (or a boss is up) THEN missile barrage on the thickest spot
       if(MS&&h.msT<=0&&en>=MS.en&&!(h.launchT>0)&&!h.lz){let best=null,bn=0;for(const e of live){const d=e.x-hx;if(d<MS.min||d>MS.range)continue;const n=live.filter(o=>Math.abs(o.x-e.x)<MS.spread*1.6).length+(e.boss?3:0);if(n>bn){bn=n;best=e;}}
@@ -4020,7 +4021,7 @@ const TAL_MOD={
       dadstr:{name:'Dad Strength',icon:'💪',txt:'Dad_Mode blocks 60% of damage (was 40%) and the shield is worth 35% of their max HP (was 20%).',ab:'dad',set:{dr:.6,shield:.35}}},
   robot:{swarm:{name:'Swarm Protocol',icon:'🚀',txt:'Missile_Barrage fires 5 missiles (was 3).',ab:'missiles',set:{n:5}},
       smoke:{name:'Thick Smoke',icon:'🌫️',txt:'Smoke_Screen lasts 9s (was 6s) and zombies inside miss 65% of the time (was 50%).',ab:'smoke',set:{dur:9,miss:.65}},
-      nanite:{name:'Nanite Overdrive',icon:'🔧',txt:'Nano-Tech_Repair_Bots fix 8% a second (was 5%).',ab:'nano',set:{per:.08}}}};
+      nanite:{name:'Nanite Overdrive',icon:'🔧',txt:'Nano-Tech_Repair_Bots fix 10% a second (was 7%).',ab:'nano',set:{per:.1}}}};
 /* capstones: real game changers. Level 5 and level 10 each offer two (rolled from the list, kept once rolled) */
 const TAL_CAP={
   5:{glass:{name:'Glass Cannon',icon:'💥',txt:'+15% damage, but -10% max HP.'},
@@ -4118,12 +4119,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794544771';const BGI=new Image();BGI.src='crawl_bg.png?v=1794544771';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794544771';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794545205';const BGI=new Image();BGI.src='crawl_bg.png?v=1794545205';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794545205';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794544771';XIMG.wave.src='crawl_wave.png?v=1794544771';XIMG.chibi.src='crawl_chibi.png?v=1794544771';XIMG.flannel.src='crawl_flannel.png?v=1794544771';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794544771';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794544771';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794544771';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794544771';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794544771';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794544771';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794544771';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794544771';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794544771';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794544771';XIMG.rain.src='crawl_rain.png?v=1794544771';XIMG.druid.src='crawl_druid.png?v=1794544771';XIMG.camp.src='crawl_campfire.png?v=1794544771';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794544771';XIMG.tornado.src='crawl_fx_tornado.png?v=1794544771';XIMG.vine.src='crawl_fx_vine.png?v=1794544771';XIMG.thorn.src='crawl_fx_thorn.png?v=1794544771';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794545205';XIMG.wave.src='crawl_wave.png?v=1794545205';XIMG.chibi.src='crawl_chibi.png?v=1794545205';XIMG.flannel.src='crawl_flannel.png?v=1794545205';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794545205';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794545205';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794545205';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794545205';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794545205';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794545205';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794545205';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794545205';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794545205';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794545205';XIMG.rain.src='crawl_rain.png?v=1794545205';XIMG.druid.src='crawl_druid.png?v=1794545205';XIMG.camp.src='crawl_campfire.png?v=1794545205';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794545205';XIMG.tornado.src='crawl_fx_tornado.png?v=1794545205';XIMG.vine.src='crawl_fx_vine.png?v=1794545205';XIMG.thorn.src='crawl_fx_thorn.png?v=1794545205';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794544771';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794544771';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1794544771';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1794544771';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1794544771';XIMG.obst.src='crawl_obst.png?v=1794544771';XIMG.cityob.src='crawl_cityob.png?v=1794544771';XIMG.harvest.src='crawl_harvest.png?v=1794544771';XIMG.wraith.src='crawl_wraith.png?v=1794544771';XIMG.cars.src='crawl_cars.png?v=1794544771';XIMG.robot.src='crawl_robot.png?v=1794544771';XIMG.cultist.src='crawl_cultist.png?v=1794544771';XIMG.tentacle.src='crawl_tentacle.png?v=1794544771';XIMG.boom.src='crawl_boom.png?v=1794544771';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794545205';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794545205';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1794545205';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1794545205';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1794545205';XIMG.obst.src='crawl_obst.png?v=1794545205';XIMG.cityob.src='crawl_cityob.png?v=1794545205';XIMG.harvest.src='crawl_harvest.png?v=1794545205';XIMG.wraith.src='crawl_wraith.png?v=1794545205';XIMG.cars.src='crawl_cars.png?v=1794545205';XIMG.robot.src='crawl_robot.png?v=1794545205';XIMG.cultist.src='crawl_cultist.png?v=1794545205';XIMG.tentacle.src='crawl_tentacle.png?v=1794545205';XIMG.boom.src='crawl_boom.png?v=1794545205';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -5149,7 +5150,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.244</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.245</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
