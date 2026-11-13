@@ -921,6 +921,12 @@ const PAL_FRAC=1/3;
 // which cooldown timer each ability uses, so the planner can see what is ready
 /* 0.12.98 RULE for every ability now and later (Kyle): set its cooldown as  A.cd*(1-(h.cdr||0))  (internal cooldowns too: this.t+A.icd*(1-(h.cdr||0))).
    h.cdr is the hero's cooldown reduction (capped at 50%), e.g. from Narset's inspiration. Tested 0.12.98: all 9 heroes' abilities come back 20% faster. */
+/* 0.12.237 (Kyle) FALL FORWARD: lose a stage and you pick up a stack (max 3); clear any stage and they all go away.
+   While you carry them, for every hero: 1/2/3 stacks = +10/15/20% XP, +20/30/40% gold pile sizes, and you lose 10/20/30% less score the next time you fall.
+   Falling costs 10% of your total score plus another 50% of whatever that failed attempt earned. (Lessons Learned, the little XP bump a loss
+   gives for how far you got, is part of it now.) */
+const FF={xp:[0,.1,.15,.2],gold:[0,.2,.3,.4],keep:[0,.1,.2,.3]};
+const ffT=(run,k)=>run&&run.ff?FF[k][Math.min(3,run.ff)]:0;
 const CD_KEY={retreat:'trT',carpet:'cbT',undo:'unT',reboot:'rbT',trial:'frT',dad:'ddT',syphon:'syT',lethal:'leT',cthulhu:'ctT',nano:'nbT',tentacle:'tnT',pact:'paT',hex:'hxT',dread:'drT',clone:'clT',pin:'piT',surge:'suT',gatling:'gaT',missiles:'msT',smoke:'smT',grit:'grT',poultice:'poT',aimed:'abT',trip:'tbT',pal:'palT',camp:'caT',dash:'daT',shout:'shT',rapid:'raT',blowgun:'bgT',rain:'arT',mend:'mdT',bloom:'blT',thorns:'thT',cyclone:'cyT',
   whirl:'whT',chop:'cpT',leap:'lpT',rage:'rgT',roll:'rlT',brick:'brT',bottle:'boT'};
 const CLOSE_AB=new Set(['lethal','dread','clone','surge','grit','dash','whirl','chop','leap','rage','trip']),FAR_AB=new Set(['syphon','cthulhu','tentacle','hex','pin','gatling','missiles','smoke','aimed','rain','rapid','blowgun','thorns','cyclone','brick']);
@@ -1624,7 +1630,7 @@ class Game{
   }
   spellRank(h,arch){const s=h.spells.find(s=>s.arch===arch);return s?s.r:0;}
   gainXp(xp){
-    xp*=this.team.xp;this.stageXp+=xp;
+    xp*=this.team.xp*(1+ffT(this.run,'xp'));   /* 0.12.237 Fall Forward: +10/15/20% XP while you carry stacks */this.stageXp+=xp;
     if(this.demo)return;
     this.run.xp=(this.run.xp||0)+xp;
     while(this.run.xp>=needRunXp(this.run.lv||0)){this.run.xp-=needRunXp(this.run.lv||0);this.run.lv=(this.run.lv||0)+1;this.run.pending=(this.run.pending||0)+1;this.ev('levelup');}
@@ -1636,7 +1642,7 @@ class Game{
   }
   /* 0.12.146 (Kyle): a really tiny XP trickle for doing supporty things: 0.03 XP per HP healed on someone else (or repaired on a building),
      3 XP for helping someone up, 0.25 XP per ally Tech_Support reaches. Goes straight to that hero. */
-  supXp(h,x){if(!h||!h.key||this.demo||!this.slot||!(x>0))return;while(h&&h.owner&&!h.base)h=h.owner;const H=h&&this.slot.heroes[h.key];if(!H)return;H.xp+=x;
+  supXp(h,x){if(!h||!h.key||this.demo||!this.slot||!(x>0))return;x*=1+ffT(this.run,'xp');while(h&&h.owner&&!h.base)h=h.owner;const H=h&&this.slot.heroes[h.key];if(!H)return;H.xp+=x;
     while(H.xp>=needHeroXp(H.lvl)){H.xp-=needHeroXp(H.lvl);H.lvl++;this.ev('herolevel',{key:h.key,lvl:H.lvl});this.text(h.x,this.G-70,'LV '+H.lvl,'#7dff9a',true);}}
   healHero(h,amt,quiet,by){if(!h||!h.alive||amt<=0||h.dog)return;if(h.hunger>0)amt*=1-HUNGER.heal[h.hunger];   /* 0.12.72: a starving body heals badly */if(!fleshy(h)&&!this._mech)return;   /* 0.12.58: herbs, medkits and healing magic do nothing for the Warhound */{const M=by||this._healBy;if(M&&M.healBonus)amt*=1+M.healBonus;if(M&&hasPerk(M,'medicine'))amt*=1.3;}/* 0.12.56 Medicine Man: heals he gives +30% */const before=h.hp;h.hp=Math.min(h.max,h.hp+amt);{const B=by||this._healBy||h;if(B&&B.key&&!this.demo){this.st8(B).heal+=h.hp-before;if(B!==h)this.supXp(B,(h.hp-before)*.036);}}if(!quiet&&h.hp-before>=1)this.text(h.x,this.G-56,'+'+Math.round(h.hp-before),'#7dff9a');}
   weakest(){const a=this.alive().filter(fleshy);return a.length?a.reduce((m,h)=>h.hp/h.max<m.hp/m.max?h:m,a[0]):null;}
@@ -2038,7 +2044,7 @@ class Game{
         if(h.atkT>1&&!h.moving)h.atkT=1;}
     }
     this.stepZones(dt);
-    for(const l of this.loot){l.t+=dt;l.x-=scroll*dt;if(l.x<=f.x+14||this.over){l.got=1;if(l.kind==='gold'){const bb=upgT(this.run,'board');const a=Math.round(l.amt*(1+[0,.25,.5,.75][bb]));this.stageGold+=a;this.text(l.x,this.G-30,'+'+a,'#ffd23f');}else if(l.kind==='food'||l.kind==='water'){if(l.kind==='food')this.stageFood=(this.stageFood||0)+1;else this.stageWater=(this.stageWater||0)+1;this.text(l.x,this.G-30,'+1 '+l.kind.toUpperCase(),l.kind==='food'?'#e8b060':'#7fd0ff');}else if(l.kind==='parts'){this.stageParts=(this.stageParts||0)+l.amt;this.text(l.x,this.G-30,'+'+l.amt+' PARTS','#c8d0d8');}else{this.stageItems.push(l.item);this.ev('itemdrop',{item:l.item});}}}
+    for(const l of this.loot){l.t+=dt;l.x-=scroll*dt;if(l.x<=f.x+14||this.over){l.got=1;if(l.kind==='gold'){const bb=upgT(this.run,'board');const a=Math.round(l.amt*(1+[0,.25,.5,.75][bb])*(1+ffT(this.run,'gold')));   /* 0.12.237 Fall Forward: +20/30/40% gold piles */this.stageGold+=a;this.text(l.x,this.G-30,'+'+a,'#ffd23f');}else if(l.kind==='food'||l.kind==='water'){if(l.kind==='food')this.stageFood=(this.stageFood||0)+1;else this.stageWater=(this.stageWater||0)+1;this.text(l.x,this.G-30,'+1 '+l.kind.toUpperCase(),l.kind==='food'?'#e8b060':'#7fd0ff');}else if(l.kind==='parts'){this.stageParts=(this.stageParts||0)+l.amt;this.text(l.x,this.G-30,'+'+l.amt+' PARTS','#c8d0d8');}else{this.stageItems.push(l.item);this.ev('itemdrop',{item:l.item});}}}
     this.loot=this.loot.filter(l=>!l.got);
     // minions
     for(const m of this.minions){m.life-=dt;m.atkT+=dt;if(m.animT>0)m.animT-=dt;if(m.hitFlash>0)m.hitFlash-=dt;const mi=this.minions.indexOf(m);
@@ -2346,7 +2352,7 @@ class Game{
       for(const k of ['iaT','skT','efT','hoT'])if(h[k]>0)h[k]-=dt;if(h.sipT>0)h.sipT-=dt;if(h.iaT==null){h.iaT=IA.cd*.3;h.skT=SK.cd*.3;h.efT=EF.cd*.3;h.hoT=HO.cd*.4;}
       const live=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>2&&e.x<this.W+2);const lane=e=>e.gy!=null?e.gy:this.G;const al=this.alive().filter(o=>!o.pet);
       // Drunken_Style running
-      if(h.sakeOn>0){h.sakeOn-=dt;if(this.rng()<dt*SK.hic*1.2&&!(h.hicT>0)){h.hicT=.3;h.pauseT=Math.max(h.pauseT||0,.3);this.text(hx,gy-48,'*hic*','#ff8ad8');}if(h.hicT>0)h.hicT-=dt;
+      if(h.sakeOn>0){h.sakeOn-=dt;if(this.rng()<dt*SK.hic*1.2&&!(h.hicT>0)){h.hicT=.3;h.pauseT=Math.max(h.pauseT||0,.3);this.text(hx,gy-48,'*hic*','#b8ff7a');}if(h.hicT>0)h.hicT-=dt;
         if(h.sakeOn<=0){h.meleeSpd/=1+SK.spd;h.dodge-=SK.dodge;h.acc+=SK.acc;}}
       /* 0.12.236 (Kyle) Iaijutsu is now a WAVE: a short sheathe, then the draw-slash throws a cyan crescent down his lane (fast, ~600px a second, ~420px):
          2d8 to everything it passes, the first one a guaranteed crit. He does NOT dash. While the wave is out he can reactivate ONCE to blink to wherever
@@ -2382,18 +2388,18 @@ class Game{
         if((pat||big)&&spendEnergy(h,EF.en)){h.efT=EF.cd*(1-(h.cdr||0));h.animM=.4;
           if(pat){const amt=pat.max*EF.heal;pat.hp=Math.min(pat.max,pat.hp+amt);pat.bleedT=0;pat.slowT=0;pat.slow=0;pat.stun=0;this.text(this.heroX(pat),(pat.gy||this.G)-44,'REBOOT +'+Math.round(amt),'#3af0ff');this.fx.push({k:'ring',x:this.heroX(pat),y:(pat.gy||this.G)-14,t:0,r:14,c:'#3af0ff'});h.abWhy='ERROR FIX: rebooting '+Comms.name(pat);
             if(this.rng()<.5)Comms.bubble(this,h,Comms.pick(['Have you tried turning it off and on again?','Error code fixed. You\'re welcome.','Rebooting you, hold still.']),true);}
-          else{big.stun=Math.max(big.stun||0,EF.stun);big.armorCut=EF.arm;if(!big.armor0){big.armor0=big.armorPts||0;big.armorPts=Math.floor(big.armor0/2);}this.text(big.x,lane(big)-34,'OVERRIDE','#ff3ad0');this.fx.push({k:'ring',x:big.x,y:lane(big)-14,t:0,r:14,c:'#ff3ad0'});h.abWhy='ERROR FIX: override on the big one';
+          else{big.stun=Math.max(big.stun||0,EF.stun);big.armorCut=EF.arm;if(!big.armor0){big.armor0=big.armorPts||0;big.armorPts=Math.floor(big.armor0/2);}this.text(big.x,lane(big)-34,'OVERRIDE','#8cff46');this.fx.push({k:'ring',x:big.x,y:lane(big)-14,t:0,r:14,c:'#8cff46'});h.abWhy='ERROR FIX: override on the big one';
             if(this.rng()<.5)Comms.bubble(this,h,Comms.pick(['Tilt! Machine down.','Error 404: your armor.','Hard reset, buddy.']),true);}
           h.abWhyT=this.t+3;return;}}
       /* Sake_Break: IF 3+ within 180px or a boss/Nemesis close (Preserve: 4+ or a big one) */
       if(SK&&h.skT<=0&&!(h.sakeOn>0)&&(h.en||0)>=SK.en){const near=live.filter(e=>Math.abs(e.x-hx)<60);const bigN=this.enemies.some(e=>!e.dead&&(e.boss||e.nem)&&Math.abs(e.x-hx)<120);
         if((near.length>=(T('energy')>.65?4:3)||bigN)&&spendEnergy(h,SK.en)){h.skT=SK.cd*(1-(h.cdr||0));h.sakeOn=SK.dur;h.meleeSpd*=1+SK.spd;h.dodge+=SK.dodge;h.acc-=SK.acc;h.sipT=.6;h.pauseT=Math.max(h.pauseT||0,.5);
-          this.text(hx,gy-50,'SAKE BREAK','#ff8ad8');h.abWhy='SAKE: '+(bigN?'a big one is here':near.length+' close');h.abWhyT=this.t+3;Comms.bubble(this,h,Comms.pick(['Kanpai!','Liquid courage, activate!','One for me, none for the zombies.','Drunken master mode.']),true);return;}}
+          this.text(hx,gy-50,'SAKE BREAK','#b8ff7a');h.abWhy='SAKE: '+(bigN?'a big one is here':near.length+' close');h.abWhyT=this.t+3;Comms.bubble(this,h,Comms.pick(['Kanpai!','Liquid courage, activate!','One for me, none for the zombies.','Drunken master mode.']),true);return;}}
       /* Host_With_The_Most: IF 2+ friends within 300px of him and a fight is on (3+ zombies on screen) */
       if(HO&&h.hoT<=0&&(h.en||0)>=HO.en){const by=al.filter(o=>o!==h&&Math.abs(this.heroX(o)-hx)<HO.r);
         if(by.length>=2&&live.length>=3&&spendEnergy(h,HO.en)){h.hoT=HO.cd*(1-(h.cdr||0));const B={x:hx-(h.face||1)*6,gy,t:HO.dur,T:HO.dur,r:HO.r,dmg:HO.dmg,own:h};(this.banners=this.banners||[]).push(B);h.animM=.4;
           const inB=al.filter(o=>Math.abs(this.heroX(o)-B.x)<B.r);for(const o of inB){o.hostT=HO.dur;if(!o.hostOn){o.hostOn=1;o.atk*=1+HO.dmg;}}
-          if(inB.length>=3){for(const o of inB){o.crit=(o.crit||0)+HO.crit;o.hostCrit=HO.crit;Comms.bubble(this,o,'DICE BOYS!',true);}this.text(B.x,gy-60,'DICE BOYS!','#ff3ad0',true);}else Comms.bubble(this,h,Comms.pick(['Game night at my place!','Snacks are in the kitchen, zombies are outside.','Host privileges!']),true);
+          if(inB.length>=3){for(const o of inB){o.crit=(o.crit||0)+HO.crit;o.hostCrit=HO.crit;Comms.bubble(this,o,'DICE BOYS!',true);}this.text(B.x,gy-60,'DICE BOYS!','#8cff46',true);}else Comms.bubble(this,h,Comms.pick(['Game night at my place!','Snacks are in the kitchen, zombies are outside.','Host privileges!']),true);
           h.abWhy='HOST: '+inB.length+' at the banner';h.abWhyT=this.t+3;return;}}
     }
     if(h.key==='knight'){const AB=id=>(C.abilities||[]).find(a=>a.id===id);const SW=AB('wall'),CC=AB('charge'),LS=AB('kleap'),BO=AB('oath');for(const k of ['swT','ccT','lsT'])if(h[k]>0)h[k]-=dt;if(h.swT==null){h.swT=SW.cd*.3;h.ccT=CC.cd*.3;h.lsT=LS.cd*.4;}
@@ -4076,12 +4082,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794539492';const BGI=new Image();BGI.src='crawl_bg.png?v=1794539492';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794539492';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794539698';const BGI=new Image();BGI.src='crawl_bg.png?v=1794539698';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794539698';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794539492';XIMG.wave.src='crawl_wave.png?v=1794539492';XIMG.chibi.src='crawl_chibi.png?v=1794539492';XIMG.flannel.src='crawl_flannel.png?v=1794539492';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794539492';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794539492';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794539492';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794539492';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794539492';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794539492';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794539492';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794539492';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794539492';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794539492';XIMG.rain.src='crawl_rain.png?v=1794539492';XIMG.druid.src='crawl_druid.png?v=1794539492';XIMG.camp.src='crawl_campfire.png?v=1794539492';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794539492';XIMG.tornado.src='crawl_fx_tornado.png?v=1794539492';XIMG.vine.src='crawl_fx_vine.png?v=1794539492';XIMG.thorn.src='crawl_fx_thorn.png?v=1794539492';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794539698';XIMG.wave.src='crawl_wave.png?v=1794539698';XIMG.chibi.src='crawl_chibi.png?v=1794539698';XIMG.flannel.src='crawl_flannel.png?v=1794539698';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794539698';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794539698';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794539698';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794539698';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794539698';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794539698';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794539698';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794539698';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794539698';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794539698';XIMG.rain.src='crawl_rain.png?v=1794539698';XIMG.druid.src='crawl_druid.png?v=1794539698';XIMG.camp.src='crawl_campfire.png?v=1794539698';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794539698';XIMG.tornado.src='crawl_fx_tornado.png?v=1794539698';XIMG.vine.src='crawl_fx_vine.png?v=1794539698';XIMG.thorn.src='crawl_fx_thorn.png?v=1794539698';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794539492';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794539492';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1794539492';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1794539492';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1794539492';XIMG.obst.src='crawl_obst.png?v=1794539492';XIMG.cityob.src='crawl_cityob.png?v=1794539492';XIMG.harvest.src='crawl_harvest.png?v=1794539492';XIMG.wraith.src='crawl_wraith.png?v=1794539492';XIMG.cars.src='crawl_cars.png?v=1794539492';XIMG.robot.src='crawl_robot.png?v=1794539492';XIMG.cultist.src='crawl_cultist.png?v=1794539492';XIMG.tentacle.src='crawl_tentacle.png?v=1794539492';XIMG.boom.src='crawl_boom.png?v=1794539492';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794539698';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794539698';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1794539698';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1794539698';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1794539698';XIMG.obst.src='crawl_obst.png?v=1794539698';XIMG.cityob.src='crawl_cityob.png?v=1794539698';XIMG.harvest.src='crawl_harvest.png?v=1794539698';XIMG.wraith.src='crawl_wraith.png?v=1794539698';XIMG.cars.src='crawl_cars.png?v=1794539698';XIMG.robot.src='crawl_robot.png?v=1794539698';XIMG.cultist.src='crawl_cultist.png?v=1794539698';XIMG.tentacle.src='crawl_tentacle.png?v=1794539698';XIMG.boom.src='crawl_boom.png?v=1794539698';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -4496,9 +4502,9 @@ function drawGame(ctx,g,W,oy){
       ctx.globalAlpha=fade*.9;ctx.strokeStyle='#3af0ff';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y,5,14,0,d>0?-Math.PI/2:Math.PI/2,d>0?Math.PI/2:Math.PI*1.5);ctx.stroke();
       ctx.strokeStyle='#e8ffff';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(x+d,y,4,12,0,d>0?-Math.PI/2:Math.PI/2,d>0?Math.PI/2:Math.PI*1.5);ctx.stroke();ctx.restore();}};
   const banners=()=>{for(const B of (g.banners||[])){const x=Math.round(B.x),y=Math.round(B.gy),fade=Math.min(1,B.t/.6,(B.T-B.t)/.3+.2);ctx.save();ctx.globalAlpha=fade;   /* 0.12.234 Cheez: Host_With_The_Most neon DICE BOYS banner: a still pole, the cloth waves */
-      ctx.globalAlpha=fade*.1;ctx.fillStyle='#ff3ad0';ctx.beginPath();ctx.ellipse(x,y-1,B.r,6,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=fade;
+      ctx.globalAlpha=fade*.1;ctx.fillStyle='#8cff46';ctx.beginPath();ctx.ellipse(x,y-1,B.r,6,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=fade;
       ctx.fillStyle='#2a2a36';ctx.fillRect(x,y-44,2,44);ctx.fillStyle='#3af0ff';ctx.fillRect(x,y-45,2,1);ctx.fillRect(x-1,y-46,4,1);
-      const W=26,Hh=12;for(let i=0;i<W;i++){const o=Math.round(Math.sin(g.t*5-i*.35)*1.5*(i/W));ctx.fillStyle=i%2?'#2a0a30':'#300c38';ctx.fillRect(x+2+i,y-43+o,1,Hh);ctx.fillStyle='#ff3ad0';ctx.fillRect(x+2+i,y-43+o,1,1);ctx.fillRect(x+2+i,y-44+Hh+o,1,1);}
+      const W=26,Hh=12;for(let i=0;i<W;i++){const o=Math.round(Math.sin(g.t*5-i*.35)*1.5*(i/W));ctx.fillStyle=i%2?'#0c2410':'#102c14';ctx.fillRect(x+2+i,y-43+o,1,Hh);ctx.fillStyle='#8cff46';ctx.fillRect(x+2+i,y-43+o,1,1);ctx.fillRect(x+2+i,y-44+Hh+o,1,1);}
       ctx.fillStyle='#3af0ff';ctx.font='bold 5px monospace';ctx.textBaseline='middle';const txt=['DICE','BOYS'];txt.forEach((t,j)=>{for(let c=0;c<t.length;c++){const cx=x+5+c*5,o=Math.round(Math.sin(g.t*5-(cx-x)*.35)*1.5*((cx-x)/W));ctx.fillText(t[c],cx,y-40+j*6+o);}});
       ctx.restore();}};
   const druidFx=()=>{for(const f of g.fx){const k=f.t/f.life;
@@ -5107,7 +5113,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.236</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.237</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -5299,7 +5305,7 @@ function showCamp(){
     <div class="cc-firehost"></div>
     ${(()=>{try{if(localStorage.getItem('cc-camphelp')==='off')return '';}catch(e){}return `<div class="cc-help" data-camphelp>🏕️ <b>Camp tips</b> · Hover the pulsing <b>⛺ ⓘ</b> next to the title to see every camp upgrade, its tiers and prices. Hover ability and deck chips under 📜 <b>Skills</b> for details. Feed and water everyone before you leave, or they start the next stage weaker. Anything with a dotted underline or ⓘ has more info on hover.
       <div style="margin-top:6px;display:flex;gap:8px"><button class="cc-btn" data-helpx="once" style="padding:2px 10px">Got it</button><button class="cc-btn" data-helpx="off" style="padding:2px 10px;opacity:.75">Don't show again</button></div></div>`;})()}
-    <p class="cc-sub">Score ${fmt(run.score)} · save point. ${run.pending?`<b style="color:#a6ff2e">⬆ ${run.pending} upgrade${run.pending>1?'s':''} waiting</b>`:'No upgrades waiting.'}</p>
+    <p class="cc-sub">Score ${fmt(run.score)} · save point.${run.ff?` <b style="color:#7dff9a">🌱 Fall Forward ${run.ff}/3: +${Math.round(FF.xp[run.ff]*100)}% XP, +${Math.round(FF.gold[run.ff]*100)}% gold piles, −${Math.round(FF.keep[run.ff]*100)}% score lost on a fall.</b>`:''} ${run.pending?`<b style="color:#a6ff2e">⬆ ${run.pending} upgrade${run.pending>1?'s':''} waiting</b>`:'No upgrades waiting.'}</p>
     <div class="cc-load">${run.team.map(k=>{const d=heroDef(k),hv=run.heroes[k],L=s.heroes[k],cap=slotCaps(L.lvl);
       const act=hv.spells.map((e,i)=>[e,i]).filter(([e])=>!SPELL[e.arch].passive),pas=hv.spells.map((e,i)=>[e,i]).filter(([e])=>SPELL[e.arch].passive);
       const row=(lbl,list,n,c,slotName)=>`<div class="cc-slotrow"><span class="cc-sub" style="font-size:11px;margin:0">${lbl} ${n}/${c}</span><div class="cc-chips">${list.map(([e,i])=>`<span class="cc-chipw">${chipFor(e,slotName==='item',k)}${btn(`data-un="${k}|${slotName}|${i}"`,'↓','Move to backpack')}</span>`).join('')}</div></div>`;
@@ -5448,7 +5454,7 @@ function loop(now){
     if(e.type==='herolevel')sfx('level');if(e.type==='enrage')flash('ENRAGED!',1400);if(e.type==='itemdrop'){sfx('level');flash('ITEM FOUND!',900);}if(e.type==='herodown')sfx('die');if(e.type==='gun')sfx(e.rifle?'rifle':e.big?'biggun':'gun');if(e.type==='boom')sfx('boom');if(e.type==='dash')sfx('dash');if(e.type==='bow')sfx('bow');if(e.type==='heal')sfx('heal');if(e.type==='camp')sfx('camp');if(e.type==='whoosh')sfx('whoosh');if(e.type==='slash')sfx('plasma');if(e.type==='thorns')sfx('thorns');if(e.type==='bell')sfx('bell',e);if(e.type==='alarm')sfx('alarm',e);if(e.type==='clunk')sfx('clunk');if(e.type==='glass')sfx('glass',e);if(e.type==='nemesis'){sfx('boss');flash(e.back?e.name.toUpperCase()+' RETURNS! (RANK '+'I'.repeat(e.rank)+')':(e.rank>1?e.name.toUpperCase()+' GROWS STRONGER':e.name.toUpperCase()+' RISES')+(e.trait?' · '+({rav:'RAVENOUS',blood:'BLOODTHIRSTY',bulwark:'BULWARK',howl:'HOWLER',cleave:'CLEAVER'}[e.trait]||''):''),1800);}if(e.type==='nemdown'){sfx('clear');flash(e.name.toUpperCase()+' IS DEAD',1600);}if(e.type==='lazer')sfx('lazer',e);if(e.type==='flame')sfx('flame');if(e.type==='shotgun')sfx('shotgun');if(e.type==='shriek')sfx('shriek');if(e.type==='wind')sfx('wind');if(e.type==='shout')sfx('shout');}
   g.events.length=0;
   ctx.imageSmoothingEnabled=false;drawGame(ctx,g,384,0);panCam();
-  const run=g.run;info.innerHTML=`<span class="px" style="font-size:10px;color:#a6ff2e">STAGE ${run.stage}${run.prestige?' ★'+run.prestige:''}</span><span>${esc(g.st.biome.name)}</span><span>Score <b>${fmt(run.score+g.stageScore)}</b></span><span>💰 <b>${fmt((SLOT().gold||0)+g.stageGold)}</b></span>
+  const run=g.run;info.innerHTML=`<span class="px" style="font-size:10px;color:#a6ff2e">STAGE ${run.stage}${run.prestige?' ★'+run.prestige:''}</span><span>${esc(g.st.biome.name)}</span><span>Score <b>${fmt(run.score+g.stageScore)}</b></span>${run.ff?`<span title="Fall Forward: +${Math.round(FF.xp[run.ff]*100)}% XP, +${Math.round(FF.gold[run.ff]*100)}% gold piles, −${Math.round(FF.keep[run.ff]*100)}% score lost on a fall" style="color:#7dff9a">🌱${run.ff}</span>`:''}<span>💰 <b>${fmt((SLOT().gold||0)+g.stageGold)}</b></span>
     <span class="cc-xp" title="Next upgrade"><i style="width:${Math.min(100,(run.xp||0)/(8+6*(run.lv||0))*100)}%"></i></span>${run.pending?`<b style="color:#a6ff2e">⬆${run.pending}</b>`:''}`;
   bossEl.textContent=g.boss&&!g.boss.dead?g.boss.B.name.toUpperCase():'';
   const doSt=(CC.ufT=(CC.ufT||0)+1)%8===0;
@@ -5485,6 +5491,7 @@ function finishStage(g){
     sfx('clear');
     for(const k of run.team){const h=run.heroes[k];if(h.dead){h.dead=false;h.hpf=.25;}else h.hpf=Math.min(1,(h.hpf||0)+.3);}
     run.needFeed=run.team.filter(k=>k!=='robot');   /* 0.12.58: everyone needs food AND water at camp, except the Warhound */
+    if(run.ff)run.campLog2=(run.campLog2?run.campLog2+' ':'')+'🌱 Fall Forward cleared: you got back up and beat it.';run.ff=0;   /* 0.12.237 a clear wipes the stacks */
     if(run.retryUsed){run.retryUsed=0;run.retries=1;run.campLog2='↻ Stage beaten on the retry: you get your retry back.';}   /* 0.12.73 */
     const cleared=run.stage;run.score+=Math.round(5*cleared*(1+run.prestige));   /* 0.12.94: clear bonus 5 x stage (was 250 x stage) */
     if(cleared>=CFG.maxStage){persist();CC.game=null;return showVictory(lvls);}
@@ -5503,9 +5510,12 @@ function finishStage(g){
     for(const it of g.stageItems||[]){const where=giveItem(run,s,it);if(where)found.push(shortCard(it.card)+(where==='bag'?' (backpack)':''));else{const v=Math.round(itemPrice(it.rar,run.stage)/3);s.gold+=v;found.push(shortCard(it.card)+' (sold, no room: +'+v+'g)');}}
     for(const k of run.team){const h=run.heroes[k];if(h){h.dead=false;h.hpf=Math.max(.5,h.hpf||0);}}
     run.needFeed=run.team.filter(k=>k!=='robot');run.snap=null;run.retries=1;run.retryUsed=0;run.falls=(run.falls||0)+1;
+    /* 0.12.237 (Kyle) Fall Forward: the fall costs 10% of your total score + 50% of what this attempt earned (already added in), less 10/20/30% for the stacks you carried in; then +1 stack (max 3) */
+    const att=Math.round(g.stageScore||0),keep=FF.keep[Math.min(3,run.ff||0)],lost=Math.min(run.score,Math.round((.1*run.score+.5*att)*(1-keep)));run.score-=lost;const ff0=run.ff||0;run.ff=Math.min(3,ff0+1);
+    const ffLine=`<br><b style="color:#7dff9a">🌱 Fall Forward ${'●'.repeat(run.ff)}${'○'.repeat(3-run.ff)}</b> (${run.ff}/3): until you clear a stage everyone gets <b>+${Math.round(FF.xp[run.ff]*100)}% XP</b>, <b>+${Math.round(FF.gold[run.ff]*100)}% gold piles</b>, and the next fall costs <b>${Math.round(FF.keep[run.ff]*100)}% less score</b>.<br>📉 Score lost: −${fmt(lost)} (10% of your total + half of this attempt's ${fmt(att)}${keep?`, cut ${Math.round(keep*100)}% by your stacks`:''}).`;
     persist();CC.game=null;
     const P=showPanel(`<div class="cc-h" style="color:#ff9a3c">THE PARTY FELL BACK</div><div class="cc-h2">Stage ${run.stage}${run.prestige?' · ★'+run.prestige:''}</div>
-      <p class="cc-sub">Nothing is lost. Everything you picked up comes with you: 💰 +${fmt(g.stageGold)} gold${g.stageParts?` · 🔩 +${g.stageParts} parts`:''}${(g.stageFood||g.stageWater)?` · 🍖 +${g.stageFood||0} food · 💧 +${g.stageWater||0} water`:''}${found.length?'<br>Items: '+found.map(esc).join(', '):''}${g.lossXp?`<br>📘 Lessons learned: +${g.lossXp} XP each`:''}${lvls.length?'<br>Level ups: '+lvls.join(', '):''}</p>
+      <p class="cc-sub">Everything you picked up comes with you: 💰 +${fmt(g.stageGold)} gold${g.stageParts?` · 🔩 +${g.stageParts} parts`:''}${(g.stageFood||g.stageWater)?` · 🍖 +${g.stageFood||0} food · 💧 +${g.stageWater||0} water`:''}${found.length?'<br>Items: '+found.map(esc).join(', '):''}${g.lossXp?`<br>📘 Lessons learned: +${g.lossXp} XP each`:''}${ffLine}${lvls.length?'<br>Level ups: '+lvls.join(', '):''}</p>
       <p class="cc-sub">Everyone gets back up at half health. Rest at camp, spend what you found, and take another run at stage ${run.stage}.</p>
       <div class="cc-row" style="margin-top:12px"><button class="cc-btn go" data-c>⛺ BACK TO CAMP</button></div>`);
     P.querySelector('[data-c]').onclick=showCamp;return;}
