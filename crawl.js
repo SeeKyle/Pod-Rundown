@@ -330,7 +330,8 @@ function faceToward(u,tx,dt){if(u.face==null)u.face=u.key?1:-1;const want=tx>u.x
 //   Abilities will spend it with spendEnergy(unit, cost) once they come back.
 const ENERGY={max:u=>u.enMaxB||100,regen:u=>u.enRegenB||4.6};   // 0.12.169 (Kyle): base regen 4.6/s (was 5)
 function regenEnergy(u,dt){const M=ENERGY.max(u);if(u.en==null)u.en=M;u.enMax=M;u.enTick=(u.enTick||0)+dt;while(u.enTick>=.5){u.enTick-=.5;u.en=Math.min(M,u.en+ENERGY.regen(u)*.5);}}   // ticks every 0.5s
-function spendEnergy(u,c){c*=u.enCostM||1;if((u.en||0)<c)return false;u.en-=c;unstealth(u);return true;}   // 0.12.67: using an ability breaks stealth
+function spendEnergy(u,c){c*=u.enCostM||1;if((u.en||0)<c)return false;u.en-=c;unstealth(u);if(u.capF&&u.capF.length&&CURG)capHook('cast',CURG,u,c);return true;}
+let CURG=null;   /* 0.12.249 the game being stepped, for capstone cast hooks */   // 0.12.67: using an ability breaks stealth
 /* 0.12.67 Stealth (generic, for any future stealth source too): u.stealthT>0 = zombies can't pick you as a target and lose you if they had you.
    Attacking or using an ability breaks it (and a short lockout stops the same smoke cloud from re-hiding you instantly). */
 function onMeE(g,h){const x=g.heroX(h);return g.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-x)<16).length;}
@@ -1225,7 +1226,7 @@ const Brain={
     // 0.12.27 Bodyguard (Family Matters, a deck-scripted behavior): IF an ally is hurt (under 90%) THEN stand beside the most hurt one
     /* 0.12.211 Edward (Loyal_to_a_Fault): IF a friend is under 35% and he's more than 120 world px from them (out of his reach to take their hits) AND he isn't under 25% himself
        THEN he goes to stand with them (Pack Hunter goes quicker; Ally Awareness picks the worst-off friend, otherwise the nearest hurt one) */
-    if(h.key==='edward'&&!(hp<.25)){const al=g.alive().filter(o=>o!==h&&!o.pet&&o.hp/o.max<.35);const aw=trait(h,'aware');const H=al.sort((p,q)=>aw>.6?p.hp/p.max-q.hp/q.max:Math.abs(g.heroX(p)-g.heroX(h))-Math.abs(g.heroX(q)-g.heroX(h)))[0];
+    if(h.key==='edward'&&!(hp<.25)){const al=g.alive().filter(o=>o!==h&&!o.pet&&o.hp/o.max<(h.cap&&h.cap.ed_bond?.6:.35));   /* Unbreakable_Bond: he guards anyone under 60% */const aw=trait(h,'aware');const H=al.sort((p,q)=>aw>.6?p.hp/p.max-q.hp/q.max:Math.abs(g.heroX(p)-g.heroX(h))-Math.abs(g.heroX(q)-g.heroX(h)))[0];
       if(H&&Math.abs(g.heroX(H)-g.heroX(h))>120){h.abWhy='LOYAL: getting to '+Comms.name(H);h.abWhyT=g.t+2;return {xoff:0,intent:'guard',runMul:.6+1.2*(1-trait(h,'pack')),goTo:H,reviveLane:H.laneI};}}
     if(insP(h)==='bodyguard'){const H=g.alive().filter(o=>o!==h&&!o.pet&&o.hp/o.max<.9).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];if(H&&!(hp<.25)){const runMul=.45+1.4*pace;return {xoff:0,intent:'guard',runMul,goTo:H,reviveLane:H.laneI};}}
     // 0.12.28 Herbalist: IF I have room for herbs AND there's unsearched debris close by AND it isn't swarmed THEN go search it
@@ -1511,7 +1512,8 @@ class Game{
       {const H=this.slot&&this.slot.heroes&&this.slot.heroes[h.key];const P=(H&&H.pts)||{};   /* level-up stat points (chosen at camp) */
         {const tl=talPicks(H);const m={};let hpP=0,dmP=0;h.healBonus=0;h.revBonus=0;h.cap={};
           for(const id of tl){const [t,a,b]=id.split(':');if(t==='st'){const S=TAL_STAT[a];if(!S)continue;if(S.hpPct)hpP+=S.hpPct;if(S.dmgPct)dmP+=S.dmgPct;if(S.heal)h.healBonus+=S.heal/100;if(S.rev)h.revBonus+=S.rev/100;for(const [x,v] of Object.entries(S.mod||{}))m[x]=(m[x]||0)+v;}
-            else if(t==='cap')h.cap[b]=1;}
+            else if(t==='cap'){h.cap[b]=1;const Cp=HCAP[h.key]&&HCAP[h.key][a]&&HCAP[h.key][a][b];if(Cp&&Cp.stat){if(Cp.stat.hpPct)hpP+=Cp.stat.hpPct;if(Cp.stat.dmgPct)dmP+=Cp.stat.dmgPct;for(const [x,v] of Object.entries(Cp.stat.mod||{}))m[x]=(m[x]||0)+v;}}}
+          h.capF=Object.keys(h.cap).filter(x=>CAPFX[x]);
           if(h.cap.glass){dmP+=15;hpP-=10;}if(h.cap.bulwark){hpP+=20;m.armor=(m.armor||0)+2;}if(h.cap.over)m.cdr=(m.cdr||0)+20;if(h.cap.jugg){m.armor=(m.armor||0)+3;m.kbRes=(m.kbRes||0)+40;}
           h.enCostM=h.cap.over?.8:1;h.talDR=h.cap.jugg?.1:0;h.adrOn=0;h.pingOn=0;h.olAcc=0;if(h.key==='shoshi')h.revBonus=(h.revBonus||0)+.3;
           if(hpP)h.max*=1+hpP/100;if(dmP)h.atk*=1+dmP/100;
@@ -1587,6 +1589,7 @@ class Game{
     if(!opt.sure&&e.E&&e.E.dodge&&this.rng()<e.E.dodge){this.text(e.x,e.y-30,'miss','#9aa');this.failAct(src);return 0;}
     let crit=false;if(src&&!opt.nocrit&&this.rng()<src.crit+(opt.critAdd||0)+.01*(src.inevN||0)+(src.laughT>0?.05:0)){amt*=(opt.critMul||src.critMul||1.75);crit=true;if(src.raT>0&&src.key==='archer')src.raT*=.5;   /* One Nocked passive: any crit halves its remaining cooldown */if(src.inevN){src.luck-=2*src.inevN*(hasPerk(src,'superlucky')?2:1);src.inevN=0;}
       const HR=!opt.fromTent&&src.base&&src.base.char&&(src.base.char.abilities||[]).find(a=>a.id==='herald');if(HR){src.critRegenT=HR.critT;for(const T of this.tentacles||[])T.heraldT=HR.critT;}}   // Herald: his crits (not his tentacles') feed him and every tentacle he has out   // Herald: crits feed energy
+    if(src&&src.capF&&src.capF.length)amt=capHook('hit',this,src,e,amt,crit,opt);   /* 0.12.249 capstones */
     if(opt.head){amt*=HEADSHOT.mul;this.text(e.x,e.y-(e.fly?24:54),'HEADSHOT!','#ff6040',false);   /* 0.12.36 (Kyle): half the old size */}
     {const ip=insP(src);   // inspiration passives that trigger on his hits
      if(ip==='onslaught'&&(src.moveT||0)>1){amt*=2;src.moveT=0;}
@@ -1609,6 +1612,7 @@ class Game{
     return amt;
   }
   kill(e,src){
+    if(src&&src.capF&&src.capF.length)capHook('kill',this,src,e);
     if(e.bounty&&!this.demo){this.stageGold+=10;this.text(e.x,e.y-40,'+10','#ffd23f');}
     if(insP(src)==='devour'&&src.alive){this.healHero(src,src.max*.03,true);src.en=Math.min(src.enMax||100,(src.en||0)+4);}
     if(src&&src.key==='knight'&&src.alive){const BO=(src.base.char.abilities||[]).find(a=>a.id==='oath');if(BO)this.healHero(src,src.max*BO.heal,true,src);}   /* 0.12.180 Blood_Oath */
@@ -1676,7 +1680,7 @@ class Game{
         this.pets=(this.pets||[]).filter(p=>p!==h);(this.dogQ=this.dogQ||[]).push(this.t+40);for(const o of this.alive())if(!o.pet&&this.rng()<.35){Comms.bubble(this,o,Comms.pick(['NO! Not the dog!','Good boy... rest easy.','They got the dog!','The kennel will send another.']));break;}}return true;}   /* 0.12.204 (Kyle): a dog that goes down is gone (no helping it up); the kennel sends a fresh one 40s later */if(from&&from.E){h.lastHitBy=from;h.grudgeT=1+19*trait(h,'grudge');}   // Forgiving forgets in a second; Vengeful holds it 20s
     if(!this._noDodge&&this.rng()<h.dodge+this.eliteDodge(h)){this.text(h.x,this.G-52,'dodge','#9ae6ff');return false;}   /* 0.12.232: enemy traps can't be dodged */
     if(from&&from.E&&!h.pet&&h.key!=='edward'&&!this._loyal){const ED=this.heroes.find(o=>o.key==='edward'&&o.alive&&o!==h);if(ED){const LY=(ED.base.char.abilities||[]).find(a=>a.id==='loyal');
-      if(LY&&h.hp/h.max<LY.under&&Math.abs(this.heroX(ED)-this.heroX(h))<LY.r){const part=amt*LY.share;amt-=part;this._loyal=1;this.hurtHero(ED,part,from);this._loyal=0;ED.en=Math.min(ED.enMax||100,(ED.en||0)+(LY.en||0));if(this.rng()<.08)Comms.bubble(this,ED,Comms.pick(['I got you!','Lean on me!','Not on my watch!','That one\'s on me!']),true);}}}   /* 0.12.207 Edward: Loyal_to_a_Fault */
+      if(LY&&h.hp/h.max<LY.under&&Math.abs(this.heroX(ED)-this.heroX(h))<LY.r){const part=amt*LY.share;amt-=part;this._loyal=1;this.hurtHero(ED,part,from);this._loyal=0;if(ED.cap&&ED.cap.ed_bond)this.healHero(h,h.max*.04,true,ED);ED.en=Math.min(ED.enMax||100,(ED.en||0)+(LY.en||0));if(this.rng()<.08)Comms.bubble(this,ED,Comms.pick(['I got you!','Lean on me!','Not on my watch!','That one\'s on me!']),true);}}}   /* 0.12.207 Edward: Loyal_to_a_Fault */
     if(h.chutzT>0){amt*=1-(h.czDR||.3);h.chzStk=Math.min(5,(h.chzStk||0)+1);}   /* 0.12.220 Chutzpah: soaks 30% and every hit stores +10% for his next shot */
     if(from&&from.E&&!h.pet)from.dmgDone=(from.dmgDone||0)+amt;   /* for Edward's Paper_Trail */
     {const bc=h.base&&h.base.char&&h.base.char.blockCh;if(bc&&from&&!(h.smoking)&&this.rng()<bc){this.text(h.x,this.G-52,'BLOCK','#e8c890');this.ev('hit',{});h.blockT=.25;return false;}}   /* 0.12.79: shields block */
@@ -1697,6 +1701,7 @@ class Game{
     if(h.key==='robot'){if(h.jet)amt=Math.min(amt,(h.jet.A&&h.jet.A.cap)||5);if(from&&h.nbT>0&&this.rng()<.1){h.nbT/=2;this.text(h.x,this.G-60,'CD½','#7fe0ff');}}   /* 0.12.67 Tactical_Retreat shield; Nano-Tech's built-in CD halving */
     if(h.key==='jp'){if(h.highT>0)amt*=.8;if(h.trashT>0)amt*=.7;if(h.rush)return false;}   /* JP: high 10% less, Trash_Talk 30% less, immune while rushing to family */   // True_Grit (0.12.63: this was hidden inside the comment above, so Grit never actually reduced damage)
     if(h.talDR)amt*=1-h.talDR;   /* Juggernaut talent */
+    if(h.capF&&h.capF.length)amt=capHook('hurt',this,h,from,amt);
     if(h.sakeB&&h.sakeB.vul)amt*=1+h.sakeB.vul;   /* 0.12.242 Drunken_Style: sloppy guard, takes more damage */
     if(h.wallT>0)amt*=1-(h.wallDR||.6);   /* 0.12.180 Shield_Wall */
     if(h.key==='soldier'){const HB=(h.base.char.abilities||[]).find(a=>a.id==='hardened');if(HB&&h.hp<h.max*HB.under)amt*=1-HB.dr;}   /* 0.12.175 Battle_Hardened */
@@ -1724,7 +1729,7 @@ class Game{
     if(h.hp<=0){if(from&&from.E&&!from.boss&&!from.dead&&!h.pet&&!h.dog)this.nemesis(from,h);this.heroDown(h);}
     return true;
   }
-  heroDown(h){if(this.tryResurge(h))return;if(h.key==='cheez'&&!h.attendUsed&&(h.base.char.abilities||[]).some(a=>a.id==='attend')){h.attendUsed=1;h.hp=1;h.invulnT=2;this.text(this.heroX(h),(h.gy||this.G)-54,'PERFECT ATTENDANCE','#3af0ff',true);Comms.bubble(this,h,Comms.pick(['I have NEVER missed game night!','Not tonight. I\'m hosting!','Perfect attendance, baby!']),true);return;}   /* 0.12.234 Cheez: never misses game night */if(!h.pet)for(const o of this.alive())if(o.key==='shoshi'&&o!==h){o.pingT=4;this.text(this.heroX(o),(o.gy||this.G)-50,'PING!','#b38cff');}   /* Circle_Ping */if(h.cap&&h.cap.last&&!h.lsUsed&&!h.pet){h.lsUsed=1;h.hp=1;h.alive=true;h.invulnT=3;this.text(this.heroX(h),(h.gy||this.G)-50,'LAST STAND!','#ffd23f');this.fx.push({k:'ring',x:this.heroX(h),y:(h.gy||this.G)-10,r:18,t:0,c:'#ffd23f'});return;}   /* 0.12.106 Last Stand talent */h.building=null;h.repairing=null;h.syph=null;h.jet=null;h.lz=null;h.nano=null;h.stealthT=0;h.leap=null;h.leapH=0;h.whirl=null;h.dash=null;h.rolling=null;   /* no frozen mid-move poses */for(const o of this.alive())if(o!==h&&Math.abs(this.heroX(o)-this.heroX(h))<90)Brain.panic(this,o,'down');if(h.key&&!this.demo)this.st8(h).downs++;if(!h.pet&&h.cap&&h.cap.wind&&!h.swUsed){h.swUsed=1;h.windT=this.t+3;}   /* Second Wind talent */if(!h.pet){h.downed=1;h.revT=0;h.downT=this.t;h.search=null;h.plan=null;h.alDecide=null;h.srDecide=null;h.building=null;h.repairing=null;h.smoking=null;h.rush=null;h.cast=null;}   /* 0.12.102 fix: going down drops whatever job I was in the middle of (alarm, search, build...) *//* 0.12.22: downed, not dead: an ally can help them up */if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
+  heroDown(h){if(this.tryResurge(h))return;if(h.capF&&h.capF.length&&capHook('down',this,h))return;if(h.key==='cheez'&&(h.attendUsed||0)<(h.cap&&h.cap.cz_speed?2:1)&&(h.base.char.abilities||[]).some(a=>a.id==='attend')){h.attendUsed=(h.attendUsed||0)+1;h.hp=1;h.invulnT=2;if(h.cap&&h.cap.cz_speed){tbuff(h,{sp:.5,mv:.3},4);h.iaT=0;}this.text(this.heroX(h),(h.gy||this.G)-54,'PERFECT ATTENDANCE','#3af0ff',true);Comms.bubble(this,h,Comms.pick(['I have NEVER missed game night!','Not tonight. I\'m hosting!','Perfect attendance, baby!']),true);return;}   /* 0.12.234 Cheez: never misses game night */if(!h.pet)for(const o of this.alive())if(o.key==='shoshi'&&o!==h){o.pingT=4;this.text(this.heroX(o),(o.gy||this.G)-50,'PING!','#b38cff');}   /* Circle_Ping */if(h.cap&&h.cap.last&&!h.lsUsed&&!h.pet){h.lsUsed=1;h.hp=1;h.alive=true;h.invulnT=3;this.text(this.heroX(h),(h.gy||this.G)-50,'LAST STAND!','#ffd23f');this.fx.push({k:'ring',x:this.heroX(h),y:(h.gy||this.G)-10,r:18,t:0,c:'#ffd23f'});return;}   /* 0.12.106 Last Stand talent */h.building=null;h.repairing=null;h.syph=null;h.jet=null;h.lz=null;h.nano=null;h.stealthT=0;h.leap=null;h.leapH=0;h.whirl=null;h.dash=null;h.rolling=null;   /* no frozen mid-move poses */for(const o of this.alive())if(o!==h&&Math.abs(this.heroX(o)-this.heroX(h))<90)Brain.panic(this,o,'down');if(h.key&&!this.demo)this.st8(h).downs++;if(!h.pet&&h.cap&&h.cap.wind&&!h.swUsed){h.swUsed=1;h.windT=this.t+3;}   /* Second Wind talent */if(!h.pet){h.downed=1;h.revT=0;h.downT=this.t;h.search=null;h.plan=null;h.alDecide=null;h.srDecide=null;h.building=null;h.repairing=null;h.smoking=null;h.rush=null;h.cast=null;}   /* 0.12.102 fix: going down drops whatever job I was in the middle of (alarm, search, build...) *//* 0.12.22: downed, not dead: an ally can help them up */if(h.lastHitBy&&!h.lastHitBy.dead&&!this.demo)Brain.showoff(this,h.lastHitBy,'down');h.hp=0;h.alive=false;h.bleedT=0;this.ev('herodown',{key:h.key});Comms.onDown(this,h);this.fx.push({k:'poof',x:h.x,y:this.G-20,t:0,big:true});
     if(!h.pet){for(const p of this.pets||[])if(p.owner===h&&p.alive&&!p.dog){p.alive=false;this.fx.push({k:'poof',x:p.x,y:this.G-20,t:0});}}   // she leaves when he goes down
     if(!this.aliveHeroes().length){this.over='defeat';this.ev('defeat');
       /* 0.12.150 (Kyle): a small "learned something" bonus for a loss so a stuck team can grind through: each hero gets
@@ -1894,7 +1899,7 @@ class Game{
   /* 0.12.236 Cheez's Iaijutsu wave: flies down his lane, 2d8 to each zombie it passes (first a crit), fades at the end of its run */
   stepWaves(dt){const IAd=[2,8];for(const W of this.waves){const step=W.spd*dt;W.x+=W.dir*step-(this.scroll||0)*dt;W.left-=step;W.t+=dt;const h=W.src;
       if(h){const mul=(h.atk/h.base.atk)*h.meleeDmg;for(const e of this.enemies){if(e.dead||e.fly||W.hit.has(e))continue;const ey=e.gy!=null?e.gy:this.G;if(Math.abs(ey-W.gy)>8)continue;if(Math.abs(e.x-W.x)>(e.boss?e.w*.5+4:6))continue;
-        W.hit.add(e);const IA=(h.base.char.abilities||[]).find(a=>a.id==='iai');this.hitEnemy(e,this.rollDice((IA&&IA.dice)||IAd)*mul*(W.first?(h.critMul||1.8):1),h,{sure:1,nocrit:W.first?1:0,kb:.6});if(W.first){W.first=0;this.text(e.x,ey-48,'IAI!','#3af0ff');}}}
+        W.hit.add(e);const IA=(h.base.char.abilities||[]).find(a=>a.id==='iai');this.hitEnemy(e,(this.rollDice(W.dice||(IA&&IA.dice)||IAd)+(W.flat||0))*mul*(W.first?(h.critMul||1.8):1),h,{sure:1,nocrit:W.first?1:0,kb:.6,wave:1});if(W.first){W.first=0;this.text(e.x,ey-48,'IAI!','#3af0ff');}}}
       if(W.left<=0||W.x<-6||W.x>this.W+6)W.gone=1;}
     for(const W of this.waves)if(W.gone&&W.src&&W.src.wave===W){W.src.wave=null;W.src.blinkOK=0;}
     this.waves=this.waves.filter(W=>!W.gone);}
@@ -1928,9 +1933,9 @@ class Game{
     const MS=(h.base.char.abilities||[]).find(a=>a.id==='missiles');while(MS&&J.shot<A.shots&&u>=(J.shot+.6)/(A.shots+.4)){J.shot++;let live=this.enemies.filter(e=>!e.dead&&e.x>0&&e.x<this.W);if(J.carpet){const lo=Math.min(J.x0,J.x1)-10,hi=Math.max(J.x0,J.x1)+40;const path=live.filter(e=>e.x>=lo&&e.x<=hi);if(path.length)live=path;}if(live.length)this.fireMissile(h,live[Math.floor(this.rng()*live.length)],{...MS,spread:4});}
     if(u>=1){h.jet=null;h.leapH=0;this.jetSmash(h);Comms.bubble(this,h,Comms.pick(['TOUCHDOWN.','REPAIRS ADVISED.','RE-ENGAGING.']));}}
   /* 0.12.236 (Kyle) jetpack landing: GROUND SMASH, 2d6 within 135px, big knockback away from him on either side */
-  jetSmash(h){const S=JET_SMASH,gy=h.gy||this.G,mul=(h.atk/h.base.atk)*(h.cryDmg||1);this.fx.push({k:'smash',x:h.x,gy,r:S.r,t:0,life:.7,raw:1});this.fx.push({k:'puff',x:h.x,y:gy-2,t:0,life:.5,s:2.2});
+  jetSmash(h){const S=h.cap&&h.cap.rb_omega?{r:70,dice:[4,6],kb:5,stun:1.5}:JET_SMASH,gy=h.gy||this.G,mul=(h.atk/h.base.atk)*(h.cryDmg||1);this.fx.push({k:'smash',x:h.x,gy,r:S.r,t:0,life:.7,raw:1});this.fx.push({k:'puff',x:h.x,y:gy-2,t:0,life:.5,s:2.2});
     this.shake=Math.max(this.shake||0,.35);this.ev('boom',{});
-    for(const e of this.enemies){if(e.dead||e.fly)continue;const dx=Math.abs(e.x-h.x)-(e.boss?e.w*.5:0),dz=Math.abs((e.gy!=null?e.gy:this.G)-gy);if(dx>S.r||dz>S.r*.6)continue;this.hitEnemy(e,this.rollDice(S.dice)*mul,h,{sure:1,kb:S.kb});}}
+    for(const e of this.enemies){if(e.dead||e.fly)continue;const dx=Math.abs(e.x-h.x)-(e.boss?e.w*.5:0),dz=Math.abs((e.gy!=null?e.gy:this.G)-gy);if(dx>S.r||dz>S.r*.6)continue;this.hitEnemy(e,this.rollDice(S.dice)*mul,h,{sure:1,kb:S.kb});if(S.stun&&!e.dead&&!e.boss)e.stun=Math.max(e.stun||0,S.stun);}}
   flameSpray(h,tg,FL){const dir=tg.x>=h.x?1:-1;h.face=dir;this.ev('flame',{});if(this.pools&&this.pools.length)this.igniteAt(h.x+dir*(FL.len||40)/2,h.gy||this.G,(FL.len||40)/2);   /* 0.12.129 (Kyle): a flamethrower whoosh-roar */const gy=h.gy!=null?h.gy:this.G,x0=h.x+dir*12;const mul=(h.atk/h.base.atk)*h.rangedDmg*(h.cryDmg||1);
     this.fx.push({k:'flame',x:x0,gy,dir,len:FL.len,w0:FL.w0,w1:FL.w1,t:0,life:FL.dur,raw:1,src:h});this.ev('whoosh',{});
     const inCone=(x,y)=>{const d=(x-x0)*dir;if(d<-2||d>FL.len)return false;return Math.abs(y-gy)<=FL.w0+(FL.w1-FL.w0)*Math.max(0,d)/FL.len;};
@@ -1944,7 +1949,7 @@ class Game{
       if(P&&P.goTo&&((P.goTo.ob&&(off(P.goTo.ob.x)||!(this.obst||[]).includes(P.goTo.ob)))||(P.goTo.mine&&off(P.goTo.mine.x))))lost=true;
       if((S||D||h.planting||h.setting||h.tossing)&&this.heroX(h)<12)lost=true;
       if(lost){h.search=null;h.defuse=null;h.planting=null;h.setting=null;h.tossing=null;h.plan=null;h.thinkT=0;h.pauseT=0;if(S&&S.o&&S.o.searchBy===h)S.o.searchBy=null;}}}
-  step(dt){
+  step(dt){CURG=this;
     if(this.over)return;this.t+=dt;
     const T=this;const al=this.alive();this.dropLost();for(const h of this.heroes)if(h.alive&&h.thirst>0&&!this.over){h.hp-=h.max*THIRST.drain[h.thirst]*dt;if(h.hp<1)h.hp=1;}   /* 0.12.72: dehydration drains a little life (never kills on its own) */for(const p of this.pets||[])if(p.dog&&!p.alive&&p.downed){p.x-=(this.scroll||0)*dt;if(p.x<-10)p.downed=0;}   /* a downed dog is left behind if nobody helps him up before he slides off screen */
     for(const p of this.pets||[])if(p.dog&&p.alive&&p.hits<p.hitsMax){p.hitRegT=(p.hitRegT||0)+dt;if(p.hitRegT>=p.hitRegEvery){p.hitRegT=0;p.hits++;p.hp=p.max*p.hits/p.hitsMax;}}   /* dog: one hit back every 15s (10s at Kennel III) */
@@ -2024,6 +2029,7 @@ class Game{
       regenEnergy(h,dt);if(h.critRegenT>0){h.critRegenT-=dt;h.en=Math.min(h.enMax||100,(h.en||0)+2*dt);h.hp=Math.min(h.max,h.hp+2*dt);}/* Herald: +1 energy and +1 HP every 0.5s */if(h.riseT>0){h.riseT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);}h.walkT+=dt*(scroll?(MOVE[h.key]||26)/26:0);if(h.animT>0)h.animT-=dt;if(h.hitFlash>0)h.hitFlash-=dt;if(h.buffT>0)h.buffT-=dt;
       if(h.shellT>0){h.shellT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);}
       if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}if(h.staticT>0)h.staticT-=dt;
+      if(h.capF&&h.capF.length)capHook('tick',this,h,dt);tbuffStep(h,dt);
       if(h.invulnT>0)h.invulnT-=dt;if(h.upT>0){h.upT-=dt;if(h.upT<=0){h.upT=0;h.invulnT=0;h.thinkT=0;}}if(h.throwT>0){h.throwAge=(h.throwAge||0)+dt;if(h.throwAge>2.5){h.throwT=0;h.throwAge=0;}}else h.throwAge=0;   /* 0.12.224 safety net: no throw pose can ever stick */
       if(h.hotT>0){h.hotT-=dt;h.hotTick=(h.hotTick||0)+dt;if(h.hotTick>=h.hotEvery){h.hotTick-=h.hotEvery;this.healHero(h,h.hotAmt,false,h.hotSrc);}}   // Rejuvenating Bloom
       if(h.slowT>0){h.slowT-=dt;if(h.slowT<=0)h.slow=0;}if(h.bleedT>0){h.bleedT-=dt;h.bleedTick+=dt;if(h.bleedTick>=1||h.bleedT<=0){const d=h.bleedDps*Math.min(1,h.bleedTick);h.bleedTick=0;h.hp-=d;this.text(h.x+6,this.G-58,Math.round(d),'#c0102a');if(h.hp<=0){this.heroDown(h);continue;}}}
@@ -2312,6 +2318,7 @@ class Game{
        are in it at once, everyone gets +7% crit (it lasts as long as all three stay in, up to the banner's 8s) and they yell DICE BOYS! the first time. */
     for(const o of this.heroes)o.bnIn=null;
     if(this.banners&&this.banners.length){const team=this.alive().filter(o=>!o.pet);for(const B of this.banners){B.t-=dt;B.x-=(this.scroll||0)*dt;const ins=team.filter(o=>Math.abs(this.heroX(o)-B.x)<B.r);
+        if(B.own&&B.own.cap&&B.own.cap.cz_boss){B.pT=(B.pT||0)+dt;if(B.pT>=2){B.pT=0;this.fx.push({k:'ring',x:B.x,y:B.gy-14,t:0,r:30,c:'#8cff46'});const O=B.own;for(const e of this.enemies)if(!e.dead&&!e.fly&&Math.abs(e.x-B.x)<B.r&&Math.abs((e.gy!=null?e.gy:this.G)-B.gy)<B.r)this.hitEnemy(e,this.rollDice([1,6])+2,O.alive?O:null,{sure:1,quiet:1});}}   /* 0.12.249 Final_Boss_of_Game_Night: the banner pulses */
         for(const o of ins){if(!o.bnIn||B.dmg>o.bnIn.dmg)o.bnIn=B;o.en=Math.min(o.enMax||100,(o.en||0)+B.regen*dt);}B.all=team.length>=3&&ins.length===team.length&&B.t>0;
         if(B.all&&!B.shouted){B.shouted=1;for(const o of ins)Comms.bubble(this,o,'DICE BOYS!',true);this.text(B.x,B.gy-60,'DICE BOYS!','#8cff46',true);}}
       this.banners=this.banners.filter(B=>B.t>0&&B.x>-20);}
@@ -2349,9 +2356,10 @@ class Game{
       if(h.jet){this.robotJet(h,dt);return;}   // Tactical_Retreat flight
       const live=this.enemies.filter(e=>!e.dead&&e.x<this.W+4),en=h.en||0,hx=this.heroX(h);const onMe=live.filter(e=>!e.fly&&Math.abs(e.x-hx)<16).length;
       // Nano-Tech_Repair_Bots in progress: stopped, 5%/s; IF I get swarmed (2+ on me) and I'm not desperate THEN cut it short
-      if(h.nano){const N=h.nano;N.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;this._mech=1;this.healHero(h,h.max*NB.per*dt,true,h);this._mech=0;
-        if(N.t>=NB.dur||(N.t>1&&onMe>=2&&h.hp/h.max>.3)){const cut=N.t<NB.dur;h.nano=null;Comms.bubble(this,h,cut?Comms.pick(['REPAIR: ABORTED.','THREAT DETECTED. RESUMING.']):Comms.pick(['REPAIRS: COMPLETE.','HULL: RESTORED.','SYSTEMS: NOMINAL.']));}return;}
-      if(NB&&h.nbT<=0&&en>=NB.en&&h.hp/h.max<NB.under&&(h.hp/h.max<.3||onMe===0)&&spendEnergy(h,NB.en)){h.nbT=NB.cd*(1-(h.cdr||0));h.nano={t:0};h.lz=null;this.ev('zap',{});Comms.bubble(this,h,Comms.pick(['DEPLOYING REPAIR SWARM.','DAMAGE DETECTED. REPAIRING.','NANITES: ENGAGE.']));return;}
+      if(h.nano){const N=h.nano;N.t+=dt;if(!(h.cap&&h.cap.rb_titan)){h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;}   /* 0.12.249 Titan_Frame: repairs on the move */this._mech=1;this.healHero(h,h.max*NB.per*dt,true,h);this._mech=0;
+        if(N.t>=NB.dur||(!(h.cap&&h.cap.rb_titan)&&N.t>1&&onMe>=2&&h.hp/h.max>.3)){const cut=N.t<NB.dur;h.nano=null;Comms.bubble(this,h,cut?Comms.pick(['REPAIR: ABORTED.','THREAT DETECTED. RESUMING.']):Comms.pick(['REPAIRS: COMPLETE.','HULL: RESTORED.','SYSTEMS: NOMINAL.']));}if(!(h.cap&&h.cap.rb_titan))return;}
+      /* 0.12.249 Titan_Frame: repairs on the move, so he runs the bots at 70% even with zombies on him */
+      if(NB&&h.nbT<=0&&en>=NB.en&&!h.nano&&h.hp/h.max<(h.cap&&h.cap.rb_titan?.7:NB.under)&&(h.cap&&h.cap.rb_titan||h.hp/h.max<.3||onMe===0)&&spendEnergy(h,NB.en)){h.nbT=NB.cd*(1-(h.cdr||0));h.nano={t:0};h.lz=null;this.ev('zap',{});Comms.bubble(this,h,Comms.pick(['DEPLOYING REPAIR SWARM.','DAMAGE DETECTED. REPAIRING.','NANITES: ENGAGE.']));return;}
       // Arc_Surge: IF the lazer is burning (or 3+ enemies are in lazer range) THEN overcharge it
       if(SU&&h.suT<=0&&!(h.surgeT>0)&&en>=SU.en&&LZ&&(h.lz&&h.lz.t>=LZ.charge*.5||live.filter(e=>Math.abs(e.x-hx)<=LZ.max).length>=3)&&spendEnergy(h,SU.en)){
         h.suT=SU.cd*(1-(h.cdr||0));h.surgeT=SU.dur;addMood(h,{range:SU.slide},SU.dur,'surge');this.ev('zap',{});this.fx.push({k:'ring',x:h.x,y:(h.gy||this.G)-24,r:18,t:0,c:'#49c8ff'});
@@ -2364,11 +2372,11 @@ class Game{
           setTimeoutSafe(this,.25,()=>{if(!h.alive)return;this.ev('whoosh',{});(this.nades=this.nades||[]).push({x0:h.x,x:h.x,x1:spot,gy0:h.gy||this.G,gy,t:0,T:SM.throw,A:SM,src:h});});
           Comms.say(this,h,'smoke',{x:spot,ally:who});return;}}
       /* 0.12.236 Carpet_Bomb: IF 4+ zombies (or a boss) are 40-390px ahead AND I'm over 45% THEN jetpack forward and bomb the road (Calculated Play wants 5+) */
-      {const PD=RB('directive'),CB=PD&&PD.carpet;if(CB&&!(h.pdT>0)&&en>=CB.en&&!h.lz&&!h.nano&&h.hp/h.max>.45&&!this.exiting){const ahead=live.filter(e=>!e.fly&&e.x-hx>=13&&e.x-hx<=CB.dist+10);const need=trait(h,'aggr')<.35?5:4;
+      {const PD=RB('directive'),CB=PD&&PD.carpet;if(CB&&!(h.pdT>0)&&en>=CB.en&&!h.lz&&!h.nano&&h.hp/h.max>(h.cap&&h.cap.rb_omega?.3:.45)&&!this.exiting){const ahead=live.filter(e=>!e.fly&&e.x-hx>=13&&e.x-hx<=CB.dist+10);const need=(trait(h,'aggr')<.35?5:4)-(h.cap&&h.cap.rb_omega?1:0);   /* Omega_Directive: short cooldown, bombs more freely */
         if((ahead.length>=need||ahead.some(e=>e.boss))&&spendEnergy(h,CB.en)){h.abWhy='CARPET BOMB: '+ahead.length+' ahead';h.abWhyT=this.t+3;this.startJet(h,'carpet');return;}}}
       // IF 3+ enemies are bunched 40-260px out (or a boss is up) THEN missile barrage on the thickest spot
       if(MS&&h.msT<=0&&en>=MS.en&&!(h.launchT>0)&&!h.lz){let best=null,bn=0;for(const e of live){const d=e.x-hx;if(d<MS.min||d>MS.range)continue;const n=live.filter(o=>Math.abs(o.x-e.x)<MS.spread*1.6).length+(e.boss?3:0);if(n>bn){bn=n;best=e;}}
-        if(best&&bn>=3&&spendEnergy(h,MS.en)){h.msT=MS.cd*(1-(h.cdr||0));h.launchT=.2+MS.n*MS.gap+.2;
+        if(best&&bn>=(h.cap&&h.cap.rb_swarm?2:3)&&spendEnergy(h,MS.en)){h.msT=MS.cd*(1-(h.cdr||0));h.launchT=.2+MS.n*MS.gap+.2;
           for(let i=0;i<MS.n;i++)setTimeoutSafe(this,.2+i*MS.gap,()=>{if(!h.alive)return;const T=best.dead?(live.find(e=>!e.dead)||best):best;this.fireMissile(h,T,MS);});
           Comms.say(this,h,'missiles',{});return;}}
       // Targeted Lazer in progress (he plants and holds the beam); IF something gets right on top of me THEN drop the beam and use the flamethrower
@@ -2396,9 +2404,10 @@ class Game{
           if((hp<.4&&onMe>=2||hp<.55&&onMe>=3)&&dist>=35&&atW<=1)go='bail';   /* swarmed and hurt: hop onto the wave if it's somewhere quieter */
           else if(dist>=30&&live.some(e=>(e.E&&(e.E.scream||e.type==='skarcher')||e.nem)&&Math.abs(e.x-wx)<10&&Math.abs(lane(e)-W.gy)<10)&&hp>.35)go='hunt';   /* the wave reached a priority target: go finish it */
           else{const pal=al.find(o=>o!==h&&o.hp/o.max<.5&&Math.abs(this.heroX(o)-wx)<16&&live.some(e=>Math.abs(e.x-this.heroX(o))<20)&&dist>=40);if(pal&&hp>.45)go='save';}   /* a friend in trouble right where the wave is */
+          if(!go&&h.cap&&h.cap.cz_speed&&hp>.4&&dist>=30&&atW>=1&&T('aggr')>.3)go='engage';   /* Speedrun: a blink is a free buff, so he blinks in whenever there's something at the wave */
           if(!go&&hp>.5&&dist>=35&&onMe===0&&atW>=2&&W.hit.size>=1&&T('range')>.6&&this.rng()<.7)go='engage';   /* a Slasher: the wave just carved into a pack and he's not fighting: blink in and get stuck in */
           if(!go&&W.left<14&&dist>=60&&T('pace')>.6&&atW<=2&&hp>.5&&live.filter(e=>(e.x-hx)*W.dir>0).length===0)go='advance';}   /* nothing ahead: free ground, take it */
-        if(go){h.blinkOK=0;const x1=Math.max(6,Math.min(this.W-20,wx));this.fx.push({k:'iaicut',x0:hx,x1,gy:gy-14,t:0,life:.35,raw:1});this.fx.push({k:'puff',x:hx,y:gy-2,t:0,life:.4,s:1.2});h.x+=x1-hx;h.gy=W.gy;
+        if(go){h.blinkOK=0;if(h.cap&&h.cap.cz_speed){tbuff(h,{sp:.5,mv:.3},4);h.iaT=0;this.text(hx,gy-56,'SPEEDRUN','#3af0ff');}const x1=Math.max(6,Math.min(this.W-20,wx));this.fx.push({k:'iaicut',x0:hx,x1,gy:gy-14,t:0,life:.35,raw:1});this.fx.push({k:'puff',x:hx,y:gy-2,t:0,life:.4,s:1.2});h.x+=x1-hx;h.gy=W.gy;
           this.fx.push({k:'ring',x:x1,y:gy-14,t:0,r:10,c:'#3af0ff'});this.ev('whoosh',{});h.abWhy='IAI BLINK: '+go;h.abWhyT=this.t+3;
           if(go!=='escape'&&this.rng()<.5)Comms.bubble(this,h,Comms.pick(go==='save'?['Got you!','Cheez to the rescue!']:go==='bail'?['Respawning over here.','Lag switch!']:['Nothing personnel, kid.','Too slow.','Teleport behind you.']),true);return;}}
       /* Iaijutsu: offense: IF 2+ lined up in his lane within ~420px, or a Screamer / archer / Nemesis on it (Blind Aggression: any 1)
@@ -2426,13 +2435,14 @@ class Game{
          (full effect and full time if they're standing in his Dice-Boys_Banner), and his remaining cooldown is halved and half the energy cost comes back.
          AI: a friend in a fight (2+ zombies on them) or a friend in the banner, the banner first; Team Player (pack) shares sooner. */
       if(SK&&h.sakeOn>0&&!h.sakeShared&&h.sakeOn<SK.dur-1){const cands=al.filter(o=>o!==h&&!o.sakeB&&Math.abs(this.heroX(o)-hx)<50&&o.alive).map(o=>{const fight=live.filter(e=>Math.abs(e.x-this.heroX(o))<20).length;return {o,fight,inB:!!o.bnIn};})
-          .filter(c=>c.inB||c.fight>=(T('pack')>.6?1:2)).sort((a,b)=>(b.inB-a.inB)||(b.fight-a.fight));const c=cands[0];
+          .filter(c=>c.inB||c.fight>=(T('pack')>.6?1:2)||(h.cap&&h.cap.cz_happy&&c.fight>=(T('pack')>.4?0:1))).sort((a,b)=>(b.inB-a.inB)||(b.fight-a.fight));const c=cands[0];
+        if(c&&h.cap&&h.cap.cz_happy){for(const d of cands.slice(1))this.sakeBuff(d.o,d.inB?1:.5,d.inB?SK.dur:SK.share,SK);if(cands.length>1)this.text(hx,gy-62,'HAPPY HOUR! x'+cands.length,'#b8ff7a',true);}   /* 0.12.249 Happy_Hour: the whole crew gets a swig */
         if(c){h.sakeShared=1;const full=c.inB;this.sakeBuff(c.o,full?1:.5,full?SK.dur:SK.share,SK);h.skT=Math.max(0,h.skT*(full?.25:.5));h.en=Math.min(h.enMax||100,(h.en||0)+SK.en*(full?.75:.5));   /* 0.12.238 (Kyle): sharing with a Dice Boy in the banner is really good: their full effect + full time, 75% of his remaining cooldown gone and 3/4 of the energy back */h.sipT=.4;
           this.text(this.heroX(c.o),(c.o.gy||this.G)-50,full?'SAKE! (full, Dice Boys)':'SAKE (half)','#b8ff7a');h.abWhy='SAKE SHARE: '+Comms.name(c.o)+(full?' (in the banner)':'');h.abWhyT=this.t+3;
           Comms.bubble(this,h,Comms.pick(['Here, take a swig.','Kanpai, '+Comms.name(c.o)+'!','Sharing is caring.','Drink up, buttercup.']),true);if(this.rng()<.6)Comms.bubble(this,c.o,Comms.pick(['Kanpai!','Oh that burns. Good burn.','Okay, NOW I can fight.']));return;}}
       /* Dice-Boys_Banner: IF 2+ friends within 300px of him and a fight is on (3+ zombies on screen) */
       if(HO&&h.hoT<=0&&(h.en||0)>=HO.en){const by=al.filter(o=>o!==h&&Math.abs(this.heroX(o)-hx)<HO.r);
-        if(by.length>=2&&live.length>=3&&spendEnergy(h,HO.en)){h.hoT=HO.cd*(1-(h.cdr||0));const B={x:hx-(h.face||1)*6,gy,t:HO.dur,T:HO.dur,r:HO.r,dmg:HO.dmg,crit:HO.crit,regen:HO.regen,own:h,isBanner:1};(this.banners=this.banners||[]).push(B);h.animM=.4;
+        if(by.length>=(h.cap&&h.cap.cz_boss?(T('pack')>.5?1:2):2)&&live.length>=3&&spendEnergy(h,HO.en)){h.hoT=HO.cd*(1-(h.cdr||0));const B={x:hx-(h.face||1)*6,gy,t:HO.dur,T:HO.dur,r:HO.r,dmg:HO.dmg,crit:HO.crit,regen:HO.regen,own:h,isBanner:1};(this.banners=this.banners||[]).push(B);h.animM=.4;
           const inB=al.filter(o=>Math.abs(this.heroX(o)-B.x)<B.r);if(inB.length<3)Comms.bubble(this,h,Comms.pick(['Game night at my place!','Snacks are in the kitchen, zombies are outside.','Host privileges!']),true);
           h.abWhy='HOST: '+inB.length+' at the banner';h.abWhyT=this.t+3;return;}}
     }
@@ -2466,7 +2476,7 @@ class Game{
           if(tg&&spendEnergy(h,SB.en)){h.sbT=SB.cd*(1-(h.cdr||0));faceToward(h,tg.x,1);h.bash={t:0,T:.4};h.animM=.36;h.swingAnim='attack2';this.hitEnemy(tg,this.rollDice(SB.dice)*(h.atk/h.base.atk),h,{sure:1,kb:15});
             if(!tg.dead){tg.stun=Math.max(tg.stun||0,tg.boss?.5:SB.stun);if(tg.scrT>0)tg.scrT=0;this.text(tg.x,lane(tg)-26,why==='interrupt'?'INTERRUPTED':'STUN','#ffe07a');}this.ev('hit',{});h.abWhy='BASH: '+why;h.abWhyT=this.t+3;return;}}}
       if(SW&&h.swT<=0&&(h.en||0)>=SW.en){const save=al.some(o=>o.hp/o.max<allyHp&&Math.abs(this.heroX(o)-hx)<40&&live.filter(e=>Math.abs(e.x-this.heroX(o))<18).length>=2);
-        if((onMe>=3||save)&&spendEnergy(h,SW.en)){h.abWhy='SHIELD WALL: '+(save?'protecting an ally':'swarmed');h.abWhyT=this.t+3;h.swT=SW.cd*(1-(h.cdr||0));h.wallT=SW.dur;h.wallDR=SW.dr;h.kbRes0=h.kbRes;h.kbRes=1;this.fx.push({k:'ring',x:hx,y:gy-12,t:0,r:SW.r,c:'#ff8080'});this.ev('shout',{});Comms.bubble(this,h,Comms.pick(['To me!','Hold the line!','Behind my shield!','Come on, then!']),true);
+        if((onMe>=(h.cap&&h.cap.kn_bastion?(T('aggr')>.6?1:2):3)||save)&&spendEnergy(h,SW.en)){   /* 0.12.249 Crimson_Bastion: the wall hits back, so he plants it sooner (sooner still with Blind Aggression) */h.abWhy='SHIELD WALL: '+(save?'protecting an ally':'swarmed');h.abWhyT=this.t+3;h.swT=SW.cd*(1-(h.cdr||0));h.wallT=SW.dur;h.wallDR=SW.dr;h.kbRes0=h.kbRes;h.kbRes=1;this.fx.push({k:'ring',x:hx,y:gy-12,t:0,r:SW.r,c:'#ff8080'});this.ev('shout',{});Comms.bubble(this,h,Comms.pick(['To me!','Hold the line!','Behind my shield!','Come on, then!']),true);
           for(const e of live)if(!e.boss&&Math.abs(e.x-hx)<SW.r){e.tauntT=SW.dur;e.tauntBy=h;e.target=h;}return;}}
       // Leap_Strike
       if(LS&&h.lsT<=0&&(h.en||0)>=LS.en&&!shaky){let tg=null;for(const o of al){if(o.hp/o.max>=leapHp)continue;const ox=this.heroX(o);const m=live.filter(e=>Math.abs(e.x-ox)<16).sort((a,b)=>Math.abs(a.x-ox)-Math.abs(b.x-ox))[0];if(m&&Math.abs(m.x-hx)>=LS.min&&Math.abs(m.x-hx)<=LS.max){tg=m;break;}}
@@ -2474,7 +2484,7 @@ class Game{
         let pack=0;if(!tg){for(const e of live){if(e.fly)continue;const d=Math.abs(e.x-hx);if(d<LS.min||d>LS.max)continue;const n=live.filter(o=>!o.fly&&Math.abs(o.x-e.x)<16&&Math.abs(lane(o)-lane(e))<10).length;if(n>=3&&n>pack){pack=n;tg=e;}}}   /* 0.12.202 (Kyle): he also leaps into a pack of 3+ */
         if(tg&&spendEnergy(h,LS.en)){h.abWhy='LEAP: '+(pack?'into a pack of '+pack:tg.nem||tg.boss?'big threat':'ally in trouble');h.abWhyT=this.t+3;h.lsT=LS.cd*(1-(h.cdr||0));const dir=tg.x>=hx?1:-1;h.face=dir;h.kleap={t:0,x0:h.x,x1:h.x+(tg.x-dir*12-hx),tg,dir};Comms.bubble(this,h,Comms.pick(['Get off them!','For the oath!','Hyaa!']),true);return;}}
       // Crimson_Charge
-      if(CC&&h.ccT<=0&&(h.en||0)>=CC.en&&onMe<2&&!shaky){const cNeed=T('aggr')>.65?2:3;let best=null,bn=0;for(const e of live){const d=e.x-hx;if(Math.abs(d)<CC.min||Math.abs(d)>CC.max)continue;const n=live.filter(o=>Math.abs(lane(o)-lane(e))<6&&Math.sign(o.x-hx)===Math.sign(d)&&Math.abs(o.x-hx)<=CC.max+20).length;if(n>bn){bn=n;best=e;}}
+      if(CC&&h.ccT<=0&&(h.en||0)>=CC.en&&onMe<2&&!shaky){const cNeed=(T('aggr')>.65?2:3)-(h.cap&&h.cap.kn_jugg?1:0);   /* Unstoppable: kills reset it, so he charges smaller lines */let best=null,bn=0;for(const e of live){const d=e.x-hx;if(Math.abs(d)<CC.min||Math.abs(d)>CC.max)continue;const n=live.filter(o=>Math.abs(lane(o)-lane(e))<6&&Math.sign(o.x-hx)===Math.sign(d)&&Math.abs(o.x-hx)<=CC.max+20).length;if(n>bn){bn=n;best=e;}}
         if(best&&bn>=cNeed&&spendEnergy(h,CC.en)){h.abWhy='CHARGE: '+bn+' in a lane';h.abWhyT=this.t+3;h.ccT=CC.cd*(1-(h.cdr||0));const dir=best.x>=hx?1:-1;h.face=dir;h.gy=lane(best);h.charge={dir,gone:0,dist:CC.dist,gy:lane(best),hit:new Set()};this.ev('whoosh',{});Comms.bubble(this,h,Comms.pick(['CHARGE!','Out of my way!','Crimson!']),true);return;}}}
     // ---- 0.12.178 Chibi_Archer: Piercing_Shot and Tumble (both lock her into an animation)
     if(h.key==='carcher'){const AB=id=>(C.abilities||[]).find(a=>a.id===id);const PS=AB('pierce'),TB=AB('tumble');for(const k of ['psT','tbT'])if(h[k]>0)h[k]-=dt;if(h.psT==null){h.psT=PS.cd*.3;h.tbT=0;}
@@ -2560,9 +2570,12 @@ class Game{
            all three Dice Boys are in the banner, or a friend was just helped up */
         const down=this.heroes.some(o=>!o.pet&&!o.alive&&o.downed),big=this.enemies.some(e=>!e.dead&&(e.boss||e.nem)&&Math.abs(e.x-hx)<200),onMe=live.filter(e=>Math.abs(e.x-hx)<20).length,
           self=h.hp/h.max<.4&&onMe>=2,chz=h.chutzT>0&&onMe>=3,dice=!!(h.bnIn&&h.bnIn.all),up=al.some(o=>o!==h&&o.upT>0);
-        const go=T('energy')>.65?(dire&&hurt>=2)||onTeam>=6||down||big||dice:(hurt>=2||dire||onTeam>=4||down||big||self||chz||dice||up);
+        h.pfWhy=null;
+        if(h.cap&&h.cap.ed_nakama&&al.filter(o=>o!==h&&o.hp/o.max<.8).length>=2&&onTeam>=2)h.pfWhy='Nakama: the team needs it';
+        const go=(h.cap&&h.cap.ed_nakama&&h.pfWhy==='Nakama: the team needs it')||T('energy')>.65?(dire&&hurt>=2)||onTeam>=6||down||big||dice:(hurt>=2||dire||onTeam>=4||down||big||self||chz||dice||up);
         if(go)h.pfWhy=down?'a friend is down':big?'big one here':dice?'DICE BOYS':self?'backs to the wall':chz?'Chutzpah crowd':up?'friend back up':dire?'friend in trouble':hurt>=2?'friends hurt':'mobbed';
-        if(go&&spendEnergy(h,PF.en)){h.pfT=PF.cd*(1-(h.cdr||0));h.pfOn=PF.dur;h.atk*=1+PF.dmg;h.aspd*=1+PF.spd;for(const o of al)if(o!==h&&Math.abs(this.heroX(o)-hx)<PF.r){o.pfAlly=PF.ally;o.atk*=1+PF.ally;}
+        if(go&&spendEnergy(h,PF.en)){h.pfT=PF.cd*(1-(h.cdr||0));h.pfOn=PF.dur;h.atk*=1+PF.dmg;h.aspd*=1+PF.spd;for(const o of al)if(o!==h&&Math.abs(this.heroX(o)-hx)<PF.r){o.pfAlly=PF.ally;o.atk*=1+PF.ally;if(h.cap&&h.cap.ed_nakama)tbuff(o,{sp:.3},PF.dur);}
+          if(h.cap&&h.cap.ed_nakama)for(const o of this.alive())if(!o.pet)this.healHero(o,o.max*.15,false,h);   /* 0.12.249 Nakama_Unleashed */
           this.fx.push({k:'ring',x:hx,y:gy-14,t:0,r:22,c:'#f0b429'},{k:'ring',x:hx,y:gy-14,t:0,r:34,c:'#fff3a0'});this.shake=Math.max(this.shake||0,.2);this.text(hx,gy-58,'POWER OF FRIENDSHIP!','#f0b429',true);
           Comms.bubble(this,h,Comms.pick(['This is the power of FRIENDSHIP!','You guys are my nakama!','I\'m not holding back anymore!','Believe in the me that believes in you!','Plot armor: ACTIVATED.','This isn\'t even my final form!']),true);h.abWhy='FRIENDSHIP: '+(h.pfWhy||'swarmed');h.abWhyT=this.t+3;return;}}
       /* Chutzpah: IF 3+ zombies are on his friends (not him), or a friend under 40% has one on them, AND he's above 45% (Selfish: above 70%)
@@ -3871,6 +3884,8 @@ const SAVE_EPOCH=2;   // 0.12.1: runs reset when the roster was cut to two heroe
 function migrateSlot(slot,player){
   for(const h of DATA.heroes)if(!slot.heroes[h.key])slot.heroes[h.key]={lvl:1,xp:0};
   for(const k of Object.keys(slot.heroes))if(!heroDef(k))delete slot.heroes[k];
+  /* 0.12.249 (Kyle): heroes with their own capstones get any old shared capstone picks refunded, to pick again from their new pair */
+  for(const [k,H] of Object.entries(slot.heroes))if(HCAP[k]&&H.tal&&H.tal.some(id=>{const [t,L,b]=id.split(':');return t==='cap'&&!(HCAP[k][L]&&HCAP[k][L][b]);})){H.tal=H.tal.filter(id=>{const [t,L,b]=id.split(':');return t!=='cap'||(HCAP[k][L]&&HCAP[k][L][b]);});H.offer=null;}
   slot.best=slot.best||{score:0,stage:0,prestige:0};slot.gold=slot.gold||0;
   slot.partySize=3;   /* 0.12.33: 3-hero parties again */
   const run=slot.run;if(!run)return slot;
@@ -3951,21 +3966,21 @@ const TRIAGE={med:[15,13,11],bat:[12,10,8],defib:[25,22,19],max:[1,1,2]};
      - level 5 and level 10: a CAPSTONE fork, pick 1 of 2 big talents
    Offers are rolled once per point and kept, so closing camp doesn't reroll them. */
 const TAL_STAT={
-  tough:{name:'Toughness',icon:'❤️',txt:'+5% max HP',hpPct:5},
-  power:{name:'Power',icon:'⚔️',txt:'+4% damage',dmgPct:4},
-  aim:{name:'Aim',icon:'🎯',txt:'+3 accuracy',mod:{acc:3}},
-  edge:{name:'Edge',icon:'✴️',txt:'+2% crit chance',mod:{crit:2}},
-  fortune:{name:'Fortune',icon:'🍀',txt:'+4 Luck',mod:{luck:4}},
-  hide:{name:'Hide',icon:'🛡️',txt:'+1 armor point',mod:{armor:1}},
-  quick:{name:'Quick Hands',icon:'⚡',txt:'+5% attack speed (melee and ranged)',mod:{meleeSpd:5,rangedSpd:5}},
-  fleet:{name:'Fleet',icon:'👟',txt:'+4% move speed',mod:{move:4}},
-  well:{name:'Deep Well',icon:'🔷',txt:'+10 max energy',mod:{enMax:10},abil:1},
-  focus:{name:'Focus',icon:'🌀',txt:'+0.35 energy per second',mod:{enRegen:.35},abil:1},
-  haste:{name:'Haste',icon:'⏱️',txt:'-3% cooldowns',mod:{cdr:3},abil:1},
-  brawn:{name:'Brawn',icon:'💪',txt:'+10 knockback, +5% knockback resistance',mod:{kb:10,kbRes:5},melee:1},
-  evade:{name:'Evasion',icon:'💨',txt:'+1.5% dodge',mod:{dodge:1.5}},
-  medic:{name:'Field Medic',icon:'🩹',txt:'+8% healing done',heal:8,healer:1},
-  rescue:{name:'Rescuer',icon:'🤝',txt:'helps allies up 12% faster',rev:12}};
+  tough:{name:'Toughness',icon:'❤️',txt:'+8% max HP',hpPct:8},
+  power:{name:'Power',icon:'⚔️',txt:'+6% damage',dmgPct:6},
+  aim:{name:'Deadeye',icon:'🎯',txt:'+5 accuracy',mod:{acc:5}},
+  edge:{name:'Killer Edge',icon:'✴️',txt:'+3% crit chance',mod:{crit:3}},
+  fortune:{name:'Fortune',icon:'🍀',txt:'+6 Luck',mod:{luck:6}},
+  hide:{name:'Thick Hide',icon:'🛡️',txt:'+2 armor',mod:{armor:2}},
+  quick:{name:'Quick Hands',icon:'⚡',txt:'+8% attack speed (melee and ranged)',mod:{meleeSpd:8,rangedSpd:8}},
+  fleet:{name:'Fleet',icon:'👟',txt:'+6% move speed',mod:{move:6}},
+  well:{name:'Deep Well',icon:'🔷',txt:'+15 max energy',mod:{enMax:15},abil:1},
+  focus:{name:'Focus',icon:'🌀',txt:'+0.5 energy per second',mod:{enRegen:.5},abil:1},
+  haste:{name:'Haste',icon:'⏱️',txt:'-5% cooldowns',mod:{cdr:5},abil:1},
+  brawn:{name:'Brawn',icon:'💪',txt:'+15 knockback, +10% knockback resistance',mod:{kb:15,kbRes:10},melee:1},
+  evade:{name:'Evasion',icon:'💨',txt:'+2.5% dodge',mod:{dodge:2.5}},
+  medic:{name:'Field Medic',icon:'🩹',txt:'+12% healing done',heal:12,healer:1},
+  rescue:{name:'Rescuer',icon:'🤝',txt:'helps allies up 20% faster',rev:20}};
 const TAL_PERSONA={
   steady:{name:'Nerves of Steel',icon:'🧊',txt:'+2 Steady (panics less)',shift:{nerve:-2}},
   fury:{name:'Bloodlust',icon:'🔥',txt:'+2 Blind Aggression (fights harder, backs off later)',shift:{aggr:2}},
@@ -4024,6 +4039,59 @@ const TAL_MOD={
   robot:{swarm:{name:'Swarm Protocol',icon:'🚀',txt:'Missile_Barrage fires 5 missiles (was 3).',ab:'missiles',set:{n:5}},
       smoke:{name:'Thick Smoke',icon:'🌫️',txt:'Smoke_Screen lasts 9s (was 6s) and zombies inside miss 65% of the time (was 50%).',ab:'smoke',set:{dur:9,miss:.65}},
       nanite:{name:'Nanite Overdrive',icon:'🔧',txt:'Nano-Tech_Repair_Bots fix 10% a second (was 7%).',ab:'nano',set:{per:.1}}}};
+
+/* ======================================================================= 0.12.249 (Kyle) HERO CAPSTONES
+   Level 5 and level 10 each offer a pick between TWO capstones made for that hero only. Each one is far stronger than a normal level-up: it
+   reworks how an ability behaves, patches its numbers, and adds stat boosts. (Heroes not reworked yet still roll the old shared four.)
+   patch: [{ab, set, path}] patches an ability ('_melee'/'_ranged' = the basic attacks; path = a sub-object such as 'flame' or 'carpet')
+   stat: {hpPct, dmgPct, mod:{...}} same keys as the stat talents. The behavior lives in CAPFX (hit / kill / hurt / tick / down / cast hooks). */
+const HCAP={
+ cheez:{5:{
+   cz_ronin:{name:'Nat_20_Ronin',icon:'🎲',txt:'Iaijutsu: 3d8, flies 540px, 6s cooldown. Every Beam_Katana CRIT also fires a free mini-wave down his lane (1d8+2, no blink). +8% crit.',patch:[{ab:'iai',set:{dice:[3,8],range:180,cd:6}}],stat:{mod:{crit:8}}},
+   cz_happy:{name:'Happy_Hour',icon:'🍻',txt:'Sake_Break is shared with EVERY friend within 150px (banner rules apply to each). While he\'s in Drunken_Style he heals 10% of the damage he deals. +15% max HP.',stat:{hpPct:15}}},
+  10:{
+   cz_boss:{name:'Final_Boss_of_Game_Night',icon:'👑',txt:'Dice-Boys_Banner lasts 16s on an 18s cooldown, all-in crit is +15%, and the banner pulses neon every 2s: 1d6+2 to every zombie within 300px of it.',patch:[{ab:'host',set:{dur:16,cd:18,crit:.15}}]},
+   cz_speed:{name:'Speedrun_Any%',icon:'🏆',txt:'Perfect_Attendance saves him TWICE a stage. Every save and every Iaijutsu blink starts a 4s SPEEDRUN: +50% attack speed, +30% move speed, and Iaijutsu\'s cooldown resets. +10% damage.',stat:{dmgPct:10}}}},
+ edward:{5:{
+   ed_frame:{name:'Framing_Crew',icon:'🔨',txt:'Nail_Gun holds 30 nails, +10% ranged damage, and every 5th nail is a FRAMING NAIL: triple damage and it pins the zombie in place for 1s.',patch:[{ab:'_ranged',set:{clip:30}}],stat:{mod:{rangedDmg:10}}},
+   ed_jobs:{name:'Works_Two_Jobs',icon:'💼',txt:'+30% energy regen. Every ability gives back 30% of its energy when a friend is within 300px. Toolbox_Toss: 3d8 on a 9s cooldown.',patch:[{ab:'toolbox',set:{dice:[3,8],cd:9}}],stat:{mod:{enRegen:1.65}}}},
+  10:{
+   ed_nakama:{name:'Nakama_Unleashed',icon:'🌟',txt:'Power_of_Friendship lasts 10s, friends within 300px get the FULL +30% damage AND +30% attack speed, and it heals the whole team 15% when it starts. +15% max HP.',patch:[{ab:'friend',set:{dur:10,ally:.3}}],stat:{hpPct:15}},
+   ed_bond:{name:'Unbreakable_Bond',icon:'🤝',txt:'Loyal_to_a_Fault starts at 60% and takes 60% of the hits. Every hit he soaks heals that friend 4% of their max HP, and soaked hits land 25% softer on him. +3 armor.',patch:[{ab:'loyal',set:{under:.6,share:.6}}],stat:{mod:{armor:3}}}}},
+ knight:{5:{
+   kn_bastion:{name:'Crimson_Bastion',icon:'🏰',txt:'Shield_Wall lasts 6s and blocks 75%, and everything it blocks is thrown back at the attacker as crimson fire. +4 armor.',patch:[{ab:'wall',set:{dur:6,dr:.75}}],stat:{mod:{armor:4}}},
+   kn_blood:{name:'Blood_Knight',icon:'🩸',txt:'Every hit heals him 2% of his max HP. Blood_Oath: +35% damage under half HP (was 15%) and 0.40 HP/s per zombie near him (was 0.20). +10% max HP.',patch:[{ab:'oath',set:{dmg:.35,regen:.4}}],stat:{hpPct:10}}},
+  10:{
+   kn_avatar:{name:'Avatar_of_the_Oath',icon:'👼',txt:'Once a stage, when he would go down he rises in crimson fire at 60% HP, untouchable for 3s, and every zombie within 150px takes 3d6 and is blown away.'},
+   kn_jugg:{name:'Unstoppable',icon:'🐎',txt:'Crimson_Charge: 3d6 on a 6s cooldown. Any kill resets Crimson_Charge and Shield_Bash (once every 2s). He can\'t be knocked back. +20% damage.',patch:[{ab:'charge',set:{dice:[3,6],cd:6}}],stat:{dmgPct:20,mod:{kbRes:100}}}}},
+ robot:{5:{
+   rb_inferno:{name:'Inferno_Protocol',icon:'🔥',txt:'Flamethrower: 50% longer cone, 5 on contact, burns 3d4 over 3s. Anything burning takes 20% more from all his damage. +15% max HP.',patch:[{ab:'_melee',path:'flame',set:{len:84,hit:5,burnDice:[3,4]}}],stat:{hpPct:15}},
+   rb_swarm:{name:'Hunter-Killer_Swarm',icon:'🚀',txt:'Missile_Barrage: 6 missiles on a 9s cooldown. Carpet_Bomb drops 15. +10% ranged damage.',patch:[{ab:'missiles',set:{n:6,cd:9}},{ab:'directive',path:'carpet',set:{shots:15}}],stat:{mod:{rangedDmg:10}}}},
+  10:{
+   rb_titan:{name:'Titan_Frame',icon:'🛡️',txt:'+40% max HP, +6 armor, immune to stuns and slows. Nano-Tech_Repair_Bots heal 10% a second and he keeps moving and shooting while they work.',patch:[{ab:'nano',set:{per:.1}}],stat:{hpPct:40,mod:{armor:6}}},
+   rb_omega:{name:'Omega_Directive',icon:'⚡',txt:'Primary_Directive: 15s cooldown for both choices, twice the missiles in the air, and his landing smash hits 4d6 in 210px and stuns for 1.5s.',patch:[{ab:'directive',path:'retreat',set:{icd:15,shots:6}},{ab:'directive',path:'carpet',set:{cd:15,shots:18}}]}}},
+};
+/* temporary buffs anyone can carry (capstones hand them out): +attack speed, +move, +damage for a while */
+function tbuff(o,B,dur){const b={T:dur,sp:B.sp||0,mv:B.mv||0,dm:B.dm||0};(o.tb=o.tb||[]).push(b);o.meleeSpd*=1+b.sp;o.rangedSpd=(o.rangedSpd||1)*(1+b.sp);o.mvMul=(o.mvMul||1)+b.mv;o.atk*=1+b.dm;}
+function tbuffStep(o,dt){if(!o.tb||!o.tb.length)return;for(const b of o.tb){b.T-=dt;if(b.T<=0||!o.alive){o.meleeSpd/=1+b.sp;o.rangedSpd/=1+b.sp;o.mvMul-=b.mv;o.atk/=1+b.dm;b.dead=1;}}o.tb=o.tb.filter(b=>!b.dead);}
+const CAPFX={
+  cz_ronin:{hit(g,h,e,amt,crit,opt){if(crit&&!opt.wave&&!opt.blast)(g.waves=g.waves||[]).push({x:g.heroX(h)+(h.face||1)*8,x0:g.heroX(h),gy:h.gy||g.G,dir:h.face||1,spd:200,left:90,src:h,hit:new Set([e]),first:0,mini:1,dice:[1,8],flat:2,t:0});return amt;}},
+  cz_happy:{hit(g,h,e,amt){if(h.sakeB&&h.alive){h.hp=Math.min(h.max,h.hp+amt*.1);}return amt;}},
+  cz_speed:{},cz_boss:{},
+  ed_frame:{hit(g,h,e,amt,crit,opt){if(opt.blast||opt.fire)return amt;h.nailN=(h.nailN||0)+1;if(h.nailN%5===0){amt*=3;e.slow=1;e.slowT=Math.max(e.slowT||0,1);g.text(e.x,(e.gy||g.G)-50,'FRAMED!','#f0b429');}return amt;}},
+  ed_jobs:{cast(g,h,en){if(en>0&&g.alive().some(o=>o!==h&&!o.pet&&Math.abs(g.heroX(o)-g.heroX(h))<100))h.en=Math.min(h.enMax||100,(h.en||0)+en*.3);}},
+  ed_nakama:{},ed_bond:{hurt(g,h,amt){return g._loyal?amt*.75:amt;}},
+  kn_bastion:{hurt(g,h,amt,from){if(h.wallT>0&&from&&from.E&&!from.dead)g.hitEnemy(from,amt*3,h,{sure:1,fire:1,quiet:1});return amt;}},
+  kn_blood:{hit(g,h,e,amt,crit,opt){if(!opt.fire&&h.alive)g.healHero(h,h.max*.02,true,h);return amt;}},
+  kn_avatar:{down(g,h){if(h.avUsed)return false;h.avUsed=1;h.hp=h.max*.6;h.invulnT=3;const gy=h.gy||g.G,x=g.heroX(h);g.fx.push({k:'smash',x,gy,r:50,t:0,life:.8,raw:1},{k:'ring',x,y:gy-14,t:0,r:40,c:'#ff3a3a'});g.shake=Math.max(g.shake||0,.45);g.ev('boom',{});
+      for(const e of g.enemies){if(e.dead||e.fly)continue;if(Math.abs(e.x-x)<=50&&Math.abs((e.gy!=null?e.gy:g.G)-gy)<=30)g.hitEnemy(e,g.rollDice([3,6])*(h.atk/h.base.atk),h,{sure:1,kb:4,fire:1});}
+      g.text(x,gy-60,'THE OATH HOLDS!','#ff3a3a',true);Comms.bubble(g,h,Comms.pick(['Not while I draw breath!','My oath is not yet kept!','RISE!']),true);return true;}},
+  kn_jugg:{kill(g,h){if(!(h.jgT>g.t)){h.jgT=g.t+2;h.ccT=0;h.sbT=0;}}},
+  rb_inferno:{hit(g,h,e,amt){return e.fb?amt*1.2:amt;}},
+  rb_swarm:{},rb_omega:{},
+  rb_titan:{tick(g,h){h.stun=0;if(h.slowT>0){h.slowT=0;h.slow=0;}}},
+};
+function capHook(name,g,h,...a){let r=a[1];for(const f of h.capF){const F=CAPFX[f];if(F&&F[name]){const v=F[name](g,h,...a);if(name==='hit'||name==='hurt')a[1]=r=v;else if(name==='down'&&v)return true;}}return name==='down'?false:r;}
 /* capstones: real game changers. Level 5 and level 10 each offer two (rolled from the list, kept once rolled) */
 const TAL_CAP={
   5:{glass:{name:'Glass Cannon',icon:'💥',txt:'+15% damage, but -10% max HP.'},
@@ -4034,26 +4102,28 @@ const TAL_CAP={
       exec:{name:'Executioner',icon:'🪦',txt:'His hits deal +60% damage to anything under 25% health.'},
       over:{name:'Overclock',icon:'⚙️',txt:'-20% cooldowns, and his abilities cost 20% less energy.'},
       jugg:{name:'Juggernaut',icon:'🦏',txt:'+3 armor, +40% knockback resistance, and every hit on him lands 10% softer.'}}};
-function talKind(L){return L===5||L===10?'cap':L%3===0?'mod':'stat';}
+function talKind(L){return L===5||L===10?'cap':'stat';}   /* 0.12.249 (Kyle): 5 and 10 are capstone forks; every other level is a 1-of-3 upgrade with a signature (hero-only) card in the mix */
 function talPicks(H){return (H&&H.tal)||[];}
 function talFree(H){const used=Object.values(H.pts||{}).reduce((a,b)=>a+b,0)+talPicks(H).length;return Math.max(0,(H.lvl||1)-1-used);}
-function talCard(id,k){const [t,a,b]=id.split(':');if(t==='st')return TAL_STAT[a];if(t==='ps')return TAL_PERSONA[a];if(t==='cap')return (TAL_CAP[a]||{})[b];if(t==='mod')return ((TAL_MOD[k]||{})[a]);return null;}
+function talCard(id,k){const [t,a,b]=id.split(':');if(t==='st')return TAL_STAT[a];if(t==='ps')return TAL_PERSONA[a];if(t==='cap')return (HCAP[k]&&HCAP[k][a]&&HCAP[k][a][b])||(TAL_CAP[a]||{})[b];if(t==='mod')return ((TAL_MOD[k]||{})[a]);return null;}
 /* the level a point came from: points are spent in order, so the next free point belongs to level (spent+2) */
 function talNextLevel(H){const used=Object.values(H.pts||{}).reduce((a,b)=>a+b,0)+talPicks(H).length;return used+2;}
 function talRoll(k,H,rng){rng=rng||Math.random;const L=talNextLevel(H),kind=talKind(L),have=new Set(talPicks(H));const C=CHAR[k]||{};const abil=(C.abilities||[]).some(a=>!a.passive);
   const healer=k==='druid',melee=!!(C.melee&&!C.ranged)||k==='lumberjack'||k==='chibi';
-  if(kind==='cap'){const ids=Object.keys(TAL_CAP[L]).sort(()=>rng()-.5).slice(0,2);return {L,kind,ids:ids.map(x=>'cap:'+L+':'+x)};}
-  if(kind==='mod'){const ids=Object.keys(TAL_MOD[k]||{}).filter(x=>!have.has('mod:'+x)).sort(()=>rng()-.5).slice(0,3).map(x=>'mod:'+x);if(ids.length)return {L,kind,ids};}
+  if(kind==='cap'){const own=HCAP[k]&&HCAP[k][L];const ids=own?Object.keys(own):Object.keys(TAL_CAP[L]).sort(()=>rng()-.5).slice(0,2);return {L,kind,ids:ids.map(x=>'cap:'+L+':'+x)};}
+  const sig=Object.keys(TAL_MOD[k]||{}).filter(x=>!have.has('mod:'+x)).sort(()=>rng()-.5);
   const pool=[];for(const [x,S] of Object.entries(TAL_STAT)){if(S.abil&&!abil)continue;let w=1;if(S.healer)w=healer?2.5:.3;if(S.melee)w=melee?1.6:.5;if(x==='edge'&&healer)w=.4;pool.push(['st:'+x,w]);}
   for(const x of Object.keys(TAL_PERSONA))if(!have.has('ps:'+x))pool.push(['ps:'+x,.35]);
-  const ids=[];while(ids.length<3&&pool.length){let tot=pool.reduce((a,p)=>a+p[1],0),r=rng()*tot,i=0;for(;i<pool.length;i++){r-=pool[i][1];if(r<=0)break;}ids.push(pool.splice(Math.min(i,pool.length-1),1)[0][0]);}
+  const ids=sig.length?['mod:'+sig[0]]:[];if(sig.length>1&&rng()<.35)ids.push('mod:'+sig[1]);while(ids.length<3&&pool.length){let tot=pool.reduce((a,p)=>a+p[1],0),r=rng()*tot,i=0;for(;i<pool.length;i++){r-=pool[i][1];if(r<=0)break;}ids.push(pool.splice(Math.min(i,pool.length-1),1)[0][0]);}
   return {L,kind:'stat',ids};}
 function talOffer(k,H){if(talFree(H)<1){H.offer=null;return null;}const L=talNextLevel(H);if(!H.offer||H.offer.L!==L)H.offer=talRoll(k,H);return H.offer;}
 function talTake(k,H,id){const O=talOffer(k,H);if(!O||!O.ids.includes(id))return false;(H.tal=H.tal||[]).push(id);H.offer=null;return true;}
 /* the hero's ability set with his skill mods patched in (a private copy: nobody else's numbers change) */
-function talChar(k,H){const C=CHAR[k];const mods=talPicks(H).filter(x=>x.startsWith('mod:')).map(x=>(TAL_MOD[k]||{})[x.slice(4)]).filter(Boolean);if(!C||!mods.length)return C;
-  const C2=Object.assign({},C,{abilities:(C.abilities||[]).map(a=>JSON.parse(JSON.stringify(a)))});
-  for(const M of mods){const A=C2.abilities.find(a=>a.id===M.ab);if(!A)continue;const T=M.path?A[M.path]:A;if(T)Object.assign(T,JSON.parse(JSON.stringify(M.set)));}
+function talChar(k,H){const C=CHAR[k];const mods=talPicks(H).filter(x=>x.startsWith('mod:')).map(x=>(TAL_MOD[k]||{})[x.slice(4)]).filter(Boolean);
+  for(const id of talPicks(H))if(id.startsWith('cap:')){const [,L,b]=id.split(':');const Cp=HCAP[k]&&HCAP[k][L]&&HCAP[k][L][b];if(Cp&&Cp.patch)mods.push(...Cp.patch);}   /* 0.12.249 hero capstones patch abilities too */
+  if(!C||!mods.length)return C;
+  const C2=Object.assign({},C,{abilities:(C.abilities||[]).map(a=>JSON.parse(JSON.stringify(a)))});if(C.melee)C2.melee=JSON.parse(JSON.stringify(C.melee));if(C.ranged)C2.ranged=JSON.parse(JSON.stringify(C.ranged));
+  for(const M of mods){const A=M.ab==='_melee'?C2.melee:M.ab==='_ranged'?C2.ranged:C2.abilities.find(a=>a.id===M.ab);if(!A)continue;const T=M.path?A[M.path]:A;if(T)Object.assign(T,JSON.parse(JSON.stringify(M.set)));}
   return C2;}
 const LVPTS={hp:{name:'Toughness',icon:'❤️',txt:'+4% max HP'},dmg:{name:'Power',icon:'⚔️',txt:'+3% damage'},acc:{name:'Aim',icon:'🎯',txt:'+2 accuracy'},
   crit:{name:'Edge',icon:'✴️',txt:'+1% crit chance'},luck:{name:'Fortune',icon:'🍀',txt:'+3 Luck'},armor:{name:'Hide',icon:'🛡️',txt:'+1 armor point'}};
@@ -4121,12 +4191,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794545933';const BGI=new Image();BGI.src='crawl_bg.png?v=1794545933';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794545933';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794546148';const BGI=new Image();BGI.src='crawl_bg.png?v=1794546148';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794546148';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794545933';XIMG.wave.src='crawl_wave.png?v=1794545933';XIMG.chibi.src='crawl_chibi.png?v=1794545933';XIMG.flannel.src='crawl_flannel.png?v=1794545933';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794545933';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794545933';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794545933';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794545933';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794545933';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794545933';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794545933';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794545933';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794545933';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794545933';XIMG.rain.src='crawl_rain.png?v=1794545933';XIMG.druid.src='crawl_druid.png?v=1794545933';XIMG.camp.src='crawl_campfire.png?v=1794545933';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794545933';XIMG.tornado.src='crawl_fx_tornado.png?v=1794545933';XIMG.vine.src='crawl_fx_vine.png?v=1794545933';XIMG.thorn.src='crawl_fx_thorn.png?v=1794545933';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794546148';XIMG.wave.src='crawl_wave.png?v=1794546148';XIMG.chibi.src='crawl_chibi.png?v=1794546148';XIMG.flannel.src='crawl_flannel.png?v=1794546148';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794546148';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794546148';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794546148';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794546148';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794546148';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794546148';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794546148';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794546148';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794546148';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794546148';XIMG.rain.src='crawl_rain.png?v=1794546148';XIMG.druid.src='crawl_druid.png?v=1794546148';XIMG.camp.src='crawl_campfire.png?v=1794546148';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794546148';XIMG.tornado.src='crawl_fx_tornado.png?v=1794546148';XIMG.vine.src='crawl_fx_vine.png?v=1794546148';XIMG.thorn.src='crawl_fx_thorn.png?v=1794546148';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794545933';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794545933';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1794545933';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1794545933';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1794545933';XIMG.obst.src='crawl_obst.png?v=1794545933';XIMG.cityob.src='crawl_cityob.png?v=1794545933';XIMG.harvest.src='crawl_harvest.png?v=1794545933';XIMG.wraith.src='crawl_wraith.png?v=1794545933';XIMG.cars.src='crawl_cars.png?v=1794545933';XIMG.robot.src='crawl_robot.png?v=1794545933';XIMG.cultist.src='crawl_cultist.png?v=1794545933';XIMG.tentacle.src='crawl_tentacle.png?v=1794545933';XIMG.boom.src='crawl_boom.png?v=1794545933';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794546148';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794546148';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1794546148';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1794546148';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1794546148';XIMG.obst.src='crawl_obst.png?v=1794546148';XIMG.cityob.src='crawl_cityob.png?v=1794546148';XIMG.harvest.src='crawl_harvest.png?v=1794546148';XIMG.wraith.src='crawl_wraith.png?v=1794546148';XIMG.cars.src='crawl_cars.png?v=1794546148';XIMG.robot.src='crawl_robot.png?v=1794546148';XIMG.cultist.src='crawl_cultist.png?v=1794546148';XIMG.tentacle.src='crawl_tentacle.png?v=1794546148';XIMG.boom.src='crawl_boom.png?v=1794546148';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -5152,7 +5222,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.248</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.249</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -5361,11 +5431,11 @@ function showCamp(){
           :(k==='robot'?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0;opacity:.7">🔋 Runs on its own power: no food or water needed</div>`:'')}
         ${(()=>{const fr=talFree(L),P=L.pts||{};const old=Object.keys(LVPTS).filter(x=>P[x]).map(x=>`${LVPTS[x].icon}${P[x]}`).join(' ');   /* 0.12.106 TALENTS (Kyle's level-up revamp) */
           const got=talPicks(L).map(id=>{const c=talCard(id,k);return c?`<span class="cc-chip" title="${esc(c.txt)}" style="${id.startsWith('cap:')?'border-color:#ffd23f;color:#ffd23f':id.startsWith('mod:')?'border-color:#c792ff;color:#d8b8ff':''}">${c.icon} ${esc(c.name)}</span>`:'';}).join('');
-          const O=fr?talOffer(k,L):null;const kindName={cap:'⭐ CAPSTONE (pick 1 of 2)',mod:'🔮 SKILL MOD (pick 1)',stat:'⬆ Talent (pick 1)'};
+          const O=fr?talOffer(k,L):null;const kindName={cap:'⭐ CAPSTONE (pick 1 of 2)',mod:'🔮 SKILL MOD (pick 1)',stat:'⬆ Upgrade (pick 1 of 3)'};
           const offer=O?`<div style="margin-top:6px"><b style="color:${O.kind==='cap'?'#ffd23f':O.kind==='mod'?'#d8b8ff':'#a6ff2e'}">Level ${O.L} ${kindName[O.kind]}</b>${fr>1?` <span style="opacity:.8">(${fr} points waiting)</span>`:''}
-            <div class="cc-offers" style="margin-top:6px">${O.ids.map(id=>{const c=talCard(id,k);if(!c)return '';const col=O.kind==='cap'?'#ffd23f':O.kind==='mod'?'#c792ff':id.startsWith('ps:')?'#7fd0ff':'#a6ff2e';
-              return `<div class="cc-offer" style="--rc:${col}"><span class="rar">${O.kind==='cap'?'CAPSTONE':O.kind==='mod'?'SKILL MOD':id.startsWith('ps:')?'PERSONALITY':'STAT'}</span><span class="cn">${c.icon} ${esc(c.name)}</span><span class="tx">${esc(c.txt)}</span><button class="cc-btn" data-tal="${k}|${id}">Take it</button></div>`;}).join('')}</div></div>`:'';
-          return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${got?`<div class="cc-chips" style="margin-top:2px">${got}</div>`:fr?'':'Talents: one per level gained (skill mods every 3rd level, capstones at 5 and 10).'}${old?` <span style="opacity:.8">· old stat points: ${old}</span>`:''}${offer}</div>`;})()}
+            <div class="cc-offers" style="margin-top:6px">${O.ids.map(id=>{const c=talCard(id,k);if(!c)return '';const col=O.kind==='cap'?'#ffd23f':O.kind==='mod'||id.startsWith('mod:')?'#c792ff':id.startsWith('ps:')?'#7fd0ff':'#a6ff2e';
+              return `<div class="cc-offer" style="--rc:${col}"><span class="rar">${O.kind==='cap'?'CAPSTONE':O.kind==='mod'||id.startsWith('mod:')?'SIGNATURE':id.startsWith('ps:')?'PERSONALITY':'STAT'}</span><span class="cn">${c.icon} ${esc(c.name)}</span><span class="tx">${esc(c.txt)}</span><button class="cc-btn" data-tal="${k}|${id}">Take it</button></div>`;}).join('')}</div></div>`:'';
+          return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${got?`<div class="cc-chips" style="margin-top:2px">${got}</div>`:fr?'':'Talents: one per level gained: pick 1 of 3 upgrades (with a hero-only SIGNATURE card in the mix), and a hero capstone fork at levels 5 and 10.'}${old?` <span style="opacity:.8">· old stat points: ${old}</span>`:''}${offer}</div>`;})()}
         ${hv.carry&&(hv.carry.courage||hv.carry.medkit||hv.carry.defib||(hv.carry.kit||[]).length)?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0">🎒 Carrying into the stage: ${[hv.carry.courage?'Liquid Courage':'',hv.carry.medkit?'Medkit':'',hv.carry.defib?'Defibrillator':'',...(hv.carry.kit||[]).map(x=>x==='bat'?'Battery':'Medicine')].filter(Boolean).join(', ')}</div>`:''}</div></div>`;}).join('')}
       ${campPanel(s,run,btn)}
       <div class="cc-shopwrap" ${CAMP_SHOP?'':'hidden'}>${(()=>{const gold=s.gold||0;if(run.shopAt!==run.stage)return `<div class="cc-card"><b>🛒 Merchant</b> <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · the merchant sets up shop after each boss you beat.</span></div>`;if(!run.shop||run.shop.stage!==run.stage)stockShop(run);
