@@ -16,4 +16,4 @@ gear system + tap-for-info (338), bats x3, Alphas 5x, JP sword 1d8+4, costly gea
 12. Ominous Trails / doors+windows (near last).
 
 13. NEW (Kyle 17:02): go over ALL game code (crawl_src.js, crawl_ui.js): fix bugs, erase unused/garbage code (e.g. old deck-item system PROCS/ITEM/rollItem/bag/shop, LUCKY_LADDER/luckyDieRoll, old TAL_CAP offer flow, demo-only leftovers, ABILITIES_OFF branches), look for more potential bugs. Test after (tsim, gsim, wsim1, browser load). Publish + notes.
-Difficulty data for Kyle: stage-1 fresh teams win 0/12 with 7s trickle vs 5/12 with no trickle (bats/stray-block not the cause). Trickle is the whole difference.
+Difficulty: Kyle chose trickle 12s -> 5s by stage 10 (0.12.350); stage 1 fresh teams ~3/12.
