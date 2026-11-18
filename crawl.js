@@ -157,7 +157,7 @@ const SIG={
   druid:{name:'Mend · Rejuvenating Bloom · Thorn Wave · Cyclone',cd:4,txt:'Mend (20 energy, 5s): instantly heals the most-hurt ally 10%. Rejuvenating Bloom (40 energy, 14s): heals an ally 4% of max HP every second for 8s. Thorn Wave (35 energy, 14s): a wave of thorns erupts along the ground down her lane; everything it bursts under takes 2d6 and bleeds. Cyclone (40 energy, 18s): a tornado wanders in front of her for 5s, pulling nearby enemies in and grinding down everything inside it.',fn:()=>false},
   archer:{name:'Arrow_Rain · One Nocked, Two in Hand · Blow_Gun',cd:14,txt:'Arrow_Rain (40 energy, 18s cooldown): looses a volley into the air and 16 arrows rain down on the thickest group of enemies (1d6 each, about 70px wide and 2 lanes up and down). Blow_Gun (25 energy, 9s cooldown): puffs a poison dart that always adds 1 poison stack to a living target (75% chance of a 2nd, 50% of a 3rd); each stack deals 3% of max HP every 1.5s for 7.5s, and any new stack resets the timer. Undead are immune. One Nocked, Two in Hand (30 energy, 14s cooldown): he nocks one arrow and holds two more ready, his next 3 arrows fly much faster (a third of the usual wait, quicker draw). Longbow shots (1d10) and a close-range bow strike (1d8).',fn:()=>false},
   chibi:{name:'Wave Dash · War Cry · Poultice',cd:10,txt:'Wave Dash (45 energy, 16s cooldown): rides a blue energy wave up to 400px forward, hitting everything it passes through (2 lanes up and down) for a normal sword hit (2d5 base, buffs and crits apply). War Cry (20 energy, 7s cooldown): every ally within 800px gets +25% damage and attack speed for 7s. Sword combo: Attack 1, Attack 2, and a running slash, plus a kunai throw (1d4) at enemies he can\'t reach yet.',fn:()=>false},
-  eng:{name:'Build · Repair · Modify · Satchel_Charge · Field_Plating',cd:20,txt:'Builds a watchtower and a concrete barrier, fixes them and the Warhound, bolts auto-turrets onto wrecks, and blows things up with a satchel he sets off himself.',fn:()=>false},
+  eng:{name:'Build · Repair · Attach_Turret · Satchel_Charge · Field_Plating',cd:20,txt:'Builds one watchtower floor by floor (Medical, Ammo, Spotter, in whatever order fits) and HESCO cells, keeps them patched, bolts turrets onto the tower and onto wrecks, and blows things up with a satchel he sets off himself.',fn:()=>false},
   jp:{name:'Toke_Break · Protect_the_Familia · No_Scope · Trash_Talk',cd:20,txt:'Smokes up to get HIGH (Wake_n_Bake), rushes in to shield family in trouble (and shield-bashes the closest zombie away), no-scopes zombies in a line with the Kar98 and talks trash to pull zombies onto himself.'},
   flannel:{name:'Aimed Shot · Proximity_Bomb · Traveling_Companion',cd:14,txt:'Call Traveling_Companion (25 energy, 24s cooldown, 0.8s whistle): calls his Traveling_Companion, a timid partner who circles around him, with a third of his stats, her own Brick Throw (never misses, 75% stun) and Bottle_Distraction (34 energy, 16s: she lobs a bottle behind the zombies, preferably behind a crowd; every zombie within 180px turns and walks to the noise for 2.5s). If she is already out, she heals 7% of her max HP instead. Proximity_Bomb (35 energy, 10s cooldown): planted, tossed underhand to roll, or thrown overhand; it blows up the first enemy to come near it, hurting everything around it (area damage, knockback, 50% bleed). Aimed Shot (40 energy, 14s cooldown, 2s cast with a laser sight): a carefully aimed rifle shot that always goes to the middle (head) box, with +5% crit chance and 2.5x crit damage. Pierces through one enemy.',fn:()=>false},   // runs from Game.gunner (CHAR abilities), shown here
   joel:{name:'Brick Toss',cd:7,txt:'The scout lobs a brick for 200% that stuns the target for 0.75s.',fn:(g,h,a)=>g.sigShot(h,'brick',a*2,{stun:.75})},
@@ -666,11 +666,11 @@ const ABIL_DESC={
   reboot:'Turn_It_Off_And_On_Again · 29 energy · 12s. Reboots an ally within 210px: clears bleed, fear and slow, heals 8% and refreshes one of their cooldowns. Used on anyone bleeding, scared or slowed, or under half health with an ability waiting.',
   trial:'Tech_Support · 17 energy · 7s. An instant: every cast cuts the remaining cooldowns of every ally within 300px (not his own) by 15% and gives each of them +5 energy. Cheap and quick, so he keeps doing it all fight.',
   dad:'Dad_Mode · 34 energy · 18s. When an ally within 270px is under 40% with 2+ zombies on them, he plants himself beside them: 40% less damage for 5s, a shield worth 20% of their max HP, and the zombies on them get shoved back.',
-  build:'Build · 29 energy · two buildings, each with its own cooldown. He kneels to build (3s) and his other cooldowns pause. WATCHTOWER (7s): heals allies near it 1% a second; Modify adds tier 2 (+15% ranged attack speed nearby, and a floor a shooter can stand on: +6 accuracy, +30% range, +7.5% damage) and tier 3 (the top lookout: a second shooter climbs up for +12 accuracy, +50% range, +15% damage). Up there they can\'t be hit, but zombies nearby go for the tower legs. HESCO_BARRIER (16s): blocks its lanes; zombies have to break it; allies behind get +8 accuracy. When one of his towers scrolls off behind the team, tower and Modify cooldowns reset.',
-  repair:'Repair · free, no cooldown · slow: patches up his buildings (6 HP a second) and the Warhound (2% a second) while he stays beside them. His other cooldowns pause while he works.',
-  modify:'Modify · 34 energy · 10s (a watchtower tier refunds 70%). Adds the next tier to his watchtower, or bolts an auto-turret onto a wrecked car: 3-round bursts, 1s reload, not very accurate.',
+  build:'Build · 29 energy · a skillbook (1s cooldown); each piece inside has its own 10s cooldown. He kneels to build and can\'t move until it\'s done. ONE watchtower at a time, built up floor by floor in any order: MEDICAL (allies near it heal 1% a second), AMMO (+15% ranged attack speed near it), SPOTTER (+6 accuracy near it). Every floor holds one shooter (in and out by the ladder): +20% / +40% / +60% range by height; ground zombies can\'t reach them, fliers can. The tower takes 4 / 6 / 8 zombie hits. HESCO cell (16s): blocks a lane.',
+  repair:'Repair · free, no cooldown · slow: puts up to 2 hits back on his tower (one every 1.5s), patches other buildings (6 HP a second) and the Warhound (2% a second). His other cooldowns pause while he works.',
+  attach:'Attach_Turret · 43 energy · 3 charges (one back every 12s). 2s to bolt a turret onto his tower (2 per floor, each only covers its own side, gets the floor\'s range bonus; 3 rounds of 1-3, 4s reload) or onto a wrecked car (5 rounds of 3-4 in a spray, 4s reload). All turret damage is his.',
   satchel:'Satchel_Charge · 40 energy · 18s. Tosses a satchel of explosives that never goes off on its own; he sets it off when it\'s worth it. The biggest blast in the game: 6d4 at the centre, falling off outward, and a huge shove.',
-  plating:'Field_Plating (passive) · stay next to an ally for 3s and he straps a plate kit on them: +25% armor and +15% knockback resistance until they take 3 hits.',
+  plating:'Field_Plating (passive) · stay next to an ally for 3s and he straps a plate kit on them: +25% armor and +15% knockback resistance until they take 3 hits. When it\'s calm he walks over to allies who don\'t have one yet (he backs off if it gets hot).',
   syphon:'Syphon_Life · 100 energy · 9s. A swirling black and purple beam from his chest into an enemy up to 330px away for 3s: it drains 3 life a second (more with damage buffs) and heals him for 1.25x what it drains. This is how he pays for everything else.',
   lethal:'Lethal_Strikes · 10% of his life · 20s · 12s. A frenzy: +75% dagger speed, 25% less per hit, Ritual_Blade poison doubled (50% chance, 2 stacks), and he goes all-in up close.',
   tentacle:'Spawn_Tentacle · 8% of his life · 10s. Raises a tentacle anywhere within 400px, right in the middle of the biggest pack. It can\'t move, lashes 1d6+2 out to its reach, heals off what it hits, and withers 5% a second.',
@@ -727,7 +727,7 @@ const BEHAVIOR={
   druid:'Selfless healer. Hangs back near her friends and watches their health more than the enemies: patches up whoever is hurt worst, wraps allies in healing vines, and pokes at range with nature bolts. When enemies bunch up she drops thorns on them or sends a tornado down the lane. Light-footed and quiet. Her nerves are middling, so a boss or a fallen friend can rattle her for a moment. She tucks in behind rocks and logs when the horde gets thick.',
   archer:'Patient longbow marksman. Stays well back in his own lane, moves slowly and plants his feet for clean, accurate shots at the biggest threat. Backs up what his allies are fighting, sticks to his plan and doesn\'t waste energy. If something gets in close he cracks it with his bow. Steady and nearly silent: the best one to send searching a wreck. He shoots from behind cover whenever there\'s some nearby.',
   chibi:'Bold little front-liner. Charges in with his sword and fights up close, alternating a two-hit combo when he plants his feet and a running slash when he\'s on the move. Watches the enemies more than his friends, hops lanes to find a fight and picks his own targets. Stubborn about whoever hit him last, and loves to show off after a kill. Light on his feet and fairly steady. He never takes cover; he\'d rather be in their faces.',
-  eng:'Practical fixer. Hangs a little behind the front, works with his hands: puts up a watchtower behind the team and builds it up, drops a concrete barrier in front of a crowd, bolts turrets onto wrecks and keeps it all patched together. Halving the tower cooldown whenever one of his towers scrolls off behind the team keeps them coming. Bashes anything close with a heavy wrench and lobs grenades into the crowd with his Grenade_Launcher (from the lookout, they come down hard and bounce further). Patient, very techy, a bit quiet; holds his satchel until the moment is right.',
+  eng:'Practical fixer. Builds ONE watchtower well up the road and stacks it to three floors (Medical, Ammo, Spotter in whatever order the fight needs), mans it or lets the shooters climb it, bolts turrets on its corners and on wrecks. Hangs a little behind the front, works with his hands: puts up a watchtower behind the team and builds it up, drops a concrete barrier in front of a crowd, bolts turrets onto wrecks and keeps it all patched together. Halving the tower cooldown whenever one of his towers scrolls off behind the team keeps them coming. Bashes anything close with a heavy wrench and lobs grenades into the crowd with his Grenade_Launcher (from the lookout, they come down hard and bounce further). Patient, very techy, a bit quiet; holds his satchel until the moment is right.',
   jp:'Loud, lovable menace. A good guy who picks on everybody, games all day and smokes even more. Kar98 at range, sword and a homemade wooden shield up close, and the first one in when family is in trouble. Keep him high or he gets grumpy.',
   flannel:'Careful, team-first marksman. Hangs back at mid range with his bolt-action rifle and plants his feet before shooting: one shot, then a 2-second reload. Anything that gets into crowbar reach gets a d12 swing instead. Looks after hurt allies before himself and keeps an eye on where his friends are. Goes for the big targets and holds a grudge: whatever hurts him becomes his next target. Sticks to his plan and his own lane, and never shows off. A seasoned survivor: steady nerves, quiet, and always puts a car or a rock between himself and the horde when he can, leaning out to shoot.',
   joel:'Fast, restless pair. Always on the move: they hop lanes looking for better fights and change plans constantly. They lean into close fights, pile onto whatever their allies are hitting, and pick off the small ones. They burn energy as soon as they have it (lots of Power Attacks), shoot on the run (sloppy), forgive quickly and love to taunt after a kill.',
@@ -919,21 +919,29 @@ CHAR.eng={name:'Engineer',role:'Wrench + Grenade_Launcher',combo:0,flatHp:0,stam
   ranged:{dice:[3,6],flat:0,every:1.15,range:165,clip:1,reload:4,pellets:1,anim:.35,gl:{r:25,splash:1,fuse:.45,maxT:3,kb:22}},   /* 0.12.161 (Kyle): one grenade, then a 4s reload. 3d4 to everything within a 75 screen px blast radius (25 world) */   /* 0.12.105 (Kyle) Grenade_Launcher (was a sawn-off): 3 grenades, ~1.15s apart, 4.5s reload. 2d6 to whatever it hits, 55% to everything within ~42 screen px. Misses land, roll and blow 0.45s after they stop */
   acc:14,walkPenalty:10,crit:.08,critMul:1.8,luck:14,xp:0,run:1.8,turn:.22,enMax:100,enRegen:4.6,
   abilities:[
-    // Build (a WC3-style spellbook: each building has its own cooldown). While he builds or repairs, his other cooldowns pause.
-    //   Watchtower: tier 1 takes 5s; Modify adds tier 2 (5s) and tier 3 (7s). One shared health bar, +15% max HP per tier.
-    //     T1 sign MEDICAL CROSS: allies within ~150 screen px regen 1% max HP a second.  T2 sign AMMO: allies nearby +15% ranged attack speed.
-    //     T3 LOOKOUT: one ranged ally can climb up: +12 accuracy, +30% range, can't be hit until the tower falls. Empty, it gives allies nearby +5 accuracy.
-    //   HESCO_Barrier (0.12.76, was the concrete barrier): ONE wire-mesh, fabric-lined cell filled with dirt; blocks zombies in its lane and the ones next to it
-    //   (they hit it instead); allies standing behind it +8 accuracy.
-    //   Tesla coil (my design): zaps the nearest zombie within ~135 screen px for 1d8 every 1.5s and arcs to one more; lasts 25s.
-    {id:'build',name:'Build',en:29,cd:0,book:1,
-      tower:{cd:7,T:[3,2.5,3.5],hp:60,   /* 0.12.95 (Kyle: tower too lame): 7s cooldown, builds in 3s, tiers 2/3 take half the time (2.5s / 3.5s) */per:.15,r:50,regen:.01,aspd:.15,acc:5,perchAcc:12,perchRange:.5,perchDmg:.15,midAcc:6,midRange:.3,midDmg:.075},   /* 0.12.264 (Kyle): tier 2 floor +30% range */   /* 0.12.236 (Kyle): the tier-2 floor holds a shooter too (smaller bonus: +6 acc, +15% range, +7.5% dmg); the top lookout +12 acc, +30% range, +15% dmg */
-      barrier:{cd:16,T:3,hp:80,depth:9,acc:8,behind:40},
-      tesla:{cd:22,T:3,hp:30,life:25,r:45,every:1.5,dice:[1,4],flat:2}},   // 0.12.79: 1d4+2
-    // Repair: no cooldown, slow: fixes buildings (6 HP/s) and the Warhound (2% a second) while he stays next to them. Pauses his other cooldowns.
-    {id:'repair',name:'Repair',en:0,cd:0,bld:6,mech:.02},
-    // Modify: adds the next watchtower tier, or bolts an auto-turret onto a broken-down car (3-round bursts 0.25s apart, 1s reload, low accuracy).
-    {id:'modify',name:'Modify',en:34,cd:10,towerBack:.7,   /* 0.12.119 (Kyle): 10s cooldown, but a tower tier gives 70% of it back (3s); still takes its build time */turret:{T:4,hp:40,range:120,burst:3,gap:.25,reload:1,hit:.45,dice:[1,4]}},
+    /* 0.12.326 (Kyle) Engineer rework.
+       Build: a WC3-style skillbook. The Build button itself has a 1s cooldown; every piece inside has its own 10s cooldown (HESCO 16s).
+         He can't move while he builds. ONE tower at a time: he builds it up to 3 floors before anything else, and a new tower only goes up
+         once the old one is gone (destroyed or left behind).
+         Tower floors stack in ANY order, one of each kind: MEDICAL (allies near the tower regen 1% max HP a second), AMMO (allies near it
+         +15% ranged attack speed) and SPOTTER (allies near it +6 accuracy). He picks the floor that fits the fight best.
+         Every floor can be manned by one shooter (even a lone first floor). Range bonus by height: 1st floor +20%, 2nd +40%, 3rd +60%.
+         In and out ONLY by the ladder. Ground zombies can't reach whoever is up there; they bash the tower. Fliers ignore the tower and go
+         straight for whoever is up top.
+         The tower doesn't have HP: it takes a number of zombie hits. 1 floor = 4 hits, 2 floors = 6, 3 floors = 8. Repair puts back up to 2 hits.
+       Attach_Turret: 3 charges (each comes back after 12s); costs 25% more energy than a build. 2s to bolt on (he can't move).
+         On a TOWER: up to 2 per floor (left and right corner, 6 max). Weak: 3 rounds 0.25s apart, 1-3 damage each, 4s reload. Each one only
+         covers its own side (from straight down out to level), and gets the range bonus of its floor.
+         On a WRECKED CAR roof: 5 rounds 0.15s apart, 3-4 damage each, -10 accuracy, 4s reload; a spray of small rounds like the nail gun.
+         All turret damage counts as the Engineer's. The tesla coil is gone. */
+    {id:'build',name:'Build',en:29,cd:1,book:1,
+      tower:{cd:10,T:[3,2.5,3.5],hits:[4,6,8],hitAdd:0,r:50,regen:.01,aspd:.15,acc:6,range:[.2,.4,.6],fAcc:[4,8,12],fDmg:[0,.075,.15],dmgAdd:0,kinds:['med','ammo','spot']},
+      barrier:{cd:16,T:3,hp:80,depth:9,acc:8,behind:40}},
+    // Repair: no cooldown, slow: fixes buildings (6 HP/s, or 1 tower hit every 1.5s, up to 2 per repair) and the Warhound (2% a second). Pauses his other cooldowns.
+    {id:'repair',name:'Repair',en:0,cd:0,bld:6,mech:.02,towerHit:1.5,towerMax:2},
+    {id:'attach',name:'Attach_Turret',en:43,cd:12,charges:3,T:2,
+      car:{range:120,burst:5,gap:.15,reload:4,dmg:[3,4],hit:.42,acc:-10},
+      tow:{range:110,burst:3,gap:.25,reload:4,dmg:[1,3],hit:.5}},
     // Satchel_Charge: tosses a satchel that never goes off by itself; he sets it off when it's worth it (3+ zombies on it, or something big).
     //   The biggest blast in the game: 6d4 at the centre, falling off to 30% at ~100 screen px, with a HEAVY shove.
     {id:'satchel',name:'Satchel_Charge',en:40,cd:18,min:30,max:100,r:33,dice:[6,4],kb:95,fly:.8},
@@ -1652,7 +1660,7 @@ class Game{
   hitEnemy(e,amt,src,opt){
     if(src&&src.perch&&src.perch.roofP&&src.perch.st==='fight')amt*=1.15;else if(src&&src.perch&&src.perchDmg&&src.climbT>=1)amt*=1+src.perchDmg;
     if(src&&src.bnIn)amt*=1+src.bnIn.dmg;   /* 0.12.243 standing in the Dice-Boys_Banner */   /* 0.12.236 tower floors: top +15%, tier 2 +7.5% */   /* 0.12.124 (Kyle): shooting down from a storefront roof: +15% damage from the height */
-    if(e.dead||amt<=0)return 0;opt=opt||{};{let o=src,n=0;while(o&&o.owner&&!o.base&&n++<4)o=o.owner;const M=o&&o.base&&HERO_DMG[o.key];if(M)amt*=M;if(o&&o.evDmg)amt*=o.evDmg;}   /* 0.12.103 (Kyle): every hero's damage tuned so a stage-1 hero averages about 300; healers and utility lower */if(opt.fire&&e.E&&e.E.fireImmune){amt*=.25;if(!opt.quiet&&this.rng()<.3)this.text(e.x,e.y-40,'resist','#9ab');}   /* 0.12.236 (Kyle): damage-type immunity now ignores 75% of the damage (debuff immunities stay 100%) */if(src&&src.key){e.lastHitBy=src;e.grudgeT=1+14*trait(e,'grudge');}
+    if(e.dead||amt<=0)return 0;opt=opt||{};{let o=src,n=0;while(o&&o.owner&&!o.base&&n++<4)o=o.owner;const M=!opt.raw&&o&&o.base&&HERO_DMG[o.key];if(M)amt*=M;if(o&&o.evDmg&&!opt.raw)amt*=o.evDmg;}   /* opt.raw (0.12.326 turrets): Kyle's exact numbers, still credited to the owner */   /* 0.12.103 (Kyle): every hero's damage tuned so a stage-1 hero averages about 300; healers and utility lower */if(opt.fire&&e.E&&e.E.fireImmune){amt*=.25;if(!opt.quiet&&this.rng()<.3)this.text(e.x,e.y-40,'resist','#9ab');}   /* 0.12.236 (Kyle): damage-type immunity now ignores 75% of the damage (debuff immunities stay 100%) */if(src&&src.key){e.lastHitBy=src;e.grudgeT=1+14*trait(e,'grudge');}
     if(!opt.sure&&e.E&&e.E.dodge&&this.rng()<e.E.dodge){this.text(e.x,e.y-30,'miss','#9aa');this.failAct(src);return 0;}
     let crit=false;if(src&&!opt.nocrit&&this.rng()<src.crit+(opt.critAdd||0)+.01*(src.inevN||0)+(src.laughT>0?.05:0)){amt*=(opt.critMul||src.critMul||1.75);crit=true;if(src.raT>0&&src.key==='archer')src.raT*=.5;   /* One Nocked passive: any crit halves its remaining cooldown */if(src.inevN){src.luck-=2*src.inevN*(hasPerk(src,'superlucky')?2:1);src.inevN=0;}
       const HR=!opt.fromTent&&src.base&&src.base.char&&(src.base.char.abilities||[]).find(a=>a.id==='herald');if(HR){src.critRegenT=HR.critT;for(const T of this.tentacles||[])T.heraldT=HR.critT;}}   // Herald: his crits (not his tentacles') feed him and every tentacle he has out   // Herald: crits feed energy
@@ -1785,7 +1793,7 @@ class Game{
     if(h.invulnT>0){this.text(h.x,this.G-52,'miss','#9ae6ff');return false;}
     amt=mitigate(h,amt,'physical');if(from&&from.boss&&insP(h)==='mountain')amt*=.9;if(h.rageT>0)amt*=.75;if(h.shellT>0)amt*=.3;if(amt>0&&h.herbT>0)h.herbT=0;   // a hit stops a herb heal
     if(h.gritT>0)amt*=1-(h.gritDR||0);
-    if(h.perch&&h.perch.hp>0)return false;   /* 0.12.75: up on the lookout, nothing can reach them */
+    if(h.perch&&h.perch.hp>0&&(h.perch.k!=='tower'||(h.perchSt!=='walk'&&!(from&&from.fly))))return false;   /* 0.12.75: up on the lookout, ground zombies can't reach them. 0.12.326: fliers can, and someone still walking to the ladder can be hit */
     if(h.kitHits>0){h.kitHits--;if(h.kitHits<=0){h.armorPts-=h.kitAdd||0;h.kbRes-=h.kitKb||0;h.kitAdd=0;h.kitKb=0;this.text(h.x,this.G-60,'plating gone','#b8c0cc');}}   /* Field_Plating */
     if(h.key==='robot'){if(h.jet)amt=Math.min(amt,(h.jet.A&&h.jet.A.cap)||5);if(from&&h.nbT>0&&this.rng()<.1){h.nbT/=2;this.text(h.x,this.G-60,'CD½','#7fe0ff');}}   /* 0.12.67 Tactical_Retreat shield; Nano-Tech's built-in CD halving */
     if(h.key==='jp'){if(h.highT>0)amt*=.8;if(h.trashT>0)amt*=.7;if(h.rush)return false;}   /* JP: high 10% less, Trash_Talk 30% less, immune while rushing to family */   // True_Grit (0.12.63: this was hidden inside the comment above, so Grit never actually reduced damage)
@@ -1917,40 +1925,50 @@ class Game{
       if(Math.abs(this.heroX(o)-x)<=r&&Math.abs((o.gy||this.G)-(gy==null?this.G:gy))<=depth){if(key)o._ffK.add(key);this.hurtHero(o,dmg,null);const S=this.st8(src);S.ff=(S.ff||0)+1;}}}
   /* 0.12.62 Warhound flamethrower: a cone that widens from 5 to 15 (gy) over 70px in front of him; every enemy in it starts (or restarts) burning */
   /* 0.12.75 Engineer: buildings */
-  finishBuild(h,W){const BU=(h.base.char.abilities||[]).find(a=>a.id==='build'),MO=(h.base.char.abilities||[]).find(a=>a.id==='modify');const B=this.blds=this.blds||[];this.ev('thorns',{});
-    if(W.k==='tower'){const A=BU.tower;B.push({bld:1,k:'tower',tier:1,x:W.x,gy:W.gy,hp:A.hp,max:A.hp,A,owner:h,t:0,occ:null});this.text(W.x,W.gy-40,'WATCHTOWER','#ffd23f');}
-    else if(W.k==='tier'){const T=W.tgt;if(T&&T.hp>0&&T.tier<3){T.tier++;const nm=T.A.hp*Math.pow(1+T.A.per,T.tier-1);T.hp+=nm-T.max;T.max=nm;this.text(T.x,T.gy-50,'TIER '+T.tier,'#ffd23f');}}
+  /* 0.12.326 tower helpers */
+  towerHitsMax(b){const A=b.A;return (A.hits[Math.max(0,b.floors.length-1)]||8)+(A.hitAdd||0);}
+  towerFloorH(i){return 50*(i+1);}   /* hero lift (leapH) that puts their feet on floor i: 30 world px per floor */
+  towerLadderX(b){return b.x+14;}
+  finishBuild(h,W){const BU=(h.base.char.abilities||[]).find(a=>a.id==='build'),AT=(h.base.char.abilities||[]).find(a=>a.id==='attach');const B=this.blds=this.blds||[];this.ev('thorns',{});
+    const KN={med:'MEDICAL',ammo:'AMMO',spot:'SPOTTER'};
+    if(W.k==='tower'){const A=BU.tower;const b={bld:1,k:'tower',floors:[W.kind],x:W.x,gy:W.gy,A,owner:h,t:0,occ:[null,null,null],tur:[]};b.max=this.towerHitsMax(b);b.hp=b.max;B.push(b);this.text(W.x,W.gy-40,KN[W.kind]+' TOWER','#ffd23f');}
+    else if(W.k==='floor'){const T=W.tgt;if(T&&T.hp>0&&T.floors.length<3&&!T.floors.includes(W.kind)){T.floors.push(W.kind);const m=this.towerHitsMax(T);T.hp+=m-T.max;T.max=m;this.text(T.x,T.gy-30*T.floors.length-20,'+'+KN[W.kind]+' FLOOR','#ffd23f');}}
     else if(W.k==='barrier'){const A=BU.barrier;B.push({bld:1,k:'barrier',x:W.x,gy:W.gy,hp:A.hp,max:A.hp,A,owner:h,t:0});}
-    else if(W.k==='tesla'){const A=BU.tesla;B.push({bld:1,k:'tesla',x:W.x,gy:W.gy,hp:A.hp,max:A.hp,A,owner:h,t:0,zT:.5});}
-    else if(W.k==='turret'){const A=MO.turret;const car=W.car;if(car){car.turret=1;B.push({bld:1,k:'turret',car,x:car.x,gy:LANES[Math.max(...car.lanes)],hp:A.hp,max:A.hp,A,owner:h,t:0,rl:0,shots:0,sT:0});}}}
+    else if(W.k==='turret'&&AT){if(W.car){const car=W.car;if(this.obst.includes(car)&&!car.turret){car.turret=1;B.push({bld:1,k:'turret',car,x:car.x,gy:LANES[Math.max(...car.lanes)],hp:40,max:40,A:AT.car,owner:h,t:0,rl:0,shots:0,sT:0,face:-1});}}
+      else if(W.tower){const T=W.tower;if(T.hp>0&&W.fl<T.floors.length&&!T.tur.some(q=>q.fl===W.fl&&q.side===W.side)){const q={bld:1,k:'turret',tower:T,fl:W.fl,side:W.side,x:T.x+W.side*12,gy:T.gy,hp:1,max:1,A:AT.tow,owner:h,t:0,rl:0,shots:0,sT:0,face:W.side};T.tur.push(q);B.push(q);}}}}
   bldBlock(e,dt){for(const b of this.blds){if(b.hp<=0)continue;const ey=e.gy!=null?e.gy:this.G;
       if((b.k==='barrier'||b.k==='sandbag')&&Math.abs(ey-b.gy)<=b.A.depth&&e.x>b.x-2&&e.x<b.x+12){e.x=Math.max(e.x,b.x+10);e.bwT=(e.bwT||0)+dt;if(e.bwT>=(e.E&&e.E.atk||1.2)){e.bwT=0;e.anim=1;e.animT=.3;b.hp-=e.dmg;b.hitT=.15;if(b.A.barb){e.hp-=b.A.barb;e.hitFlash=.1;if(e.hp<=0)this.hitEnemy(e,1,null,{sure:1,nocrit:1});}}}
-      else if(b.k==='tower'&&(b.occ||b.occ2)&&!e.E.ranged&&e.x>b.x-6&&e.x<b.x+55&&Math.abs(ey-b.gy)<=24&&!(e.target&&e.target.alive&&!e.target.perch&&Math.abs(this.heroX(e.target)-e.x)<14)){   /* 0.12.236 (Kyle): heroes up the tower make it a juicy target: nearby zombies (2 lanes either way) go for the legs */
-        if(Math.abs(ey-b.gy)>1&&e.gy!=null)e.gy+=Math.sign(b.gy-ey)*Math.min(Math.abs(b.gy-ey),dt*14);if(e.x<b.x+9){e.x=Math.max(e.x,b.x+6);e.bwT=(e.bwT||0)+dt;if(e.bwT>=(e.E&&e.E.atk||1.2)){e.bwT=0;e.anim=1;e.animT=.3;b.hp-=e.dmg*1.25;b.hitT=.15;}}}
-      else if(b.k!=='barrier'&&b.k!=='sandbag'&&b.k!=='turret'&&Math.abs(e.x-b.x)<9&&Math.abs(ey-b.gy)<5){e.bwT=(e.bwT||0)+dt*.5;if(e.bwT>=(e.E&&e.E.atk||1.2)){e.bwT=0;b.hp-=e.dmg;b.hitT=.15;}}}}
+      else if(b.k==='tower'&&!e.fly&&!e.E.ranged){const up=b.occ.some(o=>o&&o.perchSt!=='walk');
+        const near=e.x>b.x-6&&e.x<b.x+(up?55:9)&&Math.abs(ey-b.gy)<=(up?24:5);
+        if(near&&(up?!(e.target&&e.target.alive&&!e.target.perch&&Math.abs(this.heroX(e.target)-e.x)<14):true)){   /* heroes up the tower make it a juicy target: nearby zombies (2 lanes either way) go for the legs */
+          if(up&&Math.abs(ey-b.gy)>1&&e.gy!=null)e.gy+=Math.sign(b.gy-ey)*Math.min(Math.abs(b.gy-ey),dt*14);
+          if(e.x<b.x+9){e.x=Math.max(e.x,b.x+6);e.bwT=(e.bwT||0)+dt*(up?1:.5);if(e.bwT>=(e.E&&e.E.atk||1.2)){e.bwT=0;e.anim=1;e.animT=.3;b.hp-=1;b.hitT=.15;this.text(b.x,b.gy-20,'-1','#ffb070');}}}}   /* 0.12.326 (Kyle): every zombie basic attack is one hit off the tower */
+      else if(b.k!=='barrier'&&b.k!=='sandbag'&&b.k!=='turret'&&b.k!=='tower'&&Math.abs(e.x-b.x)<9&&Math.abs(ey-b.gy)<5){e.bwT=(e.bwT||0)+dt*.5;if(e.bwT>=(e.E&&e.E.atk||1.2)){e.bwT=0;b.hp-=e.dmg;b.hitT=.15;}}}}
   satchelBoom(S){S.boom=1;const A=S.A,h=S.owner;this.fx.push({k:'boom',x:S.x,gy:S.gy,t:0,life:1.3,raw:1,big:1},{k:'crack',x:S.x,gy:S.gy,t:0,life:4,raw:1,r:A.r*.8},{k:'slam',x:S.x,gy:S.gy,t:0,life:.9,raw:1,r:A.r,seed:Math.random()*99});this.ev('boom',{});this.shake=Math.max(this.shake||0,1);
     const mul=h&&h.base?(h.atk/h.base.atk)*(h.rangedDmg||1)*(hasPerk(h,'sapper')?1.25:1):1;
     for(const e of this.enemies){if(e.dead)continue;const dx=Math.abs(e.x-S.x)-(e.boss?e.w*.4:0),dz=e.fly?0:Math.abs((e.gy!=null?e.gy:this.G)-S.gy);const d=Math.hypot(Math.max(0,dx),dz*1.6);if(d>A.r)continue;const f=1-.7*d/A.r;
       this.hitEnemy(e,(this.rollDice(A.dice)+((h&&h.flatRanged)||0))*mul*f,h&&h.alive?h:null,{sure:1});if(!e.dead&&!e.boss){const res=(e.E&&e.E.kbRes)||0;e.kbv=Math.max(e.kbv||0,A.kb/100*40*8*(1-res)*f);e.kbDir=e.x>=S.x?1:-1;e.stun=Math.max(e.stun||0,.5*f);}}
     if(this.hardcore)for(const o of this.alive()){const d=Math.abs(this.heroX(o)-S.x);if(d<A.r&&Math.abs((o.gy||this.G)-S.gy)<14)this.hurtHero(o,this.rollDice(A.dice)*(1-.7*d/A.r)*.8,null);}
     for(const o of this.obst||[])if(/^car_/.test(o.k)&&Math.abs(o.x-S.x)<A.r&&o.alarmed==null&&!this.demo){o.alarmed=this.rng()<.5;if(o.alarmed)this.carAlarm(o);}}
+  turretY(b){if(b.tower)return b.gy-30*(b.fl+1)+3;return b.gy-24;}
   stepEng(dt,scroll){
     if(this.satchels&&this.satchels.length){for(const S of this.satchels){S.t+=dt;S.x0-=scroll*dt;S.x1-=scroll*dt;const u=Math.min(1,S.t/S.T);S.x=S.x0+(S.x1-S.x0)*u;S.hgt=50*Math.sin(Math.PI*u)*(u<1?1:0);if(S.x<-10)S.boom=1;}
       this.satchels=this.satchels.filter(S=>!S.boom);}
     const B=this.blds;if(!B||!B.length){this.engAuras(dt);return;}
-    for(const b of B){b.t+=dt;b.x-=scroll*dt;if(b.hitT>0)b.hitT-=dt;if(b.car)b.x=b.car.x;
-      if(b.k==='tesla'){b.hp-=b.max/b.A.life*dt;b.zT-=dt;if(b.zT<=0&&b.hp>0){const T=this.enemies.filter(e=>!e.dead&&Math.abs(e.x-b.x)<b.A.r).sort((p,q)=>Math.abs(p.x-b.x)-Math.abs(q.x-b.x))[0];
-          if(T){b.zT=b.A.every;const mul=b.owner&&b.owner.base?(b.owner.atk/b.owner.base.atk):1;this.hitEnemy(T,(this.rollDice(b.A.dice)+(b.A.flat||0))*mul,b.owner&&b.owner.alive?b.owner:null,{sure:1});
-            const pts=[[b.x,b.gy-20],[T.x,(T.gy!=null?T.gy:this.G)-12]];const T2=this.enemies.find(e=>!e.dead&&e!==T&&Math.abs(e.x-T.x)<25);
-            if(T2){this.hitEnemy(T2,(this.rollDice(b.A.dice)+(b.A.flat||0))*mul*.6,b.owner&&b.owner.alive?b.owner:null,{sure:1});pts.push([T2.x,(T2.gy!=null?T2.gy:this.G)-12]);}
-            this.fx.push({k:'bolt',pts,t:0,life:.25,raw:1});this.ev('zap',{});}else b.zT=.3;}}
-      if(b.k==='turret'&&b.hp>0){const A=b.A;if(b.rl>0)b.rl-=dt;else{b.sT-=dt;if(b.sT<=0){const T=this.enemies.filter(e=>!e.dead&&e.x>b.x-20&&Math.abs(e.x-b.x)<A.range).sort((p,q)=>Math.abs(p.x-b.x)-Math.abs(q.x-b.x))[0];
-          if(T){b.sT=A.gap;b.shots++;b.face=T.x>=b.x?1:-1;const ty=(T.gy!=null?T.gy:this.G)-12;this.fx.push({k:'tracer',x0:b.x+b.face*4,y0:b.gy-26,x1:T.x+(Math.random()-.5)*6,y1:ty+(Math.random()-.5)*8,t:0,life:.08,raw:1});this.ev('gun',{});
-            if(this.rng()<A.hit)this.hitEnemy(T,this.rollDice(A.dice),b.owner&&b.owner.alive?b.owner:null,{sure:1,nocrit:1});
-            if(b.shots>=A.burst){b.shots=0;b.rl=A.reload;}}else b.sT=.2;}}}}
+    for(const b of B){b.t+=dt;b.x-=scroll*dt;if(b.hitT>0)b.hitT-=dt;if(b.flT>0)b.flT-=dt;if(b.car)b.x=b.car.x;
+      if(b.k==='turret'&&b.tower){const T=b.tower;b.x=T.x+b.side*12;b.gy=T.gy;if(T.hp<=0||T.gone)b.hp=0;}
+      if(b.k==='turret'&&b.hp>0){const A=b.A;if(b.rl>0)b.rl-=dt;else{b.sT-=dt;if(b.sT<=0){
+          /* 0.12.326 tower turrets only cover their own side (straight down out to level) and get their floor's range bonus */
+          const rng=A.range*(b.tower?1+(b.tower.A.range[b.fl]||0):1),my=this.turretY(b);
+          const T=this.enemies.filter(e=>!e.dead&&(b.tower?Math.sign(e.x-b.x)===b.side||Math.abs(e.x-b.x)<3:e.x>b.x-20)&&Math.abs(e.x-b.x)<rng).sort((p,q)=>Math.abs(p.x-b.x)-Math.abs(q.x-b.x))[0];
+          if(T){b.sT=A.gap;b.shots++;b.face=b.tower?b.side:T.x>=b.x?1:-1;const ty=(T.fly?T.y:(T.gy!=null?T.gy:this.G))-10;
+            const hit=this.rng()<A.hit;const tx=T.x+(hit?(Math.random()-.5)*4:(Math.random()-.5)*26),tyy=ty+(hit?(Math.random()-.5)*6:(Math.random()-.5)*20);
+            b.ang=Math.atan2(tyy-my,tx-b.x);if(b.tower){const lo=b.side>0?0:Math.PI/2,hi=b.side>0?Math.PI/2*.97:Math.PI;b.ang=Math.max(lo,Math.min(hi,b.ang<-Math.PI/2?b.ang+2*Math.PI:b.ang));}b.flT=.07;this.fx.push({k:'pellet',x0:b.x+Math.cos(b.ang)*5,y0:my+Math.sin(b.ang)*5,x1:tx,y1:tyy,t:0,life:Math.min(.22,.05+Math.hypot(tx-b.x,tyy-my)/900),raw:1,small:!b.car});this.ev('gun',{nail:1});
+            if(hit){const [lo,hi]=A.dmg;this.hitEnemy(T,lo+Math.floor(this.rng()*(hi-lo+1)),b.owner&&b.owner.alive?b.owner:null,{sure:1,nocrit:1,raw:1,quiet:1});}
+            b.shotN=(b.shotN||0)+1;if(b.shots>=A.burst){b.shots=0;b.rl=A.reload;}}else b.sT=.2;}}}}
     for(const b of B){if(b.hp<=0&&!b.gone){b.gone=1;this.fx.push({k:'poof',x:b.x,y:b.gy-14,t:0,big:true});if(b.car)b.car.turret=0;this.unperchAll(b);}}
     for(const b of B){if(b.k==='tower'&&!b.gone&&b.x<=-14&&b.owner){b.gone=1;this.unperchAll(b);
-        if(b.owner.twT>0||b.owner.moT>0){b.owner.twT=0;b.owner.moT=0;this.text(this.heroX(b.owner),this.G-62,'tower + Modify ready!','#ffd23f');}}}   /* 0.12.95 (Kyle): a tower left behind RESETS the tower and Modify cooldowns */
+        if(b.owner.bcd){for(const k of ['med','ammo','spot'])b.owner.bcd[k]=0;this.text(this.heroX(b.owner),this.G-62,'tower pieces ready!','#ffd23f');}}}   /* 0.12.95 (Kyle): a tower left behind RESETS the tower and Modify cooldowns */
     this.blds=B.filter(b=>!b.gone&&b.x>-30);
     this.engAuras(dt);}
   engAuras(dt){const B=this.blds||[];
@@ -1960,38 +1978,41 @@ class Game{
       this.crates=this.crates.filter(K=>K.t<K.A.dur&&K.x>-10);}
     for(const o of this.alive()){if(o.crateT>0)o.crateT-=dt;if(o.ammoBuffT>0)o.ammoBuffT-=dt;o._bAcc=o._bAcc||0;let acc=0;
       for(const b of B){if(b.hp<=0)continue;const dx=this.heroX(o)-b.x,ad=Math.abs(dx),dz=Math.abs((o.gy||this.G)-b.gy);
-        if(b.k==='tower'&&ad<b.A.r){if(b.tier>=1)this.healHero(o,o.max*b.A.regen*dt,true,b.owner);if(b.tier>=2)o.ammoBuffT=.3;if(b.tier>=3&&!b.occ&&!b.occ2)acc=Math.max(acc,b.A.acc);}
+        if(b.k==='tower'&&ad<b.A.r){const F=b.floors;if(F.includes('med'))this.healHero(o,o.max*b.A.regen*dt,true,b.owner);if(F.includes('ammo'))o.ammoBuffT=.3;if(F.includes('spot'))acc=Math.max(acc,b.A.acc);}
         if((b.k==='barrier'||b.k==='sandbag')&&b.A.acc&&dx<0&&dx>-b.A.behind&&dz<=b.A.depth)acc=Math.max(acc,b.A.acc);}
       if(acc!==o._bAcc){o.acc+=acc-o._bAcc;o._bAcc=acc;}}
-    // lookout: IF the tower is tier 3 and empty THEN the nearest ranged ally (not the Engineer) climbs up
-    /* 0.12.236 (Kyle): two floors. 'occ' = the top lookout (tier 3), 'occ2' = the tier-2 floor. Two shooters can station on one tower together. */
-    for(const b of B){if(b.k!=='tower'||b.tier<2||b.hp<=0)continue;
-      for(const sl of ['occ','occ2'])if(b[sl]&&(!b[sl].alive||b.x<12))this.unperch(b,sl);
-      /* 0.12.174 (Kyle): every 2s someone is up, 20% chance per downed ally that they climb down to help. Nobody climbs up while an ally is down. */
+    /* 0.12.326 (Kyle) manning the tower. Every floor holds one shooter. They WALK to the ladder, CLIMB it, step onto their floor and stand
+       on its planks (their lane becomes the tower's lane, so nobody floats). Leaving is the reverse: back to the ladder, climb down. No teleports.
+       Range bonus only from the floor they stand on: +20% / +40% / +60%. Ground zombies can't reach them (fliers can). */
+    for(const b of B){if(b.k!=='tower'||b.hp<=0)continue;const nF=b.floors.length,lx=this.towerLadderX(b);
+      for(let i=0;i<3;i++){const o=b.occ[i];if(o&&(!o.alive||i>=nF))this.unperch(b,i,true);}
+      if(b.x<44)for(let i=0;i<3;i++){const o=b.occ[i];if(o&&o.perchSt!=='down')this.leaveTower(b,i);}   /* sliding off the left edge: everybody climbs down in time */
       const downs=this.heroes.filter(o=>!o.pet&&!o.alive&&o.downed);
-      /* 0.12.285 (Kyle): the tower keeps shooters safe (zombies have to bash it down), so with zombies close they weigh clearing from up top first.
-         IF 1 ally down AND zombies near THEN ~85% stay up and clear first. IF 2+ down THEN ~50/50. Once the area around the tower is clear, they come down to revive. */
-      for(const sl of ['occ','occ2']){const o=b[sl];if(!o||o.climbT<1)continue;o.dnT=(o.dnT||0)+dt;if(o.dnT>=2){o.dnT=0;
+      for(let i=0;i<nF;i++){const o=b.occ[i];if(!o||o.perchSt!=='on')continue;o.dnT=(o.dnT||0)+dt;if(o.dnT>=2){o.dnT=0;
         if(!downs.length)o.revPlan=null;else if(!o.revPlan||o.revPlan.n!==downs.length)o.revPlan={n:downs.length,stay:this.rng()<(downs.length===1?.85:.5)-.1*trait(o,'courage')};
         const Rr2=(STYLE[o.key]&&STYLE[o.key].range||170)*(1+(o.perchR||0)),thr=this.enemies.filter(e=>!e.dead&&Math.abs(e.x-b.x)<=Math.min(Rr2,140)).length;
         const holdUp=downs.length&&o.revPlan&&o.revPlan.stay&&thr>0&&b.hp>b.max*.25;
         if(holdUp&&!o.revSaid){o.revSaid=1;Comms.bubble(this,o,Comms.pick(['Clearing them off you first!','Hold on, I\'ll cover you from up here!','Can\'t come down yet, too many!']),true);}
-        if(downs.length&&!holdUp&&(thr===0||this.rng()<.6)){o.revSaid=0;o.revPlan=null;const all=this.heroes.filter(x=>!x.pet&&x!==o).every(x=>!x.alive);this.unperch(b,sl);o.climbT=0;
-          Comms.bubble(this,o,Comms.pick(all?['Hold on, I\'m coming down!','Nobody else is standing, I\'m coming!']:['Man down! Coming down!','Hang on, I\'m on my way!','Getting off this thing!']),true);}}}
-      /* who climbs: a ranged hero (not the Warhound) near the tower. The top first (tier 3), then the tier-2 floor; a second shooter thinks about joining
-         the first one (Shooters up to 120px away walk over for it, others only if they're right there, 70px). The Engineer goes last. */
-      const slots=b.tier>=3?['occ','occ2']:['occ2'];
-      for(const sl of slots){if(b[sl]||b.x<=20||downs.length)continue;
-        const cand=this.alive().filter(o=>!o.pet&&!o.perch&&!(o.perchCd>this.t)&&!o.jet&&o.key!=='robot'&&o.base.char&&o.base.char.ranged&&!this.isMeleeHero(o)&&!(o.key==='eng'&&(o.building||o.repairing))&&Math.abs(this.heroX(o)-b.x)<(trait(o,'range')<.45?120:70)+(b.occ||b.occ2?20:0))
+        if(downs.length&&!holdUp&&(thr===0||this.rng()<.6)){o.revSaid=0;o.revPlan=null;this.leaveTower(b,i);Comms.bubble(this,o,Comms.pick(['Man down! Coming down!','Hang on, I\'m on my way!','Getting off this thing!']),true);}}}
+      /* who climbs: a ranged hero near the tower when zombies are coming. Top floor first. Shooters (Shooter/Slasher toward Shooter) walk up to
+         120px over for it, others only if they're close (70px). The Engineer goes last and never while he's building or repairing. */
+      const threat=this.enemies.some(e=>!e.dead&&e.x>b.x-30&&e.x-b.x<260&&e.x<this.W+10);
+      if(threat&&!downs.length&&b.x>60)for(let i=nF-1;i>=0;i--){if(b.occ[i])continue;
+        const cand=this.alive().filter(o=>!o.pet&&!o.perch&&!(o.perchCd>this.t)&&!o.jet&&!o.dog&&o.key!=='robot'&&o.base.char&&o.base.char.ranged&&!this.isMeleeHero(o)&&!(o.key==='eng'&&(o.building||o.repairing))&&!o.search&&!o.downed&&Math.abs(this.heroX(o)-b.x)<(trait(o,'range')<.45?120:70)+(b.occ.some(Boolean)?20:0))
           .sort((p,q)=>(p.key==='eng')-(q.key==='eng')||Math.abs(this.heroX(p)-b.x)-Math.abs(this.heroX(q)-b.x));const o=cand[0];
-        if(o){const top=sl==='occ';b[sl]=o;o.perch=b;o.perchSl=sl;o.climbT=0;o.perchAddAcc=top?b.A.perchAcc:b.A.midAcc;o.acc+=o.perchAddAcc;o.perchR=top?b.A.perchRange:b.A.midRange;o.perchDmg=top?b.A.perchDmg:b.A.midDmg;
-          const mate=b[top?'occ2':'occ'];Comms.bubble(this,o,Comms.pick(mate?['Room for one more!','Scoot over, '+Comms.name(mate)+'.','Two guns up top!']:['Going up!','I have the high ground.','Nice view.']),true);}}
-      /* 0.12.264 (Kyle: he sat up there and never shot): a shooter with nothing in range for 2.5s climbs down and rejoins the march (won't climb back for 6s) */
-      for(const sl of ['occ','occ2']){const o=b[sl];if(!o||o.climbT<1)continue;const st=STYLE[o.key]||{};const Rr=(st.range||170)*(1+(o.perchR||0));
-        if(this.enemies.some(e=>!e.dead&&Math.abs(e.x-this.heroX(o))<=Rr))o.upIdle=0;else if((o.upIdle=(o.upIdle||0)+dt)>2.5){o.upIdle=0;o.perchCd=this.t+6;this.unperch(b,sl);o.climbT=0;}}
-      for(const sl of ['occ','occ2']){const o=b[sl];if(!o)continue;o.pauseT=Math.max(o.pauseT||0,.05);o.moving=false;   /* 0.12.76: they slide up the ladder (about 1s), then step over to the middle */
-        const H=sl==='occ'?150:100,ox=b.x+(sl==='occ2'&&b.occ?-3:0);
-        if(o.climbT<1){if(o.climbT===0)o.x=b.x+14;o.climbT=Math.min(1,o.climbT+dt/(H/150*1.1));o.x+=(b.x+14-o.x)*Math.min(1,dt*12);o.leapH=H*o.climbT;}else{o.x+=(ox-o.x)*Math.min(1,dt*8);o.leapH=H;}}}
+        if(o){b.occ[i]=o;o.perch=b;o.perchFl=i;o.perchSt='walk';o.climbT=0;o.leapH=0;const mate=b.occ.find(q=>q&&q!==o);
+          Comms.bubble(this,o,Comms.pick(mate?['Room for one more!','Scoot over, '+Comms.name(mate)+'.','Stacking up the tower!']:['Going up!','I have the high ground.','Taking the tower!']),true);break;}}
+      /* nothing in range for 2.5s: climb down and rejoin the march (won't climb back for 6s) */
+      for(let i=0;i<nF;i++){const o=b.occ[i];if(!o||o.perchSt!=='on')continue;const st=STYLE[o.key]||{};const Rr=(st.range||170)*(1+(o.perchR||0));
+        if(this.enemies.some(e=>!e.dead&&Math.abs(e.x-this.heroX(o))<=Rr))o.upIdle=0;else if((o.upIdle=(o.upIdle||0)+dt)>2.5){o.upIdle=0;o.perchCd=this.t+6;this.leaveTower(b,i);}}
+      /* movement on the tower */
+      const bl=LANES.reduce((bi,L,k)=>Math.abs(L-b.gy)<Math.abs(LANES[bi]-b.gy)?k:bi,0);
+      for(let i=0;i<3;i++){const o=b.occ[i];if(!o)continue;o.pauseT=Math.max(o.pauseT||0,.05);o.moving=false;o.dodgeX=0;o.wanderX=0;o.kbv=0;o.laneI=bl;o.laneHold=this.t+1;const H=this.towerFloorH(i),spd=(MOVE[o.key]||15)*1.4;
+        if(o.perchSt==='walk'){const dx=lx-o.x,dg=b.gy-(o.gy||this.G);o.x+=Math.sign(dx)*Math.min(Math.abs(dx),spd*dt);o.gy=(o.gy||this.G)+Math.sign(dg)*Math.min(Math.abs(dg),18*dt);o.face=dx>=0?1:-1;o.moving=Math.abs(dx)>.5;o.walkT=(o.walkT||0)+dt;
+          if(Math.abs(dx)<1){o.gy=b.gy;o.perchSt='up';}}
+        else if(o.perchSt==='up'){o.x=lx;o.gy=b.gy;o.leapH=Math.min(H,(o.leapH||0)+dt*60);o.climbT=o.leapH/H;if(o.leapH>=H){o.perchSt='on';o.climbT=1;this.towerBonus(o,b,i,true);}}
+        else if(o.perchSt==='on'){o.gy=b.gy;o.leapH=H;const ox=b.x+(i%2?-2:2);o.x+=(ox-o.x)*Math.min(1,dt*8);}
+        else if(o.perchSt==='down'){o.gy=b.gy;if(Math.abs(o.x-lx)>.6){o.x+=Math.sign(lx-o.x)*Math.min(Math.abs(lx-o.x),spd*dt);}else{o.x=lx;o.leapH=Math.max(0,(o.leapH||0)-dt*70);o.climbT=o.leapH/H;if(o.leapH<=0)this.unperch(b,i);}}}}
     // Field_Plating: IF the Engineer has been next to an ally for 3s AND they have no kit THEN strap one on
     for(const h of this.heroes){if(h.key!=='eng'||!h.alive)continue;const PL=(h.base.char.abilities||[]).find(a=>a.id==='plating');if(!PL)continue;
       for(const o of this.alive()){if(o===h||o.dog||o.kitHits>0)continue;if(Math.abs(this.heroX(o)-this.heroX(h))<PL.r&&Math.abs((o.gy||this.G)-(h.gy||this.G))<8){o.kitT=(o.kitT||0)+dt;if(o.kitT>=PL.T){o.kitT=0;o.kitHits=PL.hits;o.kitAdd=o.armorPts*PL.armor;o.armorPts+=o.kitAdd;o.kitKb=PL.kb;o.kbRes=(o.kbRes||0)+PL.kb;this.text(o.x,this.G-60,'+PLATING','#c8d0dc');this.ev('zap',{});}}else o.kitT=0;}}}
@@ -2005,8 +2026,12 @@ class Game{
   /* 0.12.238 Sake buff (Cheez's own Drunken_Style, or a shared swig): +25% attack speed (melee and ranged), +15% dodge, -10 accuracy, times 'mul' */
   sakeBuff(o,mul,dur,SK){if(o.sakeB)this.sakeEnd(o);const B={T:dur,sp:SK.spd*mul,dg:SK.dodge*mul,vul:(SK.vul||0)*mul};o.sakeB=B;o.meleeSpd*=1+B.sp;o.rangedSpd=(o.rangedSpd||1)*(1+B.sp);o.dodge+=B.dg;}   /* 0.12.242 (Kyle): no accuracy penalty (he has no ranged); the downside is +15% damage taken */
   sakeEnd(o){const B=o.sakeB;if(!B)return;o.meleeSpd/=1+B.sp;o.rangedSpd/=1+B.sp;o.dodge-=B.dg;o.sakeB=null;}
-  unperch(b,sl){const o=b[sl];if(!o)return;o.perch=null;o.leapH=0;o.acc-=o.perchAddAcc||0;o.perchAddAcc=0;o.perchR=0;o.perchDmg=0;o.perchSl=null;b[sl]=null;}
-  unperchAll(b){this.unperch(b,'occ');this.unperch(b,'occ2');}
+  towerBonus(o,b,i,on){if(on){const A=b.A;o.perchAddAcc=A.fAcc[i]||0;o.acc+=o.perchAddAcc;o.perchR=A.range[i]||0;o.perchDmg=(A.fDmg[i]||0)+(A.dmgAdd||0);}
+    else{o.acc-=o.perchAddAcc||0;o.perchAddAcc=0;o.perchR=0;o.perchDmg=0;}}
+  leaveTower(b,i){const o=b.occ[i];if(!o)return;if(o.perchSt==='on')this.towerBonus(o,b,i,false);if(o.perchSt==='walk'){this.unperch(b,i);return;}o.perchSt='down';}
+  unperch(b,i,fall){if(b.k!=='tower'){const o=b[i];if(!o)return;o.perch=null;o.leapH=0;b[i]=null;return;}const o=b.occ[i];if(!o)return;if(o.perchSt==='on')this.towerBonus(o,b,i,false);
+    o.perch=null;o.perchSt=null;o.perchFl=null;o.climbT=0;if(fall&&o.leapH>4&&o.alive){this.text(o.x,(o.gy||this.G)-30,'FALL','#ffb070');}o.leapH=0;b.occ[i]=null;}
+  unperchAll(b){if(b.k!=='tower')return;for(let i=0;i<3;i++)this.unperch(b,i,true);}
   /* 0.12.70 Void_Cultist: pay life for an ability (never below 25%) */
   payLife(h,c){if(h.hp-h.max*c<h.max*.25)return false;h.hp-=h.max*c;this.text(h.x+4,this.G-52,'-'+Math.round(h.max*c),'#c0102a');this.fx.push({k:'ring',x:h.x,y:(h.gy||this.G)-8,r:10,t:0,c:'#c0102a'});unstealth(h);return true;}
   /* 0.12.67 Warhound: one Missile_Barrage-strength missile at T (used by the barrage and by Tactical_Retreat) */
@@ -2199,9 +2224,9 @@ class Game{
         if(m.explode){this.fx.push({k:'ring',x:m.x,y:this.G-16,r:24,t:0,c:'#ff8a1f'});for(const e of this.enemies)if(!e.dead&&Math.abs(e.x-m.x)<30)this.hitEnemy(e,m.atk*2.2,null,{nocrit:1});}}}
     this.minions=this.minions.filter(m=>!m.dead);
     // enemies
-    const alSeen=al.filter(o=>!(o.stealthT>0)&&!(o.perch&&o.perch.hp>0)),alE=alSeen.length?alSeen:al;   /* 0.12.67 stealth: zombies only see who isn't hidden */
+    const upT=o=>o.perch&&o.perch.hp>0&&(o.perch.k!=='tower'||o.perchSt!=='walk');const alSeen=al.filter(o=>!(o.stealthT>0)&&!upT(o)),alE=alSeen.length?alSeen:al,alFly=al.filter(o=>!(o.stealthT>0)&&!(o.perch&&o.perch.hp>0&&o.perch.k!=='tower'));   /* 0.12.67 stealth: zombies only see who isn't hidden */
     for(const e of this.enemies)if(e.fly&&!e.dead&&dt>0){e.vx=e._lx==null?0:(e.x-e._lx)/dt;e.vy=e._ly==null?0:(e.y-e._ly)/dt;e._lx=e.x;e._ly=e.y;}   /* 0.12.206: fliers' speed, for shooters to lead them */
-    for(const e of this.enemies){if(e.dead)continue;const al=alE;if(e.target&&(e.target.stealthT>0||(e.target.perch&&e.target.perch.hp>0))&&alSeen.length&&!(e.tauntT>0)){e.target=null;e.plan=null;}
+    for(const e of this.enemies){if(e.dead)continue;const al=e.fly&&alFly.length?alFly:alE;if(e.target&&(e.target.stealthT>0||(upT(e.target)&&!(e.fly&&e.target.perch.k==='tower')))&&alSeen.length&&!(e.tauntT>0)){e.target=null;e.plan=null;}
       if(!e.boss)regenEnergy(e,dt);e.walkT+=dt;if(e.hitFlash>0)e.hitFlash-=dt;if(e.animT>0)e.animT-=dt;if(e.shred>0)e.shred-=dt;
 
       if(e.fb){const F=e.fb;F.T-=dt;F.tick+=dt;while(F.tick>=.25&&!e.dead){F.tick-=.25;if(F.per!=null){F.acc=(F.acc||0)+F.per*F.mul;if(F.acc>=1){const d=Math.floor(F.acc);F.acc-=d;this.hitEnemy(e,d,F.src&&F.src.alive?F.src:null,{fire:1,quiet:1,sure:1});}}else this.hitEnemy(e,(this.rollDice([1,4])+(F.flat||0))*F.mul,F.src&&F.src.alive?F.src:null,{fire:1,quiet:1,sure:1});   /* 0.12.247: a spread-out burn piles up fractions so 2d4 really is 2d4 */}if(F.T<=0||e.dead)e.fb=null;}   /* 0.12.62 flamethrower burn: 1d4 every 0.25s for 2s */
@@ -2776,10 +2801,11 @@ class Game{
         if(best&&bs>=need&&spendEnergy(h,FG.en)){h.abWhy='FRAG: '+(why.join(', ')||bs+' bunched');h.abWhyT=this.t+3;h.fgT=FG.cd*(1-(h.cdr||0));h.throwT=h.throwT0=.75;faceToward(h,best.x,1);h.pauseT=Math.max(h.pauseT||0,.75);h.moving=false;
           Comms.bubble(this,h,Comms.pick(['Frag out!','Grenade!','Fire in the hole!','Frag, get down!']),true);const sp=best;
           setTimeoutSafe(this,.42,()=>{if(!h.alive)return;const x0=this.heroX(h)+(h.face||1)*4;(this.bomblets=this.bomblets||[]).push({x0,gy0:h.gy||this.G,x1:sp.x,gy1:sp.gy,t:0,H:16+Math.abs(sp.x-x0)*.12,T:FG.fly,fuse:-1,fz:FG.fuse,spin:0,R:FG.r,dmg:this.rollDice(FG.dice)*(h.atk/h.base.atk),stun:FG.stun,owner:h,frag:1});this.ev('whoosh',{});});return;}}}}
-    if(h.key==='eng'){const EB=id=>(C.abilities||[]).find(a=>a.id===id);const BU=EB('build'),RP=EB('repair'),MO=EB('modify'),SC=EB('satchel');
+    if(h.key==='eng'){const EB=id=>(C.abilities||[]).find(a=>a.id===id);const BU=EB('build'),RP=EB('repair'),AT=EB('attach'),SC=EB('satchel'),PL=EB('plating');
       const working=!!(h.building||h.repairing);
-      if(!working){for(const k of ['twT','brT2','tsT','moT','scT'])if(h[k]>0)h[k]-=dt;}
-      if(h.twT==null){h.twT=2;h.brT2=4;h.tsT=6;h.moT=3;h.scT=SC.cd*.3;}
+      if(h.bcd==null){h.bcd={med:1,ammo:1,spot:1,barrier:4};h.bkT=1;h.atN=AT?AT.charges:0;h.atT=0;h.scT=SC.cd*.3;}
+      if(!working){for(const k in h.bcd)if(h.bcd[k]>0)h.bcd[k]-=dt;if(h.bkT>0)h.bkT-=dt;if(h.scT>0)h.scT-=dt;
+        if(AT&&h.atN<AT.charges){h.atT+=dt;if(h.atT>=AT.cd*(1-(h.cdr||0))){h.atT=0;h.atN++;}}}   /* 0.12.326: Build skillbook (2s) + 10s per piece; Attach_Turret charges */
       const hx=this.heroX(h),gy=h.gy||this.G,live=this.enemies.filter(e=>!e.dead&&e.x<this.W+4);const near=r=>live.filter(e=>!e.fly&&Math.abs(e.x-hx)<r).length;
       const B=this.blds=this.blds||[];const tower=B.find(b=>b.k==='tower'&&b.hp>0&&b.owner===h);
       // satchel: IF one of mine is out AND 3+ zombies (or a big one) are on it THEN set it off
@@ -2790,22 +2816,35 @@ class Game{
       if(h.building){const W=h.building;W.t+=dt;{const sc=this.scroll||0;if(W.ax==null)W.ax=h.x;W.ax-=sc*dt;W.x-=sc*dt;h.x=W.ax;h.dodgeX=0;h.wanderX=0;h.kbv=0;h.dodge=null;}   /* 0.12.167 (Kyle): locked to his spot: no walking, shoves, dodges or drift until it's done */   /* 0.12.166 (Kyle): kneeling on the ground, he slides back with the world instead of gliding along it */h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;if(Math.random()<dt*6)this.fx.push({k:'spark',x:W.x+(Math.random()-.5)*10,gy:W.gy,t:0,life:.35,raw:1});
         if(W.t>=W.T){h.building=null;this.finishBuild(h,W);}return;}
       if(h.repairing){const R=h.repairing,T=R.tgt;R.t+=dt;if(T&&T.bld)h.x-=(this.scroll||0)*dt;   /* 0.12.166: stays with the building he's fixing */h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;
-        const done=!T||(T.bld?(T.hp<=0||T.hp>=T.max):(!T.alive||T.hp>=T.max))||Math.abs((T.bld?T.x:this.heroX(T))-hx)>30||onMeE(this,h)>=2||R.t>6;
-        if(done){h.repairing=null;}else{if(T.bld){const b0=T.hp;T.hp=Math.min(T.max,T.hp+RP.bld*dt);this.supXp(h,(T.hp-b0)*.036);}else{this._mech=1;this.healHero(T,T.max*RP.mech*dt,true,h);this._mech=0;}if(Math.random()<dt*8)this.fx.push({k:'spark',x:(T.bld?T.x:this.heroX(T))+(Math.random()-.5)*8,gy:T.gy||this.G,t:0,life:.3,raw:1});return;}}
-      const safe=near(40)===0&&!this.heroes.some(o=>!o.alive&&o.downed),en=h.en||0;   // a friend down comes first: no building until they're up
-      // IF there's a fight AND no tower of mine AND it's quiet right here THEN put a watchtower up a little behind me
-      if(!h.perch&&BU&&!tower&&h.twT<=0&&en>=BU.en&&(safe||near(25)<=1)&&live.length>=1&&spendEnergy(h,BU.en))   /* 0.12.95: builds more eagerly (one zombie close by is OK, any fight counts) */{h.twT=BU.tower.cd*(1-(h.cdr||0));h.building={k:'tower',tier:1,t:0,T:BU.tower.T[0],x:Math.max(20,Math.min(this.W-30,this.W*(.78+.05*this.rng()))),gy};   /* 0.12.285 (Kyle): he walks up and plants his base about 78-83% across the visible screen; the road keeps scrolling while he builds, so by the time it is finished it sits a bit further left */   /* 0.12.76: well up the road so the team doesn't walk past it right away */h.walkTo=h.building.x;Comms.bubble(this,h,Comms.pick(['Putting up a tower.','Give me three seconds.','Cover me, building!']));return;}
-      // IF my tower can go higher AND it's quiet AND Modify is ready THEN add a tier
-      if(!h.perch&&MO&&tower&&tower.tier<3&&h.moT<=0&&en>=MO.en&&(safe||near(25)<=1)&&Math.abs(tower.x-hx)<60&&spendEnergy(h,MO.en)){h.moT=MO.cd*(1-(h.cdr||0))*(1-(MO.towerBack||0));h.building={k:'tier',tgt:tower,t:0,T:BU.tower.T[tower.tier],x:tower.x,gy:tower.gy};return;}
-      // IF a pack of 3+ is coming down one lane 30-120 out THEN drop a concrete barrier in front of them
-      if(BU&&h.brT2<=0&&en>=BU.en){let bl=null,bn=0;for(const l of LANES){const n=live.filter(e=>!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-l)<=BU.barrier.depth&&e.x-hx>30&&e.x-hx<120).length;if(n>bn){bn=n;bl=l;}}
-        if(bl!=null&&bn>=3&&!B.some(b=>b.k==='barrier'&&b.hp>0&&Math.abs(b.gy-bl)<6&&b.x>hx)&&spendEnergy(h,BU.en)){h.brT2=BU.barrier.cd*(1-(h.cdr||0));h.building={k:'barrier',t:0,T:BU.barrier.T,x:Math.min(this.W-20,hx+24),gy:bl};Comms.bubble(this,h,Comms.pick(['HESCO going up!','Wall them off!','Filling a HESCO!']));return;}}
-      // IF 2+ zombies are within ~300 screen px THEN plant a tesla coil a little ahead
-      if(false&&!h.perch&&BU&&h.tsT<=0&&en>=BU.en&&near(100)>=2&&near(20)===0&&spendEnergy(h,BU.en)){h.tsT=BU.tesla.cd*(1-(h.cdr||0));h.building={k:'tesla',t:0,T:BU.tesla.T,x:Math.min(this.W-20,hx+16),gy};return;}
-      // IF a wreck is right here with no turret AND it's quiet THEN bolt a turret onto it
-      if(!h.perch&&MO&&h.moT<=0&&en>=MO.en&&safe){const car=(this.obst||[]).find(o=>/^car_/.test(o.k)&&!o.turret&&Math.abs(o.x-hx)<35&&o.x>20&&o.x<this.W-20);if(car&&spendEnergy(h,MO.en)){h.moT=MO.cd*(1-(h.cdr||0));h.building={k:'turret',car,t:0,T:MO.turret.T,x:car.x,gy:LANES[Math.max(...car.lanes)]};Comms.bubble(this,h,Comms.pick(['Let me mount something on this.','This wreck needs a gun.']));return;}}
-      // Repair: IF a building of mine (or the Warhound) is hurt AND I'm beside it AND it's quiet THEN fix it
-      if(!h.perch&&RP&&safe)   /* 0.12.264 (Kyle): up on the tower he stays up and shoots; no building, upgrading or repairing from up there */{const T=B.filter(b=>b.hp>0&&b.hp<b.max*.75&&Math.abs(b.x-hx)<28).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0]||this.alive().find(o=>o.key==='robot'&&o.hp<o.max*.6&&Math.abs(this.heroX(o)-hx)<24);if(T){h.repairing={tgt:T,t:0};return;}}
+        const done=!T||(T.bld?(T.hp<=0||T.hp>=T.max):(!T.alive||T.hp>=T.max))||Math.abs((T.bld?T.x:this.heroX(T))-hx)>(T.k==='tower'?62:30)||onMeE(this,h)>=2||R.t>(T.k==='tower'?RP.towerHit*RP.towerMax+.5:6)||(T.k==='tower'&&R.n>=RP.towerMax);
+        if(done){h.repairing=null;}else{if(T.k==='tower'){R.acc+=dt;if(R.acc>=RP.towerHit){R.acc=0;R.n++;T.hp=Math.min(T.max,T.hp+1);this.text(T.x,T.gy-24,'+1','#7dff9a');this.supXp(h,1);}}else if(T.bld){const b0=T.hp;T.hp=Math.min(T.max,T.hp+RP.bld*dt);this.supXp(h,(T.hp-b0)*.036);}else{this._mech=1;this.healHero(T,T.max*RP.mech*dt,true,h);this._mech=0;}if(Math.random()<dt*8)this.fx.push({k:'spark',x:(T.bld?T.x:this.heroX(T))+(Math.random()-.5)*8,gy:T.gy||this.G,t:0,life:.3,raw:1});return;}}
+      const safe=near(40)===0&&!this.heroes.some(o=>!o.alive&&o.downed),en=h.en||0,calm=safe||near(25)<=1;   // a friend down comes first: no building until they're up
+      const bookOK=BU&&h.bkT<=0&&en>=BU.en&&!h.perch;const KN={med:'Medical',ammo:'Ammo',spot:'Spotter'};
+      /* 0.12.326 (Kyle) which floor fits the fight: MEDICAL when the team is hurt or someone's down, AMMO when lots of zombies and lots of shooters,
+         SPOTTER when the fight is far off or there are fliers. */
+      const pickKind=have=>{const al2=this.alive().filter(o=>!o.pet);const hurt=al2.reduce((a,o)=>a+(1-o.hp/o.max),0)/Math.max(1,al2.length);const shooters=al2.filter(o=>o.base&&o.base.char&&o.base.char.ranged&&!this.isMeleeHero(o)).length;
+        const sc={med:hurt*3+(this.heroes.some(o=>o.downed)?1.5:0),ammo:.2*live.length+.35*shooters,spot:.6*live.filter(e=>e.fly).length+.3*live.filter(e=>e.x-hx>120).length+.4};
+        return Object.keys(sc).filter(k=>!have.includes(k)&&h.bcd[k]<=0).sort((a,b)=>sc[b]-sc[a])[0];};
+      // IF there's a fight AND I have no tower THEN put the first floor up well ahead (one tower at a time)
+      if(bookOK&&!tower&&calm&&live.length>=1){const k=pickKind([]);if(k&&spendEnergy(h,BU.en)){h.bcd[k]=BU.tower.cd*(1-(h.cdr||0));h.bkT=BU.cd;h.building={k:'tower',kind:k,t:0,T:BU.tower.T[0],x:Math.max(20,Math.min(this.W-30,this.W*(.85+.05*this.rng()))),gy};   /* 0.12.326 (Kyle): starts the tower further up the road (85-90% across) */
+        h.walkTo=h.building.x;h.abWhy='BUILD: '+KN[k]+' tower';h.abWhyT=this.t+3;Comms.bubble(this,h,Comms.pick(['Putting up a tower.','Give me three seconds.','Cover me, building!']));return;}}
+      // IF my tower is under 3 floors THEN building it up comes before anything else (he walks back to it if it's close enough)
+      if(bookOK&&tower&&tower.floors.length<3&&calm&&Math.abs(tower.x-hx)<120&&tower.x>50){const k=pickKind(tower.floors);if(k&&spendEnergy(h,BU.en)){h.bcd[k]=BU.tower.cd*(1-(h.cdr||0));h.bkT=BU.cd;h.building={k:'floor',kind:k,tgt:tower,t:0,T:BU.tower.T[tower.floors.length],x:tower.x,gy:tower.gy};h.walkTo=tower.x+6;h.abWhy='BUILD: '+KN[k]+' floor';h.abWhyT=this.t+3;return;}}
+      // IF a pack of 3+ is coming down one lane 30-120 out THEN drop a HESCO cell in front of them
+      if(bookOK&&h.bcd.barrier<=0&&!(tower&&tower.floors.length<3&&Math.abs(tower.x-hx)<120)){let bl=null,bn=0;for(const l of LANES){const n=live.filter(e=>!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-l)<=BU.barrier.depth&&e.x-hx>30&&e.x-hx<120).length;if(n>bn){bn=n;bl=l;}}
+        if(bl!=null&&bn>=3&&!B.some(b=>b.k==='barrier'&&b.hp>0&&Math.abs(b.gy-bl)<6&&b.x>hx)&&spendEnergy(h,BU.en)){h.bcd.barrier=BU.barrier.cd*(1-(h.cdr||0));h.bkT=BU.cd;h.building={k:'barrier',t:0,T:BU.barrier.T,x:Math.min(this.W-20,hx+24),gy:bl};Comms.bubble(this,h,Comms.pick(['HESCO going up!','Wall them off!','Filling a HESCO!']));return;}}
+      // Attach_Turret: IF a charge is ready THEN bolt one on. The tower first when a big wave is pushing (hunker down), a wreck right here otherwise.
+      if(!h.perch&&AT&&h.atN>0&&en>=AT.en&&calm){let W=null;
+        if(tower&&tower.hp>0&&Math.abs(tower.x-hx)<90&&tower.x>50&&(live.length>=4||tower.floors.length>=3)){const open=[];for(let f=0;f<tower.floors.length;f++)for(const sd of [1,-1])if(!tower.tur.some(q=>q.fl===f&&q.side===sd))open.push([f,sd]);
+          open.sort((a,b)=>(b[1]-a[1])||(b[0]-a[0]));if(open.length)W={k:'turret',tower,fl:open[0][0],side:open[0][1],t:0,T:AT.T,x:tower.x,gy:tower.gy};}   /* the right side (where they come from) first, top floors first */
+        if(!W){const car=(this.obst||[]).find(o=>/^car_/.test(o.k)&&!o.turret&&Math.abs(o.x-hx)<45&&o.x>30&&o.x<this.W-20);if(car)W={k:'turret',car,t:0,T:AT.T,x:car.x,gy:LANES[Math.max(...car.lanes)]};}
+        if(W&&spendEnergy(h,AT.en)){h.atN--;h.building=W;h.walkTo=W.x+(W.tower?6:0);h.abWhy='ATTACH TURRET: '+(W.tower?'tower':'wreck');h.abWhyT=this.t+3;Comms.bubble(this,h,Comms.pick(W.tower?['Bolting a gun on the tower.','More guns on the tower!']:['Let me mount something on this.','This wreck needs a gun.']));return;}}
+      // Repair: IF a building of mine (or the Warhound) is hurt AND I'm beside it AND it's quiet THEN fix it (a tower gets up to 2 hits back)
+      if(!h.perch&&RP&&safe){const T=B.filter(b=>b.hp>0&&b.k!=='turret'&&(b.k==='tower'?b.hp<b.max:b.hp<b.max*.75)&&Math.abs(b.x-hx)<(b.k==='tower'?60:28)).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0]||this.alive().find(o=>o.key==='robot'&&o.hp<o.max*.6&&Math.abs(this.heroX(o)-hx)<24);if(T){h.repairing={tgt:T,t:0,n:0,acc:0};return;}}
+      /* Field_Plating: IF it's calm AND an ally close by has no plating AND they aren't swarmed THEN walk over to them (he gives up if it gets hot) */
+      if(PL&&!h.perch&&!h.plGo&&calm&&h.hp>h.max*.4&&this.rng()<dt*1.5){const o=this.alive().filter(o=>o!==h&&!o.pet&&!o.dog&&!o.perch&&!(o.kitHits>0)&&Math.abs(this.heroX(o)-hx)<90&&live.filter(e=>Math.abs(e.x-this.heroX(o))<18).length<=1).sort((p,q)=>Math.abs(this.heroX(p)-hx)-Math.abs(this.heroX(q)-hx))[0];if(o)h.plGo={o,t:0};}
+      if(h.plGo){const P=h.plGo,o=P.o;P.t+=dt;if(!o.alive||o.kitHits>0||o.perch||P.t>5||near(25)>=2||h.hp<h.max*.35)h.plGo=null;
+        else{const ox=this.heroX(o),d=ox-hx,dg=(o.gy||this.G)-(h.gy||this.G);if(Math.abs(d)>PL.r*.6||Math.abs(dg)>6){h.x+=Math.sign(d)*Math.min(Math.abs(d),(MOVE.eng||15)*dt*1.3);if(Math.abs(dg)>1)h.gy=(h.gy||this.G)+Math.sign(dg)*Math.min(Math.abs(dg),14*dt);h.face=d>0?1:-1;h.moving=true;h.walkT=(h.walkT||0)+dt;return;}}}
       // satchel: IF 3+ zombies are bunched 30-100 out THEN toss one onto them (he sets it off later)
       if(SC&&h.scT<=0&&en>=SC.en&&!(this.satchels||[]).some(S=>S.owner===h&&!S.boom)){let best=null,bn=0;for(const e of live){const d=e.x-hx;if(e.fly||d<SC.min||d>SC.max)continue;const n=live.filter(o=>Math.abs(o.x-e.x)<20).length;if(n>bn){bn=n;best=e;}}
         if(!(best&&bn>=3)){const big=live.filter(e=>!e.fly&&e.x-hx>=SC.min&&e.x-hx<=SC.max+40&&(e.boss||e.elite||e.max>=60)).sort((p,q)=>q.max-p.max)[0];if(big){best=big;bn=3;}else if(best&&bn>=2&&live.length>=4){bn=3;}}   /* 0.12.79: bosses/big ones, or a pair when the field is busy */
@@ -3558,8 +3597,8 @@ class Game{
       if(!o.dead){const res=(o.E&&o.E.kbRes)||0;if(res<1){o.kbv=Math.max(o.kbv||0,e.kbv*.5*(1-res));o.kbDir=e.kbDir;o.shoveT=.5;o.shoveSrc=e.shoveSrc;o.shoved=S;}}
       e.kbv*=.6;this.text(o.x,(o.gy||this.G)-30,'THUD','#ffb070');this.fx.push({k:'ring',x:(o.x+e.x)/2,y:(o.gy||this.G)-14,t:0,r:6,c:'#ffb070'});}}
   /* 0.12.206 Giant_Bat: picks a hero, circles above them (a small bob makes it a harder target), swoops down, bites for 1d3 and climbs away */
-  batAI(e,dt,scroll,al){if(!al.length){e.x-=scroll*dt;return;}let T=e.target;if(!T||!T.alive||this.rng()<dt*.05)T=e.target=al[Math.floor(this.rng()*al.length)];
-    const tx=this.heroX(T),tgy=T.gy||this.G;e.gy=tgy;e.atkT=(e.atkT||0)+dt;e.walkT+=dt;const sp=e.E.spd*(1-(e.slow||0));
+  batAI(e,dt,scroll,al){if(!al.length){e.x-=scroll*dt;return;}let T=e.target;if(!T||!T.alive||this.rng()<dt*.05){const up=al.filter(o=>o.perch&&o.perch.k==='tower'&&o.perchSt==='on');T=e.target=up.length&&this.rng()<.7?up[Math.floor(this.rng()*up.length)]:al[Math.floor(this.rng()*al.length)];}   /* 0.12.326 (Kyle): fliers ignore the tower and go for whoever is up there */
+    const tx=this.heroX(T),tgy=(T.gy||this.G)-(T.leapH||0)*1.2*UNIT_SCALE;e.gy=T.gy||this.G;e.atkT=(e.atkT||0)+dt;e.walkT+=dt;const sp=e.E.spd*(1-(e.slow||0));
     if(e.swoop){const S=e.swoop;S.t+=dt;const u=Math.min(1,S.t/S.T);const dip=Math.sin(Math.PI*u);e.x+=(tx+S.side*2-e.x)*Math.min(1,dt*6)-scroll*dt;e.y=S.y0+(tgy-(S.feint?34:20)-S.y0)*dip;e.face=tx<e.x?-1:1;
       if(!S.hit&&!S.feint&&u>=.5){S.hit=1;if(Math.abs(e.x-tx)<14&&T.alive){const d=Math.max(1,Math.floor((1+Math.floor(this.rng()*3))*e.dmgMul));this.hurtHero(T,d,e);}}
       if(u>=1)e.swoop=null;return;}
@@ -4197,7 +4236,7 @@ const TAL_MOD={
       elder:{name:'Elder Sign',icon:'👁️',txt:'Call_of_Cthulhu lasts 14s (was 10s) and terrifies for 3s (was 2s).',ab:'cthulhu',set:{dur:14,fear:3}},
       thirst:{name:'Thirsting Shadows',icon:'🩸',txt:'Syphon_Life drains 5 a second (was 3).',ab:'syphon',set:{dps:5}}},
   eng:{cells:{name:'Reinforced Cells',icon:'🧱',txt:'His HESCO cell has 130 HP (was 80).',ab:'build',path:'barrier',set:{hp:130}},
-      coil:{name:'Overcharged Coil',icon:'⚡',txt:'His tesla coil lasts 40s (was 25s) and zaps every 1s (was 1.5s).',ab:'build',path:'tesla',set:{life:40,every:1}},
+      coil:{name:'Spare Turret',icon:'🔩',txt:'Attach_Turret holds 4 charges (was 3). (0.12.326: replaces the old tesla coil upgrade)',ab:'attach',set:{charges:4}},
       shaped:{name:'Shaped Charge',icon:'🧨',txt:'Satchel_Charge hits for 8d4 (was 6d4) over a bigger blast.',ab:'satchel',set:{dice:[8,4],r:42}}},
   knight:{bulwark:{name:'Bulwark',icon:'🛡️',txt:'Shield_Wall lasts 6s (was 4s) and blocks 75% (was 60%).',ab:'wall',set:{dur:6,dr:.75}},
       ram:{name:'Battering Ram',icon:'🐎',txt:'Crimson_Charge hits for 3d6 (was 2d6) and goes 140px farther.',ab:'charge',set:{dice:[3,6],dist:140}},
@@ -4301,10 +4340,10 @@ const HCAP={
    cu_elder:{name:'Elder_God',icon:'🦑',txt:'Call_of_Cthulhu lasts 18s, terrifies 4s, back in 20s. +15% damage.',patch:[{ab:'cthulhu',set:{dur:18,fear:4,cd:20}}],stat:{dmgPct:15}},
    cu_leech:{name:'Leech_Lord',icon:'🧛',txt:'Syphon_Life drains 9 a second from 160px. 10% lifesteal. Once a stage a killing hit leaves him at 1 HP, untouchable 3s.',patch:[{ab:'syphon',set:{dps:9,range:160}}],stat:{mod:{lifesteal:10}},also:['last']}}},
  eng:{5:{
-   en_fort:{name:'Fortress',icon:'🏰',txt:'Turtle builder: HESCO cell 180 HP, watchtower 90 HP. +3 armor. Stays behind his walls.',patch:[{ab:'build',path:'barrier',set:{hp:180}},{ab:'build',path:'tower',set:{hp:90}}],stat:{mod:{armor:3}},shift:{aggr:-3}},
+   en_fort:{name:'Fortress',icon:'🏰',txt:'Turtle builder: HESCO cell 180 HP, the watchtower takes 3 more hits. +3 armor. Stays behind his walls.',patch:[{ab:'build',path:'barrier',set:{hp:180}},{ab:'build',path:'tower',set:{hitAdd:3}}],stat:{mod:{armor:3}},shift:{aggr:-3}},
    en_bomb:{name:'Mad_Bomber',icon:'🧨',txt:'Satchel_Charge 10d4 in a huge blast, 10s cooldown. +10% damage. Gets in closer to throw.',patch:[{ab:'satchel',set:{dice:[10,4],r:48,cd:10}}],stat:{dmgPct:10},shift:{aggr:2}}},
   10:{
-   en_tesla:{name:'Tower_Lord',icon:'🗼',txt:'Watchtower builds 40% faster and comes back in 4s; HESCO cell back in 10s. -20% cooldowns, abilities 20% cheaper.',patch:[{ab:'build',path:'tower',set:{cd:4,T:[1.8,1.5,2.1]}},{ab:'build',path:'barrier',set:{cd:10}}],also:['over']},
+   en_tesla:{name:'Tower_Lord',icon:'🗼',txt:'Tower floors build 40% faster and come back in 6s; HESCO cell back in 10s. -20% cooldowns, abilities 20% cheaper.',patch:[{ab:'build',path:'tower',set:{cd:6,T:[1.8,1.5,2.1]}},{ab:'build',path:'barrier',set:{cd:10}}],also:['over']},
    en_siege:{name:'Siege_Engineer',icon:'🏗️',txt:'Satchel_Charge 12d4 in a 55px blast. HESCO cell 150 HP. +15% damage, and +60% to anything under 25% HP.',patch:[{ab:'satchel',set:{dice:[12,4],r:55}},{ab:'build',path:'barrier',set:{hp:150}}],stat:{dmgPct:15},also:['exec']}}},
  carcher:{5:{
    ca_broad:{name:'Broadhead_Master',icon:'🏹',txt:'Piercing_Shot 4d6 through 9, 7s cooldown.',patch:[{ab:'pierce',set:{dice:[4,6],n:9,cd:7}}]},
@@ -4498,18 +4537,18 @@ const ENERGY_TUNE={archer:[0.0,0.15],cultist:[0.0167,0.1167],chibi:[0.0333,0.083
 for(const [k,[cost,reg]] of Object.entries(ENERGY_TUNE)){const C=CHAR[k];if(!C)continue;C.enRegen=Math.round(C.enRegen*(1+reg)*100)/100;
   const bump=(a,did)=>{if(!a||a.passive||!(a.en>0)||(k==='cultist'&&a.id==='syphon'))return;const old=a.en,nw=Math.round(old*(1+cost));if(nw===old)return;a.en=nw;did=did||a.id;
     if(ABIL_DESC[did]&&typeof ABIL_DESC[did]==='string')ABIL_DESC[did]=ABIL_DESC[did].replace(new RegExp('\\b'+old+' energy'),nw+' energy');};
-  for(const a of C.abilities||[]){bump(a);for(const sub of ['carpet','retreat','tower','tesla','barrier','turret'])if(a[sub]&&typeof a[sub]==='object'&&a[sub].en>0&&!a[sub].passive)bump(a[sub],a.id);}}
+  for(const a of C.abilities||[]){bump(a);for(const sub of ['carpet','retreat','tower','barrier','car','tow'])if(a[sub]&&typeof a[sub]==='object'&&a[sub].en>0&&!a[sub].passive)bump(a[sub],a.id);}}
 {const sk=CHAR.cheez.abilities.find(a=>a.id==='sake');if(sk&&ABIL_DESC.sake)ABIL_DESC.sake=ABIL_DESC.sake.replace('20 energy comes back',Math.round(sk.en*.5)+' energy comes back').replace('30 energy comes back',Math.round(sk.en*.75)+' energy comes back');}
 const ENERGY_TUNE2={archer:[-.25,0],chibi:[-.2125,0],druid:[-.175,0],cheez:[-.1375,0],knight:[-.1,0],robot:[-.0625,0],flannel:[-.025,0],soldier:[.0125,0],lumberjack:[.05,0],edward:[.05,-.05],eng:[.075,-.075],shoshi:[.1,-.1],cultist:[.125,-.125],csorc:[.15,-.15],jp:[.175,-.175],carcher:[.2,-.2]};   /* 0.12.275 (Kyle): second pass by the sim list. Yumi -25% cost ... Lumber_Jack +5% cost (regen kept); Edward +5% cost/-5% regen ... Chibi Archer +20% cost/-20% regen */
 for(const [k,[cost,reg]] of Object.entries(ENERGY_TUNE2)){const C=CHAR[k];if(!C)continue;if(reg)C.enRegen=Math.round(C.enRegen*(1+reg)*100)/100;
   const bump=(a,did)=>{if(!a||a.passive||!(a.en>0)||(k==='cultist'&&a.id==='syphon'))return;const old=a.en,nw=Math.max(1,Math.round(old*(1+cost)));if(nw===old)return;a.en=nw;did=did||a.id;
     if(ABIL_DESC[did]&&typeof ABIL_DESC[did]==='string')ABIL_DESC[did]=ABIL_DESC[did].replace(new RegExp('\\b'+old+' energy'),nw+' energy');};
-  for(const a of C.abilities||[]){bump(a);for(const sub of ['carpet','retreat','tower','tesla','barrier','turret'])if(a[sub]&&typeof a[sub]==='object'&&a[sub].en>0&&!a[sub].passive)bump(a[sub],a.id);}}
+  for(const a of C.abilities||[]){bump(a);for(const sub of ['carpet','retreat','tower','barrier','car','tow'])if(a[sub]&&typeof a[sub]==='object'&&a[sub].en>0&&!a[sub].passive)bump(a[sub],a.id);}}
 /* 0.12.272 (Kyle): ability costs round to 5s (top half of the energy list down, bottom half up). Free ones stay free; passive energy gains aren't costs. */
 const ROUND_DOWN=new Set(['archer','chibi','druid','cheez','knight','robot','flannel']);   /* 0.12.275 (Kyle): heroes getting cost cuts round DOWN to 5, heroes getting hikes round UP */
 for(const [k,C] of Object.entries(CHAR)){const up=(a,did)=>{if(!a||a.passive||!(a.en>0))return;const old=a.en,nw=ROUND_DOWN.has(k)?Math.max(5,Math.floor(old/5)*5):Math.ceil(old/5)*5;if(nw===old)return;a.en=nw;did=did||a.id;
     if(ABIL_DESC[did]&&typeof ABIL_DESC[did]==='string')ABIL_DESC[did]=ABIL_DESC[did].replace(new RegExp('\\b'+old+' energy'),nw+' energy');};
-  for(const a of C.abilities||[]){up(a);for(const sub of ['carpet','retreat','tower','tesla','barrier','turret'])if(a[sub]&&typeof a[sub]==='object')up(a[sub],a.id);}}
+  for(const a of C.abilities||[]){up(a);for(const sub of ['carpet','retreat','tower','barrier','car','tow'])if(a[sub]&&typeof a[sub]==='object')up(a[sub],a.id);}}
 {const sk=CHAR.cheez.abilities.find(a=>a.id==='sake');if(sk&&ABIL_DESC.sake)ABIL_DESC.sake=ABIL_DESC.sake.replace(/\d+ energy comes back(?![\s\S]*\d+ energy comes back)/,Math.round(sk.en*.75)+' energy comes back').replace(/\d+ energy comes back/,Math.round(sk.en*.5)+' energy comes back');}
 /* ======================================================================= 0.12.311 (Kyle) TALENT TREES
    Every hero has 3 branches. 1 point per level (levels 2-20 = 19 points). Rows open at 0/3/6/9/12 points spent in that branch.
@@ -4567,7 +4606,7 @@ const TREE_SPEC={
  cultist:[TB('Tentacle','🐙',[TN('Grasping Dark','🐙',TD('tentacle',{hp:3})),TN('Quick Summon','⚡',TA('tentacle',{cd:-.05}))],[TN('Barbed Arms','🩸',TF('tentacle',1)),TN('Long Reach','📏',TA('tentacle',{reach:.1}))],'mod:arms',[TN('Hungry Dark','🦑',TD('tentacle',{steal:.05})),TN('Old Ones','👁️',TA('cthulhu',{cd:-.08}))],['cap:5:cu_arms','cap:10:cu_elder']),
    TB('Blood','🩸',[TN('Deep Syphon','🩸',TD('syphon',{dps:.5})),TN('Ritual Cut','🔪',TD('blade',{ch:.03}))],[TN('Blood Feast','🍷',TD('syphon',{heal:.1})),TN('Cheap Rites','💉',TA('lethal',{hpCost:-.1}))],'mod:thirst',[TN('Long Drain','⏳',TA('syphon',{dur:.1})),TN('Vital Flow','❤️',TS({hpPct:4}))],['cap:5:cu_priest','cap:10:cu_leech']),
    TB('Lethal','🗡️',[TN('Sharp Rites','🗡️',TS({mod:{meleeDmg:5}})),TN('Frenzy','⚡',TA('lethal',{dur:.1}))],[TN('Killing Edge','✴️',TS({mod:{crit:2}})),TN('Dark Haste','💨',TA('lethal',{cd:-.06}))],'mod:elder',[TN('Bloodletter','🩸',TD('lethal',{dmg:.04})),TN('Shadow Skin','🌑',TS({mod:{dodge:1.5}}))],[TN('Avatar_of_Night','🌑',{ab:'lethal',mul:{cd:-.35,dur:.4},add:{dmg:.15}},'CAPSTONE: Lethal_Strikes lasts 40% longer, comes back 35% sooner and hits 15% harder')])],
- eng:[TB('Builder','🏗️',[TN('Quick Build','🔨',TS({mod:{cdr:3}})),TN('Tough Tower','🗼',TA('build',{hp:.08},'tower'))],[TN('Sharp Gunner','🎯',TD('build',{acc:2},'tower')),TN('Turret Ammo','🔫',TD('modify',{burst:1},'turret'))],'mod:cells',[TN('Fast Turrets','⚙️',TA('modify',{cd:-.08})),TN('High Ground','⛰️',TD('build',{perchDmg:.03},'tower'))],['cap:10:en_tesla','cap:10:en_siege']),
+ eng:[TB('Builder','🏗️',[TN('Quick Build','🔨',TS({mod:{cdr:3}})),TN('Tough Tower','🗼',TD('build',{hitAdd:1},'tower'),'The tower takes 1 more hit per rank')],[TN('Sharp Gunner','🎯',TD('build',{acc:2},'tower')),TN('Turret Ammo','🔫',TD('attach',{burst:1},'tow'),'Tower turrets fire 1 more round per burst')],'mod:cells',[TN('Fast Turrets','⚙️',TA('attach',{cd:-.08})),TN('High Ground','⛰️',TD('build',{dmgAdd:.03},'tower'),'Shooters on the tower deal 3% more damage per rank')],['cap:10:en_tesla','cap:10:en_siege']),
    TB('Demo','🧨',[TN('Bigger Charge','💥',TA('satchel',{r:.06})),TN('Short Fuse','⏱️',TA('satchel',{cd:-.05}))],[TN('Packed Charge','🧨',TF('satchel',1)),TN('Long Throw','🎯',TA('satchel',{max:.1}))],'mod:shaped',[TN('Blast Wave','🌊',TA('satchel',{kb:.1})),TN('Demolitionist','👷',TS({mod:{crit:2}}))],['cap:5:en_bomb']),
    TB('Plating','🛡️',[TN('Thick Plates','🛡️',TD('plating',{hits:1})),TN('Hard Hat','⛑️',TS({mod:{armor:1}}))],[TN('Quick Plating','⚡',TA('plating',{T:-.1})),TN('Sturdy','❤️',TS({hpPct:4}))],'mod:coil',[TN('Riveted','🔩',TD('plating',{armor:.05})),TN('Brace','🧱',TS({mod:{kbRes:8}}))],['cap:5:en_fort'])],
  carcher:[TB('Broadhead','🏹',[TN('Broad Tips','🏹',TD('pierce',{n:1})),TN('Quick Nock','⚡',TA('pierce',{cd:-.05}))],[TN('Heavy Head','🪨',TF('pierce',1)),TN('Fletching','🪶',TS({mod:{acc:2}}))],'mod:broad',[TN('Bleeding Shot','🩸',TS({mod:{crit:2}})),TN('Clean Shot','🎯',TA('pierce',{en:-.1}))],['cap:5:ca_broad','cap:10:ca_steel']),
@@ -4767,12 +4806,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1795015518';const BGI=new Image();BGI.src='crawl_bg.png?v=1795015518';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795015518';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1795016202';const BGI=new Image();BGI.src='crawl_bg.png?v=1795016202';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795016202';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795015518';XIMG.wave.src='crawl_wave.png?v=1795015518';XIMG.chibi.src='crawl_chibi.png?v=1795015518';XIMG.flannel.src='crawl_flannel.png?v=1795015518';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795015518';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795015518';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795015518';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795015518';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795015518';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795015518';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795015518';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795015518';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795015518';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795015518';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795015518';XIMG.rain.src='crawl_rain.png?v=1795015518';XIMG.druid.src='crawl_druid.png?v=1795015518';XIMG.camp.src='crawl_campfire.png?v=1795015518';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795015518';XIMG.tornado.src='crawl_fx_tornado.png?v=1795015518';XIMG.vine.src='crawl_fx_vine.png?v=1795015518';XIMG.thorn.src='crawl_fx_thorn.png?v=1795015518';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795016202';XIMG.wave.src='crawl_wave.png?v=1795016202';XIMG.chibi.src='crawl_chibi.png?v=1795016202';XIMG.flannel.src='crawl_flannel.png?v=1795016202';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795016202';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795016202';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795016202';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795016202';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795016202';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795016202';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795016202';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795016202';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795016202';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795016202';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795016202';XIMG.rain.src='crawl_rain.png?v=1795016202';XIMG.druid.src='crawl_druid.png?v=1795016202';XIMG.camp.src='crawl_campfire.png?v=1795016202';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795016202';XIMG.tornado.src='crawl_fx_tornado.png?v=1795016202';XIMG.vine.src='crawl_fx_vine.png?v=1795016202';XIMG.thorn.src='crawl_fx_thorn.png?v=1795016202';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795015518';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795015518';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795015518';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795015518';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795015518';XIMG.obst.src='crawl_obst.png?v=1795015518';XIMG.cityob.src='crawl_cityob.png?v=1795015518';XIMG.cars.src='crawl_cars.png?v=1795015518';XIMG.robot.src='crawl_robot.png?v=1795015518';XIMG.cultist.src='crawl_cultist.png?v=1795015518';XIMG.tentacle.src='crawl_tentacle.png?v=1795015518';XIMG.boom.src='crawl_boom.png?v=1795015518';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795016202';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795016202';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795016202';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795016202';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795016202';XIMG.obst.src='crawl_obst.png?v=1795016202';XIMG.cityob.src='crawl_cityob.png?v=1795016202';XIMG.cars.src='crawl_cars.png?v=1795016202';XIMG.robot.src='crawl_robot.png?v=1795016202';XIMG.cultist.src='crawl_cultist.png?v=1795016202';XIMG.tentacle.src='crawl_tentacle.png?v=1795016202';XIMG.boom.src='crawl_boom.png?v=1795016202';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -4807,7 +4846,7 @@ function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 /* 0.12.310 recorded clips (Tee_Grizzle): decoded once, played through the same AudioContext as the synth sounds */
 const SAMP={teeg1:{src:'crawl_teeg1',off:.34},teeg2:{src:'crawl_teeg2',off:0}};
 function sampLoad(k){const S=SAMP[k];if(!S||S.buf||S.loading||!AC)return;S.loading=1;const ext=(new Audio()).canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3';
-  fetch(S.src+ext+'?v=1795015518').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
+  fetch(S.src+ext+'?v=1795016202').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
 function sampPlay(k,off,vol){const S=SAMP[k];if(!S)return;if(!S.buf){sampLoad(k);return;}const src=AC.createBufferSource(),g=AC.createGain();src.buffer=S.buf;g.gain.value=vol==null?.55:vol;src.connect(g);g.connect(AC.destination);src.start(0,off==null?S.off:off);}
 function sfx(k,o){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
   if(!sampLoad.pre){sampLoad.pre=1;sampLoad('teeg1');sampLoad('teeg2');}
@@ -5491,30 +5530,40 @@ function drawGame(ctx,g,W,oy){
   /* 0.12.75 Engineer's buildings, drawn from shapes: the watchtower (steel legs, X braces, chain-link panels, plank floors with low walls,
      a ladder up the whole thing and a sign per tier), the concrete barrier, the tesla coil and the car turret */
   /* 0.12.265 (Kyle): a metal guard railing on every tower floor, drawn IN FRONT of whoever is standing up there (like the shop pillars) */
-  const drawTowerRail=b=>{const x=Math.round(b.x),gy=b.gy,W=9.5,TH=30;ctx.save();if(b.hitT>0)ctx.globalAlpha=.75;
-    for(let i=0;i<b.tier;i++){const fy=gy-TH*(i+1),L=x-W-3,Rr=x+W+3;
+  const drawTowerRail=b=>{const x=Math.round(b.x),gy=b.gy,W=9.5,TH=30,n=b.floors.length;ctx.save();if(b.hitT>0)ctx.globalAlpha=.75;
+    for(let i=0;i<n;i++){const fy=gy-TH*(i+1),L=x-W-3,Rr=x+W+3;
       ctx.fillStyle='#5c6470';for(let px=L;px<=Rr;px+=3.2)ctx.fillRect(Math.round(px*2)/2,fy-8,.8,8);   // balusters
       ctx.fillStyle='#7d8794';ctx.fillRect(L-.5,fy-8.5,Rr-L+1.5,1.4);ctx.fillStyle='#b8c2ce';ctx.fillRect(L-.5,fy-8.5,Rr-L+1.5,.5);   // top rail with a shine
       ctx.fillStyle='#6a7380';ctx.fillRect(L,fy-4.4,Rr-L+.8,.9);   // mid rail
       ctx.fillStyle='#4a515c';ctx.fillRect(L-1,fy-9,1.6,9);ctx.fillRect(Rr-.6,fy-9,1.6,9);}   // corner posts
+    for(const q of b.tur||[])if(q.hp>0)drawTurret(q);   /* 0.12.326 tower turrets sit on the floor corners, in front of the rail */
     ctx.restore();};
+  /* 0.12.326 (Kyle's drawing, tidied): a round grey dome with a yellow X, on a short post, with a barrel that turns toward its target and an orange muzzle flash */
+  const drawTurret=q=>{const car=!!q.car,x=q.x,y=q.tower?q.gy-30*(q.fl+1)+3:q.gy-24,r=car?3.6:2.8,ang=q.ang!=null?q.ang:(q.tower?(q.side>0?.35:Math.PI-.35):(q.face>0?0:Math.PI));
+    ctx.save();ctx.fillStyle='#2a2e34';ctx.fillRect(x-1,y,2,car?3:2.4);if(car){ctx.fillStyle='#3a3f46';ctx.fillRect(x-4,y+2.4,8,1.6);}
+    ctx.save();ctx.translate(x,y);ctx.rotate(ang);ctx.fillStyle='#1c1f24';ctx.fillRect(0,-.75,r+(car?5:4),1.5);ctx.fillStyle='#4a5058';ctx.fillRect(r,-.75,1.2,1.5);
+      if(q.flT>0){ctx.globalCompositeOperation='lighter';ctx.fillStyle='#ffb040';ctx.beginPath();ctx.moveTo(r+(car?5:4),-1.6);ctx.lineTo(r+(car?9:7),0);ctx.lineTo(r+(car?5:4),1.6);ctx.fill();ctx.fillStyle='#fff2b0';ctx.fillRect(r+(car?5:4),-.5,1.6,1);}ctx.restore();
+    ctx.fillStyle='#6e757e';ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.fillStyle='#c4cad2';ctx.beginPath();ctx.arc(x-r*.25,y-r*.25,r*.72,0,7);ctx.fill();
+    ctx.strokeStyle='#e8c020';ctx.lineWidth=.55;ctx.beginPath();ctx.moveTo(x-r*.5,y-r*.5);ctx.lineTo(x+r*.5,y+r*.5);ctx.moveTo(x+r*.5,y-r*.5);ctx.lineTo(x-r*.5,y+r*.5);ctx.stroke();
+    ctx.strokeStyle='#3a3f46';ctx.lineWidth=.4;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.stroke();
+    if(car&&q.hp<q.max){ctx.fillStyle='#000a';ctx.fillRect(x-6,y-8,12,2.5);ctx.fillStyle='#ffd23f';ctx.fillRect(x-5,y-7.5,10*Math.max(0,q.hp/q.max),1);}ctx.restore();};
   const drawBld=b=>{const x=Math.round(b.x),gy=b.gy;ctx.save();if(b.hitT>0){ctx.globalAlpha=.75;}
-    if(b.k==='tower'){const W=9.5,TH=30;const top=gy-TH*b.tier;   /* 0.12.76: about 45% as wide as before */
+    if(b.k==='tower'){const W=9.5,TH=30,n=b.floors.length;const top=gy-TH*n;
       shadow(ctx,x,gy,11);
-      for(let i=0;i<b.tier;i++){const y0=gy-TH*i,y1=y0-TH;
-        ctx.strokeStyle='rgba(170,180,190,.35)';ctx.lineWidth=.4;   // chain-link: diamond lattice on the lower part of each tier
+      for(let i=0;i<n;i++){const y0=gy-TH*i,y1=y0-TH,kind=b.floors[i];
+        ctx.strokeStyle='rgba(170,180,190,.35)';ctx.lineWidth=.4;   // chain-link: diamond lattice on the lower part of each floor
         ctx.save();ctx.beginPath();ctx.rect(x-W,y0-14,2*W,14);ctx.clip();for(let k=-W-12;k<=W+12;k+=2.5){ctx.beginPath();ctx.moveTo(x+k,y0-1);ctx.lineTo(x+k+12,y0-13);ctx.stroke();ctx.beginPath();ctx.moveTo(x+k,y0-1);ctx.lineTo(x+k-12,y0-13);ctx.stroke();}ctx.restore();
         ctx.fillStyle='#4a5058';ctx.fillRect(x-W-1,y0-14,2*W+2,1);
         ctx.strokeStyle='#6a7280';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(x-W+2,y0);ctx.lineTo(x+W-2,y1+2);ctx.moveTo(x+W-2,y0);ctx.lineTo(x-W+2,y1+2);ctx.stroke();   // X brace
-        ctx.fillStyle='#6a4a2a';ctx.fillRect(x-W-3,y1,2*W+6,2.5);ctx.fillStyle='#8a6438';ctx.fillRect(x-W-3,y1,2*W+6,1);   // plank floor
-        ctx.save();ctx.translate(x-4.2,y0-23);ctx.scale(.7,.7);ctx.translate(-(x-6),-(y0-24));const sx=x-6,sy=y0-24;ctx.fillStyle='#1a1410';ctx.fillRect(sx-1,sy-1,14,10);   // the tier's sign (smaller now)
-        if(i===0){ctx.fillStyle='#f2f2ea';ctx.fillRect(sx,sy,12,8);ctx.fillStyle='#d0202a';ctx.fillRect(sx+5,sy+1,2,6);ctx.fillRect(sx+3,sy+3,6,2);}
-        else if(i===1){ctx.fillStyle='#4a5a2a';ctx.fillRect(sx,sy,12,8);ctx.fillStyle='#d8b040';for(let q=0;q<3;q++){ctx.fillRect(sx+2+q*3,sy+2,2,5);ctx.fillStyle='#b08020';ctx.fillRect(sx+2+q*3,sy+2,2,1);ctx.fillStyle='#d8b040';}}
+        ctx.fillStyle='#6a4a2a';ctx.fillRect(x-W-3,y1,2*W+6,2.5);ctx.fillStyle='#8a6438';ctx.fillRect(x-W-3,y1,2*W+6,1);   // plank floor (units stand right on this)
+        ctx.save();ctx.translate(x-4.2,y0-23);ctx.scale(.7,.7);ctx.translate(-(x-6),-(y0-24));const sx=x-6,sy=y0-24;ctx.fillStyle='#1a1410';ctx.fillRect(sx-1,sy-1,14,10);   // the floor's sign shows what it does
+        if(kind==='med'){ctx.fillStyle='#f2f2ea';ctx.fillRect(sx,sy,12,8);ctx.fillStyle='#d0202a';ctx.fillRect(sx+5,sy+1,2,6);ctx.fillRect(sx+3,sy+3,6,2);}
+        else if(kind==='ammo'){ctx.fillStyle='#4a5a2a';ctx.fillRect(sx,sy,12,8);ctx.fillStyle='#d8b040';for(let q=0;q<3;q++){ctx.fillRect(sx+2+q*3,sy+2,2,5);ctx.fillStyle='#b08020';ctx.fillRect(sx+2+q*3,sy+2,2,1);ctx.fillStyle='#d8b040';}}
         else{ctx.fillStyle='#2a3a5a';ctx.fillRect(sx,sy,12,8);ctx.fillStyle='#9ad0ff';ctx.beginPath();ctx.arc(sx+4,sy+4,2,0,7);ctx.arc(sx+8,sy+4,2,0,7);ctx.fill();ctx.fillStyle='#1a1410';ctx.fillRect(sx+5.5,sy+3,1,2);}ctx.restore();}
       ctx.fillStyle='#5a626e';ctx.fillRect(x-W,top,2.2,gy-top);ctx.fillRect(x+W-2.2,top,2.2,gy-top);ctx.fillStyle='#8a94a2';ctx.fillRect(x-W,top,.8,gy-top);ctx.fillRect(x+W-2.2,top,.8,gy-top);   // steel legs
-      ctx.fillStyle='#7a5a34';ctx.fillRect(x+W+3,top-2,1,gy-top+2);ctx.fillRect(x+W+7,top-2,1,gy-top+2);for(let y=gy-2;y>top;y-=3)ctx.fillRect(x+W+3,y,5,.8);   // ladder all the way up
-      if(b.tier>=3){ctx.fillStyle='#3a3f48';ctx.fillRect(x-W-3,top-14,2,9);ctx.fillRect(x+W+1,top-14,2,9);ctx.fillStyle='#6a4a2a';ctx.fillRect(x-W-4,top-15,2*W+8,2);}   // lookout roof
-      if(b.hp<b.max){const w=20;ctx.fillStyle='#000a';ctx.fillRect(x-w/2-1,top-20,w+2,3);ctx.fillStyle='#ffd23f';ctx.fillRect(x-w/2,top-19,w*Math.max(0,b.hp/b.max),1);}}
+      ctx.fillStyle='#7a5a34';ctx.fillRect(x+W+3,top-2,1,gy-top+2);ctx.fillRect(x+W+7,top-2,1,gy-top+2);for(let y=gy-2;y>top;y-=3)ctx.fillRect(x+W+3,y,5,.8);   // ladder all the way up (the only way on or off)
+      if(n>=3){ctx.fillStyle='#3a3f48';ctx.fillRect(x-W-3,top-14,2,9);ctx.fillRect(x+W+1,top-14,2,9);ctx.fillStyle='#6a4a2a';ctx.fillRect(x-W-4,top-15,2*W+8,2);}   // lookout roof
+      {const m=b.max,w=Math.min(26,m*3+2);ctx.fillStyle='#000a';ctx.fillRect(x-w/2-1,top-20,w+2,3);for(let k=0;k<m;k++){ctx.fillStyle=k<b.hp?'#ffd23f':'#4a4030';ctx.fillRect(x-w/2+k*(w/m)+.3,top-19,w/m-.6,1);}}}   /* hits left, one pip per hit */
     else if(b.k==='sandbag'){shadow(ctx,x,gy,12);   /* 0.12.104 Sandbag Wall: a low, wide pile of burlap bags, staggered like bricks (shorter and wider than a HESCO cell) */
       const rows=[[-9,-3,3,9],[-6,0,6],[-3,3]];const bw=6.4,bh=3.6;
       rows.forEach((r,ri)=>{const yy=gy-bh*(ri+1)+ri*.6;for(const dx of r){const cx=x+dx;ctx.fillStyle=ri%2?'#b89c68':'#a88c5a';ctx.beginPath();ctx.ellipse(cx,yy+bh/2,bw/2,bh/2,0,0,Math.PI*2);ctx.fill();
@@ -5537,19 +5586,22 @@ function drawGame(ctx,g,W,oy){
       for(let y=gy-15;y<gy-5;y+=2){ctx.fillStyle='#c87a3a';ctx.fillRect(x-2.5,y,5,1);}ctx.save();ctx.globalCompositeOperation='lighter';glow(ctx,x,gy-19,3+Math.sin(g.t*12),'#6ad0ff',.5);glow(ctx,x,gy-19,1.4,'#e8fbff',1);
       if(Math.random()<.5){ctx.strokeStyle='rgba(160,230,255,.8)';ctx.lineWidth=.5;zig(x,gy-19,x+(Math.random()-.5)*12,gy-19+(Math.random()-.5)*10,3,1.5);}ctx.restore();
       ctx.fillStyle='#000a';ctx.fillRect(x-6,gy-25,12,2.5);ctx.fillStyle='#6ad0ff';ctx.fillRect(x-5,gy-24.5,10*Math.max(0,b.hp/b.max),1);}
-    else if(b.k==='turret'){const d=b.face||-1,ty=gy-22;ctx.fillStyle='#2a2e34';ctx.fillRect(x-3,ty,6,4);ctx.fillStyle='#4a525c';ctx.fillRect(x-2,ty-3,5,3);ctx.fillStyle='#1a1c20';ctx.fillRect(d>0?x+2:x-9,ty-2,7,1.5);
+    else if(b.k==='turret'&&b.tower){}
+    else if(b.k==='turret'&&false){const d=b.face||-1,ty=gy-22;ctx.fillStyle='#2a2e34';ctx.fillRect(x-3,ty,6,4);ctx.fillStyle='#4a525c';ctx.fillRect(x-2,ty-3,5,3);ctx.fillStyle='#1a1c20';ctx.fillRect(d>0?x+2:x-9,ty-2,7,1.5);
       ctx.fillStyle='#e8c020';ctx.fillRect(x-3,ty+3,6,.8);if(b.hp<b.max){ctx.fillStyle='#000a';ctx.fillRect(x-6,ty-7,12,2.5);ctx.fillStyle='#ffd23f';ctx.fillRect(x-5,ty-6.5,10*Math.max(0,b.hp/b.max),1);}}
+    if(b.k==='turret'&&b.car)drawTurret(b);
     ctx.restore();};
   const engFx=()=>{for(const S of g.satchels||[]){const y=S.gy-(S.hgt||0)*.5-2;ctx.fillStyle='#3a2a18';ctx.fillRect(S.x-3,y-3,6,4);ctx.fillStyle='#6a4a28';ctx.fillRect(S.x-3,y-3,6,1);ctx.fillStyle='#2a1c10';ctx.fillRect(S.x-1,y-5,2,2);   /* 0.12.75 satchel: canvas pouch, strap, blinking red light */
       if(Math.floor(g.t*3)%2){ctx.save();ctx.globalCompositeOperation='lighter';glow(ctx,S.x+2,y-2,1.6,'#ff2a1a',.9);ctx.restore();}}
     for(const f of g.fx){const k=f.t/f.life;if(f.k==='spark'){ctx.fillStyle=k<.4?'#fff6c0':'#ffb040';for(let i=0;i<3;i++)ctx.fillRect(f.x+Math.cos(i*2.1+f.x)*k*6,f.gy-4-Math.sin(i*2.1+f.x)*k*5+k*k*6,1,1);}
+      else if(f.k==='pellet'){const u=Math.min(1,k*1.1),px=f.x0+(f.x1-f.x0)*u,py=f.y0+(f.y1-f.y0)*u,L=f.small?1.6:2.4,dx=f.x1-f.x0,dy=f.y1-f.y0,dl=Math.hypot(dx,dy)||1;ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=f.small?'rgba(255,214,140,.9)':'rgba(255,236,170,.95)';ctx.lineWidth=f.small?.45:.6;ctx.beginPath();ctx.moveTo(px-dx/dl*L,py-dy/dl*L);ctx.lineTo(px,py);ctx.stroke();ctx.restore();}   /* 0.12.326 turret rounds: small fast slugs, like the nail gun */
       else if(f.k==='tracer'){ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(255,220,140,${1-k})`;ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(f.x0,f.y0);ctx.lineTo(f.x1,f.y1);ctx.stroke();glow(ctx,f.x0,f.y0,1.6,'#ffd080',.8*(1-k));ctx.restore();}}
     for(const h of g.alive())if(h.kitHits>0){ctx.fillStyle='rgba(200,208,220,.55)';ctx.fillRect(Math.round(g.heroX(h))-3,(h.gy||G)-14,6,1);}};
   const drawTent=T=>{const U=UNITS.tentacle;if(!U)return;const A=U[T.anim]||U.idle;let fr;const n=A.n;
     if(T.anim==='idle')fr=Math.floor(g.t*9+T.x)%n;else if(T.anim==='emerge')fr=Math.min(n-1,Math.floor(T.aT/.5*n));else if(T.anim==='attack')fr=Math.min(n-1,Math.floor(T.aT/.6*n));else if(T.anim==='hit')fr=Math.min(n-1,Math.floor(T.aT/.25*n));else fr=Math.min(n-1,Math.floor(T.aT/.8*n));
     ctx.save();shrinkAt(ctx,T.x,T.gy,HS);shadow(ctx,T.x,T.gy,9);drawUnit(ctx,A,fr,T.x,T.gy+1,T.big||1,null,T.hitT>0?(T.hitT-=1/60):0,0,T.face>0);ctx.restore();   // 0.12.70: Call_of_Cthulhu makes them 25% bigger
     if(T.hp<T.max&&T.anim!=='death'){const w=12,y=T.gy-36;ctx.fillStyle='#000a';ctx.fillRect(Math.round(T.x-w/2)-1,y-1,w+2,3);ctx.fillStyle='#9a50e8';ctx.fillRect(Math.round(T.x-w/2),y,Math.max(0,w*T.hp/T.max),1);}};
-  const items=[...(g.blds||[]).map(b=>[b.gy-.3,-1,b.x,()=>drawBld(b)]),...(g.blds||[]).filter(b=>b.k==='tower'&&b.hp>0&&b.tier>=1).map(b=>[Math.max(b.gy,...[b.occ,b.occ2].filter(Boolean).map(o=>o.gy||G))+.05,1,b.x,()=>drawTowerRail(b)]),...(g.tentacles||[]).map(T=>[T.gy+.1,0,T.x,()=>drawTent(T)]),...(g.obst||[]).map(o=>[OBST[o.k].flat?-999:LANES[Math.max(...o.lanes)]+.2,-1,o.x,()=>drawOb(o)]),...hs.filter(h=>h.alive).map(h=>[h.gy||G,0,h.x,()=>drawHero(h)]),...(g.clones||[]).map(c=>[c.gy,0,c.x,()=>drawClone(c)]),...es.map(e=>[e.boss?G-.5:(e.gy!=null&&!e.fly?e.gy:G+e.lane-5),1,-e.x,()=>drawEnemy(e)])]
+  const items=[...(g.blds||[]).map(b=>[b.gy-.3,-1,b.x,()=>drawBld(b)]),...(g.blds||[]).filter(b=>b.k==='tower'&&b.hp>0&&b.floors).map(b=>[Math.max(b.gy,...(b.occ||[]).filter(Boolean).map(o=>o.gy||G))+.05,1,b.x,()=>drawTowerRail(b)]),...(g.tentacles||[]).map(T=>[T.gy+.1,0,T.x,()=>drawTent(T)]),...(g.obst||[]).map(o=>[OBST[o.k].flat?-999:LANES[Math.max(...o.lanes)]+.2,-1,o.x,()=>drawOb(o)]),...hs.filter(h=>h.alive).map(h=>[h.gy||G,0,h.x,()=>drawHero(h)]),...(g.clones||[]).map(c=>[c.gy,0,c.x,()=>drawClone(c)]),...es.map(e=>[e.boss?G-.5:(e.gy!=null&&!e.fly?e.gy:G+e.lane-5),1,-e.x,()=>drawEnemy(e)])]
     .sort((a,b)=>a[0]-b[0]||a[1]-b[1]||a[2]-b[2]);
   // campfire (drawn behind the units) with sparks drifting up while it burns
   if(g.camp){const F=g.camp;let fr=0;if(F.state==='start')fr=1+Math.min(2,Math.floor(F.t/.3));else if(F.state==='burn')fr=4+Math.floor(g.t*8)%4;else if(F.state==='dying')fr=8+Math.min(2,Math.floor((F.dT||0)/.4));else fr=11;
@@ -5826,7 +5878,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.325</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.326</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
