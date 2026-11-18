@@ -1,25 +1,16 @@
-# Resume queue (updated 2026-11-18 14:10, live at 0.12.329)
-Restore if workspace is gone: clone crawl-dev, untar crawl_src_bundle.tgz into /home/claude, clone main to /home/claude/pod-rundown. Specs: engineer_spec.md, seekyle_spec.md.
+# Resume queue (updated 2026-11-18 15:48, live at 0.12.340)
+Restore if workspace is gone: clone crawl-dev, untar crawl_src_bundle.tgz into /home/claude, clone main to /home/claude/pod-rundown. Publish with /tmp/pub.sh VER "msg" (recreate from 00_RESUME_HERE.md if missing).
+Standing: push live yourself, notes entry each version, always give https://seekyle.github.io/Pod-Rundown/, back up to crawl-dev, message Kyle progress.
 
-## Kyle's order (from 11:51 msg + later):
-0. QUICK: Crypt Crawl landing: remove player-name cards (Kyle/Cheez/Leon/Eddie); just a "New game" button -> the 5 save files; show current run scores instead of names (no accounts yet).
-0b. Losing a level sheds 10% of total score + 75% of the run's score (was 50%).
-1. SeeKyle hero LIVE FIRST (seekyle_spec.md): cap-wearing white guy from Survivor M sheet, Leif + Leon kid sprites, Wolf Out!!! (kids from left, invulnerable, support, howl sfx, "WOLF OUT!!!" text), "Heart Warrior Dad" ability or passive, vibe coding / line cook / MTG / dark purple themes; ask about "Everyone, Come Together".
-   Character select order: SeeKyle, Eddie(Edward), Cheez, JP, Tee_Grizzle, then the rest.
-2. Life tracker on site: add 1-player (solo) and 2-player modes (now only 3/4/5/6).
-3. Engineer fixes: stuck walking in place next to cars/rocks near his tower (walk-in-place) — rule: no tower within 400 radius (screen px) of any spawned obstacle; build tower MUCH further up; turret base range +20%; HESCO never built since rework -> wall up lanes 150-200 px in front of his tower; tower hits 2/4/6 (was 4/6/8); zombies must beat on the tower when after units inside; units floating after leaving tower at end of level (exit/finish must unperch properly).
-4. Tee_Grizzle: Deathtouch kills shouldn't count damage (auto effect, no dmg stat), check if that caused 700/2800 dmg; Deathtouch can't affect Alphas. Then nerf if still too high (team ~325 on stage 1). Basic attack +0.75s between attacks. The Chop: use normal shot sound (not his voice clip). No_Effort: fire a real projectile down each lane (can miss; base attack damage; +3% crit, -5 accuracy, pierce 1); only sweep back if >=1 crit; lower his base crit; slightly reduce No_Effort CD. Clip: 12 rounds, 7s reload (3 per burst => 4 bursts); Extended Mag +3/6/9 (shown in tooltip with current rank highlighted).
-5. Talent trees overhaul (all heroes): each tree = T1 (3 choices), T2 (3), T3 = choice of 2 FULL capstones, T4 (3), T5 (3), T6 = choice of 2 capstones => 12 capstones per hero across 3 trees. Links: right capstone needs >=1 point in middle or right talent of the tier above; left capstone needs left or middle; only 1 capstone per capstone tier; picking a capstone locks the far-side talent below (e.g. right capstone -> can't pick left T4). T4/T5 juicier; most talents do a little more than one thing, balanced. Flashier visuals with link lines. Every talent must actually work; tooltip shows per-rank values (e.g. +3/6/9) with current rank highlighted; fix ranks showing the same value.
-6. Waves: 10 waves per level, distance-based levels. Stage 1 waves: 2,3,4,4,5,5,5,6,6,7 zombies. First wave when the screen first pans; rest evenly to the end; plus 1 zombie every 5s once first wave hits. Can't finish at end distance until on-screen enemies are dead. Basic zombie +5 HP; stage 1 amount +25% (superseded by waves?). Zombie replacement chance base 5%. Gold piles 2-4g; adjust gold talents/abilities.
-7. Bats: 10 HP, spawn as a cluster of 3 (3 for 1 zombie replacement), swoop 1d3, innate replace chance from the start. Armor can never reduce damage below 1.
-8. Alphas: 5x HP, 3x move+attack speed, 2x armor, 2x size and attack range; simulate; if still easy -> 10x HP, 4x armor. Kyle wants stage 5 Alpha to usually need a few retries (grind starts before 5). (NOTE: 0.12.325 removed Alpha fights; Kyle saw a fireman Alpha -> clarify / re-enable Alphas with these stats.)
-9. Werewolf rework: basic attack = his lunge with bigger AoE (no basic swing), mix in arm swipe from old basic; jumps from up to 300 px away, passes ~100 px past target hitting everything along the path.
-10. Zombie lane AI: stagger lane changes, chance a few break off to new lanes then re-plan.
-11. New game warning: if any picked hero has no Inspiration, "are you sure" (like food/water). Warhound food/water = spare parts on return or risk downed/injured debuffs in full.
-12. Items system live + tap-to-click info (no hover) at the same time. Then medium testing; make game hard (boost creature stats in 5s: +5 HP, +5 move etc; armor any digits).
-13. Lucky Dice rework (details in old queue below).
-14. Garage Needs Repair for most decks: weak cards, 75% from the highest stat, explain highest stat + lower stats to improve.
-15. Notes tabs (Website / Crypt Crawl). 16. Ominous Trails/doors (near last). 17. Breakable obstacles, lanes never fully blocked.
+DONE today: talent trees v2 (335), 10 waves + trickle (336/337), meetup circle fixes, plan lock 2-5s (abilities offer rethink), level cap 30 (337),
+gear system + tap-for-info (338), bats x3, Alphas 5x, JP sword 1d8+4, costly gear upgrades, trickle stall fix (339), werewolf lunge, Lucky Dice v2 (340).
 
-## Lucky Dice detail
-Pick Offense/Defense/Utility; 10 colors grey/white/lt green/dk green/lt blue/dk blue/lt purple/dk purple/lt orange/dk orange (dk orange lotto, rare not impossible); luck affects odds; formulas aware of clip/attack speed/reload (nail gun far less likely to roll d20 than Kar98; d20 rare even at best); dice-count and flat changes (bigger die -> harder to add dice); never negative or 0 dice; changed value shown in rarity color on char card. JP basic 1d8+4.
+## Remaining, Kyle's order
+5. Zombie lane AI: stagger lane changes; chance a few break off to new lanes then re-plan.
+6. Medium testing; game hard; boost creature stats in 5s (+5 HP, +5 move...). NOTE sims: stage 1 fresh lvl1 teams clear ~1-2/12 with trickle always on; stage 4+ bot teams lose even at lvl 20 (bot has no gear/insp/camp upgrades) -> look into this. Alpha (5x) wipes bot teams at lvl 9-14.
+7. New-game warning: "are you sure" if any picked hero has no Inspiration (like food/water warning).
+8. Warhound needs spare parts at camp (like food/water) or risks downed/injured debuffs in full.
+9. Garage Needs Repair pass for most decks: weak cards, 75% of cuts from the deck's highest stat, explain highest stat + lower stats to improve.
+10. Notes tabs (Website / Crypt Crawl).
+11. Breakable obstacles; lanes never fully blocked.
+12. Ominous Trails / doors+windows (near last).
