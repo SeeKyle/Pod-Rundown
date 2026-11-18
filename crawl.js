@@ -1123,7 +1123,7 @@ function inSmoke(g,x,gy){return (g.clouds||[]).some(S=>S.A&&S.A.rev&&Math.abs(S.
 const SG_SENSE=42;   /* 0.12.203: shotgun trap sensor reach, world px (125 screen px) */
 function bombTrig(g,x,gy,Z,who){Z=Z||{w0:6.7,w1:3.3};for(const e of (who||g.enemies)){if(e.dead||e.fly||e.rush)continue;   /* 0.12.201: JP mid-Familia-dash triggers nothing */const ex=e.key?g.heroX(e):e.x,dz=Math.abs(((e.gy!=null?e.gy:g.G))-gy),dx=Math.abs(ex-x)-(e.boss?e.w*.5:0);
     if((dz<=3.5&&dx<=Z.w0)||(dz>3.5&&dz<=11.5&&dx<=Z.w1))return e;}return null;}
-function dynMv(h){let m=1-(h.hunger>0?HUNGER.spd[h.hunger]:0);if(h.fdoT>0)m+=.2;if(h.key==='jp'&&!(h.highT>0)&&(h.soberT||0)>10)m-=.1;if(h.gritT>0)m+=h.gritMv||0;if(h.cozyT>0)m+=.1;return m;}
+function dynMv(h){let m=1-(h.hunger>0?HUNGER.spd[h.hunger]:0);if(h.fdoT>0)m+=.2;if(h.key==='jp'&&!(h.highT>0)&&(h.soberT||0)>10)m-=.1;if(h.gritT>0)m+=h.gritMv||0;if(h.cozyT>0)m+=.1;return m*(h.evMv||1);}
 function abOrder(L){L=L||[];return [...L.filter(a=>!a.passive),...L.filter(a=>a.passive)];}
 function fleshy(u){return !(u&&u.key==='robot');}
 function g_free(o,h){return !o.looted&&!(o.searchBy&&o.searchBy!==h&&o.searchBy.alive&&o.searchBy.search&&o.searchBy.search.o===o);}
@@ -1523,6 +1523,8 @@ class Game{
     this.heroes.forEach((h,i)=>{h.x=this.home(h);const saved=this.run.heroes[h.key];h.hp=saved.dead?h.max*.25:Math.max(1,h.max*(saved.hpf==null?1:saved.hpf));});
     for(const h of this.heroes)if(h.thirst>0){const T=h.thirst;addMood(h,{perc:-THIRST.perc[T],plan:-THIRST.think[T],exec:-THIRST.think[T]},1e9,'thirst');}   /* 0.12.72 thirst: foggy head */
     this.mods=this.demo?scoutMods(null):scoutMods(this.run);
+    this.evm=this.demo?evMods(null):evMods(this.run);{const V=this.evm,m=this.mods;for(const k of ['foes','gold','supply','parts','cars','grove'])m[k]=(m[k]||1)*V[k];   /* 0.12.325 events: next-stage and permanent effects */
+      for(const h of this.heroes){h.evDmg=V.dmg;h.evTaken=V.taken;h.evMv=V.mv;if(V.en)h.en=h.enMax||100;}}
     {const kt=upgT(this.run,'kennel');if(kt&&!this.demo)this.spawnDog(kt);}
     for(const h of this.heroes)if((h.base.char&&h.base.char.abilities||[]).some(a=>a.id==='elite'))this.callPal(h,{heal:0});   /* 0.12.68 Elite_Survivors: she starts the stage beside him */
     {for(const h of this.heroes){const sv=this.run.heroes[h.key];const cr=sv.carry;   /* Triage builds ride along into the stage */
@@ -1624,7 +1626,7 @@ class Game{
     const hp=Math.max(1,Math.round(E.hp*st.hpMul*ENEMY_HP))*(elite?2.6:1);   /* 0.12.103: zombies trimmed with hero damage so fights take as long as before */
     const e={type,E,x:this.W+10+this.rng()*20,y:E.fly?this.G-100+this.rng()*30:this.G,hp,max:hp,dmg:(E.dmg||E.dmgDie/2+.5)*st.dmgMul*(elite?1.5:1),dmgMul:st.dmgMul*(elite?1.5:1),skin:E.skins?E.skins[Math.floor(this.rng()*E.skins.length)]:type,atkT:this.rng()*.5,
       walkT:this.rng(),anim:0,animT:0,slow:0,slowT:0,stun:0,burn:0,burnT:0,shred:0,elite,armorPts:Math.floor((E.armorPts||0)*Math.pow(1.03,(st.n||1)-1)),fly:!!E.fly,ranged:!!E.ranged,acc:E.acc||0,hitFlash:0,phase:this.rng()*6,target:null};
-    if(opt)Object.assign(e,opt);e.elite=false;   /* 0.12.142 (Kyle): no elites at all (the leftover elite:'roll' made every wave zombie secretly elite); only promoted Nemeses are different */
+    if(opt)Object.assign(e,opt);e.elite=false;if(this.evm&&!this.demo){if(this.evm.zdmg!==1){e.dmg*=this.evm.zdmg;e.dmgMul*=this.evm.zdmg;}if(this.evm.zspd!==1){e.E=Object.create(e.E);e.E.spd*=this.evm.zspd;}}   /* 0.12.325 events */   /* 0.12.142 (Kyle): no elites at all (the leftover elite:'roll' made every wave zombie secretly elite); only promoted Nemeses are different */
     this.enemies.push(e);return e;
   }
   spawnBoss(){
@@ -1650,7 +1652,7 @@ class Game{
   hitEnemy(e,amt,src,opt){
     if(src&&src.perch&&src.perch.roofP&&src.perch.st==='fight')amt*=1.15;else if(src&&src.perch&&src.perchDmg&&src.climbT>=1)amt*=1+src.perchDmg;
     if(src&&src.bnIn)amt*=1+src.bnIn.dmg;   /* 0.12.243 standing in the Dice-Boys_Banner */   /* 0.12.236 tower floors: top +15%, tier 2 +7.5% */   /* 0.12.124 (Kyle): shooting down from a storefront roof: +15% damage from the height */
-    if(e.dead||amt<=0)return 0;opt=opt||{};{let o=src,n=0;while(o&&o.owner&&!o.base&&n++<4)o=o.owner;const M=o&&o.base&&HERO_DMG[o.key];if(M)amt*=M;}   /* 0.12.103 (Kyle): every hero's damage tuned so a stage-1 hero averages about 300; healers and utility lower */if(opt.fire&&e.E&&e.E.fireImmune){amt*=.25;if(!opt.quiet&&this.rng()<.3)this.text(e.x,e.y-40,'resist','#9ab');}   /* 0.12.236 (Kyle): damage-type immunity now ignores 75% of the damage (debuff immunities stay 100%) */if(src&&src.key){e.lastHitBy=src;e.grudgeT=1+14*trait(e,'grudge');}
+    if(e.dead||amt<=0)return 0;opt=opt||{};{let o=src,n=0;while(o&&o.owner&&!o.base&&n++<4)o=o.owner;const M=o&&o.base&&HERO_DMG[o.key];if(M)amt*=M;if(o&&o.evDmg)amt*=o.evDmg;}   /* 0.12.103 (Kyle): every hero's damage tuned so a stage-1 hero averages about 300; healers and utility lower */if(opt.fire&&e.E&&e.E.fireImmune){amt*=.25;if(!opt.quiet&&this.rng()<.3)this.text(e.x,e.y-40,'resist','#9ab');}   /* 0.12.236 (Kyle): damage-type immunity now ignores 75% of the damage (debuff immunities stay 100%) */if(src&&src.key){e.lastHitBy=src;e.grudgeT=1+14*trait(e,'grudge');}
     if(!opt.sure&&e.E&&e.E.dodge&&this.rng()<e.E.dodge){this.text(e.x,e.y-30,'miss','#9aa');this.failAct(src);return 0;}
     let crit=false;if(src&&!opt.nocrit&&this.rng()<src.crit+(opt.critAdd||0)+.01*(src.inevN||0)+(src.laughT>0?.05:0)){amt*=(opt.critMul||src.critMul||1.75);crit=true;if(src.raT>0&&src.key==='archer')src.raT*=.5;   /* One Nocked passive: any crit halves its remaining cooldown */if(src.inevN){src.luck-=2*src.inevN*(hasPerk(src,'superlucky')?2:1);src.inevN=0;}
       const HR=!opt.fromTent&&src.base&&src.base.char&&(src.base.char.abilities||[]).find(a=>a.id==='herald');if(HR){src.critRegenT=HR.critT;for(const T of this.tentacles||[])T.heraldT=HR.critT;}}   // Herald: his crits (not his tentacles') feed him and every tentacle he has out   // Herald: crits feed energy
@@ -1724,7 +1726,7 @@ class Game{
   }
   spellRank(h,arch){const s=h.spells.find(s=>s.arch===arch);return s?s.r:0;}
   gainXp(xp){
-    xp*=this.team.xp*(1+ffT(this.run,'xp'))*XP_MUL;   /* 0.12.237 Fall Forward: +10/15/20% XP while you carry stacks */this.stageXp+=xp;
+    xp*=this.team.xp*(1+ffT(this.run,'xp'))*XP_MUL*((this.evm&&this.evm.xp)||1);   /* 0.12.237 Fall Forward: +10/15/20% XP while you carry stacks */this.stageXp+=xp;
     if(this.demo)return;
     this.run.xp=(this.run.xp||0)+xp;
     while(this.run.xp>=needRunXp(this.run.lv||0)){this.run.xp-=needRunXp(this.run.lv||0);this.run.lv=(this.run.lv||0)+1;this.run.pending=(this.run.pending||0)+1;this.ev('levelup');}
@@ -1759,7 +1761,7 @@ class Game{
   bleedStep(u,dt){if(!u.bleeds){if(u.bleedT>0&&u.bleedDps>0){u.bleeds={old:{T:u.bleedT,dps:u.bleedDps}};}else return 0;}let dps=0,T=0;
     for(const k in u.bleeds){const b=u.bleeds[k];b.T-=dt;if(b.T<=0){delete u.bleeds[k];continue;}dps+=b.dps;T=Math.max(T,b.T);}u.bleedT=T;u.bleedDps=dps;if(!T)u.bleeds=null;return dps;}
   hurtHero(h,amt,from){
-    if(!h||!h.alive)return;
+    if(!h||!h.alive)return;if(h.evTaken)amt*=h.evTaken;   /* 0.12.325 events */
     /* 0.12.65 (Kyle) Guard Dog: no HP, he can take 5 hits (6 with a Tier III Kennel) before he goes down; one hit comes back every 15s (10s at Tier III).
        He can't be healed, but anyone can help him up (dogs never help others up: no hands). */
     if(h.dog){if(!this._noDodge&&this.rng()<h.dodge){this.text(h.x,this.G-30,'dodge','#9ae6ff');return false;}if(h.invulnT>0)return false;h.hits=(h.hits||0)-1;h.hitFlash=.12;h.hitRegT=0;h.hp=h.max*Math.max(0,h.hits)/h.hitsMax;
@@ -2102,11 +2104,12 @@ class Game{
         this.strays.sort((p,q)=>p-q);}
       if(!this.demo&&this.nemQ&&this.nemQ.length&&this.dist>=this.st.len*.4)this.spawnNemesis(this.nemQ.shift());
       if(!this.demo&&!this.supplyDrop&&this.run&&upgT(this.run,'radio')>=2&&this.dist>=this.st.len*.5){this.supplyDrop=1;const gy=LANES[1]||this.G;for(const [k,dx] of [['food',0],['water',8],['parts',16]])this.loot.push({kind:k,x:this.W-14+dx,gy,amt:k==='parts'?2:1,t:0});this.text(this.W-40,gy-50,'📻 SUPPLY DROP','#a6ff2e',true);for(const h of this.alive())if(!h.pet&&Math.random()<.4)Comms.bubble(this,h,Comms.pick(['Radio says supplies incoming!','Care package!','Grab the drop!']));}   /* 0.12.246 Radio Shack II */
+      if(this.evm&&this.evm.ambush&&!this.ambushDone&&!this.demo&&this.dist>20){this.ambushDone=1;const n=4+2*this.evm.ambush+Math.floor((this.st.n||1)/4);for(let i=0;i<n;i++)this.spawnEnemy('zombie',{x:i%3===0?-12-this.rng()*14:this.W+10+this.rng()*30});this.text(this.W*.5,this.G-90,'AMBUSH!','#ff5a3a');for(const h of this.alive())Brain.panic(this,h,'alarm');}   /* 0.12.325 event: ambush from both sides */
       while(this.strays&&this.strays.length&&this.dist>=this.strays[0]){this.strays.shift();if(this.enemies.filter(e=>!e.dead).length<24)this.spawnEnemy('zombie',{x:this.W+10+this.rng()*22,elite:'roll',stray:1});}
       const C0=this.clusters[0];
       if(C0&&this.dist>=C0.at){if(!C0.alerted){C0.alerted=1;const rt=!this.demo&&this.run?upgT(this.run,'radio'):0,first=!this.radioFirst;this.radioFirst=1;if(rt>=2||rt>=1&&first)for(const h of this.alive())if(!h.pet){if(!(h.alertT>0))h.acc+=10;h.alertT=5;}}   /* 0.12.105 Radio Shack II: early warning */C0.t-=dt;if(C0.t<=0&&this.enemies.filter(e=>!e.dead).length<28){C0.left--;C0.t=.12+this.rng()*.35;
           {const scr=C0.scr>0&&C0.left<=C0.scr;if(scr)C0.scr--;this.spawnEnemy(scr?'screamer':this.pickType(),{x:this.W+10+this.rng()*22+(scr?14+this.rng()*10:0),elite:'roll'});}   /* 0.12.231 (Kyle): Screamers come in at the back of a group (the last ones out, a little further behind) */if(C0.left<=0)this.clusters.shift();}}}
-    if(!stageDone&&!this.demo){if(!this.demo&&!this.bossFormDone){const BT=bossFormType(this.st.n);if(BT&&this.dist>=this.st.len*.5){this.bossFormDone=1;this.spawnBossForm(BT);}}
+    if(!stageDone&&!this.demo){if(!this.demo&&!this.bossFormDone){const BT=bossFormType(this.st.n);if(BT&&this.dist>=this.st.len*.5){this.bossFormDone=1;const U=runUnlocks(this.run);if(U[BT]==null){U[BT]=this.st.n;const E0=CFG.enemies[BT];this.text(this.W*.6,this.G-90,'NEW THREAT: '+((E0&&E0.name)||BT).replace(/_/g,' ').toUpperCase()+'S','#ffd23f');}}   /* 0.12.325 (Kyle): no bosses for now. The Alpha fights are gone; the next zombie type just starts showing up from the middle of every 5th stage */}
     if(!this.wolfPlan){const k=(this.demo||runUnlocks(this.run).werewolf!=null)?WOLVES_PER_STAGE(this.st.n):0;this.wolfPlan=[];for(let i=0;i<k;i++)this.wolfPlan.push(this.st.len*(.12+.68*(i+.2+.4*this.rng())/k));}
       while(this.wolfPlan.length&&this.dist>=this.wolfPlan[0]){this.wolfPlan.shift();this.spawnEnemy('werewolf');}}
     else if(this.st.boss&&!this.bossSpawned&&!this.enemies.some(e=>!e.dead))this.spawnBoss();
@@ -4459,6 +4462,7 @@ function campArrive(s,run){if(run.campAt===run.stage)return [];run.campAt=run.st
   const g=upgT(run,'garden');if(g){const n=g===1?(Math.random()<.5?1:0):g===2?1:2;if(n){run.food+=n;log.push(`🌱 Garden: +${n} food`);}}
   const r=upgT(run,'rain');if(r){const n=r===1?(Math.random()<.5?1:0):1;if(n){run.water+=n;log.push(`🛢️ Rain Barrels: +1 water`);}}
   if(upgT(run,'kennel')){const f0=run.food||0,w0=run.water||0;run.food=Math.max(0,Math.round((f0-.5)*2)/2);run.water=Math.max(0,Math.round((w0-.5)*2)/2);log.push(`🐕 Feeding the doggos: -${f0-run.food} food, -${w0-run.water} water`);}   /* 0.12.204 (Kyle): the kennel eats 0.5 food and 0.5 water every camp */
+  if(run.evPerm&&run.evPerm.partsCamp){s.parts+=run.evPerm.partsCamp;log.push(`🚚 Convoy fuel: +${run.evPerm.partsCamp} spare parts`);}   /* 0.12.325 event */
   const y=upgT(run,'yard');if(y){s.parts+=y;log.push(`⚙️ Scrap Yard: +${y} spare part${y>1?'s':''}`);}
   const w=upgT(run,'water');if(w&&hungry.length&&Math.random()<[.25,.5,.75][w-1]){const th=hungry.filter(k=>run.heroes[k].thirst>0);const k=th[Math.floor(Math.random()*th.length)];if(k){run.heroes[k].thirst=Math.max(0,run.heroes[k].thirst-1);log.push(`💧 Water Filtration gave ${heroDef(k).name} a drink`);}}
   const cb=upgT(run,'cots');if(cb){for(const k of run.team){const hv=run.heroes[k];if(!hv.dead)hv.hpf=Math.min(1,(hv.hpf==null?1:hv.hpf)+[.1,.2,.3][cb-1]);}log.push(`🛏️ Med Cots: everyone +${[10,20,30][cb-1]}% HP`);}
@@ -4601,17 +4605,174 @@ function treeCanRemove(k,H,id){const r=(H.tree||{})[id]||0;if(!r)return false;co
 function treeRemove(k,H,id){if(!treeCanRemove(k,H,id))return false;H.tree[id]--;if(!H.tree[id])delete H.tree[id];return true;}
 function treeReset(H){H.tree={};}
 
+/* 0.12.325 (Kyle) EVENTS. After every 3rd stage cleared (3, 6, 9, 12, 15, 18, ...) the team runs into an EVENT;
+   after every 10th (10, 20, 30, ...) a MAJOR event. Every event is a multiple-choice window: a short story and 2-4 choices.
+   Choices can pay out right away at camp, cost resources, hurt or heal people, or change the NEXT stage
+   (how many zombies, loot, wrecks, how hard the zombies hit, a team-wide buff or debuff).
+
+   WHY an event shows up: each event has a weight that reacts to how the run is going, so the events tell a story:
+     low food/water -> food-and-water events more likely; lots of gold -> raiders and traders; injuries -> medics and doctors;
+     many falls -> second-wind events; a Warhound or Engineer on the team -> scrap events; Downtown vs the lake -> different scenery;
+     a run that's going great -> trouble finds you (raids, tougher hordes). The same event never shows twice in a row.
+   Next-stage effects live on run.evNext (cleared once that stage is beaten); permanent ones on run.evPerm. */
+const EV_EVERY=3,EV_MAJOR=10;
+function eventKind(cleared){return cleared%EV_MAJOR===0?'major':cleared%EV_EVERY===0?'normal':null;}
+function evCtx(s,run){const st=CFG.stage(run.stage,run.prestige);const T=run.team;const inj=T.reduce((a,k)=>a+((run.heroes[k]&&run.heroes[k].inj)||[]).length,0);
+  const hungry=T.filter(k=>run.heroes[k]&&((run.heroes[k].hunger||0)>0||(run.heroes[k].thirst||0)>0)).length;
+  return {s,run,T,city:st.biome&&st.biome.id==='city',gold:s.gold||0,parts:s.parts||0,food:run.food||0,water:run.water||0,inj,hungry,falls:run.falls||0,
+    has:k=>T.includes(k),low:(run.food||0)+(run.water||0)<3,rich:(s.gold||0)>=250,hurt:T.filter(k=>run.heroes[k]&&(run.heroes[k].hpf==null?1:run.heroes[k].hpf)<.6).length};}
+/* ---- effect helpers (all return a short log line) ---- */
+const EVX={
+  give(c,o){const L=[];const s=c.s,run=c.run;
+    if(o.gold){s.gold=Math.max(0,(s.gold||0)+o.gold);L.push((o.gold>0?'+':'')+o.gold+' gold');}
+    if(o.parts){s.parts=Math.max(0,(s.parts||0)+o.parts);L.push((o.parts>0?'+':'')+o.parts+' spare parts');}
+    if(o.food){run.food=Math.max(0,(run.food||0)+o.food);L.push((o.food>0?'+':'')+o.food+' food');}
+    if(o.water){run.water=Math.max(0,(run.water||0)+o.water);L.push((o.water>0?'+':'')+o.water+' water');}
+    if(o.lucky){s.lucky=Math.max(0,(s.lucky||0)+o.lucky);L.push((o.lucky>0?'+':'')+o.lucky+' Lucky Die');}
+    if(o.reroll){run.rerolls=(run.rerolls||0)+o.reroll;L.push('+'+o.reroll+' reroll');}
+    if(o.med)for(const [m,n] of Object.entries(o.med)){run.med=run.med||{};run.med[m]=(run.med[m]||0)+n;L.push('+'+n+' '+MEDS[m].name);}
+    return L.join(', ');},
+  hp(c,pct,who){const ks=who||c.T;for(const k of ks){const H=c.run.heroes[k];if(!H||H.dead)continue;H.hpf=Math.max(.1,Math.min(1,(H.hpf==null?1:H.hpf)+pct));}
+    return (pct>0?'+':'')+Math.round(pct*100)+'% HP to '+(who&&who.length===1?heroDef(who[0]).name:'everyone');},
+  feed(c,n){for(const k of c.T){const H=c.run.heroes[k];if(!H||k==='robot')continue;H.hunger=Math.max(0,Math.min(3,(H.hunger||0)-n));H.thirst=Math.max(0,Math.min(3,(H.thirst||0)-n));}
+    c.run.needFeed=n>0?[]:c.run.needFeed;return n>0?'everyone ate and drank':'everyone got hungrier and thirstier';},
+  injure(c,k,id){const H=c.run.heroes[k];if(!H||k==='robot')return '';const ids=['leg','arm','wound','concuss'];id=id||ids[Math.floor(Math.random()*ids.length)];
+    H.inj=H.inj||[];if(!H.inj.some(x=>x.id===id))H.inj.push({id,st:INJURY[id].st,fresh:1});return heroDef(k).name+' got a '+INJURY[id].name;},
+  cure(c){for(const k of c.T){const H=c.run.heroes[k];if(H&&H.inj&&H.inj.length){const x=H.inj.shift();return 'cured '+heroDef(k).name+'\'s '+INJURY[x.id].name;}}return 'nobody needed it';},
+  next(c,o,why){const E=c.run.evNext=c.run.evNext||{why:[]};for(const [k,v] of Object.entries(o)){if(k==='en'||k==='ambush')E[k]=(E[k]||0)+v;else E[k]=(E[k]||1)*v;}if(why)E.why.push(why);return 'next stage: '+why;},
+  perm(c,o,why){const P=c.run.evPerm=c.run.evPerm||{why:[]};for(const [k,v] of Object.entries(o))P[k]=(P[k]||1)*v;if(why)P.why.push(why);return 'for the rest of the run: '+why;},
+  rnd(a){return a[Math.floor(Math.random()*a.length)];},
+  pick(c){return EVX.rnd(c.T.filter(k=>!(c.run.heroes[k]&&c.run.heroes[k].dead)));},
+  roll(p,c){const lk=c.T.reduce((a,k)=>a+((c.s.heroes[k]&&c.s.heroes[k].insp&&INSP[c.s.heroes[k].insp]&&INSP[c.s.heroes[k].insp].mod&&INSP[c.s.heroes[k].insp].mod.luck)||0),0);return Math.random()<Math.min(.95,p+lk*.004);}};
+const nm=k=>heroDef(k)?heroDef(k).name:k;
+/* each choice: t = button text, d = what it does (shown under the button), need(c) -> false or a reason it can't be picked, fx(c) -> log line */
+const EVENTS=[
+ /* ---------- NORMAL ---------- */
+ {id:'pantry',icon:'🥫',title:'The Untouched Pantry',w:c=>c.low?3:1,text:c=>c.city?'A corner store with its shutter half down. Behind the counter: shelves nobody has touched. Something is moving in the stock room.':'A hunting cabin with the door still locked. Through the window: canned food stacked to the ceiling. Something is scratching inside.',
+  ch:[{t:'Clear the stock room and take it all',d:'+3 food, +3 water. One random person gets hurt (-25% HP).',fx:c=>{const k=EVX.pick(c);return EVX.give(c,{food:3,water:3})+'; '+EVX.hp(c,-.25,[k]);}},
+      {t:'Grab what\'s by the door and go',d:'+1 food, +1 water.',fx:c=>EVX.give(c,{food:1,water:1})},
+      {t:'Board it up and mark it for later',d:'Next stage: food and water drop 2x as often.',fx:c=>EVX.next(c,{supply:2},'food and water drop 2x as often')}]},
+ {id:'trader',icon:'🧳',title:'A Trader on the Road',w:c=>c.rich?3:1.2,text:()=>'A wiry old man with a shopping cart full of junk waves you down. "Everything\'s for sale, friends. Everything."',
+  ch:[{t:'Buy medicine (60 gold)',d:'A Splint and a Hemostat.',need:c=>c.gold<60&&'Not enough gold',fx:c=>EVX.give(c,{gold:-60,med:{splint:1,hemo:1}})},
+      {t:'Buy supplies (40 gold)',d:'+2 food, +2 water.',need:c=>c.gold<40&&'Not enough gold',fx:c=>EVX.give(c,{gold:-40,food:2,water:2})},
+      {t:'Sell him scrap',d:'-6 spare parts, +70 gold.',need:c=>c.parts<6&&'Not enough spare parts',fx:c=>EVX.give(c,{parts:-6,gold:70})},
+      {t:'Wave him off',d:'Nothing happens.',fx:()=>'he shrugs and pushes his cart on'}]},
+ {id:'raiders',icon:'🏴',title:'Raiders Want a Toll',w:c=>(c.rich?3:.8)*(c.gold>=50?1:.2),text:()=>'Three armed survivors block the road. "Nice gear. Pay up, or we take it from whoever we drop."',
+  ch:[{t:'Pay the toll',d:'Lose 30% of your gold.',fx:c=>EVX.give(c,{gold:-Math.round(c.gold*.3)})},
+      {t:'Fight them',d:'Keep your gold. 50/50: win and take theirs (+60 gold), or everyone takes a beating (-30% HP).',fx:c=>EVX.roll(.5,c)?'you ran them off: '+EVX.give(c,{gold:60}):'they hit hard before running: '+EVX.hp(c,-.3)},
+      {t:'Take the long way around',d:'Next stage: 15% more zombies, but they never find you.',fx:c=>EVX.next(c,{foes:1.15},'15% more zombies (the long way)')}]},
+ {id:'stranger',icon:'🩸',title:'A Bitten Stranger',w:c=>1,text:()=>'A woman sits against a wall, pressing a rag to her arm. "It\'s not a bite. I swear it\'s not a bite." She has a full backpack.',
+  ch:[{t:'Patch her up',d:'Costs 1 Hemostat or 8 spare parts. She gives you her pack: +2 food, +2 water, +1 Lucky Die.',need:c=>!((c.run.med&&c.run.med.hemo)>0)&&c.parts<8&&'Need a Hemostat or 8 spare parts',fx:c=>{if(c.run.med&&c.run.med.hemo>0)c.run.med.hemo--;else c.s.parts-=8;return 'she thanks you: '+EVX.give(c,{food:2,water:2,lucky:1});}},
+      {t:'Take the pack, leave her',d:'+2 food, +2 water. Morale drops: next stage everyone deals 8% less damage.',fx:c=>EVX.give(c,{food:2,water:2})+'; '+EVX.next(c,{dmg:.92},'everyone deals 8% less damage (guilt)')},
+      {t:'Walk away',d:'Nothing happens.',fx:()=>'you leave her be'}]},
+ {id:'cache',icon:'📦',title:'A Military Cache',w:c=>c.has('soldier')||c.has('eng')?2:1,text:()=>'A green crate under a tarp, stenciled with a unit number. It\'s padlocked and wired to something.',
+  ch:[{t:'Pick the lock carefully',d:'70% chance: +12 spare parts and a Lucky Die. Otherwise it blows: everyone -20% HP.',fx:c=>EVX.roll(.7,c)?'it opens clean: '+EVX.give(c,{parts:12,lucky:1}):'BOOM: '+EVX.hp(c,-.2)},
+      {t:'Smash it open',d:'+6 spare parts, guaranteed. The noise draws them: next stage has 10% more zombies.',fx:c=>EVX.give(c,{parts:6})+'; '+EVX.next(c,{foes:1.1},'10% more zombies (the noise)')},
+      {t:'Leave it',d:'Nothing happens.',fx:()=>'better safe'}]},
+ {id:'storm',icon:'⛈️',title:'A Storm Rolls In',w:c=>c.city?.6:1.5,text:()=>'The sky goes black and the rain comes down in sheets. The dead hate the cold, but so do you.',
+  ch:[{t:'Wait it out',d:'Everyone rests: +20% HP, but you use up 1 food and 1 water.',need:c=>(c.food<1||c.water<1)&&'Need 1 food and 1 water',fx:c=>EVX.give(c,{food:-1,water:-1})+'; '+EVX.hp(c,.2)},
+      {t:'Push through the storm',d:'Next stage: zombies move 10% slower in the mud, but you do too (-8% move speed).',fx:c=>EVX.next(c,{zspd:.9,mv:.92},'zombies 10% slower, you 8% slower (mud)')},
+      {t:'Catch the rain',d:'+3 water.',fx:c=>EVX.give(c,{water:3})}]},
+ {id:'pharmacy',icon:'💊',title:'A Looted Pharmacy',w:c=>(c.city?2:.5)*(c.inj?2:1),text:()=>'Glass everywhere, shelves stripped. But the back room door is still locked.',
+  ch:[{t:'Break into the back room',d:'+1 Painkillers, +1 Splint. 40% chance a few zombies were locked in: one person gets hurt.',fx:c=>{let L=EVX.give(c,{med:{pills:1,splint:1}});if(!EVX.roll(.6,c))L+='; '+EVX.hp(c,-.3,[EVX.pick(c)]);return L;}},
+      {t:'Search the floor',d:'+1 Painkillers.',fx:c=>EVX.give(c,{med:{pills:1}})}]},
+ {id:'campfire',icon:'🔥',title:'Someone Else\'s Campfire',w:c=>c.city?.6:1.6,text:()=>'Warm coals, a pot still bubbling, and nobody around. Their tracks lead into the trees.',
+  ch:[{t:'Eat their stew',d:'Everyone eats and drinks (Hunger and Thirst down 1).',fx:c=>EVX.feed(c,1)},
+      {t:'Follow the tracks',d:'60% chance: you find their stash (+40 gold, +4 spare parts). Otherwise it\'s a trap: next stage starts with an ambush.',fx:c=>EVX.roll(.6,c)?'their stash: '+EVX.give(c,{gold:40,parts:4}):EVX.next(c,{ambush:1},'an ambush right at the start')},
+      {t:'Leave it',d:'Nothing happens.',fx:()=>'not your food'}]},
+ {id:'horde',icon:'🧟',title:'Horde Tracks',w:c=>c.falls?.6:1.4,text:()=>'Thousands of footprints in the dirt, all heading the same way you are.',
+  ch:[{t:'Get ahead of them',d:'Next stage: 20% fewer zombies, but everyone starts at -15% HP from the forced march.',fx:c=>EVX.hp(c,-.15)+'; '+EVX.next(c,{foes:.8},'20% fewer zombies')},
+      {t:'Hit them head on',d:'Next stage: 25% more zombies and everyone gets 50% more XP from kills.',fx:c=>EVX.next(c,{foes:1.25,xp:1.5},'25% more zombies, +50% XP')},
+      {t:'Wait for them to pass',d:'Costs 1 food and 1 water. Nothing else changes.',need:c=>(c.food<1||c.water<1)&&'Need 1 food and 1 water',fx:c=>EVX.give(c,{food:-1,water:-1})}]},
+ {id:'scrapheap',icon:'⚙️',title:'A Junkyard',w:c=>c.has('robot')||c.has('eng')?2.5:.8,text:()=>'Stacks of crushed cars and a crane that still has a little juice in it.',
+  ch:[{t:'Strip it for an hour',d:'+10 spare parts. Next stage starts a little later at night: zombies hit 5% harder.',fx:c=>EVX.give(c,{parts:10})+'; '+EVX.next(c,{zdmg:1.05},'zombies hit 5% harder')},
+      {t:'Grab what\'s on top',d:'+4 spare parts.',fx:c=>EVX.give(c,{parts:4})},
+      {t:'Use the crane to block the road behind you',d:'Next stage: no stragglers come in loud (10% fewer zombies).',fx:c=>EVX.next(c,{foes:.9},'10% fewer zombies')}]},
+ {id:'radio',icon:'📻',title:'A Voice on the Radio',w:c=>1,text:()=>'"...anyone out there... supply drop at the old ...ksshh... repeat..." The signal fades in and out.',
+  ch:[{t:'Chase the signal',d:'Next stage: food, water and spare parts drop 1.5x as often, but 15% more zombies follow the same signal.',fx:c=>EVX.next(c,{supply:1.5,parts:1.5,foes:1.15},'more supplies, 15% more zombies')},
+      {t:'Answer it',d:'50/50: they send a Lucky Die your way, or it was a lure (next stage: 20% more zombies).',fx:c=>EVX.roll(.5,c)?EVX.give(c,{lucky:1}):EVX.next(c,{foes:1.2},'20% more zombies (it was a lure)')},
+      {t:'Turn it off',d:'Nothing happens.',fx:()=>'static'}]},
+ {id:'kids',icon:'🎒',title:'Scavenger Kids',w:c=>c.low?.5:1,text:()=>'Two kids with slingshots and a wagon full of cans. They look scared of you and hungry.',
+  ch:[{t:'Give them food (2 food)',d:'They tell you a safe route: next stage has 15% fewer zombies, and you get a Lucky Die.',need:c=>c.food<2&&'Need 2 food',fx:c=>EVX.give(c,{food:-2,lucky:1})+'; '+EVX.next(c,{foes:.85},'15% fewer zombies (safe route)')},
+      {t:'Trade with them',d:'-20 gold, +2 food, +2 water.',need:c=>c.gold<20&&'Not enough gold',fx:c=>EVX.give(c,{gold:-20,food:2,water:2})},
+      {t:'Let them be',d:'Nothing happens.',fx:()=>'they run off'}]},
+ {id:'doctor',icon:'🩺',title:'A Doctor in Hiding',w:c=>c.inj?3:c.hurt?1.5:.4,text:()=>'A man in scrubs points a shotgun at you from a window. "I can help you. For a price."',
+  ch:[{t:'Pay for treatment (50 gold)',d:'Cures one injury and heals everyone +30%.',need:c=>c.gold<50&&'Not enough gold',fx:c=>EVX.give(c,{gold:-50})+'; '+EVX.cure(c)+'; '+EVX.hp(c,.3)},
+      {t:'Trade parts (8 spare parts)',d:'Heals everyone +25%.',need:c=>c.parts<8&&'Not enough spare parts',fx:c=>EVX.give(c,{parts:-8})+'; '+EVX.hp(c,.25)},
+      {t:'Leave',d:'Nothing happens.',fx:()=>'he lowers the gun'}]},
+ {id:'bridge',icon:'🌉',title:'The Broken Bridge',w:c=>c.city?.5:1.2,text:()=>'The bridge ahead is half gone. You could climb across the beams, or go the long way through the woods.',
+  ch:[{t:'Climb the beams',d:'60% chance it goes fine. Otherwise someone falls and breaks a leg.',fx:c=>EVX.roll(.6,c)?'everyone made it':EVX.injure(c,EVX.pick(c),'leg')},
+      {t:'Go through the woods',d:'Next stage: twice as many rocks, logs and stumps to search, and 10% more zombies.',fx:c=>EVX.next(c,{grove:2,foes:1.1},'2x searchable rocks and logs, 10% more zombies')}]},
+ {id:'gunstore',icon:'🔫',title:'A Gun Store',w:c=>c.city?2:.4,text:()=>'The steel door is open a crack. Shell casings everywhere, and a smell you don\'t want to think about.',
+  ch:[{t:'Go in and look for ammo',d:'Next stage: everyone deals +12% damage. 30% chance someone gets hurt inside.',fx:c=>{let L=EVX.next(c,{dmg:1.12},'+12% damage');if(!EVX.roll(.7,c))L+='; '+EVX.hp(c,-.3,[EVX.pick(c)]);return L;}},
+      {t:'Check the counter only',d:'+5 spare parts.',fx:c=>EVX.give(c,{parts:5})}]},
+ {id:'dogs',icon:'🐺',title:'Wild Dogs',w:c=>c.city?.8:1.3,text:()=>'A pack of thin, wild dogs circles your camp, growling. They\'re not dead. Just starving.',
+  ch:[{t:'Throw them food (1 food)',d:'They leave you alone, and one follows you: next stage everyone moves 6% faster (they warn you of danger).',need:c=>c.food<1&&'Need 1 food',fx:c=>EVX.give(c,{food:-1})+'; '+EVX.next(c,{mv:1.06},'+6% move speed')},
+      {t:'Scare them off',d:'40% chance one bites: a Deep Wound on someone.',fx:c=>EVX.roll(.6,c)?'they scatter':EVX.injure(c,EVX.pick(c),'wound')}]},
+ {id:'church',icon:'⛪',title:'A Quiet Church',w:c=>c.falls?2:1,text:()=>'Candles still burn on the altar. Someone has been keeping them lit. There\'s a donation box.',
+  ch:[{t:'Rest here a while',d:'Everyone +25% HP. Next stage starts with full energy.',fx:c=>EVX.hp(c,.25)+'; '+EVX.next(c,{en:1},'everyone starts with full energy')},
+      {t:'Leave an offering (25 gold)',d:'+1 Lucky Die and +1 reroll.',need:c=>c.gold<25&&'Not enough gold',fx:c=>EVX.give(c,{gold:-25,lucky:1,reroll:1})},
+      {t:'Rob the donation box',d:'+35 gold. Next stage: everyone takes 8% more damage (bad luck).',fx:c=>EVX.give(c,{gold:35})+'; '+EVX.next(c,{taken:1.08},'everyone takes 8% more damage (bad luck)')}]},
+ {id:'fuel',icon:'⛽',title:'A Gas Station',w:c=>c.city?1.5:.8,text:()=>'The pumps are dry, but the tanker truck out back might not be.',
+  ch:[{t:'Siphon fuel for camp',d:'+6 spare parts worth of fuel and a working lighter: next stage there are 50% more wrecked cars to loot.',fx:c=>EVX.give(c,{parts:6})+'; '+EVX.next(c,{cars:1.5},'50% more wrecked cars')},
+      {t:'Rig the tanker to blow behind you',d:'Next stage: 15% fewer zombies. Costs 4 spare parts.',need:c=>c.parts<4&&'Need 4 spare parts',fx:c=>EVX.give(c,{parts:-4})+'; '+EVX.next(c,{foes:.85},'15% fewer zombies')},
+      {t:'Raid the shop',d:'+1 food, +2 water.',fx:c=>EVX.give(c,{food:1,water:2})}]},
+ {id:'teeg',icon:'🐻',title:'Tee Runs Into Old Friends',w:c=>c.has('teeg')?3:0,text:()=>'"Ayy, that\'s my homies!" A couple of guys Tee knows from back in the day are holed up in a corner store.',
+  ch:[{t:'Let Tee catch up with them',d:'They share what they have: +2 food, +2 water, +30 gold.',fx:c=>EVX.give(c,{food:2,water:2,gold:30})},
+      {t:'Ask them to roll with you for a stage',d:'Next stage: everyone deals +10% damage and takes 5% less.',fx:c=>EVX.next(c,{dmg:1.1,taken:.95},'+10% damage, 5% less damage taken')}]},
+ {id:'smoke',icon:'🌿',title:'JP Finds a Stash',w:c=>c.has('jp')?3:0,text:()=>'JP stops dead. "Boys. Boys. Look what somebody left in this glovebox."',
+  ch:[{t:'Celebrate',d:'Everyone +15% HP. Next stage everyone is a little slow (-6% move speed).',fx:c=>EVX.hp(c,.15)+'; '+EVX.next(c,{mv:.94},'-6% move speed')},
+      {t:'Save it for trading',d:'+45 gold.',fx:c=>EVX.give(c,{gold:45})}]},
+ {id:'ambush',icon:'⚠️',title:'It Was Too Quiet',w:c=>c.falls?.4:(c.run.stage>8?1.6:.8),text:()=>'Your camp is surrounded before anyone hears a thing. Moans in every direction.',
+  ch:[{t:'Hold the camp',d:'Everyone -20% HP, but you keep everything.',fx:c=>EVX.hp(c,-.2)},
+      {t:'Run and leave supplies behind',d:'Lose half your food and water.',fx:c=>EVX.give(c,{food:-Math.ceil(c.food/2),water:-Math.ceil(c.water/2)})},
+      {t:'Light a fire and draw them off',d:'Costs 3 spare parts. Next stage starts with an ambush.',need:c=>c.parts<3&&'Need 3 spare parts',fx:c=>EVX.give(c,{parts:-3})+'; '+EVX.next(c,{ambush:1},'an ambush at the start')}]},
+ {id:'well',icon:'🪣',title:'An Old Well',w:c=>c.water<2?3:.8,text:()=>'A stone well behind a farmhouse. The rope is good. The water looks clean. Mostly.',
+  ch:[{t:'Drink up and fill the bottles',d:'+3 water. 25% chance it\'s bad: next stage everyone deals 6% less damage.',fx:c=>{let L=EVX.give(c,{water:3});if(!EVX.roll(.75,c))L+='; '+EVX.next(c,{dmg:.94},'-6% damage (bad water)');return L;}},
+      {t:'Boil it first (1 spare part for fuel)',d:'+2 water, no risk.',need:c=>c.parts<1&&'Need 1 spare part',fx:c=>EVX.give(c,{parts:-1,water:2})}]},
+ {id:'gambler',icon:'🎲',title:'The Dice Man',w:c=>(c.s.lucky||0)>0?1.5:1,text:()=>'A man in a stained suit sits on a crate, rolling dice. "Double or nothing, friend? The dead don\'t play, so I get bored."',
+  ch:[{t:'Bet 50 gold',d:'50/50: win 100 gold or lose the 50.',need:c=>c.gold<50&&'Not enough gold',fx:c=>EVX.roll(.5,c)?EVX.give(c,{gold:50}):EVX.give(c,{gold:-50})},
+      {t:'Bet a Lucky Die',d:'50/50: win 2 more or lose it.',need:c=>!((c.s.lucky||0)>0)&&'No Lucky Dice',fx:c=>EVX.roll(.5,c)?EVX.give(c,{lucky:2}):EVX.give(c,{lucky:-1})},
+      {t:'Pass',d:'Nothing happens.',fx:()=>'he laughs'}]},
+ /* ---------- MAJOR (every 10th stage) ---------- */
+ {id:'m_outpost',major:1,icon:'🏰',title:'The Outpost',w:c=>1,text:()=>'A walled-off survivor outpost. Real beds, a mess hall, guards on the wall. They\'ll let you in, but nothing\'s free.',
+  ch:[{t:'Rest and resupply',d:'Everyone back to full HP, everyone fed, +3 food, +3 water.',fx:c=>EVX.hp(c,1)+'; '+EVX.feed(c,3)+'; '+EVX.give(c,{food:3,water:3})},
+      {t:'Trade with their armorer (150 gold)',d:'For the rest of the run: everyone deals +8% damage.',need:c=>c.gold<150&&'Not enough gold',fx:c=>EVX.give(c,{gold:-150})+'; '+EVX.perm(c,{dmg:1.08},'+8% damage')},
+      {t:'Join their supply run',d:'+25 spare parts and +2 Lucky Dice, but next stage has 30% more zombies.',fx:c=>EVX.give(c,{parts:25,lucky:2})+'; '+EVX.next(c,{foes:1.3},'30% more zombies')}]},
+ {id:'m_bunker',major:1,icon:'🚪',title:'The Bunker Door',w:c=>c.has('eng')||c.has('robot')||c.has('shoshi')?2:1,text:()=>'A steel blast door in the side of a hill, with a keypad that still has power. Whatever is inside has been sealed in since day one.',
+  ch:[{t:'Hack the keypad',d:'60% chance: +3 Lucky Dice and +100 gold. Otherwise the alarm brings the horde: next 2 stages have 25% more zombies.',fx:c=>{if(EVX.roll(.6+(c.has('shoshi')||c.has('eng')?.15:0),c))return 'it opens: '+EVX.give(c,{lucky:3,gold:100});c.run.evNext2={foes:1.25};return EVX.next(c,{foes:1.25},'25% more zombies (and the stage after)');}},
+      {t:'Pry it open (15 spare parts)',d:'Guaranteed: +2 Lucky Dice and a Splint, Hemostat and Painkillers.',need:c=>c.parts<15&&'Need 15 spare parts',fx:c=>EVX.give(c,{parts:-15,lucky:2,med:{splint:1,hemo:1,pills:1}})},
+      {t:'Leave it sealed',d:'Nothing happens.',fx:()=>'some doors stay shut'}]},
+ {id:'m_hospital',major:1,icon:'🏥',title:'The Field Hospital',w:c=>c.inj||c.hurt?2.5:.8,text:()=>'Army tents with red crosses, cots in rows. Most of them are empty. The supply tent is full.',
+  ch:[{t:'Heal everyone',d:'Cures every injury and everyone back to full HP.',fx:c=>{let n=0;for(const k of c.T){const H=c.run.heroes[k];if(H&&H.inj){n+=H.inj.length;H.inj=[];}}return 'cured '+n+' injur'+(n===1?'y':'ies')+'; '+EVX.hp(c,1);}},
+      {t:'Raid the supply tent',d:'+2 of each medicine (Splint, Hemostat, Painkillers).',fx:c=>EVX.give(c,{med:{splint:2,hemo:2,pills:2}})},
+      {t:'Take their armor vests',d:'For the rest of the run: everyone takes 6% less damage.',fx:c=>EVX.perm(c,{taken:.94},'6% less damage taken')}]},
+ {id:'m_horde',major:1,icon:'☠️',title:'The Great Horde',w:c=>c.falls?.6:1.4,text:()=>'From the hilltop you see it: a river of the dead, miles long, heading straight for the place you need to go.',
+  ch:[{t:'Go through them',d:'Next stage: 40% more zombies, and everyone gets double XP. For the rest of the run: +5% damage (you know how to fight a horde now).',fx:c=>EVX.next(c,{foes:1.4,xp:2},'40% more zombies, double XP')+'; '+EVX.perm(c,{dmg:1.05},'+5% damage')},
+      {t:'Wait for it to pass',d:'Costs 3 food and 3 water. Next stage: 30% fewer zombies.',need:c=>(c.food<3||c.water<3)&&'Need 3 food and 3 water',fx:c=>EVX.give(c,{food:-3,water:-3})+'; '+EVX.next(c,{foes:.7},'30% fewer zombies')},
+      {t:'Find another way',d:'Next stage: zombies hit 15% harder (you\'re worn out), but there are twice as many wrecks and rocks to search.',fx:c=>EVX.next(c,{zdmg:1.15,cars:2,grove:2},'zombies hit 15% harder, 2x searchable stuff')}]},
+ {id:'m_convoy',major:1,icon:'🚚',title:'A Stalled Convoy',w:c=>c.city?1.6:1,text:()=>'Six military trucks, nose to tail, doors open. Bodies in uniform. Some of them are still moving.',
+  ch:[{t:'Clear the convoy',d:'Everyone -25% HP. +200 gold, +20 spare parts.',fx:c=>EVX.hp(c,-.25)+'; '+EVX.give(c,{gold:200,parts:20})},
+      {t:'Grab the lead truck\'s crates and go',d:'+80 gold, +8 spare parts, +2 food.',fx:c=>EVX.give(c,{gold:80,parts:8,food:2})},
+      {t:'Siphon the fuel tanks',d:'For the rest of the run: camp gets +2 spare parts every time you come back... starting next camp.',fx:c=>{c.run.evPerm=c.run.evPerm||{why:[]};c.run.evPerm.partsCamp=(c.run.evPerm.partsCamp||0)+2;c.run.evPerm.why.push('+2 spare parts every camp');return 'for the rest of the run: +2 spare parts every camp';}}]},
+];
+function pickEvent(s,run,kind){const c=evCtx(s,run);const pool=EVENTS.filter(E=>!!E.major===(kind==='major')&&E.id!==run.lastEvent);
+  const ws=pool.map(E=>Math.max(0,E.w(c)));let tot=ws.reduce((a,b)=>a+b,0),r=Math.random()*tot;for(let i=0;i<pool.length;i++){r-=ws[i];if(r<=0)return pool[i];}return pool[0];}
+/* next-stage and permanent effects -> the Game */
+function evMods(run){const E=(run&&run.evNext)||{},P=(run&&run.evPerm)||{};const f=k=>(E[k]||1)*(P[k]||1);
+  return {foes:f('foes'),gold:f('gold'),supply:f('supply'),parts:f('parts'),cars:f('cars'),grove:f('grove'),dmg:f('dmg'),taken:f('taken'),mv:f('mv'),zspd:f('zspd'),zdmg:f('zdmg'),xp:f('xp'),en:E.en||0,ambush:E.ambush||0};}
+
 const API={radioForecast,reticle,ABIL_DESC,HEADSHOT,isHead,inspHelp,PLAYER_ICON,BEHAVIOR,INSP,inspText,CHAR,AIM_BOXES,aimOdds,aimBoxesOf,hbOf,HERO_HITBOX,ENERGY,spendEnergy,faceToward,AIM_RANGE,accTighten,LANES,UNIT_SCALE,HITBOX,aimBands,airBands,rollAirAim,rollAimHeight,rollLaneOffset,ABILITIES_OFF,armorReduction,HP_PER_STAMINA,gearScore,heroGear,giveItem,rollItem,stockShop,itemPrice,honePrice,slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
 if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1795015220';const BGI=new Image();BGI.src='crawl_bg.png?v=1795015220';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795015220';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1795015518';const BGI=new Image();BGI.src='crawl_bg.png?v=1795015518';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795015518';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795015220';XIMG.wave.src='crawl_wave.png?v=1795015220';XIMG.chibi.src='crawl_chibi.png?v=1795015220';XIMG.flannel.src='crawl_flannel.png?v=1795015220';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795015220';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795015220';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795015220';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795015220';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795015220';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795015220';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795015220';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795015220';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795015220';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795015220';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795015220';XIMG.rain.src='crawl_rain.png?v=1795015220';XIMG.druid.src='crawl_druid.png?v=1795015220';XIMG.camp.src='crawl_campfire.png?v=1795015220';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795015220';XIMG.tornado.src='crawl_fx_tornado.png?v=1795015220';XIMG.vine.src='crawl_fx_vine.png?v=1795015220';XIMG.thorn.src='crawl_fx_thorn.png?v=1795015220';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795015518';XIMG.wave.src='crawl_wave.png?v=1795015518';XIMG.chibi.src='crawl_chibi.png?v=1795015518';XIMG.flannel.src='crawl_flannel.png?v=1795015518';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795015518';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795015518';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795015518';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795015518';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795015518';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795015518';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795015518';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795015518';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795015518';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795015518';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795015518';XIMG.rain.src='crawl_rain.png?v=1795015518';XIMG.druid.src='crawl_druid.png?v=1795015518';XIMG.camp.src='crawl_campfire.png?v=1795015518';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795015518';XIMG.tornado.src='crawl_fx_tornado.png?v=1795015518';XIMG.vine.src='crawl_fx_vine.png?v=1795015518';XIMG.thorn.src='crawl_fx_thorn.png?v=1795015518';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795015220';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795015220';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795015220';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795015220';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795015220';XIMG.obst.src='crawl_obst.png?v=1795015220';XIMG.cityob.src='crawl_cityob.png?v=1795015220';XIMG.cars.src='crawl_cars.png?v=1795015220';XIMG.robot.src='crawl_robot.png?v=1795015220';XIMG.cultist.src='crawl_cultist.png?v=1795015220';XIMG.tentacle.src='crawl_tentacle.png?v=1795015220';XIMG.boom.src='crawl_boom.png?v=1795015220';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795015518';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795015518';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795015518';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795015518';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795015518';XIMG.obst.src='crawl_obst.png?v=1795015518';XIMG.cityob.src='crawl_cityob.png?v=1795015518';XIMG.cars.src='crawl_cars.png?v=1795015518';XIMG.robot.src='crawl_robot.png?v=1795015518';XIMG.cultist.src='crawl_cultist.png?v=1795015518';XIMG.tentacle.src='crawl_tentacle.png?v=1795015518';XIMG.boom.src='crawl_boom.png?v=1795015518';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -4646,7 +4807,7 @@ function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 /* 0.12.310 recorded clips (Tee_Grizzle): decoded once, played through the same AudioContext as the synth sounds */
 const SAMP={teeg1:{src:'crawl_teeg1',off:.34},teeg2:{src:'crawl_teeg2',off:0}};
 function sampLoad(k){const S=SAMP[k];if(!S||S.buf||S.loading||!AC)return;S.loading=1;const ext=(new Audio()).canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3';
-  fetch(S.src+ext+'?v=1795015220').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
+  fetch(S.src+ext+'?v=1795015518').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
 function sampPlay(k,off,vol){const S=SAMP[k];if(!S)return;if(!S.buf){sampLoad(k);return;}const src=AC.createBufferSource(),g=AC.createGain();src.buffer=S.buf;g.gain.value=vol==null?.55:vol;src.connect(g);g.connect(AC.destination);src.start(0,off==null?S.off:off);}
 function sfx(k,o){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
   if(!sampLoad.pre){sampLoad.pre=1;sampLoad('teeg1');sampLoad('teeg2');}
@@ -5665,7 +5826,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.324</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.325</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -5818,6 +5979,7 @@ function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=r
   const tent=`<span class="cc-tent" style="cursor:help;font-size:36px;margin-left:8px;display:inline-flex;align-items:center;gap:6px;padding:2px 12px;border:1px dashed #a6ff2e88;border-radius:10px;animation:ccTentPulse 2.2s ease-in-out infinite" data-tiph="${esc('<b>⛺ Every camp upgrade</b><br>'+Object.keys(CAMP_UPG).map(id=>{const U=CAMP_UPG[id],t=upgT(run,id);const mx=U.needs?(Object.keys(U.needs).every(k=>upgT(run,U.needs[k])>0)?U.tiers.length:U.tiers.length-1):U.tiers.length;return `${U.icon} ${U.name}: <b style="color:${t?'#a6ff2e':'#9a90a8'}">${t}/${mx}</b> <span style="opacity:.6">(${U.tiers.map(g=>Math.max(25,Math.round(g*(1-(run.haggle||0))*.75/25)*25)+'g').join(' / ')})</span>`;}).join('<br>')+(run.haggle?`<br><br>🤝 Haggler: upgrades ${Math.round(run.haggle*100)}% off`:'')+(run.resource?`<br>🧰 Resourceful: you can pay in spare parts`:''))}">⛺<span style="font-size:10px;color:#a6ff2e">ⓘ</span></span>`;
   const sup=`<div class="cc-card"><b>🏕️ Camp</b>${tent} <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · ⚙️ <b>${parts}</b> spare parts · 🥫 <b>${Number.isInteger(food)?food:Math.floor(food)+'½'}</b> food · 💧 <b>${run.water||0}</b> water${Object.keys(MEDS).some(m=>(run.med||{})[m])?' · '+Object.keys(MEDS).filter(m=>(run.med||{})[m]).map(m=>`<span title="${esc(MEDS[m].name+': '+MEDS[m].txt)}" style="cursor:help">${MEDS[m].icon} <b>${run.med[m]}</b></span>`).join(' '):''} · <span title="Reroll dice (max 3): swap the camp upgrade offers or a hero's ⬆ Upgrade picks. Every stage you finish, won or lost, charges 25% of a die." style="cursor:help">${diceStr(run)}</span>${(s.lucky||0)?` · <span title="Lucky Dice: very rare loot. Spend one on a hero (button on their card) to gamble a basic attack's die size." style="cursor:help">${luckyStr(s)}</span>`:''}</span>${run.team.some(k=>missingOf(run,k)&&run.heroes[k]&&!run.heroes[k].dead)?` <button class="cc-btn" data-feedall style="padding:6px 16px;font-size:24px;vertical-align:middle" title="Feed and water everyone who needs it: most-needy and lowest HP first, never wastes supplies"><svg width="32" height="28" viewBox="0 0 16 14" style="vertical-align:-2px;image-rendering:pixelated"><rect x="1" y="5" width="7" height="8" fill="#b8642a"/><rect x="1" y="5" width="7" height="2" fill="#e8d0a0"/><rect x="2" y="8" width="5" height="3" fill="#e8302a"/><rect x="1" y="12" width="7" height="1" fill="#6a3a18"/><path d="M12 2 L14.5 7 A2.6 2.6 0 1 1 9.5 7 Z" fill="#4ab8ff"/><rect x="10.5" y="7" width="1" height="2" fill="#d8f4ff"/></svg> Feed all</button>`:''}
     ${(run.campLog||[]).length?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${run.campLog.map(esc).join(' · ')}</div>`:''}
+    ${run.eventLog?`<div class="cc-sub" style="font-size:12px;margin:6px 0 0;color:#ffd27a">${run.eventLog}</div>`:''}${run.evNext&&run.evNext.why&&run.evNext.why.length?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0;color:#9ad0ff">⏭ Next stage: ${run.evNext.why.map(esc).join(' · ')}</div>`:''}${run.evPerm&&run.evPerm.why&&run.evPerm.why.length?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0;color:#c8a0ff">♾ This run: ${run.evPerm.why.map(esc).join(' · ')}</div>`:''}
     ${owned.length?`<div class="cc-chips" style="margin-top:6px">${owned.map(id=>{const U=CAMP_UPG[id],t=run.upg[id];return `<span class="cc-chip" title="${esc(U.txt(t))}">${U.icon} ${esc(U.name)} ${['','I','II','III','IV'][t]}</span>`;}).join('')}</div>`:''}</div>`;
   const picked=run.picked||[];const offers=(run.offers||[]).filter(id=>picked.includes(id)||upgT(run,id)<CAMP_UPG[id].tiers.length);   /* 0.12.190 (Kyle): buy any or all of the 3 picks you can afford (each once per camp) */
   const up=`<div class="cc-card"><b>🔨 Camp upgrades</b> <span class="cc-sub" style="font-size:11px">${run.upgBought?`Buy any of the others you can still afford. New offers next camp.`:'Buy any or all of them you can afford, at the pick price.'} They last for this run.</span>${offers.length?(run.rerolls>=1?` <button class="cc-btn" data-reroll style="margin-left:6px;padding:2px 8px;font-size:11px" data-tipt="Spend 1 die: swap these 3 picks for 3 new ones. What you built stays built.">🎲 Reroll · ${diceStr(run)}</button>`:` <span class="cc-sub" style="font-size:11px;opacity:.7">${diceStr(run)}</span>`):''}
@@ -5883,7 +6045,21 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
     ov.querySelector('[data-treset]').onclick=()=>{treeReset(L);persist();draw();};
     ov.querySelector('[data-tclose]').onclick=()=>{ov.remove();showCamp();};};
   ov.onclick=e=>{if(e.target===ov){ov.remove();showCamp();}};document.body.appendChild(ov);draw();}
+/* 0.12.325 (Kyle) EVENTS: a multiple-choice window after every 3rd stage (major one every 10th). Choices that can't be afforded are
+   greyed out with the reason. The result shows at the top of camp. */
+function showEvent(){const s=SLOT(),run=s.run;const kind=run.eventPending;let E=run.eventId&&EVENTS.find(x=>x.id===run.eventId);
+  if(!E){E=pickEvent(s,run,kind);run.eventId=E.id;persist();}
+  const c=evCtx(s,run);const major=kind==='major';
+  const P=showPanel(`<div class="cc-h" style="${major?'color:#ff9a3c':''}">${major?'★ MAJOR EVENT ★':'EVENT'}</div>
+    <div class="cc-card" style="text-align:left;max-width:560px;margin:8px auto;border-color:${major?'#ff9a3c':'#4a6a8a'}">
+      <div style="display:flex;gap:12px;align-items:center"><div style="font-size:42px;line-height:1">${E.icon}</div><div><b style="font-size:16px">${esc(E.title)}</b><p class="cc-sub" style="margin:4px 0 0">${esc(E.text(c))}</p></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">${E.ch.map((C,i)=>{const no=C.need&&C.need(c);return `<button class="cc-btn" data-evc="${i}" ${no?'disabled':''} style="text-align:left;padding:8px 10px;${no?'opacity:.45':''}"><b>${esc(C.t)}</b><br><span style="font-size:12px;opacity:.85">${esc(C.d)}${no?` <i style="color:#ff8a8a">(${esc(no)})</i>`:''}</span></button>`;}).join('')}</div>
+    </div><p class="cc-sub" style="font-size:11px">💰 ${fmt(s.gold||0)} gold · ⚙️ ${s.parts||0} parts · 🥫 ${run.food||0} food · 💧 ${run.water||0} water · 🎲 ${s.lucky||0} Lucky Dice</p>`);
+  P.querySelectorAll('[data-evc]').forEach(b=>b.onclick=()=>{if(b.disabled)return;const C=E.ch[+b.dataset.evc];if(C.need&&C.need(evCtx(s,run)))return;
+    let log='';try{log=C.fx(evCtx(s,run))||'';}catch(err){console.error(err);}
+    run.eventLog=`${E.icon} <b>${esc(E.title)}</b>: ${esc(C.t)}${log?' → '+esc(log):''}`;run.lastEvent=E.id;delete run.eventPending;delete run.eventId;persist();showCamp();});}
 function showCamp(){
+  {const s0=SLOT(),r0=s0&&s0.run;if(r0&&r0.eventPending)return showEvent();}   /* 0.12.325 an event comes first */
   const s=SLOT();const run=s.run;migrate(s,CC.player);run.bag=run.bag||[];if(ABILITIES_OFF){run.pending=0;run.bag=run.bag.filter(e=>e.kind==='item');}const st=CFG.stage(run.stage,run.prestige);
   setRunModes(run);{const lg=campArrive(s,run);if(lg.length)run.campLog=lg;else if(run.campAt!==run.stage)run.campLog=[];}const hungry=new Set(run.needFeed||[]);
   const btn=(attrs,label,title)=>`<button class="cc-mini" ${attrs} ${title?`title="${esc(title)}"`:''}>${label}</button>`;
@@ -6089,7 +6265,7 @@ function statsBrief(g){const S=g.stats||{};const keys=Object.keys(S).filter(k=>k
     <div style="overflow-x:auto"><table class="cc-stats" style="border-collapse:collapse;font-size:11px;width:100%;text-align:right"><tr style="opacity:.7"><th style="text-align:left">Unit</th><th>Damage</th><th>DPS</th><th>Healed</th><th>Kills</th><th>Crits</th><th>Heads</th><th>Taken</th><th>Downed</th><th>Revives</th><th>Searches</th></tr>${rows}</table></div></div>`;}
 function finishStage(g){
   const s=SLOT(),run=s.run;const first=!g._fin;g._fin=1;   /* 0.12.73: 'give up' after a retry offer comes back through here: don't count the stage twice */
-  if(first){g.saveBack();run.score+=Math.round(g.stageScore);s.gold=(s.gold||0)+g.stageGold;
+  if(first){run.eventLog=null;g.saveBack();run.score+=Math.round(g.stageScore);s.gold=(s.gold||0)+g.stageGold;
   s.parts=(s.parts||0)+(g.stageParts||0);s.lucky=(s.lucky||0)+(g.stageLucky||0);run.med=run.med||{};for(const [m,n] of Object.entries(g.stageMed||{}))run.med[m]=(run.med[m]||0)+n;injTick(run);run.food=(run.food||0)+(g.stageFood||0);run.water=(run.water||0)+(g.stageWater||0);}   /* camp supplies */
   run.lastHaul={food:g.stageFood||0,water:g.stageWater||0,parts:g.stageParts||0};
   const found=[];if(g.over==='clear')for(const it of g.stageItems){const where=giveItem(run,s,it);if(where)found.push(shortCard(it.card)+(where==='bag'?' (backpack)':''));else{const v=Math.round(itemPrice(it.rar,run.stage)/3);s.gold+=v;found.push(shortCard(it.card)+' (sold, no room: +'+v+'g)');}}
@@ -6105,6 +6281,7 @@ function finishStage(g){
     if(cleared===CFG.strangerStage&&run.team.length<3&&!run.strangerDone){run.strangerDone=1;const free=s.forsook?[]:DATA.heroes.filter(h=>!run.team.includes(h.key));
       if(CFG.stage(cleared,run.prestige).boss)run.shopAt=cleared+1;run.stage++;persist();CC.game=null;return showStranger(free);}
     if(CFG.stage(cleared,run.prestige).boss)run.shopAt=cleared+1;
+    {const nx2=run.evNext2;delete run.evNext;delete run.evNext2;if(nx2)run.evNext={why:['25% more zombies (the bunker alarm)'],...nx2};const ek=eventKind(cleared);if(ek)run.eventPending=ek;}   /* 0.12.325 events */
     run.stage++;rerollRefill(run);   /* 0.12.239 (Kyle): a win refills the reroll 50% */
     if(run.prestige*100+run.stage-1>s.best.prestige*100+s.best.stage){s.best.stage=run.stage-1;s.best.prestige=run.prestige;}
     persist();CC.game=null;

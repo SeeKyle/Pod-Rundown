@@ -1,4 +1,12 @@
       <h2>What's new</h2>
+      <h3>0.12.325 · Events (and no more bosses)</h3>
+      <ul>
+        <li>Bosses are off for now: no more Alpha fights. From the middle of every 5th stage, the next zombie type (Firemen, Screamers, Werewolves, Skeleton Archers) just starts showing up ("NEW THREAT").</li>
+        <li><b>Events</b>: after clearing every 3rd stage (3, 6, 9, 12, 15, 18, ...) you get an event, and after every 10th stage (10, 20, 30, ...) a <b>major</b> event. Each is a window with a short story and 2–4 choices. Choices you can't afford are greyed out with the reason.</li>
+        <li>Choices can pay out right away (gold, spare parts, food, water, medicine, Lucky Dice, rerolls, healing), cost you something (gold, parts, supplies, HP, an injury), change the <b>next stage</b> (more or fewer zombies, faster or slower zombies, harder hits, more loot, wrecks or rocks, an ambush at the start, +damage, less damage taken, full energy, more XP), or (major events) last the <b>rest of the run</b>.</li>
+        <li>Why an event shows up depends on how the run is going: low on food or water makes food events likelier, lots of gold brings traders and raiders, injuries bring doctors, lots of falls bring rest spots, a Warhound or Engineer finds junkyards, Downtown and the lake have their own scenery, and Tee and JP each have their own event. The same event never shows twice in a row.</li>
+        <li>24 normal events and 5 major ones so far. Camp now shows what you picked, what the next stage will be like, and anything that lasts the whole run.</li>
+      </ul>
       <h3>0.12.324 · Freeze fixes and downtown spacing</h3>
       <ul>
         <li>Freezes: an error anywhere in one frame used to stop the whole game loop for good, which looks exactly like a freeze. Now the next frame is always queued first, and a frame that hits an error is skipped and logged, so the game keeps running. I also ran long test games at stages 10–23 (all camp upgrades maxed, random talents, inspirations, Hardcore on some, plus Alpha spawns) with drawing on, and none of them threw an error.</li>
