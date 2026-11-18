@@ -221,3 +221,5 @@ Fireman_Zombie, Warhound flamethrower (as ranged — still to move to "melee", s
 - Crypt OWNERS (save tabs) still only Kyle; Cheez/Leon/Eddie tabs not switched on.
 - Queue from Kyle: (1) clicking buttons in Crypt Crawl (camp feed/water etc.) jumps the page scroll, stop that; (2) phone: ability tooltips need tap-to-view (long-press selects text now);
   (3) phone: hide the unit life panels under the stage, use small WoW-style unit frames in the top-left sky instead; (4) Leon's green jellyfish icon: cooler, a bit more realistic.
+
+- 0.12.335 DONE: talent trees v2 (3/3/cap2/3/3/cap2, link+lock rules, tap info panel). NEXT: waves (10/level, distance, trickle), bats, alphas, then items + tap-info everywhere.
