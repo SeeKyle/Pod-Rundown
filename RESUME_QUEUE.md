@@ -10,7 +10,7 @@ gear system + tap-for-info (338), bats x3, Alphas 5x, JP sword 1d8+4, costly gea
 6. Medium testing: RESULTS SENT TO KYLE 16:5x (stage 1 ~0-2/12 for fresh teams, progression sim 0 clears in 30 tries, stage ~380s with ~120 zombies, 70 of them trickle). Waiting on his pick of a lever before changing numbers.
 7. (DONE 0.12.342) New-game Inspiration warning.
 8. (DONE 0.12.343) Warhound spare-parts upkeep.
-9. Garage Needs Repair pass for most decks: weak cards, 75% of cuts from the deck's highest stat, explain highest stat + lower stats to improve.
+9. (DONE 0.12.349, first pass) Garage Needs Repair: 75% from top stat, removal/politics protected, note per deck. Possible follow-up: new swap picks tailored to the new cuts (needs Scryfall prices; current swaps are reused deck-level picks).
 10. (DONE 0.12.346) Notes tabs.
 11. (DONE 0.12.348) Breakable obstacles.
 12. Ominous Trails / doors+windows (near last).
