@@ -1,0 +1,15 @@
+# Engineer rework spec (Kyle, 2026-11-18) — gathered from messages
+- Remove tesla coil.
+- Build = skillbook (WC3 style). Build itself 2s cd; each building inside has its own 10s cd. Building takes time; he can't move while building/attaching.
+- Modify removed -> "Attach Turret": 3 charges, recharge on cd. Places a turret on a tower slot or car roof. Turret build 2s; costs 25% more energy than the skill normally costs.
+- Tower tiers: any order, 3 kinds: Medical, Ammo, + new third. AI picks order by situation. Always build a tower to tier 3 before starting a new tower. Start building a bit further forward (up-screen/right).
+- Each tier can be manned (even tier 1 alone). Units stand on floors properly. Range bonus by floor height: bottom +20%, middle +40%, top +60% (only from the floor they're on).
+- Enter/exit only via ladder (no teleport). Enemies cannot use ladders.
+- Tower HP = hit count from enemy basic attacks: 1 tier 4 hits, 2 tiers 6, 3 tiers 8. Repair fixes up to 2 hits per use.
+- Flyers don't attack tower; they fly around occupants and attack them.
+- Tower turrets: 6 slots (left/right per tier). Weak: 3 bullets 0.25s apart, 1-3 dmg each, 4s reload. Aim only toward their side (almost straight down to horizontal on that side). Range bonus of their tier (20/40/60%).
+- Car turrets: cooler look; spray like Eddie's nailgun: 5 bullets 0.15s apart, 3-4 dmg each, -10 acc, 4s reload.
+- Turret art: clean up Kyle's drawing (round grey dome w/ yellow X, barrel w/ orange muzzle flash).
+- All turret damage counts as Engineer damage.
+- Better Field_Plating AI: go to allies without plating, with caution.
+- ONLY ONE tower at a time (can't have multiple tier 1s); he builds it up instead.
