@@ -6,8 +6,8 @@ DONE today: talent trees v2 (335), 10 waves + trickle (336/337), meetup circle f
 gear system + tap-for-info (338), bats x3, Alphas 5x, JP sword 1d8+4, costly gear upgrades, trickle stall fix (339), werewolf lunge, Lucky Dice v2 (340).
 
 ## Remaining, Kyle's order
-5. Zombie lane AI: stagger lane changes; chance a few break off to new lanes then re-plan.
-6. Medium testing; game hard; boost creature stats in 5s (+5 HP, +5 move...). NOTE sims: stage 1 fresh lvl1 teams clear ~1-2/12 with trickle always on; stage 4+ bot teams lose even at lvl 20 (bot has no gear/insp/camp upgrades) -> look into this. Alpha (5x) wipes bot teams at lvl 9-14.
+5. (DONE 0.12.347) Zombie lane AI.
+6. Medium testing: RESULTS SENT TO KYLE 16:5x (stage 1 ~0-2/12 for fresh teams, progression sim 0 clears in 30 tries, stage ~380s with ~120 zombies, 70 of them trickle). Waiting on his pick of a lever before changing numbers.
 7. (DONE 0.12.342) New-game Inspiration warning.
 8. (DONE 0.12.343) Warhound spare-parts upkeep.
 9. Garage Needs Repair pass for most decks: weak cards, 75% of cuts from the deck's highest stat, explain highest stat + lower stats to improve.
