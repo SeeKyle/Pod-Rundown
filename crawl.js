@@ -23,8 +23,8 @@ const CFG={
     {id:'L',name:'Legendary',pts:5,w:2.5,col:'#ffb020',minPrestige:2}   // locked early on purpose
   ],
   biomes:[
-    {id:'grave',name:'Blackwater Lake',pool:{zombie:1,fireman:.14,skarcher:.1},boss:'gravelord'},
-    {id:'city',name:'Downtown',pool:{zombie:1,fireman:.2,skarcher:.1},boss:null},   /* 0.12.108 (Kyle): the city streets. 0.12.117: stages 11-20 */
+    {id:'grave',name:'Blackwater Lake',pool:{zombie:1,fireman:.14,skarcher:.16},boss:'gravelord'},
+    {id:'city',name:'Downtown',pool:{zombie:1,fireman:.2,skarcher:.16},boss:null},   /* 0.12.108 (Kyle): the city streets. 0.12.117: stages 11-20 */
   ],   /* 0.12.85 (Kyle): only the cabin-by-the-lake level for now; it just keeps going. Saved for later:
     {id:'manor',name:'Hollowmere Cemetery',pool:{zombie:1,fireman:.14},boss:'countess'},
     {id:'bog',name:'The Cathedral Corridor',pool:{zombie:1,fireman:.14},boss:'maw'}, */
@@ -41,7 +41,7 @@ const CFG={
               itemChance:.05,goldChance:.35,goldAmt:[4,8],stack:true,xp:5,pts:30,cost:3.2,animAtk:.6,hitAt:.4,skins:['zombie_fire']},
     // 0.12.183 (Kyle) Skeleton_Archer (CraftPix free skeleton pack): hangs back near the right edge and shoots arrows (1d6) every 2.6s,
     //   with a 0.6s draw before each shot. Fragile, slow, can't bleed (no blood). From stage 3 on.
-    skarcher:{undead:1,scale:.88,aimScale:.88,hp:18,dmgDie:6,spd:8.6,atk:2.6,ranged:1,stop:270,proj:'arrow',reach:12,armorPts:2,kbRes:.25,noBleed:1,name:'Skeleton_Archer',
+    skarcher:{undead:1,acc:12,scale:.88,aimScale:.88,hp:18,dmgDie:6,spd:8.6,atk:2.6,ranged:1,stop:270,proj:'arrow',reach:12,armorPts:2,kbRes:.25,noBleed:1,name:'Skeleton_Archer',
               itemChance:.05,goldChance:.32,goldAmt:[3,7],stack:true,xp:4,pts:25,cost:2.5,animAtk:1.0,shotAt:.6,hitAt:.5,skins:['skarcher']},
     // 0.12.175 (Kyle) Screamer: a fast, lanky zombie woman (CraftPix freebie art). Fragile, hits light, runs. When she gets near the party she stops and
     //   SHRIEKS (1.4s): if she finishes it, 2-4 more zombies come running in (+1 every 5 stages, max 6). Kill or stun her mid-scream and nobody comes.
@@ -50,14 +50,14 @@ const CFG={
               itemChance:.04,goldChance:.31,goldAmt:[3,7],stack:true,xp:4,pts:25,cost:2,animAtk:.5,hitAt:.35,skins:['screamer'],scream:{r:115,T:1.4,cd:14,max:2,n:[2,4]}},
     // 0.12.206 (Kyle) Giant_Bat: a big flier (bigger than a real bat next to a person). It circles above a hero with a small up/down bob
     //   (no dodge chance: shots simply have to connect with it), then swoops down and strikes for 1d3 and climbs back up. From stage 2.
-    bat:{undead:0,hp:12,dmgDie:3,spd:34,atk:2.4,fly:1,reach:10,armorPts:0,kbRes:.2,name:'Giant_Bat',noLoot:0,
+    bat:{undead:0,hp:12,dmgDie:3,spd:34,atk:2.0,fly:1,reach:10,armorPts:0,kbRes:.2,name:'Giant_Bat',noLoot:0,
               itemChance:.03,goldChance:.22,goldAmt:[3,7],xp:3,pts:14,cost:1.6,animAtk:.4,hitAt:.2},
     // Kyle's werewolf, the first fast enemy: zombie stats except 30 HP (0.12.3, was 40) and fast; hunts the back-line heroes first
     werewolf:{hp:38,dmgDie:7,spd:47,atk:1.2,reach:15,   /* 0.12.201 (Kyle): faster, a little more reach */armorPts:4,   /* 0.12.65: a bit sturdier and meaner (was 30 HP, 1d6, 3 armor) */kbRes:.35,
               itemChance:.04,goldChance:.32,goldAmt:[3,7],xp:3,pts:16,cost:2.2,animAtk:.7,hitAt:.45,backline:true,fps:12,scale:.77,
               leap:{dmg:5,gap:25,dur:.55,cd:8,bleed:[30,6],wide:1.2}},   /* 0.12.203 (Kyle): the leap is a line attack: it bounds 25% further, right through its target, and every hero it passes through takes 10 and bleeds */   // jumping attack: bounds over a 20px gap and lands for 10 damage
   },
-  harvestLive:true,wraithLive:true,   /* 0.12.132 (Kyle): switched on */   /* 0.12.127 (Kyle): switched on to try him */
+  harvestLive:false,wraithLive:false,   /* 0.12.302 (Kyle): bosses off for now (events are coming) */   /* 0.12.127 (Kyle): switched on to try him */
   bosses:{
     wraith:{undead:1,name:'The Hollow Wraith',hp:1300,dmg:16,spd:16,xp:220,pts:5200,art:'wraith'},   /* 0.12.130 (Kyle) stage 20 boss */
     harvest:{undead:1,name:'The Harvest Knight',hp:1100,dmg:15,spd:12,xp:140,pts:3200,art:'harvest'},   /* 0.12.127 (Kyle) stage 10 boss */
@@ -105,7 +105,7 @@ const STYLE={
   cheez:{atk:'blade',proj:'kunai',reach:21,range:0,hp:1,dmg:1},   // 0.12.234 Cheez: beam katana, no ranged   // 0.12.110 Shoshi: machine pistol
   eng:{atk:'gunner',proj:'nade',reach:20,range:165,hp:1,dmg:1},   // 0.12.105 Engineer: wrench + Grenade_Launcher
   flannel:{atk:'gunner',proj:'bullet',reach:20,range:250,hp:1,dmg:1},
-  lumberjack:{atk:'blade',proj:'yarrow',reach:22,range:200,hp:1,dmg:1},
+  lumberjack:{atk:'blade',proj:'yarrow',reach:26.4,range:200,hp:1,dmg:1},
   cultist:{atk:'gunner',proj:'void',reach:18,range:210,hp:1,dmg:1},   // 0.12.21 Void_Cultist: ritual dagger + void bolts
   robot:{atk:'gunner',proj:'gat',reach:22,range:160,hp:1,dmg:1},   // 0.12.17 Moss_Mech: arc blade + gatling arm   // 0.12.11 Lumber_Jack: axe + bow
   druid:{atk:'gunner',proj:'leaf',reach:18,range:220,hp:1,dmg:1},   // 0.12.9 Druid: nature caster and healer
@@ -157,7 +157,7 @@ const SIG={
   druid:{name:'Mend · Rejuvenating Bloom · Thorn Wave · Cyclone',cd:4,txt:'Mend (20 energy, 5s): instantly heals the most-hurt ally 10%. Rejuvenating Bloom (40 energy, 14s): heals an ally 4% of max HP every second for 8s. Thorn Wave (35 energy, 14s): a wave of thorns erupts along the ground down her lane; everything it bursts under takes 2d6 and bleeds. Cyclone (40 energy, 18s): a tornado wanders in front of her for 5s, pulling nearby enemies in and grinding down everything inside it.',fn:()=>false},
   archer:{name:'Arrow_Rain · One Nocked, Two in Hand · Blow_Gun',cd:14,txt:'Arrow_Rain (40 energy, 18s cooldown): looses a volley into the air and 16 arrows rain down on the thickest group of enemies (1d6 each, about 70px wide and 2 lanes up and down). Blow_Gun (25 energy, 9s cooldown): puffs a poison dart that always adds 1 poison stack to a living target (75% chance of a 2nd, 50% of a 3rd); each stack deals 3% of max HP every 1.5s for 7.5s, and any new stack resets the timer. Undead are immune. One Nocked, Two in Hand (30 energy, 14s cooldown): he nocks one arrow and holds two more ready, his next 3 arrows fly much faster (a third of the usual wait, quicker draw). Longbow shots (1d10) and a close-range bow strike (1d8).',fn:()=>false},
   chibi:{name:'Wave Dash · War Cry · Poultice',cd:10,txt:'Wave Dash (45 energy, 16s cooldown): rides a blue energy wave up to 400px forward, hitting everything it passes through (2 lanes up and down) for a normal sword hit (2d5 base, buffs and crits apply). War Cry (20 energy, 7s cooldown): every ally within 800px gets +25% damage and attack speed for 7s. Sword combo: Attack 1, Attack 2, and a running slash, plus a kunai throw (1d4) at enemies he can\'t reach yet.',fn:()=>false},
-  eng:{name:'Build · Repair · Modify · Satchel_Charge · Field_Plating',cd:20,txt:'Builds a watchtower, a concrete barrier and a tesla coil, fixes them and the Warhound, bolts auto-turrets onto wrecks, and blows things up with a satchel he sets off himself.',fn:()=>false},
+  eng:{name:'Build · Repair · Modify · Satchel_Charge · Field_Plating',cd:20,txt:'Builds a watchtower and a concrete barrier, fixes them and the Warhound, bolts auto-turrets onto wrecks, and blows things up with a satchel he sets off himself.',fn:()=>false},
   jp:{name:'Toke_Break · Protect_the_Familia · No_Scope · Trash_Talk',cd:20,txt:'Smokes up to get HIGH (Wake_n_Bake), rushes in to shield family in trouble (and shield-bashes the closest zombie away), no-scopes zombies in a line with the Kar98 and talks trash to pull zombies onto himself.'},
   flannel:{name:'Aimed Shot · Proximity_Bomb · Traveling_Companion',cd:14,txt:'Call Traveling_Companion (25 energy, 24s cooldown, 0.8s whistle): calls his Traveling_Companion, a timid partner who circles around him, with a third of his stats, her own Brick Throw (never misses, 75% stun) and Bottle_Distraction (34 energy, 16s: she lobs a bottle behind the zombies, preferably behind a crowd; every zombie within 180px turns and walks to the noise for 2.5s). If she is already out, she heals 7% of her max HP instead. Proximity_Bomb (35 energy, 10s cooldown): planted, tossed underhand to roll, or thrown overhand; it blows up the first enemy to come near it, hurting everything around it (area damage, knockback, 50% bleed). Aimed Shot (40 energy, 14s cooldown, 2s cast with a laser sight): a carefully aimed rifle shot that always goes to the middle (head) box, with +5% crit chance and 2.5x crit damage. Pierces through one enemy.',fn:()=>false},   // runs from Game.gunner (CHAR abilities), shown here
   joel:{name:'Brick Toss',cd:7,txt:'The scout lobs a brick for 200% that stuns the target for 0.75s.',fn:(g,h,a)=>g.sigShot(h,'brick',a*2,{stun:.75})},
@@ -264,7 +264,8 @@ const UNIT_SCALE=.5;
 //   The same accuracy also decides how far side-to-side (in lanes) an area spell lands from the lane it was aimed at.
 // Accuracy has steep diminishing returns: it takes a lot of it before shots almost always land in the right area.
 //   tighten = 0.95 x (1 - e^(-accuracy/90)):  20 -> 19%,  50 -> 41%,  100 -> 64%,  150 -> 77%,  200 -> 85%,  300 -> 92%
-function accTighten(acc){return .95*(1-Math.exp(-Math.max(0,acc||0)/90));}
+const ACC_EFF=.7;   /* 0.12.302 (Kyle): every accuracy point is about 30% less effective */
+function accTighten(acc){acc=(acc||0)*ACC_EFF;return .95*(1-Math.exp(-Math.max(0,acc||0)/90));}
 function aimBands(acc){const m=accTighten(acc);const p4=5*(1-m),p3=10*(1-m),p2=35*(1-m*.85);return [[100-p2-p3-p4,20,35],[p2,36,40],[p3,41,50],[p4,51,70]];}
 function rollAimHeight(acc,rng){let r=rng()*100;for(const [p,lo,hi] of aimBands(acc)){if(r<p)return lo+rng()*(hi-lo);r-=p;}return 30;}
 // Shooting at fliers uses its own, tighter table aimed at the flier's body (ruler units above/below its centre, either side):
@@ -273,7 +274,7 @@ function airBands(acc){const m=accTighten(acc);const p3=10*(1-m),p2=20*(1-m*.85)
 function rollAirAim(acc,rng,centre){let r=rng()*100;for(const [p,lo,hi] of airBands(acc)){if(r<p)return centre+(rng()<.5?-1:1)*(lo+rng()*(hi-lo));r-=p;}return centre;}
 function rollLaneOffset(acc,rng){const m=accTighten(acc);const off2=10*(1-m),off1=30*(1-m),r=rng()*100;if(r<off2)return rng()<.5?-2:2;if(r<off2+off1)return rng()<.5?-1:1;return 0;}
 // hitboxes, ruler units: w = width, h = height above the feet
-const HITBOX={bat:{w:30,h:14},zombie:{w:16,h:46},werewolf:{w:30,h:36}};   // werewolf h is before his 0.77 draw scale (~28 tall walking)
+const HITBOX={bat:{w:24,h:11},zombie:{w:16,h:46},werewolf:{w:30,h:36}};   // werewolf h is before his 0.77 draw scale (~28 tall walking)
 // 0.11: heroes have bodies too. Every non-boss unit has a hitbox about its own size (ruler units). Per-hero overrides go in HERO_HB.
 const HERO_HITBOX={w:20,h:46},HERO_HB={cheez:{w:18,h:46},edward:{w:18,h:46},knight:{w:22,h:46},carcher:{w:16,h:40},csorc:{w:16,h:40},soldier:{w:18,h:46},shoshi:{w:18,h:44},eng:{w:20,h:46},jp:{w:20,h:46},dog:{w:16,h:22},cultist:{w:14,h:36},robot:{w:23,h:52},lumberjack:{w:20,h:46},druid:{w:18,h:46},archer:{w:20,h:46},flannel:{w:20,h:46},flannel_pal:{w:18,h:42}};   // Flannel_Man: full-detail art drawn at normal humanoid size
 function hbOf(u){return u&&u.key?(HERO_HB[u.key]||HERO_HITBOX):(u&&HITBOX[u.type])||{w:16,h:44};}
@@ -310,7 +311,7 @@ function aimPose(tg){const B=AIM_BOXES[tg&&tg.type];if(!B)return null;
 function aimBoxesOf(tg){const B=aimPose(tg);if(B){const s=tg&&tg.E&&tg.E.aimScale;if(!s)return B;const S=a=>[a[0]*s,a[1]*s,a[2]];return {top:S(B.top),mid:S(B.mid),bot:S(B.bot)};}
   const h=hbOf(tg).h*((tg&&tg.E&&tg.E.scale)||1);   // anyone without their own boxes (heroes too) uses the zombie's shape scaled to their height
   return {top:[1.065*h,1.85*h,40],mid:[.61*h,1.065*h,10],bot:[0,.61*h,50]};}
-function aimOdds(B,acc){let t=B.top[2],b=B.bot[2],m=B.mid[2];const k=AIM_STEP*(acc||0);
+function aimOdds(B,acc){let t=B.top[2],b=B.bot[2],m=B.mid[2];const k=AIM_STEP*ACC_EFF*(acc||0);
   if(k>=0){const a=Math.min(t,k);t-=a;b+=a;const c=Math.min(b,k);b-=c;m+=c;}
   else{const a=Math.min(m,-k);m-=a;b+=a;const c=Math.min(b,-k);b-=c;t+=c;}
   return {top:t,mid:m,bot:b};}
@@ -453,7 +454,7 @@ const CHAR={
       {id:'host',name:'Dice-Boys_Banner',en:40,cd:25,dur:8,r:100,dmg:.15,crit:.07,regen:.5}   /* 0.12.243 (Kyle): +15% dmg (was 10%), +0.5 energy/s (was 1), +7% crit (was 5%); all live while you stand in it */]},
   edward:{name:'Edward',role:'Nail_Gun + Toolbox',flatHp:0,stamina:10,hpPerStamina:5,armorPts:7,dodge:.05,kbRes:.35,
     melee:{dice:[1,6],flat:1,every:2.1,reach:14,kb:55,hitAt:.3},   /* 0.12.214 (Kyle): the nailer butt-strike is slow but sends them flying */
-    ranged:{dice:[1,4],flat:0,every:.3,range:210,clip:18,   /* 0.12.244 (Kyle): a nail every 0.30s */   /* 0.12.226 (Kyle): 1d4 a nail; 0.12.227: every 0.45s, 3s reload */reload:3,pellets:1,anim:.3},
+    ranged:{dice:[1,4],flat:0,every:.3,range:147,clip:18,   /* 0.12.302 (Kyle): nail gun range -30% (was 210) */   /* 0.12.244 (Kyle): a nail every 0.30s */   /* 0.12.226 (Kyle): 1d4 a nail; 0.12.227: every 0.45s, 3s reload */reload:3,pellets:1,anim:.3},
     acc:16,walkPenalty:0,crit:.09,critMul:1.8,luck:16,xp:0,run:2,turn:.2,enMax:100,enRegen:5.5,   /* 0.12.221 (Kyle): no accuracy lost on the move with the nail gun */
     abilities:[
       {id:'loyal',name:'Loyal_to_a_Fault',passive:1,under:.3,share:.4,r:160,en:3},
@@ -480,7 +481,7 @@ const CHAR={
   //   games all day and smokes a lot of weed (not a drinker). Plays sword-fight with his kids. Mixes jokey and sensible.
   jp:{name:'JP',role:'Kar98 + Sword & Board',flatHp:0,stamina:9,hpPerStamina:5,armorPts:7,dodge:.05,kbRes:.35,
     melee:{dice:[1,8],every:1.1,reach:18,kb:18,hitAt:.15},                    // sword: medium speed, low-medium damage
-    ranged:{dice:[1,20],flat:0,every:2.25,range:290,   /* 0.12.201 (Kyle): 1d20, no flats */clip:1,reload:2.25,pellets:1,quietReload:1,aimT:.25},   // 0.12.163 (Kyle): Kar98 1d8+4 with a 0.25s aim wind-up before the shot (was 4d4-2, no wind-up); 2.25s; he doesn't call out reloads
+    ranged:{dice:[1,8],flat:4,every:2.25,range:290,   /* 0.12.302 (Kyle): Kar98 back to 1d8+4 */clip:1,reload:2.25,pellets:1,quietReload:1,aimT:.25},   // 0.12.163 (Kyle): Kar98 1d8+4 with a 0.25s aim wind-up before the shot (was 4d4-2, no wind-up); 2.25s; he doesn't call out reloads
     acc:20,walkPenalty:12,crit:.12,critMul:2,luck:18,xp:0,run:2,turn:.22,enMax:100,enRegen:4.6,
     blockCh:.2,   // 0.12.79 Sword & Board (built into his melee kit): 20% to BLOCK a hit outright with the homemade shield. Any unit with a shield gets blockCh.
     abilities:[
@@ -626,7 +627,7 @@ const ABIL_DESC={
   reboot:'Turn_It_Off_And_On_Again · 29 energy · 12s. Reboots an ally within 210px: clears bleed, fear and slow, heals 8% and refreshes one of their cooldowns. Used on anyone bleeding, scared or slowed, or under half health with an ability waiting.',
   trial:'Tech_Support · 17 energy · 7s. An instant: every cast cuts the remaining cooldowns of every ally within 300px (not his own) by 15% and gives each of them +5 energy. Cheap and quick, so he keeps doing it all fight.',
   dad:'Dad_Mode · 34 energy · 18s. When an ally within 270px is under 40% with 2+ zombies on them, he plants himself beside them: 40% less damage for 5s, a shield worth 20% of their max HP, and the zombies on them get shoved back.',
-  build:'Build · 29 energy · three buildings, each with its own cooldown. He kneels to build (3s) and his other cooldowns pause. WATCHTOWER (7s): heals allies near it 1% a second; Modify adds tier 2 (+15% ranged attack speed nearby, and a floor a shooter can stand on: +6 accuracy, +30% range, +7.5% damage) and tier 3 (the top lookout: a second shooter climbs up for +12 accuracy, +50% range, +15% damage). Up there they can\'t be hit, but zombies nearby go for the tower legs. HESCO_BARRIER (16s): blocks its lanes; zombies have to break it; allies behind get +8 accuracy. TESLA_COIL (22s): zaps the nearest zombie for 1d4+2 every 1.5s, arcing to one more, for 25s. When one of his towers scrolls off behind the team, tower and Modify cooldowns reset.',
+  build:'Build · 29 energy · two buildings, each with its own cooldown. He kneels to build (3s) and his other cooldowns pause. WATCHTOWER (7s): heals allies near it 1% a second; Modify adds tier 2 (+15% ranged attack speed nearby, and a floor a shooter can stand on: +6 accuracy, +30% range, +7.5% damage) and tier 3 (the top lookout: a second shooter climbs up for +12 accuracy, +50% range, +15% damage). Up there they can\'t be hit, but zombies nearby go for the tower legs. HESCO_BARRIER (16s): blocks its lanes; zombies have to break it; allies behind get +8 accuracy. When one of his towers scrolls off behind the team, tower and Modify cooldowns reset.',
   repair:'Repair · free, no cooldown · slow: patches up his buildings (6 HP a second) and the Warhound (2% a second) while he stays beside them. His other cooldowns pause while he works.',
   modify:'Modify · 34 energy · 10s (a watchtower tier refunds 70%). Adds the next tier to his watchtower, or bolts an auto-turret onto a wrecked car: 3-round bursts, 1s reload, not very accurate.',
   satchel:'Satchel_Charge · 40 energy · 18s. Tosses a satchel of explosives that never goes off on its own; he sets it off when it\'s worth it. The biggest blast in the game: 6d4 at the centre, falling off outward, and a huge shove.',
@@ -644,7 +645,7 @@ const ABIL_DESC={
   resurge:'Verdant_Resurgence · Passive · 25s cooldown. When an ally would die, vines catch them: they stay up, can\'t be hurt for 2s and heal 30% of their max HP.',
   nano:'Nano-Tech_Repair_Bots · 40 energy · 20s. Under 55% he stops and repair bots restore 7% of his max life every second for 5s (he\'s a machine: no bandages, herbs or heal spells). He can\'t move or attack meanwhile and cuts it short if swarmed. Every hit he takes has a 15% chance to halve the remaining cooldown.',
   surge:'Arc_Surge · 45 energy · 20s · 15s. Overcharges the Targeted Lazer: 1d4+3 every 0.35s, a 25 px blast at the tip that sweeps 210 px instead of 150, and every lazer hit sets them on fire. He leans 3 toward Shooter while it lasts.',
-  directive:'Primary_Directive · one skill, two choices, one shared cooldown. TACTICAL_RETREAT (free, 40s): when he drops under 30% he jetpacks in a big arc back to the rear; a blue shield caps every hit at 5 in the air and he fires about 3 missiles on the way. CARPET_BOMB (45 energy, 30s): jetpacks FORWARD about 360px over the horde and drops 9 missiles onto whatever is under him (same shield). Either one lands with a GROUND SMASH: 2d6 to everything within 135px, knocked hard away from him. Using either puts both on cooldown. He bombs on 4+ zombies (or a boss) ahead while over 45%, and saves it to bail out when he\'s low.',
+  directive:'Primary_Directive · one skill, two choices, one shared cooldown. TACTICAL_RETREAT (free, 40s): when he drops under 30% he jetpacks in a big arc back to the rear; a blue shield caps every hit at 5 in the air and he fires about 3 missiles on the way. CARPET_BOMB (45 energy, 30s): jetpacks FORWARD 350 to 600px (never a short hop) over the horde and drops 9 missiles onto whatever is under him (same shield). Either one lands with a GROUND SMASH: 2d6 to everything within 135px, knocked hard away from him. Using either puts both on cooldown. He bombs on 4+ zombies (or a boss) ahead while over 45%, and saves it to bail out when he\'s low.',
   missiles:'Missile_Barrage · 55 energy · 15s. The pod on his back pops open and lobs 3 missiles high over the fight onto a group, spread wide; each one 2d4 in a small blast.',
   smoke:'Smoke_Screen · 40 energy · 16s. Lobs smoke between a hurt ally and the zombies on them: a 180px cloud for 6s. Zombies inside move 30% slower and miss half their attacks. Allies inside dodge 25% of hits and are STEALTHED (zombies lose track of them) until 5s after they step out or attack.',
   toke:'Toke_Break · no energy · 22s · 2s. He sparks up a big one and keeps walking but does nothing else while he smokes; then he\'s HIGH for 30s (see Wake_n_Bake) and feels 6% better.',
@@ -663,11 +664,11 @@ const ABIL_DESC={
   rapid:'One Nocked, Two in Hand · 46 energy · 10s. She rapid-fires 3 arrows within 1 second, each at the same or a different target (-5 accuracy). These can\'t crit, but any crit she lands at any time halves what\'s left of this cooldown.',
   blowgun:'Blow_Gun · 34 energy · 9s. A dart that hits for 1d4 on its own plus poison (1 stack guaranteed, 75% for a 2nd, 50% for a 3rd) on the living. Undead are immune to the poison, but hitting one halves what\'s left of the cooldown.',
   poultice:'Poultice · 29 energy · 15s. When he\'s under 60% health he slaps a herbal poultice on: heals himself 4% of max HP every second for 6s.',
-  whirl:'Whirl_Wind · 52 energy · 14s. Spins with his axe for up to 5s at half speed, trailing a slashing wave: every second it hits everything within about 70px for 1d4 and makes it bleed (6 over 3s). He can break it off early to escape, but usually spins it out.',
+  whirl:'Whirl_Wind · 52 energy · 14s. Spins with his axe for up to 5s at half speed, trailing a slashing wave: every second it hits everything within about 78px for 1d4 and makes it bleed (10 over 3s). He can break it off early to escape, but usually spins it out.',
   chop:'Ground_Chop · 34 energy · 9s. A huge overhead chop into the ground: a shockwave 120px ahead for 2d6 that shoves and stuns for 0.8s.',
-  leap:'Hatchet_Leap · 46 energy · 16s. Double-jumps onto an enemy up to 180px away and slams down for 1d10 to everything around the landing, cracking the ground. Everything hit is stunned: 1.2s right under him, down to 0.4s at the edge.',
-  rage:'Timber_Rage · 40 energy · 20s. Under half health: +30% damage, +20% attack speed and 25% less damage taken for 6s.',
-  rhythm:'Feller\'s_Rhythm (passive) · every 3rd axe hit in a row (each within 3s of the last) is a felling blow: +50% damage and a 0.4s stagger. TIMBER!',
+  leap:'Hatchet_Leap · 46 energy · 16s. Leaps onto an enemy up to 180px away and slams down for 1d10 to everything around the landing, cracking the ground. Everything hit is stunned: 1.2s right under him, down to 0.4s at the edge.',
+  rage:'Timber_Rage · 40 energy · 20s. Under half health: +30% damage, +20% attack speed, 25% less damage taken and 5% lifesteal for 6s.',
+  rhythm:'Feller\'s_Rhythm (passive) · every 3rd axe hit in a row (each within 5s of the last) is a felling blow: +50% damage and a 0.4s stagger. TIMBER!',
   mend:'Mend · 20 energy · 5s. Instantly heals the most-hurt ally for 10% of their max HP.',
   bloom:'Rejuvenating Bloom · 40 energy · 14s. Wraps an ally in a healing vine heart: 4% of max HP every second for 8s.',
   thorns:'Thorn Wave · 46 energy · 14s. A wave of earth thorns erupts along the ground 400px down her lane: 2d6 to everything it bursts under, plus bleed (12 over 4s) and a 50% chance of a poison stack (undead are immune).',
@@ -686,7 +687,7 @@ const BEHAVIOR={
   druid:'Selfless healer. Hangs back near her friends and watches their health more than the enemies: patches up whoever is hurt worst, wraps allies in healing vines, and pokes at range with nature bolts. When enemies bunch up she drops thorns on them or sends a tornado down the lane. Light-footed and quiet. Her nerves are middling, so a boss or a fallen friend can rattle her for a moment. She tucks in behind rocks and logs when the horde gets thick.',
   archer:'Patient longbow marksman. Stays well back in his own lane, moves slowly and plants his feet for clean, accurate shots at the biggest threat. Backs up what his allies are fighting, sticks to his plan and doesn\'t waste energy. If something gets in close he cracks it with his bow. Steady and nearly silent: the best one to send searching a wreck. He shoots from behind cover whenever there\'s some nearby.',
   chibi:'Bold little front-liner. Charges in with his sword and fights up close, alternating a two-hit combo when he plants his feet and a running slash when he\'s on the move. Watches the enemies more than his friends, hops lanes to find a fight and picks his own targets. Stubborn about whoever hit him last, and loves to show off after a kill. Light on his feet and fairly steady. He never takes cover; he\'d rather be in their faces.',
-  eng:'Practical fixer. Hangs a little behind the front, works with his hands: puts up a watchtower behind the team and builds it up, drops a concrete barrier in front of a crowd, plants a tesla coil, bolts turrets onto wrecks and keeps it all patched together. Halving the tower cooldown whenever one of his towers scrolls off behind the team keeps them coming. Bashes anything close with a heavy wrench and lobs grenades into the crowd with his Grenade_Launcher (from the lookout, they come down hard and bounce further). Patient, very techy, a bit quiet; holds his satchel until the moment is right.',
+  eng:'Practical fixer. Hangs a little behind the front, works with his hands: puts up a watchtower behind the team and builds it up, drops a concrete barrier in front of a crowd, bolts turrets onto wrecks and keeps it all patched together. Halving the tower cooldown whenever one of his towers scrolls off behind the team keeps them coming. Bashes anything close with a heavy wrench and lobs grenades into the crowd with his Grenade_Launcher (from the lookout, they come down hard and bounce further). Patient, very techy, a bit quiet; holds his satchel until the moment is right.',
   jp:'Loud, lovable menace. A good guy who picks on everybody, games all day and smokes even more. Kar98 at range, sword and a homemade wooden shield up close, and the first one in when family is in trouble. Keep him high or he gets grumpy.',
   flannel:'Careful, team-first marksman. Hangs back at mid range with his bolt-action rifle and plants his feet before shooting: one shot, then a 2-second reload. Anything that gets into crowbar reach gets a d12 swing instead. Looks after hurt allies before himself and keeps an eye on where his friends are. Goes for the big targets and holds a grudge: whatever hurts him becomes his next target. Sticks to his plan and his own lane, and never shows off. A seasoned survivor: steady nerves, quiet, and always puts a car or a rock between himself and the horde when he can, leaning out to shoot.',
   joel:'Fast, restless pair. Always on the move: they hop lanes looking for better fights and change plans constantly. They lean into close fights, pile onto whatever their allies are hitting, and pick off the small ones. They burn energy as soon as they have it (lots of Power Attacks), shoot on the run (sloppy), forgive quickly and love to taunt after a kill.',
@@ -811,27 +812,27 @@ CHAR.druid={name:'Druid',role:'Staff + Nature Bolts',flatHp:0,stamina:7,hpPerSta
     {id:'cyclone',name:'Cyclone',en:52,cd:18,ahead:150,near:100,dist:215,dur:5,dice:[1,3],every:.5,pullR:40,pull:16,inR:12,depth:6,spd:20,wander:28,cast:.5}]};
 // 0.12.11 Lumber_Jack (Claude's starting numbers): a burly axeman with a hunting bow. Sturdy, hits hard up close.
 CHAR.lumberjack={name:'Lumber_Jack',role:'Axe + Bow',combo:0,flatHp:0,stamina:11,hpPerStamina:5,armorPts:7,dodge:.03,kbRes:.45,
-  melee:{dice:[1,12],every:1.2,reach:22,kb:28,hitAt:.2},   /* 0.12.58 (Kyle): a little weak: 1d10/1.3s -> 1d12/1.2s (about +25%) */
+  melee:{dice:[1,12],every:1.2,reach:26.4,kb:28,hitAt:.2},   /* 0.12.302 (Kyle): +20% reach */   /* 0.12.58 (Kyle): a little weak: 1d10/1.3s -> 1d12/1.2s (about +25%) */
   ranged:{dice:[1,6],flat:0,every:2.2,range:200,clip:0,reload:0,pellets:1,anim:.7,releaseAt:.45},
   acc:14,walkPenalty:10,crit:.10,critMul:1.9,luck:16,xp:0,run:2,turn:.25,enMax:100,enRegen:4.6,
   abilities:[
     // Whirl_Wind: spins with his axe for 2.4s, drifting forward; every 0.4s it hits everything around him (1d6 +flat, ~18px, 1 lane each way). 40 energy, 14s.
     // 0.12.26 (Kyle): up to 5s, 1d4 every second to everything in a wider 24px circle, each hit refreshes a bleed (6 over 3s), he moves at half speed while
     //   spinning, and he can break off early (IF he's badly hurt and wants out, OR nothing has been in reach for 1.5s) but usually spins it out.
-    {id:'whirl',name:'Whirl_Wind',en:52,cd:14,dur:5,every:1,r:24,depth:7,dice:[1,4],bleed:{dmg:6,dur:3},want:'close',range:30},
+    {id:'whirl',name:'Whirl_Wind',en:52,cd:14,dur:5,every:1,r:26,depth:7,dice:[1,4],bleed:{dmg:10,dur:3},   /* 0.12.302 (Kyle): ~78 area (was ~72), bleed 10 over 3s */want:'close',range:30},
     // Ground_Chop: a huge overhead chop into the ground: a shockwave 40px ahead (2d6 +flat), shoves and stuns 0.8s. 25 energy, 9s.
     {id:'chop',name:'Ground_Chop',en:34,cd:9,cast:.5,dist:40,depth:6,dice:[2,6],stun:.8,kb:35,want:'close',range:40},
-    // Hatchet_Leap: double-jumps onto an enemy up to 60px away and slams down (1d10 +flat to everything within 16px). 35 energy, 16s.
+    // Hatchet_Leap: leaps onto an enemy up to 60px away and slams down (1d10 +flat to everything within 16px). 35 energy, 16s.
     // 0.12.69 (Kyle): the slam stuns: 1.2s right under him, down to 0.4s at the edge of the blast; a much bigger landing (cracked earth, dust, pebbles, a burst).
     {id:'leap',name:'Hatchet_Leap',en:46,cd:16,dur:.6,range:60,min:24,r:16,dice:[1,10],want:'close',stun0:1.2,stun1:.4},
     // Timber_Rage: when he's under half health he gets angry: +30% damage, +20% attack speed, 25% less damage taken for 6s. 30 energy, 20s.
-    {id:'rage',name:'Timber_Rage',en:40,cd:20,dur:6,dmg:.3,spd:.2,dr:.25,under:.5,want:'close'},
+    {id:'rage',name:'Timber_Rage',en:40,cd:20,dur:6,dmg:.3,spd:.2,dr:.25,under:.5,ls:.05,want:'close'},   /* 0.12.302: +5% lifesteal while raging */
     // 0.12.58 (Kyle: it never seemed to do anything) Log_Roll reworked: he kicks a log down his lane. It rolls 120px forward at 110px/s,
     //   hitting each zombie it passes once for 1d8 +flat, knocking them back and tripping them for 0.6s. 25 energy, 11s.
     //   IF 2+ enemies are in my lane ahead within 90px (or 1 big one) THEN roll it.
     // 0.12.69 (Kyle: replace Log_Roll with a passive of my choosing) Feller's_Rhythm (passive): every 3rd axe hit in a row (each within 3s of the
     //   last) is a FELLING blow: +50% damage and a 0.4s stagger (bosses don't stagger). "TIMBER!" pops over the target.
-    {id:'rhythm',name:"Feller's_Rhythm",passive:1,n:3,window:3,bonus:.5,stun:.4}]};
+    {id:'rhythm',name:"Feller's_Rhythm",passive:1,n:3,window:5,bonus:.5,stun:.4}]};   /* 0.12.302 (Kyle): hits within 5s of each other (was 3s) */
 // 0.12.19: renamed Warhound with Kyle's pick of the new sprite (hunched olive war-walker, brass trim, elbowed blade arm).
 // 0.12.17 Moss_Mech (Kyle): an original moss-grown green war mech with a blue electric arc blade on its near arm and a gatling on
 //   the far arm, plus a missile pod on its back. Heavy and slow, lots of armor. Basic ranged: a short 3-round burst from the gatling.
@@ -866,7 +867,7 @@ CHAR.robot={name:'Warhound',role:'Targeted Lazer + Flamethrower',combo:0,flatHp:
     // 0.12.236 (Kyle) Carpet_Bomb (active, the other jetpack mode): IF 4+ zombies (or a boss) are 40-390px ahead of me AND I'm over 45% THEN I jetpack FORWARD
     //   ~360px and let loose 9 missiles (triple the retreat's 3) onto whatever is under my flight path. Same blue shield in the air. 45 energy, 30s.
     // Both modes (0.12.236): when I land, a GROUND SMASH: 2d6 to everything within 135px and a big knockback away from me on either side.
-     carpet:{id:'carpet',name:'Carpet_Bomb',en:45,cd:30,T:2.4,H:42,shots:9,cap:5,dist:120}}]};
+     carpet:{id:'carpet',name:'Carpet_Bomb',en:45,cd:30,T:2.4,H:42,shots:9,cap:5,dist:200,minDist:117}}]};   /* 0.12.302 (Kyle): flies at least 350 screen px (117) and at most 600 (200) */
 const JET_SMASH={r:45,dice:[2,6],kb:4};   /* 0.12.236 jetpack landing smash: 135 screen px, 2d6, major knockback */
 // 0.12.75 Engineer (Kyle): hard hat, red shirt + overalls, a heavy wrench and a sawn-off shotgun. Builds things.
 CHAR.eng={name:'Engineer',role:'Wrench + Grenade_Launcher',combo:0,flatHp:0,stamina:9,hpPerStamina:5,armorPts:7,dodge:.04,kbRes:.35,
@@ -1565,8 +1566,8 @@ class Game{
   spawnEnemy(type,opt){
     const E=CFG.enemies[type];const st=this.st;const elite=false;   /* 0.12.87 (Kyle): no elite zombies for now (was 7% +1% a stage) */
     const hp=Math.max(1,Math.round(E.hp*st.hpMul*ENEMY_HP))*(elite?2.6:1);   /* 0.12.103: zombies trimmed with hero damage so fights take as long as before */
-    const e={type,E,x:this.W+10+this.rng()*20,y:E.fly?this.G-70+this.rng()*36:this.G,hp,max:hp,dmg:(E.dmg||E.dmgDie/2+.5)*st.dmgMul*(elite?1.5:1),dmgMul:st.dmgMul*(elite?1.5:1),skin:E.skins?E.skins[Math.floor(this.rng()*E.skins.length)]:type,atkT:this.rng()*.5,
-      walkT:this.rng(),anim:0,animT:0,slow:0,slowT:0,stun:0,burn:0,burnT:0,shred:0,elite,armorPts:Math.floor((E.armorPts||0)*Math.pow(1.03,(st.n||1)-1)),fly:!!E.fly,ranged:!!E.ranged,hitFlash:0,phase:this.rng()*6,target:null};
+    const e={type,E,x:this.W+10+this.rng()*20,y:E.fly?this.G-100+this.rng()*30:this.G,hp,max:hp,dmg:(E.dmg||E.dmgDie/2+.5)*st.dmgMul*(elite?1.5:1),dmgMul:st.dmgMul*(elite?1.5:1),skin:E.skins?E.skins[Math.floor(this.rng()*E.skins.length)]:type,atkT:this.rng()*.5,
+      walkT:this.rng(),anim:0,animT:0,slow:0,slowT:0,stun:0,burn:0,burnT:0,shred:0,elite,armorPts:Math.floor((E.armorPts||0)*Math.pow(1.03,(st.n||1)-1)),fly:!!E.fly,ranged:!!E.ranged,acc:E.acc||0,hitFlash:0,phase:this.rng()*6,target:null};
     if(opt)Object.assign(e,opt);e.elite=false;   /* 0.12.142 (Kyle): no elites at all (the leftover elite:'roll' made every wave zombie secretly elite); only promoted Nemeses are different */
     this.enemies.push(e);return e;
   }
@@ -1608,7 +1609,8 @@ class Game{
     if(opt.kb>0){const ratio=Math.min(1,amt/Math.max(1,e.max));let kb=ratio<.08?ratio*12:ratio<.25?2+ratio*14:5+ratio*12;   // chip ~0, medium small, big decent
       if(crit)kb*=1.6;if(e.boss)kb*=.12;kb*=opt.kb;if(e.fly)kb*=.7;if(e.nemKb)kb*=1-e.nemKb;else if(e.E&&e.E.kbRes)kb*=1-e.E.kbRes;e.kbv=Math.max(e.kbv||0,Math.min(18,kb)*7);e.kbDir=src&&src.x!=null&&!e.boss?(e.x>=src.x?1:-1):1;}
     if(!opt.quiet||crit)this.text(e.x+(this.rng()*8-4),e.y-(e.boss?100:e.fly?16:44),Math.round(amt),crit?'#ffd23f':opt.fire?'#ffb060':'#ffffff',crit);   /* burn ticks only show a number when they crit */
-    if(src&&src.lifesteal>0&&src.alive){const b0=src.hp;src.hp=Math.min(src.max,src.hp+amt*src.lifesteal);if(src.key)this.st8(src).heal+=src.hp-b0;}
+    {const ls=src?(src.lifesteal||0)+(src.rageT>0&&src.key==='lumberjack'?.05:0):0;   /* 0.12.302 Timber_Rage +5% lifesteal */
+    if(src&&ls>0&&src.alive){const b0=src.hp;src.hp=Math.min(src.max,src.hp+amt*ls);if(src.key)this.st8(src).heal+=src.hp-b0;}}
     if(!ABILITIES_OFF&&src&&src.style&&src.style.leech)this.healHero(this.weakest(),amt*src.style.leech*.5,true);
     if(src&&src.items&&src.items.length)this.procs(src,crit?'oncrit':'onhit',e);
     if(e.hp<=0){if(opt.blast)e._blast={x:opt.bx!=null?opt.bx:(src?src.x:e.x-20)};this.kill(e,src);}
@@ -1683,7 +1685,7 @@ class Game{
     const I=INJURY[id];sv.inj=sv.inj||[];const ex=sv.inj.find(x=>x.id===id);if(ex){ex.st=I.st;ex.fresh=1;}else sv.inj.push({id,st:I.st,fresh:1});
     if(!(h.injOn||[]).includes(id)&&!h.numb){injApply(h,id,1);(h.injOn=h.injOn||[]).push(id);}
     this.text(h.x,this.G-74,I.icon+' '+I.name.toUpperCase(),'#ffb070');Comms.bubble(this,h,Comms.pick(mech?['Damage report: '+I.name.toLowerCase()+'.','Systems compromised.','Warning. Warning.']:id==='leg'?['My leg! Something snapped!','Can\'t... put weight on it!']:id==='arm'?['My arm! I heard a crack!','Arm\'s busted!']:id==='wound'?['That one went deep...','I\'m leaking bad!']:['Everything\'s spinning...','Who... turned the lights down?']),true);}
-  gainMed(x,y,id){id=id||pick(['splint','hemo','pills','pills']);this.stageMed[id]=(this.stageMed[id]||0)+1;const M=MEDS[id];this.text(x,y,'+1 '+M.icon+' '+M.name.toUpperCase(),'#ff9ad0');}
+  gainMed(x,y,id){if(!id){const L=['splint','hemo','pills','pills'];id=L[Math.floor(this.rng()*L.length)];}   /* 0.12.302 FREEZE FIX: 'pick' didn't exist here, so a random med drop threw and froze the stage */this.stageMed[id]=(this.stageMed[id]||0)+1;const M=MEDS[id];this.text(x,y,'+1 '+M.icon+' '+M.name.toUpperCase(),'#ff9ad0');}
   /* 0.12.295 (Kyle): the same kind of bleed (same damage and length) doesn't stack, it just restarts; a DIFFERENT bleed stacks on top. Heroes and zombies alike. */
   addBleed(u,total,dur){if(!(total>0&&dur>0))return;this.bleedStep(u,0);const k=Math.round(total*100)/100+'/'+dur;(u.bleeds=u.bleeds||{})[k]={T:dur,dps:total/dur};this.bleedStep(u,0);}
   bleedStep(u,dt){if(!u.bleeds){if(u.bleedT>0&&u.bleedDps>0){u.bleeds={old:{T:u.bleedT,dps:u.bleedDps}};}else return 0;}let dps=0,T=0;
@@ -1952,7 +1954,7 @@ class Game{
     if(L.t>=LZ.charge+LZ.fire||L.tx<-4||L.tx>this.W+6){h.lz=null;h.lzReload=LZ.reload;}}
   /* Tactical_Retreat: an arc on the jetpack back to ~100 screen px from the left edge, then a slow landing. Same flight time from anywhere. */
   startJet(h,mode){const PD=(h.base.char.abilities||[]).find(a=>a.id==='directive');if(!PD)return;const CB=mode==='carpet'&&PD.carpet;const TR=CB||PD.retreat;
-    if(CB){h.jet={t:0,T:CB.T,x0:h.x,x1:Math.min(this.W-20,h.x+CB.dist),A:CB,shot:0,carpet:1};h.pdT=CB.cd*(1-(h.cdr||0));}else{h.jet={t:0,T:TR.T,x0:h.x,x1:TR.x1,A:TR,shot:0};h.pdT=TR.icd*(1-(h.cdr||0));}   /* one shared Primary_Directive cooldown */h.lz=null;h.nano=null;h.plan=null;
+    if(CB){{const d=Math.max(CB.minDist||0,Math.min(CB.dist,h.cbDist||CB.dist));h.cbDist=null;h.jet={t:0,T:CB.T,x0:h.x,x1:Math.min(this.W-20,h.x+d),A:CB,shot:0,carpet:1};}   /* 0.12.302: never a short hop; it may carry him past the screen edge's 20px margin no more */h.pdT=CB.cd*(1-(h.cdr||0));}else{h.jet={t:0,T:TR.T,x0:h.x,x1:TR.x1,A:TR,shot:0};h.pdT=TR.icd*(1-(h.cdr||0));}   /* one shared Primary_Directive cooldown */h.lz=null;h.nano=null;h.plan=null;
     this.ev('whoosh',{});this.shake=Math.max(this.shake||0,.2);Comms.bubble(this,h,CB?Comms.pick(['CARPET BOMB: INBOUND.','PAYLOAD: ARMED.','CLEARING THE ROAD.','DANGER CLOSE.']):Comms.pick(['TACTICAL RETREAT.','JETS: ENGAGED.','DISENGAGING.','REPOSITIONING.']),true);}
   robotJet(h,dt){const J=h.jet,A=J.A;J.t+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;if(J.carpet)J.x1-=(this.scroll||0)*dt;else J.x1=A.x1;const u=Math.min(1,J.t/J.T);
     const ux=Math.min(1,u/.78),e=ux*ux*(3-2*ux);h.x=J.x0+(J.x1-J.x0)*e;h.face=J.x1<J.x0?-1:1;
@@ -2403,8 +2405,8 @@ class Game{
           setTimeoutSafe(this,.25,()=>{if(!h.alive)return;this.ev('whoosh',{});(this.nades=this.nades||[]).push({x0:h.x,x:h.x,x1:spot,gy0:h.gy||this.G,gy,t:0,T:SM.throw,A:SM,src:h});});
           Comms.say(this,h,'smoke',{x:spot,ally:who});return;}}
       /* 0.12.236 Carpet_Bomb: IF 4+ zombies (or a boss) are 40-390px ahead AND I'm over 45% THEN jetpack forward and bomb the road (Calculated Play wants 5+) */
-      {const PD=RB('directive'),CB=PD&&PD.carpet;if(CB&&!(h.pdT>0)&&en>=CB.en&&!h.lz&&!h.nano&&h.hp/h.max>(h.cap&&h.cap.rb_omega?.3:.45)&&!this.exiting){const ahead=live.filter(e=>!e.fly&&e.x-hx>=13&&e.x-hx<=CB.dist+10);const need=(trait(h,'aggr')<.35?5:4)-(h.cap&&h.cap.rb_omega?1:0);   /* Omega_Directive: short cooldown, bombs more freely */
-        if((ahead.length>=need||ahead.some(e=>e.boss))&&spendEnergy(h,CB.en)){h.abWhy='CARPET BOMB: '+ahead.length+' ahead';h.abWhyT=this.t+3;this.startJet(h,'carpet');return;}}}
+      {const PD=RB('directive'),CB=PD&&PD.carpet;if(CB&&!(h.pdT>0)&&en>=CB.en&&!h.lz&&!h.nano&&h.hp/h.max>(h.cap&&h.cap.rb_omega?.3:.45)&&!this.exiting){const ahead=live.filter(e=>!e.fly&&e.x-hx>=13&&e.x-hx<=CB.dist+10);if(ahead.length){const far=Math.max(...ahead.map(e=>e.x-hx));h.cbDist=Math.max(CB.minDist||0,Math.min(CB.dist,far+12));}const need=(trait(h,'aggr')<.35?5:4)-(h.cap&&h.cap.rb_omega?1:0);   /* Omega_Directive: short cooldown, bombs more freely */
+        if((ahead.length>=need||ahead.some(e=>e.boss))&&hx+(CB.minDist||0)<=this.W-20&&spendEnergy(h,CB.en)){h.abWhy='CARPET BOMB: '+ahead.length+' ahead';h.abWhyT=this.t+3;this.startJet(h,'carpet');return;}}}
       // IF 3+ enemies are bunched 40-260px out (or a boss is up) THEN missile barrage on the thickest spot
       if(MS&&h.msT<=0&&en>=MS.en&&!(h.launchT>0)&&!h.lz){let best=null,bn=0;for(const e of live){const d=e.x-hx;if(d<MS.min||d>MS.range)continue;const n=live.filter(o=>Math.abs(o.x-e.x)<MS.spread*1.6).length+(e.boss?3:0);if(n>bn){bn=n;best=e;}}
         if(best&&bn>=(h.cap&&h.cap.rb_swarm?2:3)&&spendEnergy(h,MS.en)){h.msT=MS.cd*(1-(h.cdr||0));h.launchT=.2+MS.n*MS.gap+.2;
@@ -2716,7 +2718,7 @@ class Game{
       if(BU&&h.brT2<=0&&en>=BU.en){let bl=null,bn=0;for(const l of LANES){const n=live.filter(e=>!e.fly&&!e.boss&&Math.abs((e.gy!=null?e.gy:this.G)-l)<=BU.barrier.depth&&e.x-hx>30&&e.x-hx<120).length;if(n>bn){bn=n;bl=l;}}
         if(bl!=null&&bn>=3&&!B.some(b=>b.k==='barrier'&&b.hp>0&&Math.abs(b.gy-bl)<6&&b.x>hx)&&spendEnergy(h,BU.en)){h.brT2=BU.barrier.cd*(1-(h.cdr||0));h.building={k:'barrier',t:0,T:BU.barrier.T,x:Math.min(this.W-20,hx+24),gy:bl};Comms.bubble(this,h,Comms.pick(['HESCO going up!','Wall them off!','Filling a HESCO!']));return;}}
       // IF 2+ zombies are within ~300 screen px THEN plant a tesla coil a little ahead
-      if(!h.perch&&BU&&h.tsT<=0&&en>=BU.en&&near(100)>=2&&near(20)===0&&spendEnergy(h,BU.en)){h.tsT=BU.tesla.cd*(1-(h.cdr||0));h.building={k:'tesla',t:0,T:BU.tesla.T,x:Math.min(this.W-20,hx+16),gy};return;}
+      if(false&&!h.perch&&BU&&h.tsT<=0&&en>=BU.en&&near(100)>=2&&near(20)===0&&spendEnergy(h,BU.en)){h.tsT=BU.tesla.cd*(1-(h.cdr||0));h.building={k:'tesla',t:0,T:BU.tesla.T,x:Math.min(this.W-20,hx+16),gy};return;}
       // IF a wreck is right here with no turret AND it's quiet THEN bolt a turret onto it
       if(!h.perch&&MO&&h.moT<=0&&en>=MO.en&&safe){const car=(this.obst||[]).find(o=>/^car_/.test(o.k)&&!o.turret&&Math.abs(o.x-hx)<35&&o.x>20&&o.x<this.W-20);if(car&&spendEnergy(h,MO.en)){h.moT=MO.cd*(1-(h.cdr||0));h.building={k:'turret',car,t:0,T:MO.turret.T,x:car.x,gy:LANES[Math.max(...car.lanes)]};Comms.bubble(this,h,Comms.pick(['Let me mount something on this.','This wreck needs a gun.']));return;}}
       // Repair: IF a building of mine (or the Warhound) is hurt AND I'm beside it AND it's quiet THEN fix it
@@ -3452,10 +3454,11 @@ class Game{
   /* 0.12.206 Giant_Bat: picks a hero, circles above them (a small bob makes it a harder target), swoops down, bites for 1d3 and climbs away */
   batAI(e,dt,scroll,al){if(!al.length){e.x-=scroll*dt;return;}let T=e.target;if(!T||!T.alive||this.rng()<dt*.05)T=e.target=al[Math.floor(this.rng()*al.length)];
     const tx=this.heroX(T),tgy=T.gy||this.G;e.gy=tgy;e.atkT=(e.atkT||0)+dt;e.walkT+=dt;const sp=e.E.spd*(1-(e.slow||0));
-    if(e.swoop){const S=e.swoop;S.t+=dt;const u=Math.min(1,S.t/S.T);const dip=Math.sin(Math.PI*u);e.x+=(tx+S.side*2-e.x)*Math.min(1,dt*6)-scroll*dt;e.y=S.y0+(tgy-20-S.y0)*dip;e.face=tx<e.x?-1:1;
-      if(!S.hit&&u>=.5){S.hit=1;if(Math.abs(e.x-tx)<14&&T.alive){const d=Math.max(1,Math.floor((1+Math.floor(this.rng()*3))*e.dmgMul));this.hurtHero(T,d,e);}}
+    if(e.swoop){const S=e.swoop;S.t+=dt;const u=Math.min(1,S.t/S.T);const dip=Math.sin(Math.PI*u);e.x+=(tx+S.side*2-e.x)*Math.min(1,dt*6)-scroll*dt;e.y=S.y0+(tgy-(S.feint?34:20)-S.y0)*dip;e.face=tx<e.x?-1:1;
+      if(!S.hit&&!S.feint&&u>=.5){S.hit=1;if(Math.abs(e.x-tx)<14&&T.alive){const d=Math.max(1,Math.floor((1+Math.floor(this.rng()*3))*e.dmgMul));this.hurtHero(T,d,e);}}
       if(u>=1)e.swoop=null;return;}
-    e.orb=(e.orb||this.rng()*6)+dt*2.2;const hx=tx+Math.cos(e.orb)*26,hy=tgy-40-Math.sin(e.orb*2)*5+Math.sin(this.t*7+e.phase)*3.5;   // circle above, with a bob
+    if(e.alt==null){e.alt=52+this.rng()*22;e.orbR=24+this.rng()*18;}e.orb=(e.orb||this.rng()*6)+dt*2.6;const hx=tx+Math.cos(e.orb)*e.orbR,hy=tgy-e.alt-Math.sin(e.orb*2)*7+Math.sin(this.t*7+e.phase)*3.5;   // 0.12.302 (Kyle): circle HIGHER and wider, with a bob
+    if(!(e.stun>0)&&e.atkT<e.E.atk-.6&&Math.abs(e.x-tx)<50&&this.rng()<dt*.45){e.swoop={t:0,T:.6,y0:e.y,side:e.x>tx?1:-1,feint:1};}   // pesky fake dives that pull up short
     const dx=hx-e.x,dy=hy-e.y,L=Math.hypot(dx,dy)||1,st=Math.min(L,sp*dt);e.x+=dx/L*st-scroll*dt;e.y+=dy/L*st;e.face=dx<0?-1:1;
     if(e.atkT>=e.E.atk&&Math.abs(e.x-tx)<40&&!(e.stun>0)){e.atkT=0;e.swoop={t:0,T:.75,y0:e.y,side:e.x>tx?1:-1};}}
   screamAI(e,dt,scroll,al){const SC=e.E.scream;if(e.scrCd>0)e.scrCd-=dt;
@@ -4192,10 +4195,10 @@ const HCAP={
    cu_elder:{name:'Elder_God',icon:'🦑',txt:'Call_of_Cthulhu lasts 18s, terrifies 4s, back in 20s. +15% damage.',patch:[{ab:'cthulhu',set:{dur:18,fear:4,cd:20}}],stat:{dmgPct:15}},
    cu_leech:{name:'Leech_Lord',icon:'🧛',txt:'Syphon_Life drains 9 a second from 160px. 10% lifesteal. Once a stage a killing hit leaves him at 1 HP, untouchable 3s.',patch:[{ab:'syphon',set:{dps:9,range:160}}],stat:{mod:{lifesteal:10}},also:['last']}}},
  eng:{5:{
-   en_fort:{name:'Fortress',icon:'🏰',txt:'Turtle builder: HESCO cell 180 HP, tesla lasts 40s. +3 armor. Stays behind his walls.',patch:[{ab:'build',path:'barrier',set:{hp:180}},{ab:'build',path:'tesla',set:{life:40}}],stat:{mod:{armor:3}},shift:{aggr:-3}},
+   en_fort:{name:'Fortress',icon:'🏰',txt:'Turtle builder: HESCO cell 180 HP, watchtower 90 HP. +3 armor. Stays behind his walls.',patch:[{ab:'build',path:'barrier',set:{hp:180}},{ab:'build',path:'tower',set:{hp:90}}],stat:{mod:{armor:3}},shift:{aggr:-3}},
    en_bomb:{name:'Mad_Bomber',icon:'🧨',txt:'Satchel_Charge 10d4 in a huge blast, 10s cooldown. +10% damage. Gets in closer to throw.',patch:[{ab:'satchel',set:{dice:[10,4],r:48,cd:10}}],stat:{dmgPct:10},shift:{aggr:2}}},
   10:{
-   en_tesla:{name:'Tesla_Lord',icon:'⚡',txt:'Tesla coil lasts 60s and zaps every 0.7s. -20% cooldowns, abilities 20% cheaper.',patch:[{ab:'build',path:'tesla',set:{life:60,every:.7}}],also:['over']},
+   en_tesla:{name:'Tower_Lord',icon:'🗼',txt:'Watchtower builds 40% faster and comes back in 4s; HESCO cell back in 10s. -20% cooldowns, abilities 20% cheaper.',patch:[{ab:'build',path:'tower',set:{cd:4,T:[1.8,1.5,2.1]}},{ab:'build',path:'barrier',set:{cd:10}}],also:['over']},
    en_siege:{name:'Siege_Engineer',icon:'🏗️',txt:'Satchel_Charge 12d4 in a 55px blast. HESCO cell 150 HP. +15% damage, and +60% to anything under 25% HP.',patch:[{ab:'satchel',set:{dice:[12,4],r:55}},{ab:'build',path:'barrier',set:{hp:150}}],stat:{dmgPct:15},also:['exec']}}},
  carcher:{5:{
    ca_broad:{name:'Broadhead_Master',icon:'🏹',txt:'Piercing_Shot 4d6 through 9, 7s cooldown.',patch:[{ab:'pierce',set:{dice:[4,6],n:9,cd:7}}]},
@@ -4400,12 +4403,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1794585643';const BGI=new Image();BGI.src='crawl_bg.png?v=1794585643';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794585643';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1794993639';const BGI=new Image();BGI.src='crawl_bg.png?v=1794993639';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1794993639';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794585643';XIMG.wave.src='crawl_wave.png?v=1794585643';XIMG.chibi.src='crawl_chibi.png?v=1794585643';XIMG.flannel.src='crawl_flannel.png?v=1794585643';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794585643';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794585643';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794585643';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794585643';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794585643';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794585643';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794585643';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794585643';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794585643';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794585643';XIMG.rain.src='crawl_rain.png?v=1794585643';XIMG.druid.src='crawl_druid.png?v=1794585643';XIMG.camp.src='crawl_campfire.png?v=1794585643';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794585643';XIMG.tornado.src='crawl_fx_tornado.png?v=1794585643';XIMG.vine.src='crawl_fx_vine.png?v=1794585643';XIMG.thorn.src='crawl_fx_thorn.png?v=1794585643';
+const XIMG={wraith:new Image(),harvest:new Image(),cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1794993639';XIMG.wave.src='crawl_wave.png?v=1794993639';XIMG.chibi.src='crawl_chibi.png?v=1794993639';XIMG.flannel.src='crawl_flannel.png?v=1794993639';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1794993639';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1794993639';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1794993639';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1794993639';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1794993639';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1794993639';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1794993639';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1794993639';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1794993639';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1794993639';XIMG.rain.src='crawl_rain.png?v=1794993639';XIMG.druid.src='crawl_druid.png?v=1794993639';XIMG.camp.src='crawl_campfire.png?v=1794993639';XIMG.lumberjack.src='crawl_lumberjack.png?v=1794993639';XIMG.tornado.src='crawl_fx_tornado.png?v=1794993639';XIMG.vine.src='crawl_fx_vine.png?v=1794993639';XIMG.thorn.src='crawl_fx_thorn.png?v=1794993639';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794585643';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794585643';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1794585643';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1794585643';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1794585643';XIMG.obst.src='crawl_obst.png?v=1794585643';XIMG.cityob.src='crawl_cityob.png?v=1794585643';XIMG.harvest.src='crawl_harvest.png?v=1794585643';XIMG.wraith.src='crawl_wraith.png?v=1794585643';XIMG.cars.src='crawl_cars.png?v=1794585643';XIMG.robot.src='crawl_robot.png?v=1794585643';XIMG.cultist.src='crawl_cultist.png?v=1794585643';XIMG.tentacle.src='crawl_tentacle.png?v=1794585643';XIMG.boom.src='crawl_boom.png?v=1794585643';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1794993639';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1794993639';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1794993639';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1794993639';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1794993639';XIMG.obst.src='crawl_obst.png?v=1794993639';XIMG.cityob.src='crawl_cityob.png?v=1794993639';XIMG.harvest.src='crawl_harvest.png?v=1794993639';XIMG.wraith.src='crawl_wraith.png?v=1794993639';XIMG.cars.src='crawl_cars.png?v=1794993639';XIMG.robot.src='crawl_robot.png?v=1794993639';XIMG.cultist.src='crawl_cultist.png?v=1794993639';XIMG.tentacle.src='crawl_tentacle.png?v=1794993639';XIMG.boom.src='crawl_boom.png?v=1794993639';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -4529,6 +4532,13 @@ function unitFrame(e,U){const A=e.animT>0&&U.atk?U.atk:U.walk;let fr;
   if(U.idle&&e.moving===false)return [U.idle,Math.floor(e.walkT*6)%U.idle.n];
   return [A,Math.floor(e.walkT*(e.E.fps||7))%A.n];}
 let GHOST_A=1;   /* 0.12.107: <1 while drawing the Shadow_Clone */
+/* 0.12.301 (Kyle): real fire. Standing flames reuse the burst frames of the flamethrower sheet (crawl_flame.png) turned upright,
+   each one on its own flicker phase, with a hot additive glow, rising embers and the pack's smoke drifting off the top. */
+function fireTongue(ctx,x,y,h,ph,flip,alpha){const IM=XIMG.flame;if(!IM||!IM.complete||!IM.naturalWidth)return;const fi=5+Math.floor(ph*14)%5,s=h/250;
+  ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.rotate(-Math.PI/2);ctx.scale(s,s*(flip?-1:1)*(.85+.15*Math.sin(ph*9)));ctx.globalAlpha=alpha==null?.95:alpha;
+  ctx.drawImage(IM,fi*290,0,290,200,-30,-108,290,200);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=(alpha==null?.95:alpha)*.35;ctx.drawImage(IM,fi*290,0,290,200,-30,-108,290,200);ctx.restore();}
+function embers(ctx,t,x,y,w,n,seed,rise){for(let k=0;k<n;k++){const q=((t*.7+k*.173+(seed||0)*.31)%1),ex=x+Math.sin(k*12.9898+(seed||0))*w+Math.sin(t*3+k)*2,ey=y-q*(rise||34);ctx.globalAlpha=1-q;ctx.fillStyle=q<.3?'#fff2a0':q<.65?'#ffb030':'#ff4a1a';ctx.fillRect(Math.round(ex),Math.round(ey),1,1);}ctx.globalAlpha=1;}
+function fireGlow(ctx,x,y,r,a){ctx.save();ctx.globalCompositeOperation='lighter';const gr=ctx.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,`rgba(255,150,40,${a})`);gr.addColorStop(1,'rgba(255,80,10,0)');ctx.fillStyle=gr;ctx.fillRect(x-r,y-r,r*2,r*2);ctx.restore();}
 function drawUnit(ctx,A,fr,x,gy,sc,alpha,flash,rot,flip){const IM=A.img?XIMG[A.img]:UIMG;if(!IM||!IM.complete)return;ctx.save();ctx.translate(Math.round(x*RES)/RES,Math.round(gy*RES)/RES);if(rot)ctx.rotate(rot);{const sx=sc*(A.sx||1);ctx.scale(flip?-sx:sx,sc);}if(alpha!=null)ctx.globalAlpha=alpha*GHOST_A;else if(GHOST_A<1)ctx.globalAlpha*=GHOST_A;
   if(A.art){ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';}const sx=A.x+fr*A.fw;ctx.drawImage(IM,sx,A.y,A.fw,A.fh,-A.ax,-A.ay-1,A.fw,A.fh);
   if(flash>0){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.min(1,flash*6)*.7;ctx.drawImage(IM,sx,A.y,A.fw,A.fh,-A.ax,-A.ay-1,A.fw,A.fh);}ctx.restore();}
@@ -4659,7 +4669,8 @@ function drawGame(ctx,g,W,oy){
   for(const f of g.fx)if(f.k==='corpse'&&UNITS[f.skin||f.type]){ctx.save();shrinkAt(ctx,f.x,f.gy!=null?f.gy:G,HS);ctx.restore();const U=UNITS[f.skin||f.type],k=f.t/f.life;const fall=Math.min(1,k*3.2);
     if(U.die){const fr=Math.min(U.die.n-1,Math.floor(k/.7*U.die.n));const E2=CFG.enemies[f.type]||{};drawUnit(ctx,U.die,fr,f.x,f.gy!=null?f.gy:G,HS*(E2.scale||1)*(f.elite?1.1:1)*(U.die.pre?.88/U.die.pre:1),k>.75?(1-k)*4:1,0,0,!!U.die.faceR);continue;}
     drawUnit(ctx,U.walk,0,f.x+fall*3,f.gy!=null?f.gy:G+(f.lane||0),HS*(f.elite?1.1:1),Math.min(1,2.2*(1-k)),0,-fall*Math.PI/2*.96);}
-  for(const f of g.fx)if(f.k==='corpse'){const n='e_'+f.type,a=SP[n];if(!a||UNITS[f.type])continue;const k=f.t/f.life;const big=FH(a)===64;
+  for(const f of g.fx)if(f.k==='corpse'&&f.type==='bat'&&ATLAS.bat&&ATLAS.bat.death){const k=f.t/f.life,gy=f.gy!=null?f.gy:G,y0=f.y!=null?f.y:gy-40,fall=Math.min(1,k*2.4),y=y0+(gy-2-y0)*fall*fall;drawUnit(ctx,ATLAS.bat.death,0,f.x,y,.7,k>.7?(1-k)/.3:1,0,fall*1.2,false);}   /* 0.12.302 (Kyle): a small bat tumbling down, not a giant death sprite */
+  for(const f of g.fx)if(f.k==='corpse'){if(f.type==='bat'&&ATLAS.bat&&ATLAS.bat.death)continue;const n='e_'+f.type,a=SP[n];if(!a||UNITS[f.type])continue;const k=f.t/f.life;const big=FH(a)===64;
     const y=f.fly?Math.min(G-44,f.y-FH(a)/2+f.t*160):G-(big?60:44)+(f.lane||0);ctx.save();if(f.elite){ctx.translate(f.x,y+FH(a));ctx.scale(1.22,1.22);spr(ctx,n,10,-FW(a)/2,-FH(a),false,Math.min(1,2.2*(1-k)));}else spr(ctx,n,10,f.x-FW(a)/2,y,false,Math.min(1,2.2*(1-k)));ctx.restore();}
   const laser=()=>{for(const h of g.heroes){const K=h.cast;if(!h.alive||!K||!K.tgt||K.tgt.dead)continue;const T=K.tgt,mz=MUZZLE[h.key]||[10,30];
       const x0=g.heroX(h)+(h.face<0?-1:1)*mz[0],y0=(h.gy||g.G)-mz[1],tx=T.x,ty=(T.gy!=null&&!T.fly?T.gy:g.G)-(T.type==='werewolf'?18:38)*HS*((T.E&&T.E.scale)||1);
@@ -4806,7 +4817,11 @@ function drawGame(ctx,g,W,oy){
       if(h.wallDrag>0){for(let i=0;i<3;i++){ctx.globalAlpha=.7;ctx.fillStyle=Math.random()<.5?'#ffd27a':'#fff2c0';ctx.fillRect(x-fw*(2+Math.random()*4),gy-1-Math.random()*2,1,1);}ctx.globalAlpha=.35;ctx.fillStyle='#8a7a6a';ctx.beginPath();ctx.ellipse(g.heroX(h)-fw*4,gy-1,5+Math.random()*2,1.5,0,0,7);ctx.fill();}   // shield scraping the ground + dust at his feet while he drags forward
       ctx.restore();}
   for(const P of g.pools||[]){const cx=(P.x0+P.x1)/2,w=(P.x1-P.x0)/2;ctx.save();ctx.globalAlpha=P.fire>0?.9:Math.min(.85,(P.t||1)/2);ctx.fillStyle='#120e10';ctx.beginPath();ctx.ellipse(cx,P.gy,w,P.dz*.7,0,0,7);ctx.fill();ctx.fillStyle='rgba(120,90,160,.35)';ctx.beginPath();ctx.ellipse(cx-w*.3,P.gy-.6,w*.35,P.dz*.25,0,0,7);ctx.fill();   /* 0.12.216 oil pool: black and glossy, with a purple sheen */
-      if(P.fire>0){const n=Math.round(w*.9);for(let i=0;i<n;i++){const q=((i*37+P.seed*13)%n)/n,x=P.x0+(P.x1-P.x0)*((i+.5)/n),hgt=4+((Math.sin(g.t*11+i*1.7)+1)*3);ctx.globalAlpha=.85;ctx.fillStyle=q<.3?'#fff2a0':q<.7?'#ffb030':'#ff5a1a';ctx.fillRect(Math.round(x),Math.round(P.gy-hgt-(q*2)),1,Math.round(hgt));}ctx.globalAlpha=.25;ctx.fillStyle='#ff7a20';ctx.beginPath();ctx.ellipse(cx,P.gy-4,w+3,6,0,0,7);ctx.fill();}
+      if(P.fire>0){ctx.globalAlpha=1;fireGlow(ctx,cx,P.gy-6,w+18,.35);
+        if(ATLAS.smoke){const M=ATLAS.smoke,sk=(g.t*.25+P.seed)%1;drawUnit(ctx,M,14+Math.floor(sk*4),cx+Math.sin(g.t*.5+P.seed)*4,P.gy-18-sk*14,(w+10)/90,.28*(1-sk*.6),0,0,(Math.floor(P.seed)%2)===1);}
+        const n=Math.max(2,Math.round(w*2/8));for(let i=0;i<n;i++){const x=P.x0+(P.x1-P.x0)*((i+.5)/n)+Math.sin(i*7.3+P.seed)*2,ph=g.t*1.25+i*.37+P.seed,hh=13+7*Math.abs(Math.sin(i*2.1+P.seed))+3*Math.sin(g.t*6+i);fireTongue(ctx,x,P.gy+1,hh,ph,(i+Math.floor(P.seed))%2===1);}
+        for(let i=0;i<n-1;i++){const x=P.x0+(P.x1-P.x0)*((i+1)/n),ph=g.t*1.6+i*.51+P.seed*2;fireTongue(ctx,x,P.gy+2,8+3*Math.sin(g.t*7+i*3),ph,i%2===0,.85);}
+        embers(ctx,g.t,cx,P.gy-10,w,Math.round(4+w/3),P.seed,40);}
       ctx.restore();}
   for(const B of g.barrels||[]){const x=Math.round(B.x+(B.wob>0?Math.sin(g.t*60)*.7:0)),y=Math.round(B.gy);ctx.save();ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(x,y,5,1.5,0,0,7);ctx.fill();   /* 0.12.216 a rusty red oil drum with a hazard band, dented as it takes hits */
       ctx.fillStyle='#1a0c0a';ctx.fillRect(x-5,y-14,10,14);ctx.fillStyle='#8a2a1e';ctx.fillRect(x-4,y-13,8,12);ctx.fillStyle='#b8402a';ctx.fillRect(x-4,y-13,2,12);ctx.fillStyle='#5a1a12';ctx.fillRect(x+2,y-13,2,12);
@@ -4962,7 +4977,7 @@ function drawGame(ctx,g,W,oy){
       else if(h.volley>0&&U.ranged){A=U.ranged;f=Math.min(2,Math.floor((1-h.volley/(h.volleyT0||.6))*3));}   // draws and looses high
       else if(h.blowing>0&&U.blowgun){A=U.blowgun;f=Math.min(A.n-1,Math.floor((1-h.blowing/(h.blowT0||.7))*A.n));}
       else if(h.whirl&&U.spin){A=U.spin;f=Math.floor(g.t*16)%A.n;}
-      else if(h.leap&&U.leap){A=U.leap;f=Math.min(A.n-1,Math.floor(h.leap.t/.6*A.n));}
+      else if(h.leap&&U.leap){A=U.leap;const k=h.leap.t/.6;f=Math.min(A.n-1,k<.18?0:k<.82?2:3);}   /* 0.12.302 (Kyle): one clean jump: crouch, fly, slam (the spin-blur frame read like a double jump) */
       else if(h.rolling&&U.roll){A=U.roll;f=Math.min(A.n-1,Math.floor(h.rolling.t/.6*A.n));}
       else if(h.chopping>0&&U.chop){A=U.chop;f=Math.min(A.n-1,Math.floor((1-h.chopping/(h.chopT0||.5))*A.n));}
       else if(h.rageAnim>0&&U.rage){h.rageAnim-=1/60;A=U.rage;f=Math.min(A.n-1,Math.floor((1-h.rageAnim/.7)*A.n));}
@@ -5011,12 +5026,12 @@ function drawGame(ctx,g,W,oy){
     if(e.boss&&(e.type==='harvest'||e.type==='wraith')&&ATLAS[e.type]){const H=ATLAS[e.type],A=e.act,W=e.type==='wraith';let nm,fr;   /* 0.12.127 the Harvest Knight's own animations */
       if(A){nm=A.name;const N=H[nm].n;fr=Math.min(N-1,Math.floor(A.t/A.T*N));}else if(e.hitFlash>0){nm='hurt';fr=0;}else{const mov=e.x>(e._px==null?e.x:e._px)+.01||e.x<(e._px==null?e.x:e._px)-.01;nm=mov?(W?'drift':'walk'):(e.phase&&!W?'enraged':'idle');fr=Math.floor(g.t*(mov?9:7))%H[nm].n;}
       e._px=e.x;const a=H[nm];shadow(ctx,e.x,G,W?22:30);drawUnit(ctx,Object.assign({},a,{img:e.type}),fr,e.x,G-(W?6+Math.sin(g.t*2)*3:0),.95,null,e.hitFlash,0,true);return;}   /* the wraith floats */
-    if(e.type==='bat'&&ATLAS.bat){const B=ATLAS.bat;const a=e.swoop?B.swoop:e.hitFlash>0?B.hurt:B.fly;const f=a===B.fly?Math.floor(g.t*12+e.phase)%a.n:0;shadow(ctx,e.x,e.gy||g.G,6);drawUnit(ctx,a,f,e.x,e.y,1,null,e.hitFlash,0,(e.face||-1)>0);if(e.hp<e.max)plate(ctx,e,e.x,e.y-16,12,false,'#e8303a');return;}   /* 0.12.206 Giant_Bat */
+    if(e.type==='bat'&&ATLAS.bat){const B=ATLAS.bat;const a=e.swoop?B.swoop:e.hitFlash>0?B.hurt:B.fly;const f=a===B.fly?Math.floor(g.t*12+e.phase)%a.n:0;shadow(ctx,e.x,e.gy||g.G,6);drawUnit(ctx,a,f,e.x,e.y,.8,null,e.hitFlash,0,(e.face||-1)>0);if(e.hp<e.max)plate(ctx,e,e.x,e.y-13,12,false,'#e8303a');return;}   /* 0.12.206 Giant_Bat */
     if(e.boss){const bf=e.animT>0?2:Math.floor(g.t*2)%2;const y=e.fly?e.y-90:G-124;shadow(ctx,e.x,G,26);spr(ctx,'b_'+e.type,bf,e.x-64,y,false,null,e.hitFlash);return;}
     if(UNITS[e.skin||e.type]){const U=UNITS[e.skin||e.type];const [A,uf]=unitFrame(e,U);const gy=e.gy!=null?G:G+e.lane;const sc=(e.E.scale||1)*(e.elite?1.1:1)*(e.nem?(1.12+.1*e.nem.rank)*(e.nem.size||1):1);shadow(ctx,e.x,gy,8);if(e.nem){glow(ctx,e.x,gy-10,10+e.nem.rank*2,e.nem.col||'#ff2a1a',.16+.04*Math.sin(g.t*4));}   /* 0.12.136 Nemesis: bigger with a red glow */
       const dsc=A.pre?sc/A.pre:sc;drawUnit(ctx,A,uf,e.x,gy,dsc,null,e.hitFlash,0,(e.face>0)!==!!A.faceR);const y=gy-U.walk.ay*(U.walk.pre?sc/U.walk.pre:sc);   /* pre-shrunk art (zombies) is drawn 1:1 */
       if(e.slow>0){ctx.fillStyle='rgba(154,230,255,.8)';for(let i=0;i<3;i++)ctx.fillRect(Math.round(e.x-6+i*5),Math.round(y+8+((g.t*20+i*7)%20)),1,1);}
-      if(e.burnT>0){ctx.fillStyle=Math.random()<.5?'#ffb040':'#ff5a1a';ctx.fillRect(Math.round(e.x-3+Math.random()*6),Math.round(y+10+Math.random()*12),1,2);}
+      if(e.burnT>0){const by=gy-2,bh=Math.max(10,(gy-y)*.55),sd=(e.id||e.x)*.13;fireGlow(ctx,e.x,by-bh*.5,bh*.9,.22);fireTongue(ctx,e.x-2,by,bh,g.t*1.4+sd,false,.8);fireTongue(ctx,e.x+3,by-2,bh*.7,g.t*1.7+sd+.4,true,.7);embers(ctx,g.t,e.x,by-bh*.6,4,4,sd,22);}   /* 0.12.301 burning zombies actually burn */
       if(e.nem||e.hp<e.max||e.bleedT>0||e.burnT>0||e.slow>0||e.stun>0)plate(ctx,e,e.x,y-2,e.nem?24:e.elite?20:14,false,e.nem?'#ff4a3a':e.elite?'#ffb020':'#e8303a');
       if(e.nem){ctx.save();ctx.font='bold 7px monospace';ctx.textAlign='center';const nm=e.nem.name+' '+'★'.repeat(e.nem.rank);ctx.fillStyle='#000';ctx.fillText(nm,e.x+.8,y-7.2);ctx.fillStyle=e.nem.col||'#ff6a4a';ctx.fillText(nm,e.x,y-8);ctx.restore();}
       if(e.distractT>0){ctx.fillStyle='#e8fff0';ctx.font='bold 6px monospace';ctx.textAlign='center';ctx.fillText('?',Math.round(e.x),Math.round(y-12-Math.abs(Math.sin(g.t*6))*1.5));}   // 0.12.68: off to check the noise
@@ -5028,7 +5043,7 @@ function drawGame(ctx,g,W,oy){
     if(e.elite){ctx.save();ctx.translate(e.x,y+FH(a));ctx.scale(1.22,1.22);spr(ctx,n,fr,-FW(a)/2,-FH(a),false,null,e.hitFlash);ctx.restore();}
     else spr(ctx,n,fr,e.x-FW(a)/2,y,false,null,e.hitFlash);
     if(e.slow>0){ctx.fillStyle='rgba(154,230,255,.8)';for(let i=0;i<3;i++)ctx.fillRect(Math.round(e.x-6+i*5),Math.round(y+8+((g.t*20+i*7)%20)),1,1);}
-    if(e.burnT>0){ctx.fillStyle=Math.random()<.5?'#ffb040':'#ff5a1a';ctx.fillRect(Math.round(e.x-3+Math.random()*6),Math.round(y+10+Math.random()*12),1,2);}
+    if(e.burnT>0){const bh=14,by=y+30,sd=(e.id||e.x)*.13;fireGlow(ctx,e.x,by-7,13,.22);fireTongue(ctx,e.x,by,bh,g.t*1.4+sd,false,.8);embers(ctx,g.t,e.x,by-8,4,4,sd,22);}
     if(e.hp<e.max||e.bleedT>0||e.burnT>0||e.slow>0||e.stun>0)plate(ctx,e,e.x,y-2,e.elite?20:14,false,e.elite?'#ffb020':'#e8303a');};
   // draw heroes and enemies back-to-front by lane so units in the far lane sit behind the near ones
   /* 0.12.119 (Kyle) lootable storefronts, drawn over their building's own shop front. Lootable: a gold glint at the door and an alarm
@@ -5443,7 +5458,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.300</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.302</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
