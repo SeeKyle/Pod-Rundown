@@ -379,7 +379,7 @@ const CHAR={
       // Everyone, Come Together: IF there's a fight THEN he fires a green flare that arcs onto a meetup spot 100-200 px from the left edge.
       //   A circle (about 300px across) holds for 15s and pulls the team together. Every ally inside (max 3) gives everyone inside
       //   +10% cooldown speed, attack speed and reload speed: 10% / 20% / 30%.
-      {id:'together',name:'Everyone, Come Together',en:40,cd:32,dur:15,rx:50,per:.1,max:3,pull:.85},
+      {id:'together',name:'Everyone, Come Together',en:40,cd:32,dur:15,rx:50,per:.1,max:3,pull:.85,mvOut:.25},
       // Family_Meal (0.12.331, Kyle didn't want a thrown skillet next to Eddie's toolbox): IF 2+ allies are under 70% (or one under 45%) THEN he sets
       //   up a camp stove right where he stands (0.8s). For 10s it serves a hot plate every 1.5s to the most hurt ally within 180px: +5% max HP and
       //   +6 energy. Order up!
@@ -660,7 +660,7 @@ const ABIL_DESC={
   drako:'Drako (basic attack) · a 3-round burst every 1.9s, 1d6+1 a round · 10 bursts a mag · 2.6s reload. Up close he swings a hatchet (1d8).',
   noeffort:'No_Effort · 60 energy · 15s. When zombies fill 2+ lanes he blinks to the top lane and sweeps down, firing a real round down every lane (his basic-attack damage, +3% crit, -5 accuracy, pierces 1, can miss). Only a crit sends him sweeping back for another pass (up to 5).',
   wolfout:'Wolf Out!!! · 45 energy · 45s. His boys run in from the left yelling WOLF OUT!!! and howl. For 14s they can\'t be hurt or targeted: Leif (4, red) tags zombies (35% slow for 3s, +15% damage taken for 4s) and Leon (7, green, the heart warrior) sticks to whoever is hurt most, healing allies near him 2% a second. Then they run home.',
-  together:'Everyone, Come Together · 40 energy · 32s. He fires a green flare that arcs onto a meetup spot 100-200px from the left edge. For 15s the circle pulls the team together; every ally inside (max 3) gives everyone inside +10% cooldown speed, attack speed and reload speed (10% / 20% / 30%).',
+  together:'Everyone, Come Together · 40 energy · 32s. He fires a green flare that arcs onto a meetup spot 500px from the left edge. For 15s the circle pulls the team together; every ally inside, him included (max 3), gives everyone inside +10% cooldown speed, attack speed and reload speed (10% / 20% / 30%). Anyone NOT in the circle moves 25% faster (to get there).',
   orderup:'Family_Meal · 35 energy · 24s. When the team is hurting (2+ allies under 70% or one under 45%) he sets up a camp stove where he stands. For 10s it serves a hot plate every 1.5s to the most hurt ally within 180px: +5% max HP and +6 energy.',
   vibecode:'Vibe_Coding · 30 energy · 20s. He prompts Claude for 1.2s and ships what comes back: Ship_It (+25% attack speed 6s), Debug (team +10% HP, slows and stuns shaken off), Refactor (team cooldowns -3s), Hotfix (zombies near him knocked back, 1d6) or Draw_Seven (team +20 energy). 10% of the time it works on his machine only: nothing.',
   heartdad:'Heart_Warrior_Dad (passive) · when an ally within 180px drops under 35%, he goes full dad for 6s: +30% damage, +20% move speed, +15% attack speed, +4 armor, and that ally takes 25% less damage for 4s. 15s internal cooldown.',
@@ -1057,6 +1057,7 @@ function heroBase(key,lvl,teamSize){
   return {hp,atk,stamina,flatHp:HERO_FLAT_HP,critMul:1.75,dice:HERO_DICE,aspd:(0.8+0.025*s.mana)*(st.aspd||1)*(st.atk==='caster'?.8:1)*(st.atk==='ranged'||st.atk==='caster'?.74:1),crit:HERO_BASE_CRIT,acc:0,dodge:.008*s.control,
     pow:1+.04*s.answers,reach:1+.02*s.reach,luck:Math.round((s.consistency+s.cards)/4)*5,xpm:1+.03*s.cards};
 }
+const MAX_LVL=30;   /* 0.12.337 (Kyle): heroes cap at level 30 (29 talent points) */
 function needHeroXp(L){return 100+75*(L-1);}   /* 0.12.145 (Kyle): level 1 needs 100 XP, each level after takes 75 more */
 function needRunXp(k){return 8+6*k;}
 
@@ -1559,6 +1560,17 @@ const Comms={
       if(this.say(g,sp,'danger',{ally:v})&&v.order&&v.order.type==='danger'){const hx=g.heroX(v);const need=hx<z.cx?-(z.hw+8-(z.cx-hx)):(z.hw+8-(hx-z.cx));
         v.dodge={at:g.t+.25,dx:(v.dodgeX||0)+need,until:g.t+z.T+.5,spd:110};v.dangerWhy='⚠ '+this.name(sp)+' warned me';}}},
 };
+/* 0.12.337 (Kyle) plan commitment: once a unit settles on a plan (target, lane, job) it sticks with it for 2s (all the way New Plan)
+   to 5s (all the way On Track), scaled in between. Exceptions: the old plan is finished or impossible (target dead/gone, friend already
+   up), or the new plan is an emergency (run away, revive, back up, take cover, shut off an alarm, defuse). Forced rethinks (alarms, getting
+   knocked around) clear the plan, so they still react straight away. */
+let PLAN_ID=0;const pid=o=>o?(o._pid||(o._pid=++PLAN_ID)):0;const MEET_X=500/3;   /* 0.12.337 (Kyle): the flare lands 500 screen px from the left edge */
+const PLAN_URGENT=new Set(['flee','retreat','revive','hunker','disarm','defuse']);
+function planCommit(u){return 2+3*(1-trait(u,'plan'));}
+function planSig(P){if(!P)return '';const g=P.goTo;return [P.intent||'',pid(P.tgt),P.lane,P.reviveD?'r':'',g?(g.ob?'ob'+pid(g.ob):g.mine?'m'+pid(g.mine):g.spot?'s':'g'+pid(g)):''].join('|');}
+function planKeep(g,u,oldP,newP){if(!oldP||!(u.planLock>g.t))return false;if(newP&&PLAN_URGENT.has(newP.intent)&&newP.intent!==oldP.intent)return false;
+  if(oldP.tgt&&(oldP.tgt.dead||oldP.tgt.alive===false))return false;if(oldP.reviveD&&oldP.reviveD.alive)return false;if(oldP.goTo&&oldP.goTo.alive===false)return false;
+  return planSig(oldP)!==planSig(newP);}
 class Game{
   constructor(opt){
     this.W=opt.W||CFG.W;this.H=CFG.H;this.G=CFG.GROUND;
@@ -1786,12 +1798,12 @@ class Game{
     const al=this.aliveHeroes();if(!al.length||!this.slot)return;
     const lv=this.heroes.map(h=>this.slot.heroes[h.key].lvl);const ref=Math.max(Math.max(...lv),1+(this.st.n-1)*1.3+this.run.prestige*12);
     for(const h of al){const H=this.slot.heroes[h.key];const cu=Math.min(5,1+.4*Math.max(0,ref-H.lvl));H.xp+=xp*1.5*h.base.xpm*(1+(h.xpBonus||0)+[0,.1,.2,.3][upgT(this.run,'dummy')])*cu/al.length;
-      while(H.xp>=needHeroXp(H.lvl)){H.xp-=needHeroXp(H.lvl);H.lvl++;this.ev('herolevel',{key:h.key,lvl:H.lvl});this.text(h.x,this.G-70,'LV '+H.lvl,'#7dff9a',true);}}
+      while(H.lvl<MAX_LVL&&H.xp>=needHeroXp(H.lvl)){H.xp-=needHeroXp(H.lvl);H.lvl++;this.ev('herolevel',{key:h.key,lvl:H.lvl});this.text(h.x,this.G-70,'LV '+H.lvl,'#7dff9a',true);}}
   }
   /* 0.12.146 (Kyle): a really tiny XP trickle for doing supporty things: 0.03 XP per HP healed on someone else (or repaired on a building),
      3 XP for helping someone up, 0.25 XP per ally Tech_Support reaches. Goes straight to that hero. */
   supXp(h,x){if(!h||!h.key||this.demo||!this.slot||!(x>0))return;x*=(1+ffT(this.run,'xp'))*XP_MUL;while(h&&h.owner&&!h.base)h=h.owner;const H=h&&this.slot.heroes[h.key];if(!H)return;H.xp+=x;
-    while(H.xp>=needHeroXp(H.lvl)){H.xp-=needHeroXp(H.lvl);H.lvl++;this.ev('herolevel',{key:h.key,lvl:H.lvl});this.text(h.x,this.G-70,'LV '+H.lvl,'#7dff9a',true);}}
+    while(H.lvl<MAX_LVL&&H.xp>=needHeroXp(H.lvl)){H.xp-=needHeroXp(H.lvl);H.lvl++;this.ev('herolevel',{key:h.key,lvl:H.lvl});this.text(h.x,this.G-70,'LV '+H.lvl,'#7dff9a',true);}}
   healHero(h,amt,quiet,by){if(!h||!h.alive||amt<=0||h.dog)return;if(h.healTakenMul)amt*=h.healTakenMul;   /* 0.12.296 Deep Wound */if(h.hunger>0)amt*=1-HUNGER.heal[h.hunger];   /* 0.12.72: a starving body heals badly */if(!fleshy(h)&&!this._mech)return;   /* 0.12.58: herbs, medkits and healing magic do nothing for the Warhound */{const M=by||this._healBy;if(M&&M.healBonus)amt*=1+M.healBonus;if(M&&hasPerk(M,'medicine'))amt*=1.3;}/* 0.12.56 Medicine Man: heals he gives +30% */const before=h.hp;h.hp=Math.min(h.max,h.hp+amt);{const B=by||this._healBy||h;if(B&&B.key&&!this.demo){this.st8(B).heal+=h.hp-before;if(B!==h)this.supXp(B,(h.hp-before)*.036);}}if(!quiet&&h.hp-before>=1)this.text(h.x,this.G-56,'+'+Math.round(h.hp-before),'#7dff9a');}
   weakest(){const a=this.alive().filter(fleshy);return a.length?a.reduce((m,h)=>h.hp/h.max<m.hp/m.max?h:m,a[0]):null;}
   // hit visual: a spray of blood thrown away from the blow, drops falling to the ground and leaving a fading spatter
@@ -2026,13 +2038,14 @@ class Game{
   /* 0.12.331 SeeKyle's world bits: the meetup circle, the camp stove, and his boys */
   stepSeeKyle(dt,scroll){
     if(this.meetPend){this.meetPend.t-=dt;this.meetPend.x-=scroll*dt;if(this.meetPend.t<=0){const P=this.meetPend;this.meet={x:P.x,gy:P.gy,t:0,A:P.A,owner:P.owner,go:new Map()};this.meetPend=null;this.fx.push({k:'ring',x:P.x,y:P.gy-4,r:20,t:0,c:'#6dff6d'});}}
-    const heroes=this.heroes.filter(o=>!o.pet&&!o.dog);for(const o of heroes)o.zoneB=0;
+    const heroes=this.heroes.filter(o=>!o.pet&&!o.dog);for(const o of heroes)o.zoneB=0;for(const o of this.heroes)o.meetMv=0;
     if(this.meet){const Z=this.meet,A=Z.A;Z.t+=dt;Z.x-=scroll*dt;if(Z.t>=A.dur){this.meet=null;}else{
-      const inZ=o=>Math.abs(this.heroX(o)-Z.x)<=A.rx&&Math.abs((o.gy||this.G)-Z.gy)<=8;
-      for(const o of heroes){if(!o.alive||o.perch||o.jet||o.hesco||o.downed)continue;if(!Z.go.has(o))Z.go.set(o,this.rng()<A.pull?{x:Z.x+(this.rng()-.5)*A.rx*1.1}:null);const G0=Z.go.get(o);
-        if(G0&&!inZ(o)){o.pauseT=Math.max(o.pauseT||0,.05);const tx=G0.x,d=tx-o.x;o.x+=Math.sign(d)*Math.min(Math.abs(d),(MOVE[o.key]||15)*1.3*dt);const dg=Z.gy-(o.gy||this.G);if(Math.abs(dg)>1)o.gy=(o.gy||this.G)+Math.sign(dg)*Math.min(Math.abs(dg),12*dt);o.face=d>0?1:-1;o.moving=true;o.walkT=(o.walkT||0)+dt;}
+      const ry=Math.max(14,A.rx*.38);const inZ=o=>{const dx=(this.heroX(o)-Z.x)/A.rx,dy=((o.gy||this.G)-(Z.gy-2))/ry;return dx*dx+dy*dy<=1.05;};   /* 0.12.337: same ellipse that's drawn (was a thin ±8 strip, so a hero standing in the drawn circle on another lane didn't count) */
+      for(const o of heroes){if(!o.alive||o.perch||o.jet||o.hesco||o.downed)continue;if(!Z.go.has(o))Z.go.set(o,o===Z.owner||this.rng()<A.pull?{x:Z.x+(this.rng()-.5)*A.rx*1.1}:null);const G0=Z.go.get(o);
+        if(G0&&!inZ(o)){o.pauseT=Math.max(o.pauseT||0,.05);const tx=G0.x,d=tx-o.x;o.x+=Math.sign(d)*Math.min(Math.abs(d),(MOVE[o.key]||15)*1.3*1.25*(o.mvMul||1)*dt);const dg=Z.gy-(o.gy||this.G);if(Math.abs(dg)>1)o.gy=(o.gy||this.G)+Math.sign(dg)*Math.min(Math.abs(dg),12*dt);o.face=d>0?1:-1;o.moving=true;o.walkT=(o.walkT||0)+dt;}
         else if(G0&&inZ(o)){o.x=Math.max(Z.x-A.rx*.9,Math.min(Z.x+A.rx*.9,o.x));if(Math.abs((o.gy||this.G)-Z.gy)>6)o.gy=Z.gy+Math.sign((o.gy||this.G)-Z.gy)*6;}}   /* inside: free to fight, but they stay in the circle */
-      const ins=heroes.filter(o=>o.alive&&inZ(o)).slice(0,A.max);const b=A.per*ins.length;for(const o of ins){o.zoneB=b;const F=new Set(Object.values(CD_KEY));for(const f of F)if(o[f]>0)o[f]-=dt*b;}Z.n=ins.length;}}
+      const ins=heroes.filter(o=>o.alive&&inZ(o)).slice(0,A.max);for(const o of this.heroes)if(o.alive&&!ins.includes(o))o.meetMv=A.mvOut||.25;   /* 0.12.337 (Kyle): everyone NOT in the circle moves 25% faster */
+      const b=A.per*ins.length;for(const o of ins){o.zoneB=b;const F=new Set(Object.values(CD_KEY));for(const f of F)if(o[f]>0)o[f]-=dt*b;}Z.n=ins.length;}}
     if(this.stoves&&this.stoves.length){for(const S of this.stoves){S.t+=dt;S.x-=scroll*dt;S.n+=dt;if(S.n>=S.A.every){S.n=0;const o=this.alive().filter(q=>!q.pet&&Math.abs(this.heroX(q)-S.x)<S.A.r).sort((p,q)=>p.hp/p.max-q.hp/q.max)[0];
         if(o){this.healHero(o,o.max*S.A.heal,true,S.owner);o.en=Math.min(o.enMax||100,(o.en||0)+S.A.en2);this.fx.push({k:'plate',x0:S.x,y0:S.gy-8,x1:this.heroX(o),y1:(o.gy||this.G)-16,t:0,life:.45,raw:1});}}}
       this.stoves=this.stoves.filter(S=>S.t<S.A.dur&&S.x>-20);}
@@ -2191,7 +2204,8 @@ class Game{
     Brain.snapshot(this);for(const h of al)h._gt=this.t;Comms.step(this,dt);
     for(const h of al){Brain.tick(h,dt);if(Brain.due(this,h,dt)){const foes=this.enemies.filter(e=>!e.dead&&e.x<this.W+4);
       const pk=Brain.pickTarget(this,h,foes,al,true);const lane=Brain.pickLane(this,h,pk&&pk.tgt,true);const pos=Brain.pickPosition(this,h,pk&&pk.tgt);
-      const gw=pos.goTo&&pos.goTo.ob?OBST[pos.goTo.ob.k]:null;h.plan={tgt:pk&&pk.tgt,why:pos.reviveD?'helping '+Comms.name(pos.reviveD)+' up':pos.intent==='disarm'?'shutting off the car alarm':pos.intent==='search'?'searching the '+(/^car_/.test(pos.goTo.ob.k)?'wreck':'debris'):pos.intent==='herb'?'bringing supplies to '+Comms.name(pos.goTo):pos.intent==='guard'?'guarding '+Comms.name(pos.goTo):pos.intent==='orbit'?(h.dog?'guarding ':'circling ')+Comms.name(h.owner):pos.intent==='hunker'?'taking cover':pos.intent==='crate'?'grabbing a mag from the ammo crate':pos.intent==='defuse'?'defusing a mine':pos.intent==='sneak'?'eyeing '+Comms.name(pos.goTo)+'\'s pockets':(pk?pk.why:''),lane:pos.reviveLane!=null?pos.reviveLane:lane,...pos};
+      const gw=pos.goTo&&pos.goTo.ob?OBST[pos.goTo.ob.k]:null;const oldP=h.plan;h.plan={tgt:pk&&pk.tgt,why:pos.reviveD?'helping '+Comms.name(pos.reviveD)+' up':pos.intent==='disarm'?'shutting off the car alarm':pos.intent==='search'?'searching the '+(/^car_/.test(pos.goTo.ob.k)?'wreck':'debris'):pos.intent==='herb'?'bringing supplies to '+Comms.name(pos.goTo):pos.intent==='guard'?'guarding '+Comms.name(pos.goTo):pos.intent==='orbit'?(h.dog?'guarding ':'circling ')+Comms.name(h.owner):pos.intent==='hunker'?'taking cover':pos.intent==='crate'?'grabbing a mag from the ammo crate':pos.intent==='defuse'?'defusing a mine':pos.intent==='sneak'?'eyeing '+Comms.name(pos.goTo)+'\'s pockets':(pk?pk.why:''),lane:pos.reviveLane!=null?pos.reviveLane:lane,...pos};
+      if(planKeep(this,h,oldP,h.plan))h.plan=oldP;else if(planSig(oldP)!==planSig(h.plan))h.planLock=this.t+planCommit(h);   /* 0.12.337 (Kyle): a new plan sticks for 2-5s (On Track slider) so units stop flip-flopping */
       if(pos.intent==='hold'&&trait(h,'pace')<.45&&Math.random()<(1-trait(h,'pace'))*.5)h.pauseT=.4+1.6*(1-trait(h,'pace'));}}   // slow-and-steady units stop to think
     // formation
     // formation: everyone heads for their slot at their own pace; while marching, quicker heroes drift ahead and slow ones lag a little
@@ -2199,7 +2213,7 @@ class Game{
     al.forEach((h,i)=>{const mv=MOVE[h.key]||26;const drift=this.scroll?Math.max(-8,Math.min(10,(mv-avgMv)*.9)):0;let tx=this.exiting?this.W+60:(h.plan&&h.plan.goTo&&h.plan.goTo.crate?h.plan.goTo.crate.x:h.plan&&h.plan.reviveD&&!h.plan.reviveD.alive?h.plan.reviveD.x:h.plan&&h.plan.goTo&&h.plan.goTo.mine?h.plan.goTo.mine.x-DEFUSE_D:h.plan&&h.plan.goTo&&h.plan.goTo.ob?(()=>{const o=h.plan.goTo.ob;if(/search|disarm/.test(h.plan.intent))return this.searchSpot(o,h).x;const [a,b]=this.obSpan(o,o.lanes[0]);return h.x<(a+b)/2?a-6:b+6;})():h.plan&&h.plan.goTo&&h.plan.goTo.spot?h.plan.goTo.x:h.plan&&h.plan.goTo&&h.plan.goTo.isBanner?h.plan.goTo.x+((h.laneI||0)-1)*8:h.plan&&h.plan.goTo&&h.plan.goTo.alive?this.heroX(h.plan.goTo)+(h.plan.goTo.x<h.x?8:-8):this.home(h)+drift+(h.plan?(this._clear?Math.max(-6,h.plan.xoff):h.plan.xoff):0));tx=Math.max(8,Math.min(this.W-8,tx));   /* 0.12.58: with nothing near, nobody hangs far back (the march needs the party up front) */
       if(!this.exiting&&trait(h,'range')>.55&&!(h.plan&&(h.plan.intent==='retreat'||h.plan.reviveD||h.plan.goTo))){const foe=this.enemies.filter(e=>!e.dead&&!e.boss&&!e.fly&&e.gy!=null&&Math.abs(e.gy-(h.gy||190))<4&&e.x>h.x&&e.x-h.x<90).reduce((b,e)=>!b||e.x<b.x?e:b,null);if(foe)tx=Math.max(tx,Math.min(this.home(h)+28,foe.x-12));}   // push forward into the fight
       h._tx=tx;const x0=h.x;const C=h.base.char;const rm=C?((h.plan&&/retreat|charge|kite|cover|regroup|gather|revive|herb|guard|search|disarm|hunker|defuse/.test(h.plan.intent))||this.exiting?C.run:1):(h.plan?h.plan.runMul:1);h.running=C?rm>1:false;
-      const d=tx-h.x,st=mv*(h.mvMul||1)*(h.upT>0?1.2:1)*(h.slowT>0?1-(h.slow||0):1)*dynMv(h)*(h.whirl?.5:1)*(this.exiting&&!C?2.6:1.6)*rm*(rm>1?.75:.85)*dt;/* 0.12.13 (Kyle): walking 15% slower, running 25% slower */const busy=(h.building&&h.walkTo==null)||h.repairing;   /* 0.12.162 (Kyle): the Engineer stands still while he builds, upgrades/modifies or repairs */
+      const d=tx-h.x,st=mv*(h.mvMul||1)*(1+(h.meetMv||0))*(h.upT>0?1.2:1)*(h.slowT>0?1-(h.slow||0):1)*dynMv(h)*(h.whirl?.5:1)*(this.exiting&&!C?2.6:1.6)*rm*(rm>1?.75:.85)*dt;/* 0.12.13 (Kyle): walking 15% slower, running 25% slower */const busy=(h.building&&h.walkTo==null)||h.repairing;   /* 0.12.162 (Kyle): the Engineer stands still while he builds, upgrades/modifies or repairs */
       if((!(h.pauseT>0)||this.exiting)&&!busy)h.x+=Math.abs(d)<=st?d:Math.sign(d)*st;h.moving=Math.abs(h.x-x0)>.02;h.moveT=h.moving?(h.moveT||0)+dt:0;});
     if(!this.demo)this.inspTick(dt);   /* 0.12.321 Choir / Gift Giver */
     const f=this.front();if(!f)return;
@@ -2232,7 +2246,7 @@ class Game{
       if(!this.demo&&this.nemQ&&this.nemQ.length&&this.dist>=this.st.len*.4)this.spawnNemesis(this.nemQ.shift());
       if(!this.demo&&!this.supplyDrop&&this.run&&upgT(this.run,'radio')>=2&&this.dist>=this.st.len*.5){this.supplyDrop=1;const gy=LANES[1]||this.G;for(const [k,dx] of [['food',0],['water',8],['parts',16]])this.loot.push({kind:k,x:this.W-14+dx,gy,amt:k==='parts'?2:1,t:0});this.text(this.W-40,gy-50,'📻 SUPPLY DROP','#a6ff2e',true);for(const h of this.alive())if(!h.pet&&Math.random()<.4)Comms.bubble(this,h,Comms.pick(['Radio says supplies incoming!','Care package!','Grab the drop!']));}   /* 0.12.246 Radio Shack II */
       if(this.evm&&this.evm.ambush&&!this.ambushDone&&!this.demo&&this.dist>20){this.ambushDone=1;const n=4+2*this.evm.ambush+Math.floor((this.st.n||1)/4);for(let i=0;i<n;i++)this.spawnEnemy('zombie',{x:i%3===0?-12-this.rng()*14:this.W+10+this.rng()*30});this.text(this.W*.5,this.G-90,'AMBUSH!','#ff5a3a');for(const h of this.alive())Brain.panic(this,h,'alarm');}   /* 0.12.325 event: ambush from both sides */
-      if(this.trickleT!=null&&scroll>0){this.trickleT-=dt;if(this.trickleT<=0){this.trickleT+=TRICKLE_EVERY;if(this.enemies.filter(e=>!e.dead).length<24)this.spawnEnemy('zombie',{x:this.W+10+this.rng()*22,elite:'roll',stray:1});}}   /* 0.12.336 (Kyle): 1 zombie every 5s once the first wave is in */
+      if(this.trickleT!=null){this.trickleT-=dt;if(this.trickleT<=0){this.trickleT+=TRICKLE_EVERY;if(this.enemies.filter(e=>!e.dead).length<24)this.spawnEnemy('zombie',{x:this.W+10+this.rng()*22,elite:'roll',stray:1});}}   /* 0.12.336 (Kyle): 1 zombie every 5s once the first wave is in */
       const C0=this.clusters[0];
       if(C0&&this.dist>=C0.at){if(!C0.alerted){C0.alerted=1;const rt=!this.demo&&this.run?upgT(this.run,'radio'):0,first=!this.radioFirst;this.radioFirst=1;if(rt>=2||rt>=1&&first)for(const h of this.alive())if(!h.pet){if(!(h.alertT>0))h.acc+=10;h.alertT=5;}}   /* 0.12.105 Radio Shack II: early warning */C0.t-=dt;if(C0.t<=0&&this.enemies.filter(e=>!e.dead).length<28){C0.left--;C0.t=.12+this.rng()*.35;
           {const scr=C0.scr>0&&C0.left<=C0.scr;if(scr)C0.scr--;this.spawnEnemy(scr?'screamer':this.pickType(),{x:this.W+10+this.rng()*22+(scr?14+this.rng()*10:0),elite:'roll'});}   /* 0.12.231 (Kyle): Screamers come in at the back of a group (the last ones out, a little further behind) */if(C0.left<=0){this.clusters.shift();if(this.trickleT==null)this.trickleT=TRICKLE_EVERY;}}}}
@@ -2378,7 +2392,7 @@ class Game{
           const inLane=al.filter(h=>h.laneI===e.laneI);
           // 0.12.2 behavior AI: the monster thinks on its own clock (who to chase, which lane, when to pause or back off)
           Brain.tick(e,dt);if(Brain.due(this,e,dt)){const others=this.enemies.filter(o=>o!==e&&!o.dead);const pk=Brain.pickTarget(this,e,al,others,false);
-            if(pk&&pk.tgt){e.target=pk.tgt;e.plan={tgt:pk.tgt,why:pk.why,lane:Brain.pickLane(this,e,pk.tgt,false)};}
+            if(pk&&pk.tgt){const NP={tgt:pk.tgt,why:pk.why,lane:Brain.pickLane(this,e,pk.tgt,false)};if(!planKeep(this,e,e.plan,NP)){if(planSig(e.plan)!==planSig(NP))e.planLock=this.t+planCommit(e);e.target=pk.tgt;e.plan=NP;}}
             const aggr=trait(e,'aggr');if(aggr<.6&&e.hp/e.max<.18+.42*(1-aggr)&&!(e.retreatT>0))e.retreatT=1.5+2*(1-aggr);
             if(far&&trait(e,'pace')<.4&&Math.random()<.2*(1-trait(e,'pace')))e.pauseT=.4+.4*(1-trait(e,'pace'));}
           if(e.retreatT>0)e.retreatT-=dt;
@@ -3055,7 +3069,7 @@ class Game{
       const hurt=al.filter(o=>o.hp/o.max<.7).length,low=al.some(o=>o.hp/o.max<.45),onMe=live.filter(e=>!e.fly&&Math.abs(e.x-hx)<16).length;
       // Everyone, Come Together: a fight with 4+ zombies on screen and no meetup running
       if(CT&&h.ctgT<=0&&en>=CT.en&&!this.meet&&live.length>=3&&spendEnergy(h,CT.en,CT)){h.ctgT=CT.cd*(1-(h.cdr||0));h.animR=.4;h.animRT=.4;
-        const tx=40+this.rng()*25,tgy=LANES[2]!=null?LANES[2]:this.G;this.fx.push({k:'flare',x0:hx,y0:(h.gy||this.G)-14,x1:tx,y1:tgy,t:0,life:1.1,raw:1});this.ev('flare',{});
+        const tx=MEET_X+(this.rng()*2-1)*4,tgy=LANES[2]!=null?LANES[2]:this.G;this.fx.push({k:'flare',x0:hx,y0:(h.gy||this.G)-14,x1:tx,y1:tgy,t:0,life:1.1,raw:1});this.ev('flare',{});
         this.meetPend={t:1.1,x:tx,gy:tgy,A:CT,owner:h};Comms.bubble(this,h,Comms.pick(['Everyone, come together!','Meet up on the flare!','Pod meeting, NOW!','Group up, boys!']),true);return;}
       // Wolf Out!!!: zombies on screen and the boys aren't out yet
       if(WO&&h.woT<=0&&en>=WO.en&&!(this.kids&&this.kids.length)&&(live.length>=3||low)&&spendEnergy(h,WO.en,WO)){h.woT=WO.cd*(1-(h.cdr||0));
@@ -4691,7 +4705,7 @@ for(const [k,C] of Object.entries(CHAR)){const up=(a,did)=>{if(!a||a.passive||!(
    Every hero has 3 branches. 1 point per level (levels 2-20 = 19 points). Rows open at 0/3/6/9/12 points spent in that branch.
    Rows 1, 2 and 4: two talents each (3, 3 and 2 ranks) that push that hero's own abilities or gear. Row 3: one talent that changes how an
    ability works (the old skill mods). Row 5: the capstone (the old hero capstones). Resetting and moving points is free at camp. */
-const TREE_REQ=[0,3,6,7,10,13],TREE_RANKS=[3,3,1,2,2,1],TREE_MAXPTS=19;
+const TREE_REQ=[0,3,6,7,10,13],TREE_RANKS=[3,3,1,2,2,1],TREE_MAXPTS=MAX_LVL-1;
 const TF_LABEL={cd:'cooldown',en:'energy cost',dur:'duration',r:'radius',range:'range',dist:'distance',n:'count',heal:'healing',stun:'stun',every:'time between attacks',reload:'reload time',clip:'clip size',dmg:'bonus damage',shield:'shield',dr:'damage block',root:'root',count:'arrows',shots:'shots',hp:'HP',dps:'drain',pct:'heal per tick',per:'per tick',life:'lifetime',spd:'speed',slow:'slow',kb:'knockback',crit:'crit',amp:'damage taken',jump:'jump range',pierce:'pierce',shieldT:'shield time',heal2:'heal',window:'window',bonus:'bonus',mul:'multiplier',share:'share',ls:'lifesteal',ch:'chance',splash:'splash',reach:'reach',cut:'cooldown cut',energy:'energy',zap:'zap',high:'high time',mark:'mark time',fall:'fall time',miss:'miss chance',hit:'hit chance',burst:'burst',critAdd:'crit chance',critMul:'crit damage',move:'move',decay:'decay',steal:'steal',fear:'fear',size:'size',passes:'passes',flat:'flat damage',bleed:'bleed'};
 const TA=(ab,mul,path)=>({ab,mul,path}),TF=(ab,n,path)=>({ab,face:n,path}),TD=(ab,add,path)=>({ab,add,path}),TS=st=>({st});
 function treeSer(v,f,R){const m=(R&&R.k)||1;if(!R||!(R.max>1))return f(v*m);const o=[];for(let i=1;i<=R.max;i++){const s=f(v*m*i);o.push(i===R.cur?'⟦'+s+'⟧':s);}return o.join('/');}
@@ -5009,12 +5023,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1795030846';const BGI=new Image();BGI.src='crawl_bg.png?v=1795030846';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795030846';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1795033593';const BGI=new Image();BGI.src='crawl_bg.png?v=1795033593';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795033593';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795030846';XIMG.wave.src='crawl_wave.png?v=1795030846';XIMG.chibi.src='crawl_chibi.png?v=1795030846';XIMG.flannel.src='crawl_flannel.png?v=1795030846';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795030846';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795030846';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795030846';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795030846';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795030846';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795030846';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795030846';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795030846';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795030846';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795030846';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795030846';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795030846';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795030846';XIMG.rain.src='crawl_rain.png?v=1795030846';XIMG.druid.src='crawl_druid.png?v=1795030846';XIMG.camp.src='crawl_campfire.png?v=1795030846';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795030846';XIMG.tornado.src='crawl_fx_tornado.png?v=1795030846';XIMG.vine.src='crawl_fx_vine.png?v=1795030846';XIMG.thorn.src='crawl_fx_thorn.png?v=1795030846';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795033593';XIMG.wave.src='crawl_wave.png?v=1795033593';XIMG.chibi.src='crawl_chibi.png?v=1795033593';XIMG.flannel.src='crawl_flannel.png?v=1795033593';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795033593';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795033593';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795033593';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795033593';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795033593';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795033593';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795033593';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795033593';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795033593';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795033593';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795033593';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795033593';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795033593';XIMG.rain.src='crawl_rain.png?v=1795033593';XIMG.druid.src='crawl_druid.png?v=1795033593';XIMG.camp.src='crawl_campfire.png?v=1795033593';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795033593';XIMG.tornado.src='crawl_fx_tornado.png?v=1795033593';XIMG.vine.src='crawl_fx_vine.png?v=1795033593';XIMG.thorn.src='crawl_fx_thorn.png?v=1795033593';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795030846';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795030846';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795030846';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795030846';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795030846';XIMG.obst.src='crawl_obst.png?v=1795030846';XIMG.cityob.src='crawl_cityob.png?v=1795030846';XIMG.cars.src='crawl_cars.png?v=1795030846';XIMG.robot.src='crawl_robot.png?v=1795030846';XIMG.cultist.src='crawl_cultist.png?v=1795030846';XIMG.tentacle.src='crawl_tentacle.png?v=1795030846';XIMG.boom.src='crawl_boom.png?v=1795030846';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795033593';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795033593';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795033593';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795033593';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795033593';XIMG.obst.src='crawl_obst.png?v=1795033593';XIMG.cityob.src='crawl_cityob.png?v=1795033593';XIMG.cars.src='crawl_cars.png?v=1795033593';XIMG.robot.src='crawl_robot.png?v=1795033593';XIMG.cultist.src='crawl_cultist.png?v=1795033593';XIMG.tentacle.src='crawl_tentacle.png?v=1795033593';XIMG.boom.src='crawl_boom.png?v=1795033593';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -5049,7 +5063,7 @@ function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 /* 0.12.310 recorded clips (Tee_Grizzle): decoded once, played through the same AudioContext as the synth sounds */
 const SAMP={teeg1:{src:'crawl_teeg1',off:.34},teeg2:{src:'crawl_teeg2',off:0}};
 function sampLoad(k){const S=SAMP[k];if(!S||S.buf||S.loading||!AC)return;S.loading=1;const ext=(new Audio()).canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3';
-  fetch(S.src+ext+'?v=1795030846').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
+  fetch(S.src+ext+'?v=1795033593').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
 function sampPlay(k,off,vol,soft){const S=SAMP[k];if(!S)return;if(!S.buf){sampLoad(k);return;}const src=AC.createBufferSource(),g=AC.createGain();src.buffer=S.buf;g.gain.value=vol==null?.55:vol;
   if(soft){const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=soft;lp.Q.value=.5;src.playbackRate.value=.94+Math.random()*.1;src.connect(lp);lp.connect(g);}else src.connect(g);g.connect(AC.destination);src.start(0,off==null?S.off:off);}   /* 0.12.329 (Kyle: a bit less annoying): Tee's clips play softer, muffled (low-pass) and with a little pitch wobble */
 function sfx(k,o){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
@@ -5537,7 +5551,10 @@ function drawGame(ctx,g,W,oy){
     ctx.save();ctx.globalCompositeOperation='lighter';glow(ctx,c.x,c.gy-12,7,'#b066ff',.13*fade);glow(ctx,c.x,c.gy-12,3.5,'#d9a6ff',.08*fade);ctx.restore();
     const ghost=Object.assign({},h,{x:c.x,gy:c.gy,face:c.face,ghost:1,moving:c.moving,walkT:c.walkT,animM:c.animM,animT:c.animM>0?.35-c.animM:0,swingAnim:h.swingAnim||'attack1',leapH:0,bleedT:0,shield:0,shieldT:0,hotT:0,cozyT:0,stealthT:0,cloneT:0,smoking:null,dash:null,whirl:null,perch:null,sbThrow:null,climb:null,sandbag:0,medkit:0,defib:0,herbs:0,kit:[],hitFlash:0,downed:0,riseT:0,shoutT:0,rageT:0,courage:0});
     GHOST_A=.5*fade;try{drawHero(ghost);}finally{GHOST_A=1;}};
-  const drawHero=(h)=>{const G0=h.gy||g.G;ctx.save();shrinkAt(ctx,h.x,G0,HS);drawHero0(h);ctx.restore();};
+  /* 0.12.337 (Kyle: units look jaggy): the sprite only turns around once the unit has wanted the new direction for 0.18s, so split-second
+     back-and-forth facing (aim checks, tiny steps around its spot) doesn't strobe the picture. Visual only. */
+  const visFace=u=>{const f=(u.face||1)<0?-1:1;if(u.vFace==null)u.vFace=f;if(f!==u.vFace){if(u.vfS==null||u.vfS>g.t)u.vfS=g.t;if(g.t-u.vfS>=.18){u.vFace=f;u.vfS=null;}}else u.vfS=null;return u.vFace;};
+  const drawHero=(h)=>{const G0=h.gy||g.G;ctx.save();shrinkAt(ctx,h.x,G0,HS);const F0=h.face;h.face=visFace(h);try{drawHero0(h);}finally{h.face=F0;}ctx.restore();};
   const drawHero0=(h)=>{const G=h.gy||g.G;if(!h.alive){return;}
     if(h.bleedT>0){const p=.5+.5*Math.sin(g.t*10);ctx.save();ctx.globalCompositeOperation='lighter';
       for(let r=0;r<3;r++){const rr=((g.t*1.4+r/3)%1);ctx.strokeStyle=`rgba(220,20,40,${.55*(1-rr)})`;ctx.beginPath();ctx.ellipse(h.x,G-26,8+rr*14,(8+rr*14)*1.25,0,0,7);ctx.stroke();}
@@ -5642,7 +5659,7 @@ function drawGame(ctx,g,W,oy){
     if(e.type==='bat'&&ATLAS.bat){const B=ATLAS.bat;const a=e.swoop?B.swoop:e.hitFlash>0?B.hurt:B.fly;const f=a===B.fly?Math.floor(g.t*12+e.phase)%a.n:0;shadow(ctx,e.x,e.gy||g.G,6);drawUnit(ctx,a,f,e.x,e.y,.8,null,e.hitFlash,0,(e.face||-1)>0);if(e.hp<e.max)plate(ctx,e,e.x,e.y-13,12,false,'#e8303a');return;}   /* 0.12.206 Giant_Bat */
     if(e.boss){const bf=e.animT>0?2:Math.floor(g.t*2)%2;const y=e.fly?e.y-90:G-124;shadow(ctx,e.x,G,26);spr(ctx,'b_'+e.type,bf,e.x-64,y,false,null,e.hitFlash);return;}
     if(UNITS[e.skin||e.type]){const U=UNITS[e.skin||e.type];const [A,uf]=unitFrame(e,U);const gy=e.gy!=null?G:G+e.lane;const sc=(e.E.scale||1)*(e.elite?1.1:1)*(e.nem?(1.12+.1*e.nem.rank)*(e.nem.size||1):1);shadow(ctx,e.x,gy,8);if(e.nem){glow(ctx,e.x,gy-10,10+e.nem.rank*2,e.nem.col||'#ff2a1a',.16+.04*Math.sin(g.t*4));}   /* 0.12.136 Nemesis: bigger with a red glow */
-      const dsc=A.pre?sc/A.pre:sc;drawUnit(ctx,A,uf,e.x,gy,dsc,null,e.hitFlash,0,(e.face>0)!==!!A.faceR);const y=gy-U.walk.ay*(U.walk.pre?sc/U.walk.pre:sc);   /* pre-shrunk art (zombies) is drawn 1:1 */
+      const dsc=A.pre?sc/A.pre:sc;drawUnit(ctx,A,uf,e.x,gy,dsc,null,e.hitFlash,0,(visFace(e)>0)!==!!A.faceR);const y=gy-U.walk.ay*(U.walk.pre?sc/U.walk.pre:sc);   /* pre-shrunk art (zombies) is drawn 1:1 */
       if(e.slow>0){ctx.fillStyle='rgba(154,230,255,.8)';for(let i=0;i<3;i++)ctx.fillRect(Math.round(e.x-6+i*5),Math.round(y+8+((g.t*20+i*7)%20)),1,1);}
       if(e.burnT>0){const by=gy-2,bh=Math.max(10,(gy-y)*.55),sd=(e.id||e.x)*.13;fireGlow(ctx,e.x,by-bh*.5,bh*.9,.22);fireTongue(ctx,e.x-2,by,bh,g.t*1.4+sd,false,.8);fireTongue(ctx,e.x+3,by-2,bh*.7,g.t*1.7+sd+.4,true,.7);embers(ctx,g.t,e.x,by-bh*.6,4,4,sd,22);}   /* 0.12.301 burning zombies actually burn */
       if(e.bossForm||e.nem||e.hp<e.max||e.bleedT>0||e.burnT>0||e.slow>0||e.stun>0)plate(ctx,e,e.x,y-2,e.bossForm?28:e.nem?24:e.elite?20:14,false,e.bossForm?'#ff8a1f':e.nem?'#ff4a3a':e.elite?'#ffb020':'#e8303a');
@@ -6097,7 +6114,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.336</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.337</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;

@@ -1,4 +1,13 @@
       <h2>What's new</h2>
+      <h3>0.12.337 · Meetup circle, steadier units, level 30</h3>
+      <ul>
+        <li><b>Everyone, Come Together</b>: the flare lands 500px from the left edge (was 100–200). Everyone <b>not</b> in the circle moves 25% faster. SeeKyle always heads in himself.</li>
+        <li>Fixed the circle not counting SeeKyle (or anyone standing in a different lane inside it): it now counts the same oval you see on screen, so 3 in the circle = +30%.</li>
+        <li><b>Plans stick</b>: once a unit (hero or zombie) picks a plan — who to fight, which lane, what job — it sticks with it for 2s (all the way New Plan) up to 5s (all the way On Track), scaled in between. They still drop it straight away if the target dies, the friend is already up, or it's an emergency (run, revive, take cover, alarm, mine).</li>
+        <li>Less jaggy: a unit's sprite only turns around once it has wanted the new direction for a split second, so it doesn't flicker left-right while aiming or shuffling.</li>
+        <li>The 1-zombie-every-5s trickle runs all the time now (fighting or walking) until you reach the end of the level.</li>
+        <li>Heroes cap at <b>level 30</b> (29 talent points).</li>
+      </ul>
       <h3>0.12.336 · 10 waves a level</h3>
       <ul>
         <li>Every level now has <b>10 waves</b>. Stage 1: 2, 3, 4, 4, 5, 5, 5, 6, 6, 7 zombies. Later stages add a little to the back waves (plus the usual stage scaling).</li>
