@@ -1,4 +1,9 @@
       <h2>What's new</h2>
+      <h3>0.12.324 · Freeze fixes and downtown spacing</h3>
+      <ul>
+        <li>Freezes: an error anywhere in one frame used to stop the whole game loop for good, which looks exactly like a freeze. Now the next frame is always queued first, and a frame that hits an error is skipped and logged, so the game keeps running. I also ran long test games at stages 10–23 (all camp upgrades maxed, random talents, inspirations, Hardcore on some, plus Alpha spawns) with drawing on, and none of them threw an error.</li>
+        <li>Downtown: the shops scroll slower than the street, so anything solid on the top lane would slide right through a storefront. Crates, loot boxes, cars and barrels now stay off the shop sidewalk (the top lane). Obstacles never spawn on top of a barrel, and a barrel with no clear spot is skipped instead of being dropped into something.</li>
+      </ul>
       <h3>0.12.323 · Tee_Grizzle rework</h3>
       <ul>
         <li>Full kit now: 4 actives + 1 passive. <b>No_Effort</b> stays as is.</li>
