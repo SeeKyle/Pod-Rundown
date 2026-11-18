@@ -11,6 +11,6 @@ gear system + tap-for-info (338), bats x3, Alphas 5x, JP sword 1d8+4, costly gea
 7. (DONE 0.12.342) New-game Inspiration warning.
 8. (DONE 0.12.343) Warhound spare-parts upkeep.
 9. Garage Needs Repair pass for most decks: weak cards, 75% of cuts from the deck's highest stat, explain highest stat + lower stats to improve.
-10. Notes tabs (Website / Crypt Crawl).
+10. (DONE 0.12.346) Notes tabs.
 11. Breakable obstacles; lanes never fully blocked.
 12. Ominous Trails / doors+windows (near last).
