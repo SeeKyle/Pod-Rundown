@@ -55,7 +55,7 @@ const CFG={
     // Kyle's werewolf, the first fast enemy: zombie stats except 30 HP (0.12.3, was 40) and fast; hunts the back-line heroes first
     werewolf:{hp:38,dmgDie:7,spd:47,atk:1.2,reach:15,   /* 0.12.201 (Kyle): faster, a little more reach */armorPts:4,   /* 0.12.65: a bit sturdier and meaner (was 30 HP, 1d6, 3 armor) */kbRes:.35,
               itemChance:.04,goldChance:.32,goldAmt:[3,7],xp:3,pts:16,cost:2.2,animAtk:.7,hitAt:.45,backline:true,fps:12,scale:.77,
-              leap:{dmg:5,gap:25,dur:.55,cd:8,bleed:[30,6],wide:1.2}},   /* 0.12.203 (Kyle): the leap is a line attack: it bounds 25% further, right through its target, and every hero it passes through takes 10 and bleeds */   // jumping attack: bounds over a 20px gap and lands for 10 damage
+              leap:{dmg:5,gap:25,dur:.55,cd:8,bleed:[30,6],wide:1.2,basic:1,range:100,past:100/3,wide2:1.6,every:2}},   /* 0.12.339 (Kyle) werewolf rework: the lunge IS his basic attack (no plain swing). He leaps from up to 300px (100 world), sails ~100px (33 world) past his target, wider line (x1.6), hits everyone he passes with a claw (his 1d7 + bleed), and lands with an arm swipe. One every 2s. */   /* 0.12.203 (Kyle): the leap is a line attack: it bounds 25% further, right through its target, and every hero it passes through takes 10 and bleeds */   // jumping attack: bounds over a 20px gap and lands for 10 damage
   },
      /* 0.12.302 (Kyle): bosses off for now (events are coming) */   /* 0.12.127 (Kyle): switched on to try him */
   bosses:{
@@ -2519,15 +2519,20 @@ class Game{
           // ---- leap attack: from about 20px outside its reach, in the target's lane, it bounds in and lands on the hero
           const LP=e.E.leap;e.leapCd=(e.leapCd||0)-dt;
           if(e.leapA){const A2=e.leapA;A2.t+=dt;const u=Math.min(1,A2.t/A2.dur);const px=e.x;e.x=A2.x0+(A2.x1-A2.x0)*u-scroll*dt;e.moving=true;
-            const wd=LP.wide||1,lo=Math.min(px,e.x)-ENEMY_BODY*wd,hi=Math.max(px,e.x)+ENEMY_BODY*wd;A2.hit=A2.hit||new Set();   /* 0.12.294 (Kyle): leap line 20% wider/deeper, same distance */
-            for(const o of this.alive()){if(A2.hit.has(o)||Math.abs((o.gy||this.G)-e.gy)>6*wd)continue;const ox=this.heroX(o);if(ox<lo||ox>hi)continue;A2.hit.add(o);const took=this.hurtHero(o,LP.dmg*e.dmgMul,e);if(took&&o.alive&&LP.bleed)this.bleed(o,LP.bleed[0]*e.dmgMul,LP.bleed[1]);if(took&&o.alive)this.injure(o,.15,e,'leg');this.shake=Math.max(this.shake,.2);this.fx.push({k:'slash',x:ox,y:e.gy-20,t:0});}
-            if(u>=1){e.leapA=null;e.face=-e.face||1;e.atkT=e.E.atk*.4;}
+            const wd=A2.basic?(LP.wide2||1.6):(LP.wide||1),lo=Math.min(px,e.x)-ENEMY_BODY*wd,hi=Math.max(px,e.x)+ENEMY_BODY*wd;A2.hit=A2.hit||new Set();   /* 0.12.294 (Kyle): leap line 20% wider/deeper, same distance */
+            for(const o of this.alive()){if(A2.hit.has(o)||Math.abs((o.gy||this.G)-e.gy)>6*wd)continue;const ox=this.heroX(o);if(ox<lo||ox>hi)continue;A2.hit.add(o);const took=this.hurtHero(o,A2.basic?Math.max(1,Math.floor((1+Math.floor(this.rng()*(e.E.dmgDie||7)))*e.dmgMul)):LP.dmg*e.dmgMul,e);if(took&&o.alive&&LP.bleed)this.bleed(o,LP.bleed[0]*e.dmgMul*(A2.basic?.5:1),LP.bleed[1]);if(took&&o.alive&&!A2.basic)this.injure(o,.15,e,'leg');this.shake=Math.max(this.shake,.2);this.fx.push({k:'slash',x:ox,y:e.gy-20,t:0});}
+            if(u>=1){e.leapA=null;e.face=-e.face||1;e.atkT=e.E.atk*.4;
+              if(A2.basic){e.anim=1;e.animT=e.E.animAtk||.5;const dir=e.face;this.fx.push({k:'fswipe',x:e.x,gy:e.gy,dir,r:Rch+8,t:0,life:.34,raw:1});   /* landing arm swipe */
+                for(const o of this.alive()){if(A2.hit.has(o)||Math.abs((o.gy||this.G)-e.gy)>6*wd)continue;const ox=this.heroX(o);if((ox-e.x)*dir<-4||Math.abs(ox-e.x)>Rch+bodyT(o)+8)continue;const d=Math.max(1,Math.floor((1+Math.floor(this.rng()*(e.E.dmgDie||7)))*e.dmgMul));this.hurtHero(o,d,e);}}}
             continue;}
-          if(LP&&e.leapCd<=0&&sameLane&&ready&&!e.stun){const gap=Math.abs(e.x-hx)-Rch;if(gap>LP.gap*.6&&gap<=LP.gap+4){e.leapA={t:0,dur:LP.dur,x0:e.x,x1:e.x-side*(gap+Rch)*1.25};e.leapCd=LP.cd;e.animT=0;continue;}}
+          if(LP&&LP.basic){e.lwT=(e.lwT==null?LP.every*.5:e.lwT)+dt;const dist=Math.abs(e.x-hx);if(sameLane&&!e.stun&&!(e.pauseT>0)&&e.lwT>=LP.every&&dist<=LP.range){e.lwT=0;const x1=hx-side*LP.past;
+              e.leapA={t:0,dur:LP.dur*(.55+.45*dist/LP.range),x0:e.x,x1,basic:1};e.animT=0;this.ev('wolf',{});continue;}}
+          else if(LP&&e.leapCd<=0&&sameLane&&ready&&!e.stun){const gap=Math.abs(e.x-hx)-Rch;if(gap>LP.gap*.6&&gap<=LP.gap+4){e.leapA={t:0,dur:LP.dur,x0:e.x,x1:e.x-side*(gap+Rch)*1.25};e.leapCd=LP.cd;e.animT=0;continue;}}
           const x0=e.x;e.x-=scroll*dt;if(!(e.pauseT>0)){if(side>0&&e.x>stopX)e.x=Math.max(stopX,e.x-e.E.spd*sp*dt);else if(side<0&&e.x<stopX)e.x=Math.min(stopX,e.x+e.E.spd*sp*dt);
             else if(e.retreatT>0)e.x+=Math.sign(stopX-e.x)*Math.min(Math.abs(stopX-e.x),e.E.spd*.6*sp*dt);}   // backing off
           e.moving=Math.abs(e.x-x0)>.05||Math.abs(e.gy-LANES[e.laneI])>.5;
           if(!inRange)e.atkT=Math.min(e.E.atk,e.atkT+dt);
+          else if(LP&&LP.basic){}   /* 0.12.339 werewolf: no plain swing, the lunge is his attack */
           else{e.atkT+=dt;if(e.atkT>=e.E.atk){e.atkT=0;e.anim=1;e.animT=e.E.animAtk||.3;
             const blow=()=>{if(e.dead||e.stun>0||!V.alive||Math.abs(e.gy-(V.gy||this.G))>(V===T?3:10)||Math.abs(e.x-this.heroX(V))>Rch+bodyT(V)+2)return;/* no swinging at thin air */const d=e.E.dmgDie?Math.max(1,Math.floor((1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul)):e.dmg;const took=this.hurtHero(V,d,e);
               const blood=e.nemHas&&e.nemHas('blood'),B=e.E.bleed||(blood?{chance:1,dmg:20,dur:6}:null);if(B&&took&&V.alive&&this.rng()<(blood?1:B.chance))   /* 0.12.294: a Blood Nemesis always bleeds, even a werewolf (whose normal bites no longer do) */this.bleed(V,B.dmg*e.dmgMul,B.dur);
@@ -4668,7 +4673,7 @@ function talTake(k,H,id){const O=talOffer(k,H);if(!O||!O.ids.includes(id))return
 function talChar(k,H){const C=CHAR[k];const mods=talPicks(H).filter(x=>x.startsWith('mod:')).map(x=>(TAL_MOD[k]||{})[x.slice(4)]).filter(Boolean);
   for(const id of talPicks(H))if(id.startsWith('cap:')){const [,L,b]=id.split(':');const Cp=HCAP[k]&&HCAP[k][L]&&HCAP[k][L][b];if(Cp&&Cp.patch)mods.push(...Cp.patch);}   /* 0.12.249 hero capstones patch abilities too */
   const tAb=[];if(H&&H.treeV&&TREES[k])for(const [id,r] of Object.entries(H.tree||{})){const n=treeNode(k,id);if(n&&r)for(const p of n.parts)if(p.eff&&p.eff.ab)tAb.push([p.eff,r*(p.k||1)]);}
-  if(!C||(!mods.length&&!H.lucky&&!tAb.length))return C;
+  lkMigrate(H);if(!C||(!mods.length&&!H.ld&&!tAb.length))return C;
   const C2=Object.assign({},C,{abilities:(C.abilities||[]).map(a=>JSON.parse(JSON.stringify(a)))});if(C.melee)C2.melee=JSON.parse(JSON.stringify(C.melee));if(C.ranged)C2.ranged=JSON.parse(JSON.stringify(C.ranged));
   for(const M of mods){const A=M.ab==='_melee'?C2.melee:M.ab==='_ranged'?C2.ranged:C2.abilities.find(a=>a.id===M.ab);if(!A)continue;const T=M.path?A[M.path]:A;if(T)Object.assign(T,JSON.parse(JSON.stringify(M.set)));}
   for(const [E,r] of tAb){const A0=E.ab==='_melee'?C2.melee:E.ab==='_ranged'?C2.ranged:C2.abilities.find(a=>a.id===E.ab);if(!A0)continue;const A=E.path?A0[E.path]:A0;if(!A)continue;   /* 0.12.311 talent tree: per-rank ability numbers */
@@ -4676,7 +4681,7 @@ function talChar(k,H){const C=CHAR[k];const mods=talPicks(H).filter(x=>x.startsW
     for(const [f,v] of Object.entries(E.add||{}))A[f]=(typeof A[f]==='number'?A[f]:0)+v*r;
     if(E.face&&Array.isArray(A.dice))A.dice=[A.dice[0],A.dice[1]+E.face*r];
     if(E.ab==='_ranged'&&A.clip)A.clip=Math.round(A.clip);if(E.ab==='_ranged'&&A.burst)A.burst=Math.round(A.burst);for(const f of ['n','count','shots','passes','pierce','hits'])if(typeof A[f]==='number')A[f]=Math.round(A[f]);}
-  if(H.lucky)for(const w of ['melee','ranged'])if(H.lucky[w]&&C2[w]&&C2[w].dice)C2[w].dice=[C2[w].dice[0],H.lucky[w]];   /* 0.12.281 Lucky Die: die SIZE swapped, die COUNT kept */
+  if(H.ld)for(const w of ['melee','ranged']){const L=H.ld[w];if(L&&C2[w]&&C2[w].dice){C2[w].dice=[Math.max(1,L.n||C2[w].dice[0]),L.d||C2[w].dice[1]];if(L.f!=null)C2[w].flat=Math.max(0,L.f);}}   /* 0.12.340 Lucky Dice v2: count, size and flat */   /* 0.12.281 Lucky Die: die SIZE swapped, die COUNT kept */
   return C2;}
 /* 0.12.281 (Kyle): LUCKY DIE. A rare loot drop (can't be charged). Spend one on a hero: it picks melee or ranged at random and rerolls that
    basic attack's die SIZE, never the count. One die = good odds to climb; the more dice the attack rolls, the worse the odds, and it can drop too. */
@@ -4701,16 +4706,51 @@ const LUCKY_STAT={armor:{name:'Armor',icon:'🛡️',v:[-2,-1,0,1,2,4,6,10],f:v=
   regen:{name:'Energy regen',icon:'🔷',v:[-.5,-.25,0,.25,.5,1,1.6,3],f:v=>(v>0?'+':'')+v+' energy/s',mod:'enRegen',abil:1},
   luck:{name:'Luck',icon:'🍀',v:[-6,-3,0,4,8,14,22,40],f:v=>(v>0?'+':'')+v+' Luck',mod:'luck'}};
 const LUCKY_STAT_CLIMB=[1,1,1,.4,.25,.12,.05,.03];   /* chance to climb INTO each rung (after the first step). The last rung is the jackpot: 3% gate */
-function luckyStatMod(H){const T=H&&H.luckyT;if(!T)return null;const o={hpPct:0,mod:{}};for(const [k,i] of Object.entries(T)){const S=LUCKY_STAT[k];if(!S)continue;const v=S.v[i];if(!v)continue;
+/* 0.12.340 (Kyle) LUCKY DICE v2. Spend one at camp and pick OFFENSE, DEFENSE or UTILITY. The roll lands on a color tier (10, worst to best):
+   grey (it goes DOWN), white, light green, dark green, light blue, dark blue, light purple, dark purple, light orange, dark orange (lotto: rare,
+   not impossible). Luck tilts the odds. Odds are never shown anywhere.
+   Offense: the basic attack's dice (size, count or flat) or crit / attack speed / accuracy. Defense: armor / max HP / dodge / knockback resist.
+   Utility: move speed / energy regen / Luck / cooldowns. Dice rolls know the weapon: the faster it fires (attack speed, clip, reload) and the
+   more dice it rolls, the more tiers it loses, so a nail gun almost never sees a d20 and even a Kar98 needs an orange roll. A bigger die is
+   harder to add dice to. Never 0 dice, never a negative flat. A stat roll REROLLS that stat's bonus (it can drop). */
+const LK_TIER=[{n:'Grey',c:'#8d8d8d',w:14},{n:'White',c:'#f2f2f2',w:22},{n:'Light Green',c:'#9dff8d',w:20},{n:'Dark Green',c:'#2fb84a',w:15},{n:'Light Blue',c:'#8fd0ff',w:11},
+  {n:'Dark Blue',c:'#3a74ff',w:8},{n:'Light Purple',c:'#d9a8ff',w:5},{n:'Dark Purple',c:'#8a3dff',w:3},{n:'Light Orange',c:'#ffc27a',w:1.6},{n:'Dark Orange',c:'#ff7a00',w:.4}];
+const LK_STAT={crit:{name:'Crit',icon:'✴️',cat:'off',v:[-2,1,1.5,2.5,3.5,5,7,10,15,25],f:v=>`${v>0?'+':''}${v}% crit`,mod:'crit'},
+  aspd:{name:'Attack speed',icon:'⚡',cat:'off',v:[-6,3,5,8,11,15,20,28,40,70],f:v=>`${v>0?'+':''}${v}% attack speed`,mod:['meleeSpd','rangedSpd']},
+  acc:{name:'Accuracy',icon:'🎯',cat:'off',v:[-4,2,3,5,7,9,12,16,22,35],f:v=>`${v>0?'+':''}${v} accuracy`,mod:'acc'},
+  armor:{name:'Armor',icon:'🛡️',cat:'def',v:[-2,1,1,2,3,4,6,8,12,20],f:v=>`${v>0?'+':''}${v} armor`,mod:'armor'},
+  hp:{name:'Max HP',icon:'❤️',cat:'def',v:[-8,3,5,8,12,16,22,30,45,80],f:v=>`${v>0?'+':''}${v}% max HP`,hp:1},
+  dodge:{name:'Dodge',icon:'💨',cat:'def',v:[-2,1,1.5,2.5,3.5,5,7,9,13,22],f:v=>`${v>0?'+':''}${v}% dodge`,mod:'dodge'},
+  kbres:{name:'Knockback resist',icon:'🧱',cat:'def',v:[-8,4,6,10,14,18,24,32,45,70],f:v=>`${v>0?'+':''}${v}% knockback resist`,mod:'kbRes'},
+  move:{name:'Move speed',icon:'👟',cat:'util',v:[-5,2,3,5,7,10,13,18,25,40],f:v=>`${v>0?'+':''}${v}% move speed`,mod:'move'},
+  regen:{name:'Energy regen',icon:'🔷',cat:'util',v:[-.3,.1,.2,.3,.45,.6,.8,1.1,1.6,3],f:v=>`${v>0?'+':''}${v} energy/s`,mod:'enRegen',abil:1},
+  luck:{name:'Luck',icon:'🍀',cat:'util',v:[-4,2,3,5,7,10,14,20,28,45],f:v=>`${v>0?'+':''}${v} Luck`,mod:'luck'},
+  cdr:{name:'Cooldowns',icon:'⏱️',cat:'util',v:[-3,1,2,3,4,6,8,10,14,22],f:v=>`${v>0?'−':'+'}${Math.abs(v)}% cooldowns`,mod:'cdr',abil:1}};
+const LK_CAT={off:{name:'Offense',icon:'⚔️'},def:{name:'Defense',icon:'🛡️'},util:{name:'Utility',icon:'🧰'}};
+const LK_SIZES=[2,3,4,6,8,10,12,20];
+function lkMigrate(H){if(!H)return;if(H.lucky&&typeof H.lucky==='object'&&!H.ld){H.ld={};for(const w of ['melee','ranged'])if(typeof H.lucky[w]==='number')H.ld[w]={d:H.lucky[w],t:3};}
+  if(H.luckyT&&!H.ls){H.ls={};const map={0:0,1:0,3:2,4:3,5:5,6:7,7:9};const ren={aspd:'aspd',hp:'hp',move:'move',crit:'crit',acc:'acc',dodge:'dodge',regen:'regen',luck:'luck',armor:'armor'};for(const [k,i] of Object.entries(H.luckyT))if(map[i]!=null&&ren[k])H.ls[ren[k]]={t:map[i]};}
+  if(H.lucky)delete H.lucky;if(H.luckyT)delete H.luckyT;}
+function lkTier(rng,luck){const L=Math.max(0,luck||0);const W=LK_TIER.map((T,i)=>i===0?T.w*(1-Math.min(.6,L*.01)):i===1?T.w:T.w*(1+L*.012));const tot=W.reduce((a,b)=>a+b,0);let x=rng()*tot;for(let i=0;i<W.length;i++){x-=W[i];if(x<0)return i;}return 0;}
+function lkRate(A){if(!A)return 1;const ev=Math.max(.05,A.every||1);const sh=(A.burst||1)*(A.pellets||1);const clip=A.clip||0;const sps=clip>0?clip*sh/(clip*ev+(A.reload||0)):sh/ev;return sps*(A.dice?A.dice[0]:1);}
+function lkPenalty(A){return Math.max(0,Math.min(5,Math.round(1.25*Math.log2(lkRate(A)/.3))));}   /* Kar98 ~0, slow bows ~0-1, rifles/pistols 1-2, nail gun / SMGs 3-4 */
+function luckyRoll(k,H,rng,cat){rng=rng||Math.random;lkMigrate(H);cat=cat||'off';const C=talChar(k,H)||{};const CH=CHAR[k]||{};const luck=((CH.luck)||12)+((H.ls&&H.ls.luck)?LK_STAT.luck.v[H.ls.luck.t]:0);
+  const t=lkTier(rng,luck);const T=LK_TIER[t];
+  const stats=Object.keys(LK_STAT).filter(s=>LK_STAT[s].cat===cat&&(!LK_STAT[s].abil||(C.abilities||[]).some(a=>a.en>0||a.cd>0)));
+  const weps=cat==='off'?luckyTargets(C):[];const pick=weps.length&&rng()<.6?'die':stats[Math.floor(rng()*stats.length)];
+  if(pick==='die'){const w=weps[Math.floor(rng()*weps.length)];const A=C[w];const base=CH[w]||A;const cur=Object.assign({n:A.dice[0],d:A.dice[1],f:A.flat||0},(H.ld&&H.ld[w])||{});cur.n=cur.n||A.dice[0];cur.d=cur.d||A.dice[1];if(cur.f==null)cur.f=A.flat||0;
+    const from=`${cur.n}d${cur.d}${cur.f?'+'+cur.f:''}`;const ta=t<=1?t:Math.max(1,t-lkPenalty(A));let si=LK_SIZES.findIndex(x=>x>=cur.d);if(si<0)si=LK_SIZES.length-1;
+    if(t===0){const opts=['d','f'].concat(cur.n>1?['n']:[]);const o=opts[Math.floor(rng()*opts.length)];if(o==='d')cur.d=LK_SIZES[Math.max(0,si-1)];else if(o==='f')cur.f=Math.max(0,cur.f-1);else cur.n=Math.max(1,cur.n-1);}
+    else if(ta>=5&&rng()<.35*Math.min(1,6/cur.d)){cur.n+=ta>=9?2:1;}
+    else if(ta<=1||rng()<.3){cur.f+=[0,1,1,2,2,3,4,5,6,8][ta];}
+    else{const steps=[0,0,1,1,2,2,3,3,4,5][ta];const cap=ta>=8?LK_SIZES.length-1:LK_SIZES.indexOf(12);cur.d=LK_SIZES[Math.min(cap,Math.max(si,Math.min(LK_SIZES.length-1,si+steps)))];if(steps&&cur.d===LK_SIZES[si])cur.f+=1;}
+    cur.t=t;(H.ld=H.ld||{})[w]=cur;const to=`${cur.n}d${cur.d}${cur.f?'+'+cur.f:''}`;
+    return {kind:'die',w,cat,tier:t,from,to,up:t>0,down:t===0};}
+  const key=pick;const S=LK_STAT[key];H.ls=H.ls||{};const old=H.ls[key];const from=old?S.f(S.v[old.t]):'none';H.ls[key]={t};
+  return {kind:'stat',stat:key,cat,tier:t,name:S.name,icon:S.icon,from,to:S.f(S.v[t]),up:!old||S.v[t]>S.v[old.t],down:t===0||(old&&S.v[t]<S.v[old.t])};}
+function luckyStatMod(H){lkMigrate(H);const T=H&&H.ls;if(!T)return null;const o={hpPct:0,mod:{}};for(const [k,r] of Object.entries(T)){const S=LK_STAT[k];if(!S)continue;const v=S.v[r.t];if(!v)continue;
   if(S.hp)o.hpPct+=v;else for(const m of [].concat(S.mod))o.mod[m]=(o.mod[m]||0)+v;}return o;}
-function luckyRoll(k,H,rng){rng=rng||Math.random;const C=talChar(k,H)||{};const dieOK=luckyTargets(C).length>0;
-  const stats=Object.keys(LUCKY_STAT).filter(s=>!LUCKY_STAT[s].abil||(C.abilities||[]).some(a=>a.en>0));
-  const pool=(dieOK?['die','die','die']:[]).concat(stats);const pk=pool[Math.floor(rng()*pool.length)];
-  if(pk==='die'){const r=luckyDieRoll(k,H,rng);if(r)r.kind='die';return r;}
-  const S=LUCKY_STAT[pk];const T=H.luckyT=H.luckyT||{};const i=T[pk]!=null?T[pk]:2;let j=i;
-  if(rng()<.5){for(let s=0;s<3&&j<S.v.length-1;s++){const p=s===0&&j+1<S.v.length-1?1:LUCKY_STAT_CLIMB[j+1];if(!(rng()<p))break;j++;}}
-  else j=Math.max(0,i-(rng()<.8?1:2));
-  T[pk]=j;return {kind:'stat',stat:pk,name:S.name,icon:S.icon,from:S.f(S.v[i]),to:S.f(S.v[j]),up:j>i,down:j<i,jackpot:j===S.v.length-1&&i<j};}
+
 
 const LVPTS={hp:{name:'Toughness',icon:'❤️',txt:'+4% max HP'},dmg:{name:'Power',icon:'⚔️',txt:'+3% damage'},acc:{name:'Aim',icon:'🎯',txt:'+2 accuracy'},
   crit:{name:'Edge',icon:'✴️',txt:'+1% crit chance'},luck:{name:'Fortune',icon:'🍀',txt:'+3 Luck'},armor:{name:'Hide',icon:'🛡️',txt:'+1 armor point'}};
@@ -5117,12 +5157,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1795034515';const BGI=new Image();BGI.src='crawl_bg.png?v=1795034515';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795034515';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1795034714';const BGI=new Image();BGI.src='crawl_bg.png?v=1795034714';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795034714';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795034515';XIMG.wave.src='crawl_wave.png?v=1795034515';XIMG.chibi.src='crawl_chibi.png?v=1795034515';XIMG.flannel.src='crawl_flannel.png?v=1795034515';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795034515';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795034515';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795034515';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795034515';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795034515';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795034515';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795034515';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795034515';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795034515';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795034515';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795034515';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795034515';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795034515';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795034515';XIMG.rain.src='crawl_rain.png?v=1795034515';XIMG.druid.src='crawl_druid.png?v=1795034515';XIMG.camp.src='crawl_campfire.png?v=1795034515';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795034515';XIMG.tornado.src='crawl_fx_tornado.png?v=1795034515';XIMG.vine.src='crawl_fx_vine.png?v=1795034515';XIMG.thorn.src='crawl_fx_thorn.png?v=1795034515';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795034714';XIMG.wave.src='crawl_wave.png?v=1795034714';XIMG.chibi.src='crawl_chibi.png?v=1795034714';XIMG.flannel.src='crawl_flannel.png?v=1795034714';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795034714';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795034714';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795034714';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795034714';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795034714';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795034714';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795034714';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795034714';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795034714';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795034714';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795034714';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795034714';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795034714';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795034714';XIMG.rain.src='crawl_rain.png?v=1795034714';XIMG.druid.src='crawl_druid.png?v=1795034714';XIMG.camp.src='crawl_campfire.png?v=1795034714';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795034714';XIMG.tornado.src='crawl_fx_tornado.png?v=1795034714';XIMG.vine.src='crawl_fx_vine.png?v=1795034714';XIMG.thorn.src='crawl_fx_thorn.png?v=1795034714';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795034515';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795034515';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795034515';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795034515';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795034515';XIMG.obst.src='crawl_obst.png?v=1795034515';XIMG.cityob.src='crawl_cityob.png?v=1795034515';XIMG.cars.src='crawl_cars.png?v=1795034515';XIMG.robot.src='crawl_robot.png?v=1795034515';XIMG.cultist.src='crawl_cultist.png?v=1795034515';XIMG.tentacle.src='crawl_tentacle.png?v=1795034515';XIMG.boom.src='crawl_boom.png?v=1795034515';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795034714';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795034714';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795034714';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795034714';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795034714';XIMG.obst.src='crawl_obst.png?v=1795034714';XIMG.cityob.src='crawl_cityob.png?v=1795034714';XIMG.cars.src='crawl_cars.png?v=1795034714';XIMG.robot.src='crawl_robot.png?v=1795034714';XIMG.cultist.src='crawl_cultist.png?v=1795034714';XIMG.tentacle.src='crawl_tentacle.png?v=1795034714';XIMG.boom.src='crawl_boom.png?v=1795034714';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -5157,7 +5197,7 @@ function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 /* 0.12.310 recorded clips (Tee_Grizzle): decoded once, played through the same AudioContext as the synth sounds */
 const SAMP={teeg1:{src:'crawl_teeg1',off:.34},teeg2:{src:'crawl_teeg2',off:0}};
 function sampLoad(k){const S=SAMP[k];if(!S||S.buf||S.loading||!AC)return;S.loading=1;const ext=(new Audio()).canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3';
-  fetch(S.src+ext+'?v=1795034515').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
+  fetch(S.src+ext+'?v=1795034714').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
 function sampPlay(k,off,vol,soft){const S=SAMP[k];if(!S)return;if(!S.buf){sampLoad(k);return;}const src=AC.createBufferSource(),g=AC.createGain();src.buffer=S.buf;g.gain.value=vol==null?.55:vol;
   if(soft){const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=soft;lp.Q.value=.5;src.playbackRate.value=.94+Math.random()*.1;src.connect(lp);lp.connect(g);}else src.connect(g);g.connect(AC.destination);src.start(0,off==null?S.off:off);}   /* 0.12.329 (Kyle: a bit less annoying): Tee's clips play softer, muffled (low-pass) and with a little pitch wobble */
 function sfx(k,o){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
@@ -6209,7 +6249,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.339</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.340</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -6492,7 +6532,7 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
 /* 0.12.338 (Kyle) GEAR screen: 3 slots per hero (Weapon / Armor / Trinket), a stash, free swaps. Tap anything to see it in full
    (no hover needed). Spare parts raise an item a quality tier (Rusted -> plain -> Fine -> Masterwork); scrapping gives parts back. */
 function gearIcon(it,sz){const D=gearDef(it);if(!D)return '';sz=sz||32;const k=sz/32;const R=GEAR_RAR[D.r];
-  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795034515) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
+  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795034714) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
 function showGear(k0){const s=SLOT();if(!s)return;const run=s.run;const team=(run&&run.team)||[k0];let k=k0;let sel=null,filt='all';gearSlot(s);
   let ov=document.getElementById('cc-gear');if(ov)ov.remove();ov=document.createElement('div');ov.id='cc-gear';
   ov.style.cssText='position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 20%,rgba(40,30,70,.6),rgba(4,2,8,.94));display:flex;align-items:center;justify-content:center;padding:8px';
@@ -6592,11 +6632,14 @@ function showCamp(){
         ${(()=>{const H=run.heroes[k];const I=(H&&H.inj)||[];if(!I.length)return '';const md=run.med||{};   /* 0.12.296 injuries + treatment */
           return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0;color:#ffb070">🩺 ${I.map(x=>{const D=INJURY[x.id];return `<b title="${esc(D.txt)}" style="cursor:help">${D.icon} ${D.name}</b> <span style="opacity:.75">(${x.st} stage${x.st>1?'s':''}${x.fresh?', fresh':''})</span>`;}).join(' · ')}${H.numb?' <span style="color:#9ae6ff">💊 numbed next stage</span>':''}
             ${[...new Set(I.map(x=>INJURY[x.id].fix))].filter(m=>m!=='parts').concat(k!=='robot'&&I.some(x=>x.id!=='concuss')&&!H.numb?['pills']:[]).filter((v,i,a)=>a.indexOf(v)===i).map(m=>btn(`data-treat="${k}|${m}" ${md[m]>0?'':'disabled'}`,`${MEDS[m].icon} ${MEDS[m].name} (${md[m]||0})`,MEDS[m].txt)).join(' ')}${I.filter(x=>INJURY[x.id].fix==='parts').map(x=>{const c=repairCost(run,x.id);return btn(`data-repair="${k}|${x.id}" ${(s.parts||0)<c?'disabled':''}`,`🔧 Fix ${INJURY[x.id].name} · ⚙️ ${c}`,'Repair it with spare parts'+(run.team.includes('eng')?' (half price: the Engineer is here)':''));}).join(' ')}</div>`;})()}
-        ${(()=>{const C=talChar(k,L)||{};const T=luckyTargets(C);if(!T.length)return '';const lu=L.lucky||{};   /* 0.12.281 basic attack dice + Lucky Die */
-          const d=w=>{const D=C[w].dice;const tag=lu[w]?` <span style="color:#7dff9a" title="Changed by a Lucky Die (base d${(CHAR[k][w]||{}).dice?CHAR[k][w].dice[1]:'?'})">🍀</span>`:'';return `${w==='melee'?'⚔️':'🏹'} ${D[0]}d${D[1]}${C[w].flat?'+'+C[w].flat:''}${tag}`;};
-          const ll=L.luckyLast;const llT=ll?` <b style="color:${ll.jackpot?'#ffd23f':ll.up?'#7dff9a':ll.down?'#ff6a6a':'#ccc'}">${ll.jackpot?'💰 JACKPOT!':ll.up?'🍀 LUCKY!':ll.down?'💀 Unlucky:':'Stayed:'} ${ll.kind==='stat'?`${ll.icon} ${ll.name} ${ll.from} → ${ll.to}`:`${ll.w} ${ll.n}d${ll.from} → ${ll.n}d${ll.to}`}</b>`:'';
-          const lsT=L.luckyT?Object.entries(L.luckyT).filter(([x,i])=>LUCKY_STAT[x]&&LUCKY_STAT[x].v[i]).map(([x,i])=>{const S=LUCKY_STAT[x],v=S.v[i];return `<span class="cc-chip" style="border-color:${v>0?'#7dff9a':'#ff6a6a'};color:${v>0?'#7dff9a':'#ff9a9a'}">🍀 ${S.icon} ${S.f(v)}</span>`;}).join(''):'';
-          return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0">Basic attack: ${T.map(d).join(' · ')}${lsT?` <span class="cc-chips" style="display:inline-flex">${lsT}</span>`:''}${llT}${(s.lucky||0)>0?` <button class="cc-btn" data-lucky="${k}" style="margin-left:6px;padding:2px 8px;font-size:11px;border-color:#7dff9a;color:#7dff9a" title="Spend 1 Lucky Die. It lands on a basic attack die (melee or ranged) or a stat: armor, attack speed, max HP, move, crit, accuracy, dodge, energy regen or luck. It might go up. It might go down. Good luck.">${LUCKY_ICON} Roll Lucky Die (${s.lucky})</button>`:''}</div>`;})()}
+        ${(()=>{lkMigrate(L);const C=talChar(k,L)||{};const T=luckyTargets(C);const lu=L.ld||{};   /* 0.12.340 basic attack dice + Lucky Dice v2 (changed values in their tier color) */
+          const d=w=>{const D=C[w].dice;const x=lu[w];const col=x?LK_TIER[x.t].c:null;const base=(CHAR[k][w]||{});return `${w==='melee'?'⚔️':'🏹'} <span ${x?`style="color:${col};font-weight:700" title="Changed by a Lucky Die (${LK_TIER[x.t].n}). Base ${base.dice?base.dice[0]+'d'+base.dice[1]+(base.flat?'+'+base.flat:''):'?'}"`:''}>${D[0]}d${D[1]}${C[w].flat?'+'+C[w].flat:''}</span>`;};
+          const ll=L.luckyLast;const llT=ll&&ll.tier!=null?` <b style="color:${LK_TIER[ll.tier].c}">🎲 ${LK_TIER[ll.tier].n}${ll.tier===9?' — JACKPOT!':ll.tier===0?' — unlucky':''}: ${ll.kind==='stat'?`${ll.icon} ${ll.name} ${ll.from} → ${ll.to}`:`${ll.w==='melee'?'⚔️':'🏹'} ${ll.from} → ${ll.to}`}</b>`:'';
+          const lsT=L.ls?Object.entries(L.ls).filter(([x,r])=>LK_STAT[x]).map(([x,r])=>{const S=LK_STAT[x],v=S.v[r.t],c=LK_TIER[r.t].c;return `<span class="cc-chip" style="border-color:${c};color:${c}" title="Lucky Die (${LK_TIER[r.t].n})">🎲 ${S.icon} ${S.f(v)}</span>`;}).join(''):'';
+          const pick=CC.lkPick===k;const nL=s.lucky||0;
+          const rollUI=nL>0?(pick?` <span style="display:inline-flex;gap:4px;margin-left:6px">${Object.entries(LK_CAT).map(([c,V])=>`<button class="cc-btn" data-lkc="${k}|${c}" style="padding:2px 8px;font-size:11px;border-color:#7dff9a;color:#7dff9a" title="${c==='off'?'Basic attack dice (size, count or flat), crit, attack speed or accuracy':c==='def'?'Armor, max HP, dodge or knockback resist':'Move speed, energy regen, Luck or cooldowns'}">${V.icon} ${V.name}</button>`).join('')}<button class="cc-btn" data-lkx="1" style="padding:2px 6px;font-size:11px">✕</button></span>`:` <button class="cc-btn" data-lucky="${k}" style="margin-left:6px;padding:2px 8px;font-size:11px;border-color:#7dff9a;color:#7dff9a" title="Spend 1 Lucky Die: pick Offense, Defense or Utility. It might go up. It might go down. Good luck.">${LUCKY_ICON} Roll Lucky Die (${nL})</button>`):'';
+          if(!T.length&&!lsT&&!llT&&!rollUI)return '';
+          return `<div class="cc-sub" style="font-size:11px;margin:4px 0 0">${T.length?'Basic attack: '+T.map(d).join(' · '):''}${lsT?` <span class="cc-chips" style="display:inline-flex;flex-wrap:wrap">${lsT}</span>`:''}${llT}${rollUI}</div>`;})()}
         ${hv.carry&&(hv.carry.courage||hv.carry.medkit||hv.carry.defib||(hv.carry.kit||[]).length)?`<div class="cc-sub" style="font-size:11px;margin:4px 0 0">🎒 Carrying into the stage: ${[hv.carry.courage?'Liquid Courage':'',hv.carry.medkit?'Medkit':'',hv.carry.defib?'Defibrillator':'',...(hv.carry.kit||[]).map(x=>x==='bat'?'Battery':'Medicine')].filter(Boolean).join(', ')}</div>`:''}</div></div>`;}).join('')}
       ${campPanel(s,run,btn)}
       <div class="cc-shopwrap" ${CAMP_SHOP?'':'hidden'}>${(()=>{const gold=s.gold||0;if(run.shopAt!==run.stage)return `<div class="cc-card"><b>🛒 Merchant</b> <span class="cc-sub" style="font-size:12px">💰 <b style="color:#ffd23f">${fmt(gold)}</b> gold · the merchant sets up shop after each boss you beat.</span></div>`;if(!run.shop||run.shop.stage!==run.stage)stockShop(run);
@@ -6631,8 +6674,9 @@ function showCamp(){
   P.querySelectorAll('[data-treat]').forEach(b=>b.onclick=()=>{const [k,m]=b.dataset.treat.split('|');const r=treatInjury(run,k,m);if(r==='ok'){sfx('level');persist();showCamp();}else msg({none:'You have no '+MEDS[m].name+'.',clean:'Nothing for that to fix.'}[r]||'Can\'t use that.');});   /* 0.12.296 */
   P.querySelectorAll('[data-repair]').forEach(b=>b.onclick=()=>{const [k,id]=b.dataset.repair.split('|');const r=repairInjury(s,run,k,id);if(r==='ok'){sfx('level');persist();showCamp();}else msg(r==='parts'?'Not enough spare parts.':'Nothing to fix.');});   /* 0.12.297 Warhound repairs */
   P.querySelectorAll('[data-medb]').forEach(b=>b.onclick=()=>{const m=b.dataset.medb,c=MEDS[m].parts;if((s.parts||0)<c)return msg('Not enough spare parts.');s.parts-=c;run.med=run.med||{};run.med[m]=(run.med[m]||0)+1;sfx('level');persist();showCamp();});
-  P.querySelectorAll('[data-lucky]').forEach(b=>b.onclick=()=>{if(!((s.lucky||0)>0))return;const k=b.dataset.lucky,H=s.heroes[k];if(!H)return;const r=luckyRoll(k,H);if(!r)return;s.lucky--;persist();
-    H.luckyLast=r;persist();sfx(r.up?'level':'die');showCamp();});   /* 0.12.281 Lucky Die */
+  P.querySelectorAll('[data-lucky]').forEach(b=>b.onclick=()=>{CC.lkPick=b.dataset.lucky;showCamp();});
+  P.querySelectorAll('[data-lkx]').forEach(b=>b.onclick=()=>{CC.lkPick=null;showCamp();});
+  P.querySelectorAll('[data-lkc]').forEach(b=>b.onclick=()=>{if(!((s.lucky||0)>0))return;const [k,c]=b.dataset.lkc.split('|'),H=s.heroes[k];if(!H)return;const r=luckyRoll(k,H,null,c);if(!r)return;s.lucky--;H.luckyLast=r;CC.lkPick=null;persist();sfx(r.tier>=2?'level':'die');showCamp();});   /* 0.12.340 Lucky Dice v2 */
   P.querySelectorAll('[data-talrr]').forEach(b=>b.onclick=()=>{if(!(run.rerolls>=1))return;const k=b.dataset.talrr,H=s.heroes[k];if(!H||!H.offer)return;const prev=H.offer.ids.slice();let nw=talRoll(k,H);for(let i=0;i<6&&nw.ids.every(x=>prev.includes(x));i++)nw=talRoll(k,H);H.offer=nw;run.rerolls--;sfx('level');persist();showCamp();});   /* 0.12.280 dice on stat picks */
   P.querySelectorAll('[data-tree]').forEach(b=>b.onclick=()=>showTree(b.dataset.tree));
   P.querySelectorAll('[data-gear]').forEach(b=>b.onclick=()=>showGear(b.dataset.gear));
