@@ -223,3 +223,4 @@ Fireman_Zombie, Warhound flamethrower (as ranged — still to move to "melee", s
   (3) phone: hide the unit life panels under the stage, use small WoW-style unit frames in the top-left sky instead; (4) Leon's green jellyfish icon: cooler, a bit more realistic.
 
 - 0.12.335 DONE: talent trees v2 (3/3/cap2/3/3/cap2, link+lock rules, tap info panel). NEXT: waves (10/level, distance, trickle), bats, alphas, then items + tap-info everywhere.
+- 0.12.336 DONE: waves (10/level, trickle 5s while panning), zombie 30hp, replace 5%, gold 2-4. NEXT: bats, alphas, werewolf, lane AI.
