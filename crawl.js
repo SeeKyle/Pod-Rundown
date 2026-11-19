@@ -1511,9 +1511,11 @@ function gearTxt(it){const D=gearDef(it);if(!D)return {stats:[],procs:[]};const 
    - Like shutting off a car alarm, a hero can BLOCK a spawner (or an unchecked one): a log drops across the trail / the door gets boarded up.
    - Spawners only let out regular zombies, which fade in out of the dark like the rooftop ones. */
 const PORTAL_ART={trail:{sx:0,sy:0,w:122,h:76,mx:61,lift:0,eye:9},door:{sx:122,sy:0,w:24,h:38,mx:12,lift:2,eye:22},door2:{sx:146,sy:0,w:24,h:40,mx:12,lift:2,eye:22},window:{sx:170,sy:0,w:31,h:26,mx:15,lift:2,eye:12}};   /* 0.12.367 (Kyle): thinner wall around the window, and its top never pokes above a storefront (top at y 155; shop fronts ~154) */   /* 0.12.366 (Kyle's picks): tenement door / steel fire door reach the sidewalk; blown-out window sits where the doors used to */
-/* ground floors of downtown buildings that have no lootable shop (x and width in the shop layer's own pixels). City doors and windows only
-   appear here, centered on one building and moving with it, the same way the storefronts do (0.12.366, Kyle) */
-const CITY_PSLOTS=[[97,46],[266,32],[314.5,57],[608,64],[844,82],[951,48]];   // [266,32]: right of the POD RUNDOWN sign, doors only
+/* 0.12.369 (Kyle): every downtown building has ONE lock point at its center (x and width in the shop layer's own pixels, measured from the
+   building edges in the art). Shop buildings use the shop list (L.shops); these are the buildings with no shop. As a building scrolls in it
+   gets at most one attachment: a lootable storefront (shop buildings) OR an Ominous door/window, never both, always dead center.
+   The POD RUNDOWN building is left out so its sign stays clear. */
+const CITY_OPEN_BLDGS=[[96.5,47],[314.5,57],[608,64],[844,82],[952,50]];
 const PORTAL_CFG={first:.4,step:.05,check:2.6,block:4,pass:.62,panStep:8,panBase:.006,panLeft:5,spawnEvery:[6,9],maxOut:3};
 const PORTAL_SAY={fail:['Incoming from the trail!','Something\'s coming out of there!','They\'re in the trees! Heads up!','Movement in the woods!','Trail\'s crawling with them!','I hear them! Here they come!'],
   failCity:['Incoming from that door!','They\'re coming out of the building!','Window! WINDOW!','Something moved in there. Incoming!','Building\'s full of them!','They\'re pouring out of there!'],
@@ -3543,7 +3545,7 @@ class Game{
     if(!this.ptPlan){let n=0,ch=C.first;while(ch>0&&this.rng()<ch){n++;ch-=C.step;}   /* 0.12.366 (Kyle): 40% for a first one, 35% for a second, 30% for a third... */
       this.ptPlan=[];for(let i=0;i<n;i++)this.ptPlan.push(this.st.len*(.08+.77*this.rng()));this.ptPlan.sort((a,b)=>a-b);this.ptWant=0;}
     while(this.ptPlan.length&&this.dist>=this.ptPlan[0]){this.ptPlan.shift();this.ptWant++;}
-    if(this.ptWant>0&&!this.stageDone&&scroll>0){if(city)this.cityPortalScan();else if(this.addPortal(false))this.ptWant--;}   // waits for the next free spot if this one is taken
+    if(this.ptWant>0&&!this.stageDone&&scroll>0&&!city&&this.addPortal(false))this.ptWant--;   // waits for the next free spot if this one is taken (city ones go on buildings in spawnFronts)
     for(const p of P){p.x-=scroll*dt*(p.par||1);p.t+=dt;
       if(!p.seen&&p.state==='unk'&&p.x>4&&p.x<this.W-4){p.chk=(p.chk||0)-dt;if(p.chk<=0){p.chk=1.25;   /* 0.12.366 (Kyle): the team has to notice them first (a Perception roll every 1.25s, like traps) */
         for(const h of this.alive()){if(h.dog||h.pet)continue;const d=Math.abs(p.x-this.heroX(h));if(d>130)continue;
@@ -3554,14 +3556,10 @@ class Game{
         if(p.spT<=0&&p.x>-6&&p.x<this.W-2&&out<C.maxOut&&!this.stageDone&&this.enemies.filter(e=>!e.dead).length<24){p.spT=C.spawnEvery[0]+this.rng()*(C.spawnEvery[1]-C.spawnEvery[0]);
           const e=this.spawnEnemy('zombie',{x:p.x+(this.rng()*6-3)});if(e){e.gy=LANES[0];e.laneI=0;e.emergeT=.5;e.fromP=p;p.eyesT=.8;}}}}
     this.portals=P.filter(p=>p.x>-90);}
-  cityPortalScan(){let BG0;try{BG0=BGA;}catch(e){return;}if(!BG0||!BG0.city)return;const L=BG0.city.layers.find(l=>l.shops);if(!L)return;
-    const s=L.w/L.r[2],T=L.tile,d=this.dist*L.sp;this.ptSeen=this.ptSeen||{};
-    for(const [ax,sw] of CITY_PSLOTS){const base=ax*s-d,k=Math.ceil((this.W+2-base)/T),x=base+k*T;if(x>this.W+40)continue;const id=k+':'+ax;if(this.ptSeen[id])continue;this.ptSeen[id]=1;
-      if(this.stageDone||!(this.ptWant>0))continue;
-      let kind=this.rng()<.5?'door':'window';if(PORTAL_ART.window.w>sw*s+3)kind='door';const art=kind==='door'?(this.rng()<.5?'door':'door2'):'window',A=PORTAL_ART[art];if(A.w>sw*s+3)continue;
-      if(this.portals.some(p=>Math.abs(p.x-x)<A.w+20))continue;
-      if((this.obst||[]).some(o=>!o.gone&&(o.lanes||[]).includes(0)&&Math.abs(o.x-x)<A.w/2+6))continue;   /* never behind a car, pillar or other obstacle */
-      this.portals.push({kind,art,x,par:L.sp,state:'unk',t:0,spT:1.5,pan:0,by:null});this.ptWant--;}}
+  cityOpening(x,bw,par){if(this.stageDone||!(this.ptWant>0)||this.demo)return;this.portals=this.portals||[];
+    let kind=this.rng()<.5?'door':'window';if(PORTAL_ART.window.w>bw+1)kind='door';const art=kind==='door'?(this.rng()<.5?'door':'door2'):'window',A=PORTAL_ART[art];if(A.w>bw+1)return;
+    if((this.obst||[]).some(o=>!o.gone&&o.k!=='city_pillar'&&o.k!=='city_front'&&(o.lanes||[]).includes(0)&&Math.abs(o.x-x)<A.w/2+6))return;   /* never behind a car or other obstacle (a shop's pillars belong to the building next door) */
+    this.portals.push({kind,art,x,par,state:'unk',t:0,spT:1.5,pan:0,by:null});this.ptWant--;}
   addPortal(city){const W=this.W;const kind=city?(this.rng()<.5?'door':'window'):'trail';const A=PORTAL_ART[kind];const x=W+A.w/2+8;
     if(this.portals.some(p=>Math.abs(p.x-x)<(A.w+40)))return false;
     if((this.obst||[]).some(o=>!o.gone&&Math.abs(o.x-x)<(city?40:30)&&(o.lanes||[]).includes(0)))return false;   /* never on top of a storefront, pillar or another obstacle */
@@ -4054,8 +4052,9 @@ class Game{
     return false;}
   spawnFronts(){if(!(this.st.biome&&this.st.biome.id==='city'))return;let BG0;try{BG0=BGA;}catch(e){return;}if(!BG0||!BG0.city)return;   /* 0.12.351: no crash when the backdrop art isn't loaded (headless runs) */const L=BGA.city.layers.find(l=>l.shops);if(!L)return;
     const s=L.w/L.r[2],T=L.tile,d=this.dist*L.sp;this.frontSeen=this.frontSeen||{};
-    for(const [ax,kind,bw] of L.shops){const base=ax*s-d,k=Math.ceil((this.W+2-base)/T),x=base+k*T;if(x>this.W+30)continue;const id=k+':'+ax;if(this.frontSeen[id])continue;this.frontSeen[id]=1;
-      if(this.rng()<.3){const BW=(bw||40)*s;const F={k:'city_front',x,lanes:[0],blk:0,par:L.sp,shop:kind,bw:BW};this.obst.push(F);
+    for(const [ax,kind,bw] of L.shops.concat(CITY_OPEN_BLDGS.map(([a,w])=>[a,null,w]))){const base=ax*s-d,k=Math.ceil((this.W+2-base)/T),x=base+k*T;if(x>this.W+30)continue;const id=k+':'+ax;if(this.frontSeen[id])continue;this.frontSeen[id]=1;
+      if(!(kind&&this.rng()<.3)){this.cityOpening(x,(bw||40)*s,L.sp);continue;}   /* 0.12.369: one attachment per building: no lootable shop here, so maybe an Ominous door/window */
+      {const BW=(bw||40)*s;const F={k:'city_front',x,lanes:[0],blk:0,par:L.sp,shop:kind,bw:BW};this.obst.push(F);
         if(this.rng()<.5)F.roof={hp:1,y:L.y+L.front*s-7,crate:this.rng()<.7,occ:null};   /* 0.12.122 (Kyle): some have a flat roof with a ladder up the side and maybe a crate up top */   /* 0.12.121 (Kyle): two pillars stand out front: the only part you can't walk through */
         for(const sd of [-1,1])this.obst.push({k:'city_pillar',x:x+sd*(BW/2-2),lanes:[0],blk:0,par:L.sp,front:1,F,sd});}}}
   // keep bodies out of obstacles: IF a unit ends up inside one in its lane THEN push it out the near side
@@ -4932,12 +4931,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1795103566';const BGI=new Image();BGI.src='crawl_bg.png?v=1795103566';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795103566';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1795103739';const BGI=new Image();BGI.src='crawl_bg.png?v=1795103739';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795103739';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795103566';XIMG.wave.src='crawl_wave.png?v=1795103566';XIMG.chibi.src='crawl_chibi.png?v=1795103566';XIMG.flannel.src='crawl_flannel.png?v=1795103566';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795103566';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795103566';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795103566';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795103566';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795103566';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795103566';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795103566';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795103566';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795103566';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795103566';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795103566';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795103566';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795103566';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795103566';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795103566';XIMG.rain.src='crawl_rain.png?v=1795103566';XIMG.druid.src='crawl_druid.png?v=1795103566';XIMG.camp.src='crawl_campfire.png?v=1795103566';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795103566';XIMG.tornado.src='crawl_fx_tornado.png?v=1795103566';XIMG.vine.src='crawl_fx_vine.png?v=1795103566';XIMG.thorn.src='crawl_fx_thorn.png?v=1795103566';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795103739';XIMG.wave.src='crawl_wave.png?v=1795103739';XIMG.chibi.src='crawl_chibi.png?v=1795103739';XIMG.flannel.src='crawl_flannel.png?v=1795103739';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795103739';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795103739';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795103739';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795103739';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795103739';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795103739';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795103739';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795103739';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795103739';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795103739';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795103739';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795103739';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795103739';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795103739';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795103739';XIMG.rain.src='crawl_rain.png?v=1795103739';XIMG.druid.src='crawl_druid.png?v=1795103739';XIMG.camp.src='crawl_campfire.png?v=1795103739';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795103739';XIMG.tornado.src='crawl_fx_tornado.png?v=1795103739';XIMG.vine.src='crawl_fx_vine.png?v=1795103739';XIMG.thorn.src='crawl_fx_thorn.png?v=1795103739';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795103566';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795103566';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795103566';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795103566';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795103566';XIMG.obst.src='crawl_obst.png?v=1795103566';XIMG.cityob.src='crawl_cityob.png?v=1795103566';XIMG.cars.src='crawl_cars.png?v=1795103566';XIMG.robot.src='crawl_robot.png?v=1795103566';XIMG.cultist.src='crawl_cultist.png?v=1795103566';XIMG.tentacle.src='crawl_tentacle.png?v=1795103566';XIMG.boom.src='crawl_boom.png?v=1795103566';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795103739';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795103739';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795103739';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795103739';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795103739';XIMG.obst.src='crawl_obst.png?v=1795103739';XIMG.cityob.src='crawl_cityob.png?v=1795103739';XIMG.cars.src='crawl_cars.png?v=1795103739';XIMG.robot.src='crawl_robot.png?v=1795103739';XIMG.cultist.src='crawl_cultist.png?v=1795103739';XIMG.tentacle.src='crawl_tentacle.png?v=1795103739';XIMG.boom.src='crawl_boom.png?v=1795103739';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -4972,7 +4971,7 @@ function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 /* 0.12.310 recorded clips (Tee_Grizzle): decoded once, played through the same AudioContext as the synth sounds */
 const SAMP={teeg1:{src:'crawl_teeg1',off:.34},teeg2:{src:'crawl_teeg2',off:0}};
 function sampLoad(k){const S=SAMP[k];if(!S||S.buf||S.loading||!AC)return;S.loading=1;const ext=(new Audio()).canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3';
-  fetch(S.src+ext+'?v=1795103566').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
+  fetch(S.src+ext+'?v=1795103739').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
 function sampPlay(k,off,vol,soft){const S=SAMP[k];if(!S)return;if(!S.buf){sampLoad(k);return;}const src=AC.createBufferSource(),g=AC.createGain();src.buffer=S.buf;g.gain.value=vol==null?.55:vol;
   if(soft){const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=soft;lp.Q.value=.5;src.playbackRate.value=.94+Math.random()*.1;src.connect(lp);lp.connect(g);}else src.connect(g);g.connect(AC.destination);src.start(0,off==null?S.off:off);}   /* 0.12.329 (Kyle: a bit less annoying): Tee's clips play softer, muffled (low-pass) and with a little pitch wobble */
 function sfx(k,o){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
@@ -6024,7 +6023,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.368</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.369</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -6306,7 +6305,7 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
 /* 0.12.338 (Kyle) GEAR screen: 3 slots per hero (Weapon / Armor / Trinket), a stash, free swaps. Tap anything to see it in full
    (no hover needed). Spare parts raise an item a quality tier (Rusted -> plain -> Fine -> Masterwork); scrapping gives parts back. */
 function gearIcon(it,sz){const D=gearDef(it);if(!D)return '';sz=sz||32;const k=sz/32;const R=GEAR_RAR[D.r];
-  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795103566) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
+  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795103739) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
 function showGear(k0){const s=SLOT();if(!s)return;const run=s.run;const team=(run&&run.team)||[k0];let k=k0;let sel=null,filt='all';gearSlot(s);
   let ov=document.getElementById('cc-gear');if(ov)ov.remove();ov=document.createElement('div');ov.id='cc-gear';
   ov.style.cssText='position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 20%,rgba(40,30,70,.6),rgba(4,2,8,.94));display:flex;align-items:center;justify-content:center;padding:8px';
