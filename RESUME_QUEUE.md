@@ -13,7 +13,7 @@ gear system + tap-for-info (338), bats x3, Alphas 5x, JP sword 1d8+4, costly gea
 9. (DONE 0.12.349, first pass) Garage Needs Repair: 75% from top stat, removal/politics protected, note per deck. Possible follow-up: new swap picks tailored to the new cuts (needs Scryfall prices; current swaps are reused deck-level picks).
 10. (DONE 0.12.346) Notes tabs.
 11. (DONE 0.12.348) Breakable obstacles.
-12. Ominous Trails / doors+windows (near last).
+12. (DONE 0.12.357) Ominous Trails + city doors/windows.
 
 13. (DONE 0.12.351 + 0.12.354) Code cleanup incl. old backpack/merchant/level-up picks/spell+item system.
 Difficulty: zombie 20 HP, trickle flat 7s from first pan (0.12.356).
