@@ -122,7 +122,7 @@ const STYLE={
 const ORDER={melee:0,blade:.5,duo:1,gunner:1.5,ranged:2,caster:3};
 // walking pace per hero (px/s): heavy/armored/stone slow, light and quick ones faster
 const MOVE={seekyle:16,teeg:15,cheez:17,edward:16,knight:15,carcher:19,csorc:16,soldier:16,shoshi:17,eng:15,jp:16,dog:24,cultist:15,robot:14,lumberjack:18,druid:16,archer:17,chibi:20,flannel:15,flannel_pal:15,grim:24,vile:26,felothar:18,thing:20,kykar:26,depala:22,kotis:34,dragons:30,mathas:28,turtle:22,marina:26,korvold:26,thranduil:32,joel:28,robots:22,blood:30,mech:24,weather:24};
-const MINION_SPEED=62;
+
 // how each hero's Summon spell behaves when recast (easy to retune per hero)
 const RANGED_SUMMONERS=new Set(['robots','mech','marina','kykar','thing','vile']);   // their summons shoot from mid-screen; everyone else's charge in
 // ---- signature abilities: every hero comes with one, on its own cooldown (not a spell slot). fn(game, hero, atk)
@@ -1534,7 +1534,7 @@ class Game{
     this.rng=opt.rng||Math.random;this.demo=!!opt.demo;this.run=opt.run;this.slot=opt.slot;if(!this.demo)setRunModes(this.run);this.hardcore=!this.demo&&!!(this.run&&this.run.hardcore);
     this.st=CFG.stage(this.run.stage,this.run.prestige);
     this.nemQ=[];   /* 0.12.238 (Kyle): promoted zombies never just show up; they only come from the promotion system (a zombie that downs a hero) */   /* 0.12.136: one returning Nemesis per stage, 40% of the way in */
-    this.dist=0;this.t=0;this.events=[];this.enemies=[];this.proj=[];this.fx=[];this.minions=[];this.texts=[];
+    this.dist=0;this.t=0;this.events=[];this.enemies=[];this.proj=[];this.fx=[];this.texts=[];
     this.budget=2;this.bossSpawned=false;this.over=null;this.kills=0;this.shake=0;this.devourStacks=0;
     this.banners=[];this.waves=[];this.stageXp=0;this.stageScore=0;this.loot=[];this.stageGold=0;this.stageItems=[];this.stageFood=0;this.stageWater=0;this.stageParts=0;this.stageMed={};this.stats={};
     this.heroes=this.run.team.map((k,i)=>this.makeHero(k));
@@ -1731,7 +1731,7 @@ class Game{
         /* 0.12.93 (Kyle): food and water each run their own "pity" roll PER HERO (summons, companions and pets don't roll). The first kill is a
            2% chance; every miss adds +0.3% (more with Supply boosts, Luck and a picked-up enemy) until it drops, then it resets to 2%.
            That's about one of each every ~18 kills per hero (0.12.94). Bosses and elites still drop extra. */
-        const K=src&&!src.pet&&!src.minion&&this.run.team&&this.run.team.includes(src.key)?src:null;
+        const K=src&&!src.pet&&this.run.team&&this.run.team.includes(src.key)?src:null;
         if(K){const P=this.run.pity=this.run.pity||{},q=P[K.key]=P[K.key]||{food:0,water:0};const boost=((this.mods&&this.mods.supply)||1)*PK.s*(1+(K.luck||0)/200)*(1+[0,.15,.3][upgT(this.run,'forage')||0]);const kp=insP(K);   /* 0.12.104 Forager / Rain Catcher / Lucky Looter */
           for(const kind of ['food','water']){const ch=Math.min(1,(.01+.00125*q[kind])*boost*m*   /* 0.12.344 (Kyle): halved again: 1% + 0.125% a miss (was 2% + 0.25%) */   /* 0.12.140 (Kyle: too much food and water): 1.2% + 0.15% a miss (was 2% + 0.3%) */((kp==='forager'&&kind==='food')||(kp==='raincatch'&&kind==='water')?2.5:hasPerk(K,'looter')?1.8:1));if(this.rng()<ch){q[kind]=0;this.loot.push({kind,x:e.x+(this.rng()*10-5),gy:e.gy,amt:1,t:0});}else q[kind]++;}}
         else if(m>1&&this.rng()<.015*m)this.loot.push({kind:this.rng()<.5?'water':'food',x:e.x+(this.rng()*10-5),gy:e.gy,amt:1,t:0});
@@ -1888,11 +1888,6 @@ class Game{
     const ch=src==='box'?(n>=7?.3:0):src==='crate'?(n>=8?.05+.003*(n-8):0):(n>=8?.0035+.0004*(n-8):0);if(this.rng()>=ch*(1+L/100))return;
     const it=gearRoll(this.rng,L,src,n);this.loot.push({kind:'gear',gear:it,x,gy,t:0});}
   // tag = which ability made it; cap = how many from that ability may be out (oldest gets replaced)
-  addMinion(owner,hp,atk,life,kind,tag,cap){const f=this.front();const m={owner,hp,max:hp,atk,life,x:(f?f.x:120)+16+this.rng()*10,atkT:0,kind:kind||'spirit',taunt:false,explode:false,leech:false,
-    ranged:RANGED_SUMMONERS.has(owner.key),tag:tag||kind,born:this.t};
-    const same=this.minions.filter(o=>o.owner===owner&&o.tag===m.tag).sort((a,b)=>a.born-b.born);
-    while(same.length>=(cap||1)){const o=same.shift();o.dead=true;this.fx.push({k:'poof',x:o.x,y:this.G-14,t:0});}
-    this.minions=this.minions.filter(o=>!o.dead);this.minions.push(m);return m;}
   shoot(h,target,kind,dmg,opt){
     const mz=MUZZLE[h.key]||[10,30];const lift=(h.perch||h.hesco)?(h.leapH||0)*.6:0;const y0=this.G-mz[1]-lift;   /* 0.12.76: up on the lookout, shots leave from up there */const p={kind,x:h.x+(h.face<0?-mz[0]:mz[0]),y:y0,tx:target,dmg,src:h,spd:PSPD[kind]||160,pierce:opt.pierce||(h.style&&h.style.pierce)||0,opt,t:0,vy:kind==='brick'?-70:0,hit:new Set()};
     if(h&&h.ocN>0&&kind==='zap'){h.ocN--;p.dmg*=h.ocMul||1.5;p.oc=1;const J=h.ocJump||40;p.opt.onHit=(e,d)=>{this.hitEnemy(e,d,h,{});const n=this.enemies.filter(o=>!o.dead&&o!==e&&!o.fly&&Math.abs(o.x-e.x)<J&&Math.abs((o.gy!=null?o.gy:this.G)-(e.gy!=null?e.gy:this.G))<14).sort((a,b)=>Math.abs(a.x-e.x)-Math.abs(b.x-e.x))[0];
@@ -2261,20 +2256,6 @@ class Game{
     this.stepZones(dt);
     for(const l of this.loot){l.t+=dt;l.x-=scroll*dt;if(l.x<=f.x+14||this.over){l.got=1;if(l.kind==='gold'){const bb=upgT(this.run,'board');const a=Math.round(l.amt*(1+[0,.25,.5,.75][bb])*(1+ffT(this.run,'gold')));   /* 0.12.237 Fall Forward: +20/30/40% gold piles */this.stageGold+=a;this.text(l.x,this.G-30,'+'+a,'#ffd23f');}else if(l.kind==='food'||l.kind==='water'){if(l.kind==='food')this.stageFood=(this.stageFood||0)+1;else this.stageWater=(this.stageWater||0)+1;this.text(l.x,this.G-30,'+1 '+l.kind.toUpperCase(),l.kind==='food'?'#e8b060':'#7fd0ff');}else if(l.kind==='parts'){this.stageParts=(this.stageParts||0)+l.amt;this.text(l.x,this.G-30,'+'+l.amt+' PARTS','#c8d0d8');}else if(l.kind==='gear'){const G=gearSlot(this.slot);if(G&&G.stash.length<GEAR_STASH){G.stash.push(l.gear);(this.stageGear=this.stageGear||[]).push(l.gear);const D=gearDef(l.gear);this.text(l.x,this.G-38,'⚔ '+gearName(l.gear).toUpperCase(),GEAR_RAR[D.r].c,true);this.ev('itemdrop',{});}}else if(l.kind==='lucky'){this.stageLucky=(this.stageLucky||0)+1;this.text(l.x,this.G-34,'🍀 LUCKY DIE!','#7dff9a');this.ev('luckydrop');}else{this.stageItems.push(l.item);this.ev('itemdrop',{item:l.item});}}}
     this.loot=this.loot.filter(l=>!l.got);
-    // minions
-    for(const m of this.minions){m.life-=dt;m.atkT+=dt;if(m.animT>0)m.animT-=dt;if(m.hitFlash>0)m.hitFlash-=dt;const mi=this.minions.indexOf(m);
-      // melee summons hang out ~3/4 across the screen and charge what's in front of them; ranged summons hold the middle and shoot
-      const home=this.W*(m.ranged?.5:.7)+((mi%3)-1)*7;const src=m.owner.alive?{crit:m.owner.crit,scoreM:m.owner.scoreM,items:[]}:null;
-      const foe=m.ranged?null:this.enemies.filter(e=>!e.dead&&!e.fly&&e.x>f.x+10).sort((p,q)=>Math.abs(p.x-home)-Math.abs(q.x-home))[0];
-      const tx=foe&&Math.abs(foe.x-home)<this.W*.3?Math.max(f.x+10,foe.x-(foe.boss?foe.w:0)-14-mi*4):home;
-      const md=tx-m.x,ms=MINION_SPEED*dt;m.x+=Math.abs(md)<=ms?md:Math.sign(md)*ms;m.moving=Math.abs(md)>1;
-      if(m.ranged){const e=this.enemies.filter(e=>!e.dead&&e.x>m.x-20&&e.x-m.x<170).sort((p,q)=>p.x-q.x)[0];
-        if(e&&m.atkT>=1.3){m.atkT=0;m.animT=.3;this.proj.push({kind:m.kind==='drone'?'plasma':'wisp',x:m.x+6,y:this.G-26,tx:e,dmg:m.atk*1.1,src,spd:PSPD[m.kind==='drone'?'plasma':'wisp'],pierce:0,opt:{},t:0,hit:new Set()});}}
-      else{const e=this.enemies.filter(e=>!e.dead&&Math.abs(e.x-(e.boss?e.w:0)-m.x)<30)[0];
-        if(e&&m.atkT>=1){m.atkT=0;m.animT=.3;this.fx.push({k:'slash',x:e.x-6,y:e.boss?e.y-50:e.fly?e.y:e.y-22,t:0});const d=this.hitEnemy(e,m.atk,src,{kb:.4});if(m.leech)this.healHero(this.weakest(),d*.2,true);}}
-      if(m.hp<=0||m.life<=0){m.dead=true;this.fx.push({k:'poof',x:m.x,y:this.G-14,t:0});
-        if(m.explode){this.fx.push({k:'ring',x:m.x,y:this.G-16,r:24,t:0,c:'#ff8a1f'});for(const e of this.enemies)if(!e.dead&&Math.abs(e.x-m.x)<30)this.hitEnemy(e,m.atk*2.2,null,{nocrit:1});}}}
-    this.minions=this.minions.filter(m=>!m.dead);
     // enemies
     const upT=o=>o.perch&&o.perch.hp>0&&(o.perch.k!=='tower'||o.perchSt!=='walk');const alSeen=al.filter(o=>!(o.stealthT>0)&&!upT(o)),alE=alSeen.length?alSeen:al,alFly=al.filter(o=>!(o.stealthT>0)&&!(o.perch&&o.perch.hp>0&&o.perch.k!=='tower'));   /* 0.12.67 stealth: zombies only see who isn't hidden */
     for(const e of this.enemies)if(e.fly&&!e.dead&&dt>0){e.vx=e._lx==null?0:(e.x-e._lx)/dt;e.vy=e._ly==null?0:(e.y-e._ly)/dt;e._lx=e.x;e._ly=e.y;}   /* 0.12.206: fliers' speed, for shooters to lead them */
@@ -2301,10 +2282,9 @@ class Game{
       if(e.E&&e.E.scream&&this.screamAI(e,dt,scroll,al))continue;
       if(e.type==='bat'){this.batAI(e,dt,scroll,al);continue;}
       if(e.boss){this.bossAI(e,dt,sp,f);continue;}
-      const tank=this.minions.find(m=>m.taunt)||(this.minions.length&&this.rng()<.5?this.minions[0]:null);
       const blockX=f.x+18;
       if(e.fly){
-        if(!e.target||(e.target.alive===false)||e.target.dead){e.target=this.minions.length&&this.rng()<.3?this.minions[Math.floor(this.rng()*this.minions.length)]:al[Math.floor(this.rng()*al.length)];}
+        if(!e.target||(e.target.alive===false)||e.target.dead){e.target=al[Math.floor(this.rng()*al.length)];}
         const tx=e.ranged?Math.max(e.E.stop*this.W/CFG.W,f.x+90):(e.target.owner?e.target.x:this.heroX(e.target))+16,ty=this.G-40+Math.sin(this.t*3+e.phase)*8-(e.ranged?20:0);
         e.x-=scroll*dt;if(e.x>tx)e.x-=Math.min(e.x-tx,e.E.spd*sp*dt);e.y+=(ty-e.y)*Math.min(1,dt*2);
         e.atkT+=dt;if(e.atkT>=e.E.atk&&Math.abs(e.x-tx)<6){e.atkT=0;e.anim=1;e.animT=.3;
@@ -2392,15 +2372,14 @@ class Game{
                   const d2=Math.max(1,Math.floor((1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul));const t2=this.hurtHero(o,d2,e);if(B&&t2&&o.alive&&this.rng()<B.chance)this.bleed(o,B.dmg*e.dmgMul,B.dur);}}};   /* 0.12.201 (Kyle) Fireman cleave: the swing hits every hero in reach in front of him */
             if(e.E.hitAt)setTimeoutSafe(this,e.E.hitAt,blow);else blow();}}
         }else{
-        const wall=this.minions.filter(m=>m.x<e.x+4&&m.x>f.x+10).reduce((b,m)=>!b||m.x>b.x?m:b,null);const bx=wall&&wall.x+12>blockX?wall.x+12:blockX;
+        const bx=blockX;
         // reach: can hit from (body width + reach) away; it keeps shuffling in a little closer so small knockbacks don't push it out of range
-        const R=e.E.reach!=null?ENEMY_BODY+e.E.reach:null;const useR=R!=null&&!(wall&&wall.x+12>blockX);
+        const R=e.E.reach!=null?ENEMY_BODY+e.E.reach:null;const useR=R!=null;
         const bx2=useR?f.x+ENEMY_BODY+e.E.reach*.6:bx;const inRange=useR?e.x<=f.x+R+.5:e.x<=bx+2;
         e.x-=scroll*dt;if(e.x>bx2)e.x=Math.max(bx2,e.x-e.E.spd*sp*dt);
         if(useR&&!inRange)e.atkT=Math.min(e.E.atk,e.atkT+dt);   // keeps its swing ready while stepping back in
         if(inRange){e.atkT+=dt;if(e.atkT>=e.E.atk){e.atkT=0;e.anim=1;e.animT=e.E.animAtk||.3;
-          const heroClose=e.x-f.x<30;
-          const blow=()=>{if(e.dead||e.stun>0)return;const F=this.front();if(wall&&!wall.dead&&(!heroClose||bx>blockX))this.hurtMinion(wall,e.dmg,e);else if(tank&&tank.taunt&&!tank.dead)this.hurtMinion(tank,e.dmg,e);else if(F){const d=e.E.dmgDie?Math.max(1,Math.floor((1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul)):e.dmg;const took=this.hurtHero(F,d,e);if(e.E.leech)e.hp=Math.min(e.max,e.hp+d*e.E.leech);
+          const blow=()=>{if(e.dead||e.stun>0)return;const F=this.front();if(F){const d=e.E.dmgDie?Math.max(1,Math.floor((1+Math.floor(this.rng()*e.E.dmgDie))*e.dmgMul)):e.dmg;const took=this.hurtHero(F,d,e);if(e.E.leech)e.hp=Math.min(e.max,e.hp+d*e.E.leech);
             const B=e.E.bleed;if(B&&took&&F.alive&&this.rng()<B.chance)this.bleed(F,B.dmg*e.dmgMul,B.dur);}};
           if(e.E.hitAt)setTimeoutSafe(this,e.E.hitAt,blow);else blow();}}
         }
@@ -4934,12 +4913,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1795068693';const BGI=new Image();BGI.src='crawl_bg.png?v=1795068693';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795068693';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1795069334';const BGI=new Image();BGI.src='crawl_bg.png?v=1795069334';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795069334';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795068693';XIMG.wave.src='crawl_wave.png?v=1795068693';XIMG.chibi.src='crawl_chibi.png?v=1795068693';XIMG.flannel.src='crawl_flannel.png?v=1795068693';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795068693';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795068693';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795068693';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795068693';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795068693';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795068693';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795068693';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795068693';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795068693';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795068693';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795068693';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795068693';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795068693';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795068693';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795068693';XIMG.rain.src='crawl_rain.png?v=1795068693';XIMG.druid.src='crawl_druid.png?v=1795068693';XIMG.camp.src='crawl_campfire.png?v=1795068693';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795068693';XIMG.tornado.src='crawl_fx_tornado.png?v=1795068693';XIMG.vine.src='crawl_fx_vine.png?v=1795068693';XIMG.thorn.src='crawl_fx_thorn.png?v=1795068693';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795069334';XIMG.wave.src='crawl_wave.png?v=1795069334';XIMG.chibi.src='crawl_chibi.png?v=1795069334';XIMG.flannel.src='crawl_flannel.png?v=1795069334';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795069334';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795069334';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795069334';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795069334';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795069334';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795069334';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795069334';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795069334';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795069334';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795069334';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795069334';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795069334';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795069334';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795069334';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795069334';XIMG.rain.src='crawl_rain.png?v=1795069334';XIMG.druid.src='crawl_druid.png?v=1795069334';XIMG.camp.src='crawl_campfire.png?v=1795069334';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795069334';XIMG.tornado.src='crawl_fx_tornado.png?v=1795069334';XIMG.vine.src='crawl_fx_vine.png?v=1795069334';XIMG.thorn.src='crawl_fx_thorn.png?v=1795069334';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795068693';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795068693';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795068693';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795068693';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795068693';XIMG.obst.src='crawl_obst.png?v=1795068693';XIMG.cityob.src='crawl_cityob.png?v=1795068693';XIMG.cars.src='crawl_cars.png?v=1795068693';XIMG.robot.src='crawl_robot.png?v=1795068693';XIMG.cultist.src='crawl_cultist.png?v=1795068693';XIMG.tentacle.src='crawl_tentacle.png?v=1795068693';XIMG.boom.src='crawl_boom.png?v=1795068693';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795069334';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795069334';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795069334';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795069334';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795069334';XIMG.obst.src='crawl_obst.png?v=1795069334';XIMG.cityob.src='crawl_cityob.png?v=1795069334';XIMG.cars.src='crawl_cars.png?v=1795069334';XIMG.robot.src='crawl_robot.png?v=1795069334';XIMG.cultist.src='crawl_cultist.png?v=1795069334';XIMG.tentacle.src='crawl_tentacle.png?v=1795069334';XIMG.boom.src='crawl_boom.png?v=1795069334';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -4974,7 +4953,7 @@ function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 /* 0.12.310 recorded clips (Tee_Grizzle): decoded once, played through the same AudioContext as the synth sounds */
 const SAMP={teeg1:{src:'crawl_teeg1',off:.34},teeg2:{src:'crawl_teeg2',off:0}};
 function sampLoad(k){const S=SAMP[k];if(!S||S.buf||S.loading||!AC)return;S.loading=1;const ext=(new Audio()).canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3';
-  fetch(S.src+ext+'?v=1795068693').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
+  fetch(S.src+ext+'?v=1795069334').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
 function sampPlay(k,off,vol,soft){const S=SAMP[k];if(!S)return;if(!S.buf){sampLoad(k);return;}const src=AC.createBufferSource(),g=AC.createGain();src.buffer=S.buf;g.gain.value=vol==null?.55:vol;
   if(soft){const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=soft;lp.Q.value=.5;src.playbackRate.value=.94+Math.random()*.1;src.connect(lp);lp.connect(g);}else src.connect(g);g.connect(AC.destination);src.start(0,off==null?S.off:off);}   /* 0.12.329 (Kyle: a bit less annoying): Tee's clips play softer, muffled (low-pass) and with a little pitch wobble */
 function sfx(k,o){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
@@ -5141,7 +5120,7 @@ function drawProj(ctx,p,x,y,c,t){const k=p.kind;
   glow(ctx,x,y,7,c,.16);glow(ctx,x-4,y,3,c,.35);ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,3.2,0,7);ctx.fill();ctx.fillStyle='#ffffff';ctx.fillRect(x-1,y-1,2,2);
 }
 function shadow(ctx,x,y,w){ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(Math.round(x),Math.round(y),w,2.5,0,0,7);ctx.fill();}
-const MINI={bat:'e_bat',spirit:'e_ghost',raise:'e_skeleton',spore:'e_spawn',drone:'e_eye'};
+
 const HS=UNIT_SCALE;   // units, effects and projectiles are drawn at half size so the world reads bigger
 function shrinkAt(ctx,x,y,s){ctx.translate(x,y);ctx.scale(s,s);ctx.translate(-x,-y);}
 // 0.11 unit status plate: framed health bar (a tick every 10 HP), energy bar under it, and status pips above it
@@ -5199,10 +5178,6 @@ function drawGame(ctx,g,W,oy){
   for(const z of g.zones||[]){const k=Math.min(1,z.t/z.T);const pulse=.25+.25*Math.sin(g.t*18);ctx.save();
     ctx.fillStyle=z.c;ctx.globalAlpha=z.t>=z.T?.6*(1-(z.t-z.T)/.25):(.12+.25*k+pulse*.3*k);ctx.beginPath();ctx.ellipse(z.cx,G+2,z.hw,6,0,0,7);ctx.fill();
     ctx.globalAlpha=.9;ctx.strokeStyle=z.c;ctx.beginPath();ctx.ellipse(z.cx,G+2,z.hw*k,6*k,0,0,7);ctx.stroke();ctx.restore();}
-  // minions
-  for(const m of g.minions){ctx.save();shrinkAt(ctx,m.x,G,HS);const n=MINI[m.kind]||'e_ghost';const a=SP[n];shadow(ctx,m.x,G,6);
-    const sc=(m.small?.5:.62)*(1+.15*(m.stacks||0));ctx.save();ctx.translate(m.x,G-(n==='e_skeleton'?60:44)*sc);ctx.scale(sc,sc);spr(ctx,n,m.animT>0?6+Math.min(2,Math.floor((.3-m.animT)/.1)):Math.floor(g.t*(m.moving?16:6))%6,-FW(a)/2,0,true,.9,m.hitFlash);ctx.restore();
-    const mw=12,mp=Math.max(0,m.hp/m.max);ctx.fillStyle='#120a14';ctx.fillRect(Math.round(m.x-mw/2)-1,Math.round(G-(n==='e_skeleton'?60:44)*sc)-3,mw+2,3);ctx.fillStyle='#7dff9a';ctx.fillRect(Math.round(m.x-mw/2),Math.round(G-(n==='e_skeleton'?60:44)*sc)-2,Math.round(mw*mp),1);ctx.restore();}
   // heroes (back to front)
   const hs=g.heroes.concat((g.pets||[]).filter(p=>p.alive||(p.dog&&p.downed))).sort((a,b)=>a.x-b.x);   // a downed dog lies there until someone helps him up
   for(const h of hs)if(!h.alive&&h.downed){const gy=h.gy||G,k=Math.min(1,(h.revT||0)/(h.revNeed||5)),p=.5+.5*Math.sin(g.t*5);ctx.save();ctx.strokeStyle=`rgba(125,255,154,${.25+.2*p})`;ctx.lineWidth=1;ctx.beginPath();ctx.arc(h.x,gy-20,4,0,7);ctx.stroke();
@@ -6029,7 +6004,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.363</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.364</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -6208,7 +6183,7 @@ function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=r
 const CAMPBG=new Image();CAMPBG.src='crawl_campbg.png';   /* 0.12.63 (Kyle): his cabin-at-night painting is the camp backdrop */
 function campScene(host,run){const W=171,H=96;const c=document.createElement('canvas');c.className='cc-fire';c.width=W*RES;c.height=H*RES;host.appendChild(c);
   const x=c.getContext('2d');let g;try{const r2=newRun(run.team.slice(),null);r2.stage=run.stage;r2.prestige=run.prestige||0;g=new Game({run:r2,slot:null,demo:true,W});}catch(e){c.remove();return;}
-  g.enemies=[];g.obst=[];g.mines=[];g.bomblets=[];g.crates=[];g.loot=[];g.minions=[];g.proj=[];g.fx=[];g.texts=[];
+  g.enemies=[];g.obst=[];g.mines=[];g.bomblets=[];g.crates=[];g.loot=[];g.proj=[];g.fx=[];g.texts=[];
   const fx=90,fgy=CFG.H-H+80;g.camp={x:fx,gy:fgy,t:1,life:99,state:'burn',A:{}};g.bgImg=CAMPBG;   // the painting's fire pit
   const spots=[[fx-30,fgy+7,1],[fx+30,fgy+7,-1],[fx-14,fgy-6,1]];
   g.heroes.forEach((h,i)=>{const s=spots[i]||spots[0];h.x=s[0];h.gy=s[1];h.face=s[2];h.alive=true;h.moving=false;h.hp=h.max;h.en=h.enMax||100;h.wanderX=0;h.dodgeX=0;h.plan=null;});
@@ -6311,7 +6286,7 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
 /* 0.12.338 (Kyle) GEAR screen: 3 slots per hero (Weapon / Armor / Trinket), a stash, free swaps. Tap anything to see it in full
    (no hover needed). Spare parts raise an item a quality tier (Rusted -> plain -> Fine -> Masterwork); scrapping gives parts back. */
 function gearIcon(it,sz){const D=gearDef(it);if(!D)return '';sz=sz||32;const k=sz/32;const R=GEAR_RAR[D.r];
-  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795068693) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
+  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795069334) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
 function showGear(k0){const s=SLOT();if(!s)return;const run=s.run;const team=(run&&run.team)||[k0];let k=k0;let sel=null,filt='all';gearSlot(s);
   let ov=document.getElementById('cc-gear');if(ov)ov.remove();ov=document.createElement('div');ov.id='cc-gear';
   ov.style.cssText='position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 20%,rgba(40,30,70,.6),rgba(4,2,8,.94));display:flex;align-items:center;justify-content:center;padding:8px';
