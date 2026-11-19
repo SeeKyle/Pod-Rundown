@@ -150,3 +150,24 @@ def winC2():
 dA=extend_door(doorA());dB=extend_door(doorB());wC=winC2()
 dA.save('/tmp/dw/final_doorA.png');dB.save('/tmp/dw/final_doorB.png');wC.save('/tmp/dw/final_winC.png')
 print('final',dA.size,dB.size,wC.size)
+
+# ---------- 0.12.367 (Kyle): same hole, wall border cut about in half ----------
+def winC3():
+    W,H=31,26;im=Image.new('RGBA',(W,H),(0,0,0,0));d=ImageDraw.Draw(im);r=random.Random(7);dx,dy=-2,-1
+    S=lambda pts:[(x+dx,y+dy) for x,y in pts]
+    d.rectangle([0,0,W-1,H-1],fill=W2);d.line([(0,0),(W-1,0)],fill=W3);d.line([(0,0),(0,H-1)],fill=W3);d.line([(W-1,1),(W-1,H-1)],fill=DK2)
+    hole=[(3,4),(9,2),(15,4),(21,2),(27,3),(31,6),(30,13),(31,20),(25,22),(16,21),(9,22),(3,21),(4,13)]
+    d.polygon(S(hole),fill=(26,24,28,255))
+    d.polygon(S([(x+1 if x<17 else x-1,y+1 if y<12 else y-1) for x,y in hole]),fill=DK)
+    d.polygon(S([(6,6),(28,6),(28,19),(6,19)]),fill=BLK)
+    for (x,y) in ((0,8),(0,15),(30,9),(30,17),(9,0),(18,0)):d.point((x,y),fill=(30,28,30,255))   # soot
+    d.polygon(S([(4,5),(8,4),(4,10)]),fill=GL);d.point((3,5),fill=GL2);d.polygon(S([(29,18),(29,21),(26,21)]),fill=GLD);d.point((25,19),fill=GL2)
+    d.polygon(S([(27,5),(29,5),(29,9)]),fill=GLD);d.polygon(S([(12,21),(15,19),(16,21)]),fill=GL)
+    d.line(S([(26,8),(30,11)]),fill=(96,52,58,255));d.line(S([(26,9),(31,13)]),fill=(70,40,46,255));d.line(S([(27,11),(32,15)]),fill=(96,52,58,255));d.point((30,15),fill=(70,40,46,255))
+    d.rectangle([0,21,W-1,22],fill=W4);d.line([(1,23),(W-2,23)],fill=DK2)          # sill
+    d.rectangle([1,24,W-2,H-1],fill=W1);d.line([(1,H-1),(W-2,H-1)],fill=DK2)          # a short wall to the bottom
+    for x in (7,20):d.line([(x,23),(x,24)],fill=RUST2)
+    d.point((13,24),fill=BLOOD)
+    grime(im,(0,0,W-1,H-1),r,22,[W1,DK2])
+    return im
+w3=winC3();w3.save('/tmp/dw/final_winC3.png');print('winC3',w3.size)
