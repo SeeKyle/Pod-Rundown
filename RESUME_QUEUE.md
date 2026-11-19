@@ -16,4 +16,4 @@ gear system + tap-for-info (338), bats x3, Alphas 5x, JP sword 1d8+4, costly gea
 12. Ominous Trails / doors+windows (near last).
 
 13. (DONE 0.12.351 + 0.12.354) Code cleanup incl. old backpack/merchant/level-up picks/spell+item system.
-Difficulty: zombie 20 HP, trickle flat 5s from first pan (0.12.355).
+Difficulty: zombie 20 HP, trickle flat 7s from first pan (0.12.356).
