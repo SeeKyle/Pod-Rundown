@@ -1,4 +1,14 @@
       <h2>What's new</h2>
+      <h3>0.12.354 · Old upgrade system removed</h3>
+      <ul>
+        <li>Removed the leftover deck-card system for good: the camp <b>Backpack</b> box (it always showed up empty), the hidden Merchant, the old level-up card picks, old item drops, item honing and selling, and all the old spell/item code behind them. That's about 150 more lines of dead code gone (around 300 counting 0.12.351).</li>
+        <li>Fixed: the thin <b>"Next upgrade" bar</b> at the top of a stage kept filling and playing a level-up sound for upgrades that no longer exist. It's gone. Hero XP and levels work the same as before.</li>
+        <li>Fixed: the in-stage hero panels could show an old "signature skill" chip that did nothing. Removed.</li>
+        <li>Fixed: the hero picker could say "Starts with &lt;old card skill&gt;". Removed.</li>
+        <li>The Mystery Stranger's "Blessed Upgrade" pointed at the removed pick screen, so it gave you nothing. Leaving the stranger be (or the empty cell's gift) now gives <b>🎲 2 Lucky Dice</b> instead.</li>
+        <li>Camp no longer says "No upgrades waiting".</li>
+        <li>Re-tested the whole game: every hero with full talent trees, gear effects, stage 1 runs, the camp screen, starting a stage, and the stranger screen in a browser. No errors.</li>
+      </ul>
       <h3>0.12.353 · Only the normal zombie is -5 HP</h3>
       <ul>
         <li>Undid the extra cuts from 0.12.352: Fireman_Zombie is back to 100 HP, Skeleton archer to 18 and Screamer to 27. Only the normal Zombie stays at 25 (was 30).</li>
