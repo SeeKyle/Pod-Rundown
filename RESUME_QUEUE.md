@@ -15,5 +15,5 @@ gear system + tap-for-info (338), bats x3, Alphas 5x, JP sword 1d8+4, costly gea
 11. (DONE 0.12.348) Breakable obstacles.
 12. Ominous Trails / doors+windows (near last).
 
-13. (DONE 0.12.351) Code review + cleanup. Leftover (bigger, riskier): the old run.bag/backpack, merchant shop, level-up card picks (run.pending), SIG/SPELL HUD bits in crawl_ui are still in the code but never show anything; could be removed with care.
+13. (DONE 0.12.351 + 0.12.354) Code cleanup incl. old backpack/merchant/level-up picks/spell+item system.
 Difficulty: Kyle chose trickle 12s -> 5s by stage 10 (0.12.350); stage 1 fresh teams ~3/12.
