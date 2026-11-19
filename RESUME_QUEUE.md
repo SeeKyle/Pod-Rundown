@@ -16,4 +16,4 @@ gear system + tap-for-info (338), bats x3, Alphas 5x, JP sword 1d8+4, costly gea
 12. Ominous Trails / doors+windows (near last).
 
 13. (DONE 0.12.351 + 0.12.354) Code cleanup incl. old backpack/merchant/level-up picks/spell+item system.
-Difficulty: Kyle chose trickle 12s -> 5s by stage 10 (0.12.350); stage 1 fresh teams ~3/12.
+Difficulty: zombie 20 HP, trickle flat 5s from first pan (0.12.355).
