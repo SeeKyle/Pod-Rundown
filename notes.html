@@ -1,4 +1,13 @@
       <h2>What's new</h2>
+      <h3>0.12.351 · Crypt Crawl code cleanup and bug sweep</h3>
+      <ul>
+        <li>Went through all the game code and removed dead leftovers: the old deck-card spell/item switch (it was always off) and every branch hanging off it, the old Lucky Die ladder, old level-point and capstone-offer code, unused constants and three unused functions. That's about 80 lines of dead code gone, and nothing it removed was still doing anything.</li>
+        <li>Fixed: the Warhound showed up <b>Worn</b> at the very first camp of a new game. He now only wears down after a stage he actually ran.</li>
+        <li>Fixed: city stages could crash the test runs when the backdrop art wasn't loaded yet. That spot is now guarded.</li>
+        <li>The hero line at camp now shows <b>Gear n/3</b> (how many slots are filled) instead of the old item score.</li>
+        <li>Camp tips now say <i>tap</i> instead of hover, to match tap-for-info.</li>
+        <li>Re-tested everything after the cleanup with no errors: every hero with random full talent trees, gear with every effect, werewolves, lane AI, obstacles, stage 1 runs, and the camp, talents, gear and Lucky Dice screens in a browser.</li>
+      </ul>
       <h3>0.12.350 · Trickle ramps up</h3>
       <ul>
         <li>The trickle zombie now comes every <b>12s on stage 1</b> and speeds up evenly each stage to <b>every 5s by stage 10</b> (about 0.8s faster per stage), then stays at 5s. It still starts the first time the screen pans and runs until the end of the level.</li>

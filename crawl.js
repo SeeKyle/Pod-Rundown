@@ -171,7 +171,6 @@ const SIG={
 // ---- damage pipeline: every hit goes through mitigate(). Today there is one type ('physical') and armor is a flat % reduction.
 // To add types later: list them here, tag attacks with {type:'fire'} etc., and give enemies/heroes a resist map
 // (e.g. CFG.enemies.zombie.resist={fire:-0.5, cold:0.3} = weak to fire, resists cold).
-const DMG_TYPES={physical:{name:'Damage'}};
 // Kyle's armor rule: points 1-20 = 2% less damage each, 21-40 = 1% each, 41+ = 0.5% each (capped at 90%)
 function armorReduction(a){a=Math.max(0,a||0);return Math.min(.9,Math.min(a,20)*.02+Math.min(Math.max(a-20,0),20)*.01+Math.max(a-40,0)*.005);}
 function mitigate(target,amt,type){
@@ -248,7 +247,7 @@ function sname(hk,card){const d=DATA.heroes.find(h=>h.key===hk);const s=d&&d.spe
 // ======================================================================= HERO STATS
 function heroDef(key){return DATA.heroes.find(h=>h.key===key);}
 // Abilities (spells, passives, signatures, level-up picks) are switched off while Kyle rebuilds them from scratch.
-const ABILITIES_OFF=true;
+
 // Lanes: feet rows units can stand on (190 = the original ground). Units drift between them so they can pass each other.
 const LANES=[188,194,200,206,212],LANE_SPD=26;
 // 0.12.14 (Kyle) obstacles: rocks, stumps, bushes, a dead tree and a big log lying diagonally across two lanes. Not many, a bit random.
@@ -291,8 +290,6 @@ function depthHalf(hb){return Math.max(1.5,hb.w*.12);}   // how much lane depth 
 //   Width (top view, across the lanes): centred on the target, one target-width either side, bunched in the middle.
 //   A shot that misses keeps flying and hits whatever hitbox it passes through (friend of the target or not). pierce = extra bodies it can go through.
 const AIM_RANGE={close:40,far:170};   // px between shooter and target
-const AIM_POINTS={feet:.125,waist:.5,chest:.75};   // fractions of the target's height
-const AIM_SHAPE={bunch:4};   // higher = shots bunch harder toward the bottom of the box (tuning knob)
 // ---- 0.12.2 Aim boxes (Kyle): every target has 3 stacked boxes, measured in ruler units above its feet (already at drawn size).
 //   A shot first rolls WHICH box it goes to (by the box %), then a random height inside that box.
 //   Accuracy: each 1 point slides 0.25% from TOP -> BOTTOM and 0.25% from BOTTOM -> MIDDLE (so 10 accuracy on a zombie:
@@ -348,18 +345,16 @@ let CURG=null;   /* 0.12.249 the game being stepped, for capstone cast hooks */ 
 function onMeE(g,h){const x=g.heroX(h);return g.enemies.filter(e=>!e.dead&&!e.fly&&Math.abs(e.x-x)<16).length;}
 function unstealth(u){if(u&&u.stealthT>0){u.stealthT=0;u.stealthCd=1.2;}}
 // Werewolves come in a set number per stage (Kyle: 1 on stage 1, 2 on stage 3), spread along the stage instead of from the random pool
-const CLUSTERS={count:8,first:3,last:[7,9],cap:7};const WAVES_PER_STAGE=10,WAVE_SIZES1=[2,3,4,4,5,5,5,6,6,7],TRICKLE_EVERY=7;const trickleEvery=n=>Math.max(5,12-7*(Math.max(1,n||1)-1)/9);   /* 0.12.350 (Kyle): 12s on stage 1, building evenly to 5s by stage 10 */   /* 0.12.348 (Kyle): 1 zombie every 7s, from the first time the screen pans until the end of the level */
-const CLUSTERS1={count:8,first:3,last:[8,9],cap:7};   /* 0.12.134 (Kyle): one fewer zombie in every stage-1 wave */   /* 0.12.104 (Kyle): stage 1 only: bigger waves, the last one most of all (other stages keep 3 -> 7-9) */   // 0.12.84 (Kyle: good waves of regular zombies): 8 waves, 3 at the start to 7-9 at the end   // Kyle: first cluster 2, last cluster 6-7
+const WAVES_PER_STAGE=10,WAVE_SIZES1=[2,3,4,4,5,5,5,6,6,7];const trickleEvery=n=>Math.max(5,12-7*(Math.max(1,n||1)-1)/9);   /* 0.12.350 (Kyle): 12s on stage 1, building evenly to 5s by stage 10 */   /* 0.12.348 (Kyle): 1 zombie every 7s, from the first time the screen pans until the end of the level */
 /* 0.12.303 (Kyle, Dead Island style): every stage is regular zombies. Every 5th stage the BOSS FORM of a new zombie type shows up
    (25% bigger, 25% more reach, +150% HP, damage and armor; same moves). Kill it and that type is unlocked for the rest of the run:
    from then on it can show up in place of a normal zombie (8% to start, +1% a stage after, max 18% each). */
-const ALPHA_MUL=3.5;const ALPHA_STATS={hp:5,move:3,aspd:3,armor:2,size:2,reach:2};   /* 0.12.306 (Kyle): Alpha = +250% of the type's base stats (was +150%), no stage scaling */
+const ALPHA_STATS={hp:5,move:3,aspd:3,armor:2,size:2,reach:2};   /* 0.12.306 (Kyle): Alpha = +250% of the type's base stats (was +150%), no stage scaling */
 const UNLOCK_ORDER=['fireman','screamer','werewolf','skarcher'];
 function bossFormType(n){if(!n||n%5)return null;return UNLOCK_ORDER[n/5-1]||UNLOCK_ORDER[(n/5-1)%UNLOCK_ORDER.length];}
 function runUnlocks(run){if(!run)return {};if(!run.unlocks){run.unlocks={};for(let s=5;s<(run.stage||1);s+=5){const k=bossFormType(s);if(k&&!run.unlocks[k])run.unlocks[k]=s;}}return run.unlocks;}   /* old saves: anything whose boss stage is behind you counts as beaten */
 function unlockW(run,k,n){const U=runUnlocks(run);if(U[k]==null)return 0;return Math.min(.18,.05+.005*Math.max(0,n-U[k]));}
 const WOLVES_PER_STAGE=n=>n<2?0:Math.min(8,2+Math.floor((n-2)*.5));   // 0.12.84 (Kyle): no werewolves on stage 1; 2 on stage 2, one more every 2 stages, max 8   // 0.12.65 (Kyle: too weak / too few): 3 on stage 1, one more about every 2 stages   // 0.12.13 (Kyle): 2 on stage 1, then one more about every 2-3 stages (2,2,2,3,3,4,4,4,5...)
-const STRAYS_PER_STAGE=n=>3+Math.floor((n-1)/3);   // 0.12.84: one more lonely zombie per stage   // 0.12.13 (Kyle): a lonely zombie here or there between cluster waves
 const ENEMY_BODY=9;   // px between a melee enemy's centre and the front hero's centre before reach is added
 const HERO_FLAT_HP=0,HP_PER_STAMINA=5,HERO_DICE=[2,4],HERO_BASE_CRIT=.1;   // basic attack = 2d4; every hero starts at 10% crit
 // ---- 0.12.3 real characters: every number comes straight from the character sheet Kyle fills out
@@ -790,7 +785,7 @@ function inspHelp(name){const I=INSP[name];if(!I)return [];const out=[];if(I.per
   if(I.passive&&INSP_PASSIVE[I.passive])out.unshift('✦ '+INSP_PASSIVE[I.passive][0]+': '+INSP_PASSIVE[I.passive][1]);
   for(const [k,v] of Object.entries(I.mod||{})){const [l,u]=INSP_LABEL[k]||[k,''];out.push(`${v>0?'+':''}${v}${u} ${l}: ${INSP_HELP[k]||''}`);}
   for(const [k,v] of Object.entries(I.sl||{})){const S=SLIDERS.find(s=>s[0]===k);if(!S)continue;const side=v>0?S[2]:S[1];
-    if(false)0;out.push(`${side} +${Math.abs(v)}: slides his personality ${Math.abs(v)} step${Math.abs(v)>1?'s':''} toward "${side}" (the ${S[1]} ↔ ${S[2]} slider: ${S[3].toLowerCase()}). If that would go past 0 or 10, it doesn't move.`);}
+    out.push(`${side} +${Math.abs(v)}: slides his personality ${Math.abs(v)} step${Math.abs(v)>1?'s':''} toward "${side}" (the ${S[1]} ↔ ${S[2]} slider: ${S[3].toLowerCase()}). If that would go past 0 or 10, it doesn't move.`);}
   return out;}
 // 0.12.27 (Kyle): more decks give one unique passive instead of a small stat; fewer give two things at once
 const INSP_PASSIVE={
@@ -1607,7 +1602,6 @@ function gearTxt(it){const D=gearDef(it);if(!D)return {stats:[],procs:[]};const 
    to 5s (all the way On Track), scaled in between. Exceptions: the old plan is finished or impossible (target dead/gone, friend already
    up), or an ability offers a new option (offerRethink: meetup circle, Dice-Boys_Banner, camp stove, a finished tower). */
 let PLAN_ID=0;const pid=o=>o?(o._pid||(o._pid=++PLAN_ID)):0;const MEET_X=500/3;   /* 0.12.337 (Kyle): the flare lands 500 screen px from the left edge */
-const PLAN_URGENT=new Set(['flee','retreat','revive','hunker','disarm','defuse']);
 function planCommit(u){return 2+3*(1-trait(u,'plan'));}
 function planSig(P){if(!P)return '';const g=P.goTo;return [P.intent||'',pid(P.tgt),P.lane,P.reviveD?'r':'',g?(g.ob?'ob'+pid(g.ob):g.mine?'m'+pid(g.mine):g.spot?'s':'g'+pid(g)):''].join('|');}
 function planValid(g,P){if(!P)return false;if(P.tgt&&(P.tgt.dead||P.tgt.alive===false||P.tgt.gone))return false;if(P.reviveD&&(P.reviveD.alive||P.reviveD.gone))return false;
@@ -1645,7 +1639,7 @@ class Game{
     const sv=this.run.heroes[key];const lvl=(this.slot&&this.slot.heroes[key]||{lvl:1}).lvl;
     const insp=(this.slot&&this.slot.heroes[key]||{}).insp||null;
     const TH=this.slot&&this.slot.heroes[key];if(TH){TH.tk=key;treeInit(TH);}const bse=heroBase(key,lvl,this.run.team.length);if(TH&&bse.char)bse.char=talChar(key,TH);   /* 0.12.106 skill-mod talents */
-    return {key,insp,def:heroDef(key),style:STYLE[key],lvl,base:bse,spells:ABILITIES_OFF?[]:sv.spells.map(s=>Object.assign({cdT:Math.random()*1.5},s)),
+    return {key,insp,def:heroDef(key),style:STYLE[key],lvl,base:bse,spells:[],
       items:sv.items.slice(),alive:true,x:0,atkT:Math.random()*.5,anim:0,animT:0,walkT:Math.random(),shield:0,shieldT:0,buffT:0,lowT:0,nearT:0,hitFlash:0,alt:0};
   }
   isMeleeHero(h){return h.style.atk==='melee'||h.style.atk==='duo'||h.style.atk==='blade';}
@@ -1654,7 +1648,6 @@ class Game{
   //   stands comes from its personality and abilities (Brain.pickPosition: Shooter<->Slasher, Calculated<->Aggressive, what's ready).
   home(h){if(h.pet&&h.owner)return this.home(h.owner)-(h.dog?6:14);const al=(this.alive().length?this.alive():this.heroes).filter(o=>!o.pet);const j=Math.max(0,al.indexOf(h));
     return Math.round(this.homeX||this.W*.33)-j*8+(j%2?6:0);}
-  slotX(i){return this.home(this.heroes[i]);}
   // team-wide passives + per-hero items
   recalc(){
     const T={dmg:1,aspd:1,cdr:0,xp:1,luck:0,dodge:0,devour:0};
@@ -1785,9 +1778,8 @@ class Game{
     if(!opt.quiet||crit)this.text(e.x+(this.rng()*8-4),e.y-(e.boss?100:e.fly?16:44),Math.round(amt),crit?'#ffd23f':opt.fire?'#ffb060':'#ffffff',crit);   /* burn ticks only show a number when they crit */
     {const ls=src?(src.lifesteal||0)+(src.rageT>0&&src.key==='lumberjack'?.05:0):0;   /* 0.12.302 Timber_Rage +5% lifesteal */
     if(src&&ls>0&&src.alive){const b0=src.hp;src.hp=Math.min(src.max,src.hp+amt*ls);if(src.key)this.st8(src).heal+=src.hp-b0;}}
-    if(!ABILITIES_OFF&&src&&src.style&&src.style.leech)this.healHero(this.weakest(),amt*src.style.leech*.5,true);
-    if(src&&src.items&&src.items.length)this.procs(src,crit?'oncrit':'onhit',e);
-    if(src&&src.gp&&src.gp.length&&!opt._gp&&src.key){const far=Math.abs(this.heroX(src)-e.x)>40;this.gearFire(src,'hit',e,amt);this.gearFire(src,far?'basicR':'basicM',e,amt);if(crit)this.gearFire(src,'crit',e,amt);}   /* 0.12.338 gear procs */
+    
+        if(src&&src.gp&&src.gp.length&&!opt._gp&&src.key){const far=Math.abs(this.heroX(src)-e.x)>40;this.gearFire(src,'hit',e,amt);this.gearFire(src,far?'basicR':'basicM',e,amt);if(crit)this.gearFire(src,'crit',e,amt);}   /* 0.12.338 gear procs */
     if(e.hp<=0){if(opt.blast)e._blast={x:opt.bx!=null?opt.bx:(src?src.x:e.x-20)};this.kill(e,src);}
     return amt;
   }
@@ -1819,7 +1811,6 @@ class Game{
       this.fx.push({k:'gibs',x:e.x,gy:G0,t:0,life:2.6,raw:1,P,dir});this.fx.push({k:'blood',raw:1,x:e.x,y:G0-12,gy:G0,dir,n:22,big:true,seed:this.rng()*1000,t:0,life:.9});this.shake=Math.max(this.shake||0,.15);}
     else if(!e.boss)this.fx.push({k:'corpse',gy:e.gy,type:e.type,skin:e.skin,x:e.x,y:e.y,fly:e.fly,elite:e.elite,lane:e.lane||0,t:0,life:1.3});
     if(this.team.devour){this.devourStacks=Math.min(60,this.devourStacks+1);for(const h of this.alive())if(h.spells.some(s=>s.arch==='devour'))this.healHero(h,h.max*(.006+.0025*this.spellRank(h,'devour')),true);}
-    if(src&&src.items)this.procs(src,'onkill',e);
     if(!this.demo){const st=this.st;const r=this.rng();
       const PK=e.picked?{g:1.6,s:2,p:2.5,i:1.5}:{g:1,s:1,p:1,i:1};const gChance=e.boss?1:e.elite?1:Math.min(.95,(e.E.goldChance!=null?e.E.goldChance:.12)*((this.mods&&this.mods.gold)||1)*PK.g);if(r<gChance){const piles=e.boss?5:e.elite?2:1;   /* 0.12.38 (Kyle): every gold pile is small, 2-6 gold (bosses drop 5 piles, elites 2) */
         const al0=this.aliveHeroes(),lk=al0.length?al0.reduce((s2,o)=>s2+(o.luck||0),0)/al0.length:0;for(let i=0;i<piles;i++){let amt=2+Math.floor(this.rng()*3);if(this.rng()<lk/100)amt+=1+Math.floor(this.rng()*2);this.loot.push({kind:'gold',x:e.x+(this.rng()*14-7),gy:e.gy,amt,t:0,big:false,lucky:amt>4});   /* 0.12.336 (Kyle): 2-4 gold a pile */}   /* 0.12.202 (Kyle): 5-8 gold a pile; the team's average Luck is the % chance a pile has +1-2 extra */   /* 0.12.186 (Kyle): 3-7 gold a pile */   /* 0.12.93 (Kyle): smaller piles since there are more enemies now: 1-5 gold (avg 4.0 -> 2.8) */}
@@ -1930,9 +1921,8 @@ class Game{
         for(const e of this.enemies){if(e.dead||e.fly||e.boss)continue;if(Math.abs(e.x-h.x)<PL.r&&Math.abs((e.gy||this.G)-(h.gy||this.G))<12){const res=(e.E&&e.E.kbRes)||0;e.kbv=Math.max(e.kbv||0,PL.kb/100*40*8*(1-res));e.kbDir=e.x>=h.x?1:-1;}}}}}
     {const F=this.camp;if(F&&(F.state==='burn'||F.state==='start')&&(h===F.owner||h.owner===F.owner)){F.life--;if(F.life<=0){F.state='dying';F.dT=0;this.text(F.x,this.G-40,'THE FIRE DIES','#9aa');}}}
     this.splatter(h,amt,-1,false);
-    this.procs(h,'whenhit',from,amt);
+    
     if(h.gp&&h.gp.length){this.gearFire(h,'taken',from,amt,from);if(h.hp>0&&h.hp/h.max<.35&&(h.hp+amt)/h.max>=.35)this.gearFire(h,'low',from,amt,from);}
-    if(h.hp/h.max<.35)for(const o of this.alive())this.procs(o,'allylow',null,0,h);
     if(h.hp<=0){if(from&&from.E&&!from.boss&&!from.dead&&!h.pet&&!h.dog)this.nemesis(from,h);this.heroDown(h);}
     return true;
   }
@@ -1987,26 +1977,6 @@ class Game{
   gearDrop(src,x,gy,luck){if(this.demo||!this.slot)return;const n=this.st.n||1;const L=Math.max(0,luck||0);
     const ch=src==='box'?(n>=7?.3:0):src==='crate'?(n>=8?.05+.003*(n-8):0):(n>=8?.0035+.0004*(n-8):0);if(this.rng()>=ch*(1+L/100))return;
     const it=gearRoll(this.rng,L,src,n);this.loot.push({kind:'gear',gear:it,x,gy,t:0});}
-  procs(h,trig,e,amt,ally){
-    if(ABILITIES_OFF)return;
-    for(const it of h.items){if(!it.proc)continue;const P=PROCS[it.proc];if(P.t!==trig)continue;const ch=procChance(it.r)/100;const a=h.atk*h.pow;
-      if(trig==='onhit'||trig==='oncrit'){if(this.rng()>ch||!e||e.dead)continue;
-        if(it.proc==='ignite'){e.burn=Math.max(e.burn,a*.35);e.burnT=3;}
-        if(it.proc==='spark')this.shoot(h,e,'bolt',a*.8,{});
-        if(it.proc==='stunhit')e.stun=Math.max(e.stun,.6);
-        if(it.proc==='critnova'){this.fx.push({k:'ring',x:e.x,y:e.y-16,r:22,t:0,c:'#ffb040'});for(const o of this.enemies)if(!o.dead&&Math.abs(o.x-e.x)<26)this.hitEnemy(o,a*.6,null,{nocrit:1});}}
-      if(trig==='onkill'){if(this.rng()>ch)continue;
-        if(it.proc==='killheal')for(const o of this.alive())this.healHero(o,o.max*.04);
-        if(it.proc==='killraise')this.addMinion(h,h.max*.15,a*.4,8,'raise','item:'+it.card,1);}
-      if(trig==='whenhit'){
-        if(it.proc==='hitshield'&&this.rng()<ch){h.shield+=h.max*.08;h.shieldT=4;}
-        if(it.proc==='hitthorns'&&e&&!e.dead)this.hitEnemy(e,amt*ch*1.5,null,{nocrit:1,sure:1});}
-      if(trig==='allylow'&&ally&&ally.alive&&!(it.cd>0)){it.cd=20;this.healHero(ally,ally.max*(.1+ch/2));this.fx.push({k:'ring',x:ally.x,y:this.G-24,r:16,t:0,c:'#7dff9a'});}
-      if(trig==='oncast'&&this.rng()<ch){h.buffT=3;}
-      if(trig==='near'&&!(it.cd>0)){it.cd=6;this.fx.push({k:'ring',x:h.x+20,y:this.G-20,r:40,t:0,c:'#9ae6ff'});
-        for(const o of this.enemies)if(!o.dead&&o.x-h.x<60){o.slow=Math.max(o.slow,.4+.02*it.r);o.slowT=2;this.hitEnemy(o,a*(.2+.05*it.r),null,{nocrit:1});}}
-    }
-  }
   // tag = which ability made it; cap = how many from that ability may be out (oldest gets replaced)
   addMinion(owner,hp,atk,life,kind,tag,cap){const f=this.front();const m={owner,hp,max:hp,atk,life,x:(f?f.x:120)+16+this.rng()*10,atkT:0,kind:kind||'spirit',taunt:false,explode:false,leech:false,
     ranged:RANGED_SUMMONERS.has(owner.key),tag:tag||kind,born:this.t};
@@ -2067,7 +2037,7 @@ class Game{
       case 'counter':{let any=false;for(const p of this.proj)if(p.enemy){p.dead=true;any=true;}for(const e of live)if(e.ranged||e.boss){e.stun=Math.max(e.stun,.6+.1*r);onHit(e,a*(.4+.1*r));any=true;}
         if(aug.shield){h.shield+=h.max*.06;h.shieldT=5;}if(!any)did=false;else fx('ring',{x:h.x+30,y:this.G-30,r:30,c:'#ffffff'});break;}
     }
-    if(did){this.procs(h,'oncast');if(aug.echo&&!s._echo){const t=this;const s2=Object.assign({},s,{_echo:1,r:Math.max(1,Math.floor(r/2))});setTimeoutSafe(this,.9,()=>t.cast(h,s2));}}
+    if(did){if(aug.echo&&!s._echo){const t=this;const s2=Object.assign({},s,{_echo:1,r:Math.max(1,Math.floor(r/2))});setTimeoutSafe(this,.9,()=>t.cast(h,s2));}}
     return did;
   }
   // ---------------------------------------------------------------- main step
@@ -2386,10 +2356,9 @@ class Game{
       if(h.hotT>0){h.hotT-=dt;h.hotTick=(h.hotTick||0)+dt;if(h.hotTick>=h.hotEvery){h.hotTick-=h.hotEvery;this.healHero(h,h.hotAmt,false,h.hotSrc);}}   // Rejuvenating Bloom
       if(h.slowT>0){h.slowT-=dt;if(h.slowT<=0)h.slow=0;}if(h.bleedT>0||h.bleeds){const bd=this.bleedStep(h,dt);h.bleedAcc=(h.bleedAcc||0)+bd*dt;h.bleedTick=(h.bleedTick||0)+dt;if(h.bleedTick>=1||!(h.bleedT>0)){const d=h.bleedAcc;h.bleedAcc=0;h.bleedTick=0;h.hp-=d;this.text(h.x+6,this.G-58,Math.round(d),'#c0102a');if(h.hp<=0){this.heroDown(h);continue;}}}
       for(const it of h.items)if(it.cd>0)it.cd-=dt;
-      if(this.enemies.some(e=>!e.dead&&e.x-h.x<36))this.procs(h,'near');
       if(h.roofBusy)continue;   /* 0.12.122: up a storefront roof for the crate: busy, no fighting */
       // signature ability
-      const SG=ABILITIES_OFF?null:SIG[h.key];if(SG){h.sigT=(h.sigT==null?SG.cd*.5:h.sigT)-dt;if(h.sigT<=0){const ok=SG.fn(this,h,h.atk*h.pow);h.sigT=ok?SG.cd*(1-h.cdr):.6;if(ok){this.procs(h,'oncast');}}}
+      const SG=null;if(SG){h.sigT=(h.sigT==null?SG.cd*.5:h.sigT)-dt;if(h.sigT<=0){const ok=SG.fn(this,h,h.atk*h.pow);h.sigT=ok?SG.cd*(1-h.cdr):.6;if(ok){}}}
       // spells
       for(const s of h.spells){if(SPELL[s.arch].passive)continue;s.cdT-=dt;if(s.cdT<=0){const ok=this.cast(h,s);s.cdT=ok?SPELL[s.arch].cd*(1-h.cdr):.5;}}
       // basic attack
@@ -3561,13 +3530,12 @@ class Game{
   basic(h,tgt,kind,mult){
     const st=h.style;kind=kind||st.atk;const [nd,ds]=h.base.dice||[2,4];let roll=0;for(let i=0;i<nd;i++)roll+=1+Math.floor(this.rng()*ds);const A=roll*(h.atk/h.base.atk);   // basic attack: a fresh 2d4 every swing/shot (item/team damage bonuses still apply)
     const M=mult==null?1:mult;
-    if(kind==='melee'){const hits=st.double&&!ABILITIES_OFF?2:1;
+    if(kind==='melee'){const hits=(1);
       for(let i=0;i<hits;i++){this.hitEnemy(tgt,A*M*(i?0.8:1),h,{kb:1});}
-      if(!ABILITIES_OFF)for(const o of this.enemies)if(o!==tgt&&!o.dead&&!o.fly&&Math.abs(o.x-tgt.x)<12)this.hitEnemy(o,A*.4,h,{nocrit:1});
       this.fx.push({k:'slash',x:tgt.x-6,y:tgt.boss?tgt.y-50:tgt.fly?tgt.y:tgt.y-24,t:0});return;}
     const pk=kind==='ranged'||kind==='caster'?st.proj:kind;
     setTimeoutSafe(this,.11,()=>{if(!h.alive)return;const tg=tgt.dead?this.liveE().sort((p,q)=>p.x-q.x)[0]:tgt;if(!tg)return;
-    h._accBonus=h.moving?-45*(1-trait(h,'exec')):12*trait(h,'exec');const p=this.shoot(h,tg,pk,A*M,{});this.aim(p,h,tg);h._accBonus=0;if(st.atk==='duo')p.x=(st.companion?h.x+(h.compX||-12):h.x-9)+(MUZZLE[h.key]||[10])[0];if(!ABILITIES_OFF){p.splash=st.splash||(pk==='orb'?12:0);p.chill=st.chill;}});
+    h._accBonus=h.moving?-45*(1-trait(h,'exec')):12*trait(h,'exec');const p=this.shoot(h,tg,pk,A*M,{});this.aim(p,h,tg);h._accBonus=0;if(st.atk==='duo')p.x=(st.companion?h.x+(h.compX||-12):h.x-9)+(MUZZLE[h.key]||[10])[0];});
   }
   // the scout roams around her partner (can't be targeted), and now and then pounces on the front enemy with a knife
   companion(h,dt,f){
@@ -3580,8 +3548,7 @@ class Game{
       h.compV=0;return;}
     const want=-6+Math.sin(h.compT*1.3)*26+Math.sin(h.compT*3.1)*7;const prev=h.compX==null?want:h.compX;   // quick, wide patrol
     h.compX=prev+Math.max(-70*dt,Math.min(70*dt,(want-prev)*Math.min(1,dt*5)));h.compV=(h.compX-prev)/Math.max(dt,1e-3);h.compY=0;
-    if(!ABILITIES_OFF&&h.pounceT<=0){const t=this.liveE().filter(e=>e.x-(e.boss?e.w:0)-f.x<50).sort((p,q)=>p.x-q.x)[0];
-      if(t){h.pounce={t:0,x0:h.compX,tx:(t.x-(t.boss?t.w*.6:0))-h.x,tgt:t};h.pounceT=5;}else h.pounceT=1;}
+    
   }
   liveE(){return this.enemies.filter(e=>!e.dead&&e.x<this.W+4);}
   sigArea(h,R,dmg,o){const f=this.front();let any=false;
@@ -3608,7 +3575,7 @@ class Game{
     if(b.x>stop)b.x-=Math.max(18,b.B.spd)*sp*dt*(k==='maw'?2.2:1.6);
     if(k==='countess')b.y=this.G-40+Math.sin(this.t*1.6)*10;
     b.t1-=dt;b.t2-=dt;b.t3-=dt;
-    if(ABILITIES_OFF){b.t2=b.t3=b.t4=99;}   // bosses keep only their basic attack while abilities are rebuilt
+    {b.t2=b.t3=b.t4=99;}   // bosses keep only their basic attack while abilities are rebuilt
     if(b.x>stop+4)return;
     if(k==='gravelord'){
       if(b.t1<=0){b.t1=2.2;b.anim=1;b.animT=.5;this.hurtHero(f,b.dmg,b);}
@@ -3639,7 +3606,7 @@ class Game{
     const pal=h.key==='flannel'?(this.pets||[]).find(p=>p.owner===fm&&p.key==='flannel_pal'&&p.alive):h;if(!pal||!pal.alive)return 0;return Math.abs(this.heroX(fm)-this.heroX(pal))<=E.r?E.dodge:0;}
   hurtMinion(m,amt,from){if(!m||m.dead)return;if(m.key==='flannel_pal'&&this.rng()<(m.dodge||0)+this.eliteDodge(m)){this.text(m.x,this.G-40,'dodge','#9ae6ff');return;}m.hp-=amt;m.hitFlash=.12;this.text(m.x,this.G-40,Math.round(amt),'#ffb0b0');}
   heroX(h){return h.x+(h.dodgeX||0)+(h.wanderX||0);}
-  obHw(o){return Math.max(3,OBST[o.k].fw*.5*.5*.8);}   // half-width in world px (sheet is 2 px per world px)
+     // half-width in world px (sheet is 2 px per world px)
   // each obstacle's footprint follows its picture: a rock blocks only under its base; the diagonal log blocks its left end in the near lane and its right end in the far lane
   obSpan(o,l){const F=OBST[o.k].foot;const i=o.lanes.length===2?(l===Math.max(...o.lanes)?0:1):0;const f=F[i]||F[0];return o.flip?[o.x-f[1],o.x-f[0]]:[o.x+f[0],o.x+f[1]];}
   /* shot vs obstacle: the shot has to be in one of its lanes and below the sprite's own outline at that spot (per-column heights baked from the art) */
@@ -3688,7 +3655,6 @@ class Game{
     const nl=fr<0?bl:bl<0?fr:(Math.abs(cur-bl)<Math.abs(cur-fr)?bl:fr);const [a,b]=this.obSpan(o,fl);const mid=(a+b)/2;
     const car=/^car_/.test(o.k);if(OBST[o.k].flat)return {x:mid,lane:fl};const x=car?mid-(o.flip?-1:1)*.16*(b-a):mid;return {x,lane:Math.max(0,nl)};}
   atSpot(h,o){const S=this.searchSpot(o,h);return Math.abs(h.x-S.x)<=(/^car_/.test(o.k)?5:4)&&Math.abs((h.gy||this.G)-LANES[S.lane])<3;}
-  obNear(h,o){const l=o.lanes.reduce((b,l)=>Math.abs(LANES[l]-(h.gy||this.G))<Math.abs(LANES[b]-(h.gy||this.G))?l:b,o.lanes[0]);if(Math.abs(LANES[l]-(h.gy||this.G))>7)return false;const [a,b]=this.obSpan(o,l);return h.x>a-9&&h.x<b+9;}
   stepHerbs(dt,scroll){const al=this.alive().filter(o=>!o.pet||true);
     for(const o of al){if(o.herbT>0){o.herbT-=dt;const b0=o.hp;o.hp=Math.min(o.max,o.hp+o.herbHps*dt);if(o.herbSrc&&o.herbSrc.key)this.st8(o.herbSrc).heal+=o.hp-b0;}}
     for(const h of al){const sp=insP(h);if(h.pet)continue;const RE=SEARCH_RE[sp]||/^$/,ST0=(SEARCH_T[sp]||2)*[1,.75,.6][upgT(this.run,'lamp')],full=sp==='herbalist'?(h.herbs||0)>=3:sp==='scavenger'?(h.kit||[]).length>=2:true   /* 0.12.34 (Kyle): Scavenger holds 2 items total */;
@@ -3735,7 +3701,7 @@ class Game{
           if(this.rng()<(.03+.031*sp+(Math.abs(d)<=15?.02:0))*(M.shotgun?1.6:1)){M.spotted=true;M.avoid=this.rng()<.8;   /* 0.12.203 (Kyle): shotgun traps are easier to spot (x1.6); once seen, most of the time the team routes around its wire */   /* 0.12.194 (Kyle): +2% when it's right in front of them (15 world px; the trigger is 9) */   /* 0.12.193 (Kyle): 3% a check with no Perception, ~6% sharp-eyed, ~7% sharp-eyed with Sapper (+0.3 Perception) */   /* 0.12.189 (Kyle): harder to spot again, about 15 of 27 for a team with no perception (.11 -> .052; was .14 before 0.12.156) */M.by=h;this.fx.push({k:'ring',x:M.x,y:M.gy-3,t:0,r:8,c:'#ff4a3a'});Comms.bubble(this,h,Comms.pick(['Trap!','Mine, watch it!','Tripwire!','Careful, mine!']),true);for(const o of al)o.thinkT=Math.min(o.thinkT||1,.1);break;}}}}
       for(const h of al){if(h.leap||h.rush)continue;if(M.shotgun){const d=M.x-this.heroX(h);if(d<-6||d>SG_SENSE||Math.abs((h.gy||this.G)-M.gy)>11.5)continue;}else if(bombTrig(this,M.x,M.gy,{w0:9,w1:4.5},[h])!==h)continue;   /* 0.12.203 (Kyle): the shotgun's wire covers its lane and the lanes either side, 125px out */   /* 0.12.156 (Kyle): a wider trigger zone (was 6.7 / 3.3) */   /* 0.12.64 (Kyle): 40px wide in its lane, 20px wide one lane up/down (defusers work from 27px out, safely outside it) */
         if(h.defuse&&h.defuse.M===M)continue;
-        if(!M.spotted&&!M.dodged){M.dodged=1;if(false){M.spotted=true;h.x-=6;   /* 0.12.191 (Kyle): the last-second catch is gone */   /* 0.12.189: last-second catch a bit rarer too (was .12+.5 perc) */h.pauseT=Math.max(h.pauseT||0,.3);Comms.bubble(this,h,Comms.pick(['Whoa! Trap!','Nearly stepped on that!','MINE!']),true);continue;}}
+        if(!M.spotted&&!M.dodged){M.dodged=1;}
         if(!M.spotted||this.rng()<dt*8){this.mineBoom(M);break;}}}   /* 0.12.156: a spotted mine still goes off almost at once if you step on it (was ~2 a second) */
     this.mines=this.mines.filter(M=>M.armed&&M.x>-30);
     // defusing (Sapper)
@@ -4187,7 +4153,7 @@ class Game{
     if(!e.boss&&!e.fly&&e.E.undead&&e.gy!=null&&this.rng()<dt*.5){for(const o of this.obst||[]){const R=o.roof;if(!R||!R.occ||R.st!=='fight')continue;if(Math.abs(e.x-o.x)>45)continue;
         const n=this.enemies.filter(q=>!q.dead&&q.roofO===o).length;if(n>=2)continue;e.roofGo=1;e.roofO=o;e.target=null;e.plan=null;return true;}}
     return false;}
-  spawnFronts(){if(!(this.st.biome&&this.st.biome.id==='city')||typeof BGA==='undefined'||!BGA.city)return;const L=BGA.city.layers.find(l=>l.shops);if(!L)return;
+  spawnFronts(){if(!(this.st.biome&&this.st.biome.id==='city'))return;let BG0;try{BG0=BGA;}catch(e){return;}if(!BG0||!BG0.city)return;   /* 0.12.351: no crash when the backdrop art isn't loaded (headless runs) */const L=BGA.city.layers.find(l=>l.shops);if(!L)return;
     const s=L.w/L.r[2],T=L.tile,d=this.dist*L.sp;this.frontSeen=this.frontSeen||{};
     for(const [ax,kind,bw] of L.shops){const base=ax*s-d,k=Math.ceil((this.W+2-base)/T),x=base+k*T;if(x>this.W+30)continue;const id=k+':'+ax;if(this.frontSeen[id])continue;this.frontSeen[id]=1;
       if(this.rng()<.3){const BW=(bw||40)*s;const F={k:'city_front',x,lanes:[0],blk:0,par:L.sp,shop:kind,bw:BW};this.obst.push(F);
@@ -4232,7 +4198,7 @@ function newRun(team,slot){if(slot){slot.gold=0;slot.parts=0;slot._stash=null;fo
   if(slot&&slot.medKeep){run.med=Object.assign({},slot.medKeep);delete slot.medKeep;}   /* 0.12.298 (Kyle): med supplies survive a lost run */
   if(slot&&slot._stash){run.food=slot._stash.food;run.water=slot._stash.water;delete slot._stash;}   /* deck starting stashes */
   run.food=(run.food||0)+START_SUPPLY.food;run.water=(run.water||0)+START_SUPPLY.water;if(slot)slot.parts=(slot.parts||0)+START_SUPPLY.parts;   /* 0.12.344 (Kyle): every new game starts with 5 food, 5 water, 5 spare parts (on top of any deck stash) */
-  for(const k of team){const d=heroDef(k);run.heroes[k]={hpf:1,dead:false,spells:ABILITIES_OFF||!d.spells.length?[]:[{card:d.spells[0].card,arch:d.spells[0].arch,r:1,augs:[]}],items:[]};}
+  for(const k of team){const d=heroDef(k);run.heroes[k]={hpf:1,dead:false,spells:[],items:[]};}
   return run;
 }
 function rollRarity(rng,luck,prestige,min){
@@ -4253,7 +4219,7 @@ function findEntry(run,o){   // equipped on its hero, then the bag
   run.bag=run.bag||[];e=run.bag.find(x=>x.card===o.card&&x.owner===o.hero&&(o.slot==='item')===(x.kind==='item'));return e?{e,list:run.bag,bag:1}:null;}
 function owned(run,hk,card,slot){return !!findEntry(run,{hero:hk,card,slot});}
 function offers(run,rng,n,opt){
-  if(ABILITIES_OFF)return [];
+  return [];
   rng=rng||Math.random;opt=opt||{};const out=[];run.bag=run.bag||[];
   const luck=run.team.reduce((m,k)=>m+heroBase(k,1,3).luck,0)/run.team.length+Object.values(run.heroes).reduce((m,h)=>m+h.spells.filter(s=>s.arch==='insight').reduce((a,s)=>a+s.r,0)+h.items.filter(i=>i.arch==='charm').reduce((a,i)=>a+i.r,0),0);
   const pool=[];const room=run.bag.length<BAG_SIZE;
@@ -4284,7 +4250,6 @@ function applyOffer(run,o,slot){
 // ---- gold + items: items come from drops and the merchant (not level-ups)
 function teamItemPool(run){const out=[];for(const k of run.team)for(const it of heroDef(k).items)if(!owned(run,k,it.card,'item'))out.push({hero:k,card:it.card,arch:it.arch});return out;}
 // source caps keep the best gear off basic mobs: mob ≤ Uncommon, elite ≤ Rare, boss/merchant can reach Legendary (once unlocked)
-const SRC_CAP={mob:'U',elite:'R',boss:'L',shop:'L'};
 function itemTier(run){return Math.round(.6*run.stage)+9*(run.prestige||0);}
 function rollItem(run,rng,min,src){const pool=teamItemPool(run);if(!pool.length)return null;const p=pool[Math.floor(rng()*pool.length)];
   // odds climb with depth (stage + 9 per prestige); each source has its own table and cap
@@ -4301,7 +4266,6 @@ function heroGear(hv){return hv.items.reduce((m,e)=>m+gearScore(e),0);}
 const RAR=id=>CFG.rarity.find(r=>r.id===id)||CFG.rarity[0];
 function itemPrice(rarId,stage){return Math.round({C:45,U:110,R:260,L:700}[rarId]*(1+.108*((stage||1)-1)));}
 function honePrice(r,stage){return Math.round(30*(r+1)*(1+.072*((stage||1)-1)));}
-function sellValue(it){return Math.round(12*(it.r||1));}
 // put an item on its hero / any hero with room, else the bag; returns false if nowhere fits
 function giveItem(run,slot,it){run.bag=run.bag||[];const e={card:it.card,arch:it.arch,r:RAR(it.rar).pts,augs:[],proc:procFor(it.card),from:it.hero,tier:it.tier||run.stage,rar:it.rar};
   const order=[it.hero,...run.team.filter(k=>k!==it.hero)];
@@ -4672,7 +4636,6 @@ const TAL_CAP={
 function talKind(L){return L===5||L===10?'cap':'stat';}   /* 0.12.249 (Kyle): 5 and 10 are capstone forks; every other level is a 1-of-3 stat/personality upgrade (0.12.287: signature ability cards moved into the capstones) */
 function talPicks(H){if(H&&H.treeV&&H.tk&&TREES[H.tk]){const out=[];for(const [id,r] of Object.entries(H.tree||{})){const n=treeNode(H.tk,id);if(!n||!r)continue;for(const p of n.parts)if(p.tal)out.push(p.tal);if(n.st)for(let i=0;i<r;i++)out.push('tn:'+id);}return out;}return (H&&H.tal)||[];}
 function talFree(H){if(H&&H.treeV)return Math.max(0,treePts(H)-treeSpent(H));const used=Object.entries(H.pts||{}).reduce((a,[k,b])=>a+(k==='dmg'?0:b),0)+talPicks(H).length;return Math.max(0,(H.lvl||1)-1-used);}
-function talCard(id,k){const [t,a,b]=id.split(':');if(t==='tn'){const n=treeNode(k,a);return n?{name:n.name,icon:n.icon,txt:n.txt}:null;}if(t==='st')return TAL_STAT[a];if(t==='ps')return TAL_PERSONA[a];if(t==='cap')return (HCAP[k]&&HCAP[k][a]&&HCAP[k][a][b])||(TAL_CAP[a]||{})[b];if(t==='mod')return ((TAL_MOD[k]||{})[a]);return null;}
 /* the level a point came from: points are spent in order, so the next free point belongs to level (spent+2) */
 function talNextLevel(H){const used=Object.entries(H.pts||{}).reduce((a,[k,b])=>a+(k==='dmg'?0:b),0)+talPicks(H).length;return used+2;}
 /* 0.12.269 (Kyle): Field Medic (+healing done) only shows up for heroes with heals built in: main healer often, light healers sometimes, self-healers rarely, everyone else never */
@@ -4703,27 +4666,8 @@ function talChar(k,H){const C=CHAR[k];const mods=talPicks(H).filter(x=>x.startsW
   return C2;}
 /* 0.12.281 (Kyle): LUCKY DIE. A rare loot drop (can't be charged). Spend one on a hero: it picks melee or ranged at random and rerolls that
    basic attack's die SIZE, never the count. One die = good odds to climb; the more dice the attack rolls, the worse the odds, and it can drop too. */
-const LUCKY_LADDER=[2,3,4,6,8,10,12,20];
 function luckyTargets(C){const out=[];if(C&&C.melee&&C.melee.dice&&C.melee.dice[1]>=2&&(C.melee.every||1)<50)out.push('melee');if(C&&C.ranged&&C.ranged.dice&&C.ranged.dice[1]>=2)out.push('ranged');return out;}
-function luckyOdds(n){return Math.min(.6,.55/Math.max(1,n));}   /* chance to go UP: 1 die 55%, 2 dice 28%, 3 dice 18%, 4 dice 14% ... otherwise it goes DOWN */
-const LUCKY_CLIMB={3:.5,4:.5,6:.42,8:.32,10:.22,12:.14};   /* 0.12.283 (Kyle): every bigger die is harder to climb into, and every extra die in the attack makes each climb harder */
-function luckyStep(T,n,first,rng){if(T===20)return rng()<.1*Math.pow(.1,n-1);if(first)return true;return rng()<(LUCKY_CLIMB[T]||.1)*Math.pow(.55,n-1);}   /* d20 is the jackpot gate: 10% for 1 die, 10x harder per extra die (6d20 ~ lotto) */
-function luckyDieRoll(k,H,rng){rng=rng||Math.random;const C=talChar(k,H);const T=luckyTargets(C);if(!T.length)return null;const w=T[Math.floor(rng()*T.length)];const [n,sd]=C[w].dice;
-  let i=LUCKY_LADDER.findIndex(x=>x>=sd);if(i<0)i=LUCKY_LADDER.length-1;const up=rng()<luckyOdds(n);let j=i;
-  if(up){for(let s=0;s<3&&j<LUCKY_LADDER.length-1;s++){if(!luckyStep(LUCKY_LADDER[j+1],n,s===0,rng))break;j++;}}
-  else j=Math.max(0,i-(rng()<.8?1:2));
-  const to=LUCKY_LADDER[j];(H.lucky=H.lucky||{})[w]=to;return {w,n,from:sd,to,up:to>sd,down:to<sd};}
 /* 0.12.286 (Kyle): the Lucky Die can also hit a stat. Each stat sits on a ladder: -2,-1, 0 (normal), +1 ... +5. Top rungs are lottery odds. */
-const LUCKY_STAT={armor:{name:'Armor',icon:'🛡️',v:[-2,-1,0,1,2,4,6,10],f:v=>(v>0?'+':'')+v+' armor',mod:'armor'},
-  aspd:{name:'Attack speed',icon:'⚡',v:[-10,-5,0,5,10,18,28,50],f:v=>(v>0?'+':'')+v+'% attack speed',mod:['meleeSpd','rangedSpd']},
-  hp:{name:'Max HP',icon:'❤️',v:[-10,-5,0,6,12,20,32,60],f:v=>(v>0?'+':'')+v+'% max HP',hp:1},
-  move:{name:'Move speed',icon:'👟',v:[-8,-4,0,4,8,14,22,40],f:v=>(v>0?'+':'')+v+'% move speed',mod:'move'},
-  crit:{name:'Crit',icon:'✴️',v:[-3,-1,0,2,4,7,12,25],f:v=>(v>0?'+':'')+v+'% crit chance',mod:'crit'},
-  acc:{name:'Accuracy',icon:'🎯',v:[-6,-3,0,3,6,10,16,30],f:v=>(v>0?'+':'')+v+' accuracy',mod:'acc'},
-  dodge:{name:'Dodge',icon:'💨',v:[-3,-1.5,0,2,4,6,10,20],f:v=>(v>0?'+':'')+v+'% dodge',mod:'dodge'},
-  regen:{name:'Energy regen',icon:'🔷',v:[-.5,-.25,0,.25,.5,1,1.6,3],f:v=>(v>0?'+':'')+v+' energy/s',mod:'enRegen',abil:1},
-  luck:{name:'Luck',icon:'🍀',v:[-6,-3,0,4,8,14,22,40],f:v=>(v>0?'+':'')+v+' Luck',mod:'luck'}};
-const LUCKY_STAT_CLIMB=[1,1,1,.4,.25,.12,.05,.03];   /* chance to climb INTO each rung (after the first step). The last rung is the jackpot: 3% gate */
 /* 0.12.340 (Kyle) LUCKY DICE v2. Spend one at camp and pick OFFENSE, DEFENSE or UTILITY. The roll lands on a color tier (10, worst to best):
    grey (it goes DOWN), white, light green, dark green, light blue, dark blue, light purple, dark purple, light orange, dark orange (lotto: rare,
    not impossible). Luck tilts the odds. Odds are never shown anywhere.
@@ -4770,8 +4714,6 @@ function luckyStatMod(H){lkMigrate(H);const T=H&&H.ls;if(!T)return null;const o=
   if(S.hp)o.hpPct+=v;else for(const m of [].concat(S.mod))o.mod[m]=(o.mod[m]||0)+v;}return o;}
 
 
-const LVPTS={hp:{name:'Toughness',icon:'❤️',txt:'+4% max HP'},dmg:{name:'Power',icon:'⚔️',txt:'+3% damage'},acc:{name:'Aim',icon:'🎯',txt:'+2 accuracy'},
-  crit:{name:'Edge',icon:'✴️',txt:'+1% crit chance'},luck:{name:'Fortune',icon:'🍀',txt:'+3 Luck'},armor:{name:'Hide',icon:'🛡️',txt:'+1 armor point'}};
 /* 0.12.53 (Kyle): anyone can try to defuse a mine; a failure sets it off. Sapper makes it far safer, and fiddly-job traits help:
    Slow and Steady (biggest), Techy, Steady nerves, Optimal, and a little Luck. */
 function defuseOdds(h){const sap=hasPerk(h,'sapper');   /* 0.12.156 (Kyle): about 40% for anybody, up to ~65% with everything high and stacked (Sapper +12%, Techy, Slow and Steady, Calm, Optimal, Luck) */
@@ -4781,8 +4723,6 @@ function plantTime(h){return Math.max(1.2,3-(hasPerk(h,'sapper')?.8:0)-.7*trait(
 function hasPerk(u,p){const I=u&&u.insp&&INSP[u.insp];return !!(I&&I.perk===p);}
 for(const U of Object.values(CAMP_UPG))U.tiers=U.tiers.map(x=>x*2);CAMP_UPG.cutters.tiers=[125,225];   /* Wire Cutters only shortens the fix now, so it's cheaper (Kyle) */   /* 0.12.58 (Kyle): every camp upgrade costs twice the gold */
 function upgT(run,id){return (run&&run.upg&&run.upg[id])||0;}
-function lvPtsFree(H){const used=Object.entries(H.pts||{}).reduce((a,[k,b])=>a+(k==='dmg'?0:b),0);return Math.max(0,(H.lvl||1)-1-used);}
-const REROLL_EVERY=2;
 function campOffers(run){const n=3;const pool=Object.keys(CAMP_UPG).filter(id=>{const t=upgT(run,id),U=CAMP_UPG[id];if(t>=U.tiers.length)return false;const nd=U.needs&&U.needs[t+1];return !nd||upgT(run,nd)>0;});
   const out=[];const bag=pool.slice();while(out.length<n&&bag.length){const i=Math.floor(Math.random()*bag.length);out.push(bag.splice(i,1)[0]);}return out;}
 function upgBase(run,id){const t=upgT(run,id);const h=run.haggle||0;return CAMP_UPG[id].tiers[t]*(1-h);}
@@ -4799,9 +4739,9 @@ function haggleOf(s,run){const n=run.team.filter(k=>{const H=s.heroes[k];return 
 /* back at camp after a cleared stage: the camp's own systems run once, then the player feeds whoever is still hungry */
 function campArrive(s,run){if(run.campAt===run.stage)return [];run.campAt=run.stage;const log=[];
   run.food=run.food||0;run.water=run.water||0;s.parts=s.parts||0;run.fed={};run.triageN=0;run.brewN=0;run.upgBought=0;run.picked=[];run.offers=campOffers(run);if(run.reroll!=null){if(run.reroll>0&&!(run.rerolls>=1))run.rerolls=1;delete run.reroll;delete run.rerollWait;}   /* 0.12.277 (Kyle): one shared reroll for camp offers and level-up picks; old saves fold their camp reroll in */   /* 0.12.188 (Kyle): one camp-pick reroll; after you use it, it comes back 2 camps later */run.scoutOffers=scoutRoll(run);run.scoutPick=null;
-  const hungry=(run.needFeed||[]).filter(k=>run.team.includes(k)&&k!=='robot');run.needFeed=hungry;
+  run.needFeed0=(run.needFeed||[]).slice();const hungry=(run.needFeed||[]).filter(k=>run.team.includes(k)&&k!=='robot');run.needFeed=hungry;
   for(const k of hungry){const hv=run.heroes[k];if(!hv||hv.dead)continue;hv.hunger=Math.min(3,(hv.hunger||0)+1);hv.thirst=Math.min(3,(hv.thirst||0)+1);}   /* 0.12.72 Hunger & Thirst */
-  if(run.team.includes('robot')){const hv=run.heroes.robot;if(hv&&!hv.dead){hv.hunger=Math.min(3,(hv.hunger||0)+1);hv.thirst=hv.hunger;}}   /* 0.12.342 (Kyle): the Warhound wears down every camp; spare parts are his food and water */
+  if(run.team.includes('robot')&&(run.needFeed0||[]).includes('robot')){const hv=run.heroes.robot;   /* only after a stage he actually ran (not on the first camp of a new game) */if(hv&&!hv.dead){hv.hunger=Math.min(3,(hv.hunger||0)+1);hv.thirst=hv.hunger;}}   /* 0.12.342 (Kyle): the Warhound wears down every camp; spare parts are his food and water */
   const g=upgT(run,'garden');if(g){const n=g===1?(Math.random()<.5?1:0):g===2?1:2;if(n){run.food+=n;log.push(`🌱 Garden: +${n} food`);}}
   const r=upgT(run,'rain');if(r){const n=r===1?(Math.random()<.5?1:0):1;if(n){run.water+=n;log.push(`🛢️ Rain Barrels: +1 water`);}}
   if(upgT(run,'kennel')){const f0=run.food||0,w0=run.water||0;run.food=Math.max(0,Math.round((f0-.5)*2)/2);run.water=Math.max(0,Math.round((w0-.5)*2)/2);log.push(`🐕 Feeding the doggos: -${f0-run.food} food, -${w0-run.water} water`);}   /* 0.12.204 (Kyle): the kennel eats 0.5 food and 0.5 water every camp */
@@ -4816,7 +4756,6 @@ function campArrive(s,run){if(run.campAt===run.stage)return [];run.campAt=run.st
 const HUNGER={names:['Satiated','Hungry','Very Hungry','Starving'],heal:[0,.15,.3,.5],spd:[0,.06,.13,.22],acc:[0,2,5,9],hp:[0,.1,.2,.35]};
 const THIRST={names:['Quenched','Parched','Mildly Dehydrated','Severely Dehydrated'],perc:[0,2,4,7],think:[0,1,2,4],slow:[1,1.15,1.35,1.65],drain:[0,.0004,.001,.002]};
 function needsOf(run,k){const hv=run.heroes&&run.heroes[k];return {h:(hv&&hv.hunger)||0,t:(hv&&hv.thirst)||0};}
-function fedOf(run,k){const n=needsOf(run,k);return {food:!n.h,water:!n.t};}   // kept for the UI: true = nothing needed
 function missingOf(run,k){if(!run.team.includes(k))return 0;const n=needsOf(run,k);return k==='robot'?n.h:n.h+n.t;}
 /* 0.12.342 (Kyle) WARHOUND UPKEEP: 1 spare part per wear tier. Left worn he gets the full hunger AND thirst penalties for that tier. */
 const BOT_WEAR=['Tuned Up','Worn','Rattling','Breaking Down'];
@@ -5174,17 +5113,17 @@ function pickEvent(s,run,kind){const c=evCtx(s,run);const pool=EVENTS.filter(E=>
 function evMods(run){const E=(run&&run.evNext)||{},P=(run&&run.evPerm)||{};const f=k=>(E[k]||1)*(P[k]||1);
   return {foes:f('foes'),gold:f('gold'),supply:f('supply'),parts:f('parts'),cars:f('cars'),grove:f('grove'),dmg:f('dmg'),taken:f('taken'),mv:f('mv'),zspd:f('zspd'),zdmg:f('zdmg'),xp:f('xp'),en:E.en||0,ambush:E.ambush||0};}
 
-const API={radioForecast,reticle,ABIL_DESC,HEADSHOT,isHead,inspHelp,PLAYER_ICON,BEHAVIOR,INSP,inspText,CHAR,AIM_BOXES,aimOdds,aimBoxesOf,hbOf,HERO_HITBOX,ENERGY,spendEnergy,faceToward,AIM_RANGE,accTighten,LANES,UNIT_SCALE,HITBOX,aimBands,airBands,rollAirAim,rollAimHeight,rollLaneOffset,ABILITIES_OFF,armorReduction,HP_PER_STAMINA,gearScore,heroGear,giveItem,rollItem,stockShop,itemPrice,honePrice,slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
+const API={radioForecast,reticle,ABIL_DESC,HEADSHOT,isHead,inspHelp,PLAYER_ICON,BEHAVIOR,INSP,inspText,CHAR,AIM_BOXES,aimOdds,aimBoxesOf,hbOf,HERO_HITBOX,ENERGY,spendEnergy,faceToward,AIM_RANGE,accTighten,LANES,UNIT_SCALE,HITBOX,aimBands,airBands,rollAirAim,rollAimHeight,rollLaneOffset,armorReduction,HP_PER_STAMINA,gearScore,heroGear,giveItem,rollItem,stockShop,itemPrice,honePrice,slotCaps,equip,unequip,discard,typeOf,BAG_SIZE,migrateSlot,CFG,STYLE,SIG,SPELL,ITEM,PROCS,Game,newRun,offers,applyOffer,describe,heroBase,heroDef,DATA,newSlot,needHeroXp};
 if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1795040382';const BGI=new Image();BGI.src='crawl_bg.png?v=1795040382';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795040382';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1795048629';const BGI=new Image();BGI.src='crawl_bg.png?v=1795048629';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795048629';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795040382';XIMG.wave.src='crawl_wave.png?v=1795040382';XIMG.chibi.src='crawl_chibi.png?v=1795040382';XIMG.flannel.src='crawl_flannel.png?v=1795040382';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795040382';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795040382';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795040382';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795040382';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795040382';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795040382';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795040382';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795040382';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795040382';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795040382';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795040382';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795040382';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795040382';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795040382';XIMG.rain.src='crawl_rain.png?v=1795040382';XIMG.druid.src='crawl_druid.png?v=1795040382';XIMG.camp.src='crawl_campfire.png?v=1795040382';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795040382';XIMG.tornado.src='crawl_fx_tornado.png?v=1795040382';XIMG.vine.src='crawl_fx_vine.png?v=1795040382';XIMG.thorn.src='crawl_fx_thorn.png?v=1795040382';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795048629';XIMG.wave.src='crawl_wave.png?v=1795048629';XIMG.chibi.src='crawl_chibi.png?v=1795048629';XIMG.flannel.src='crawl_flannel.png?v=1795048629';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795048629';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795048629';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795048629';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795048629';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795048629';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795048629';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795048629';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795048629';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795048629';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795048629';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795048629';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795048629';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795048629';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795048629';XIMG.rain.src='crawl_rain.png?v=1795048629';XIMG.druid.src='crawl_druid.png?v=1795048629';XIMG.camp.src='crawl_campfire.png?v=1795048629';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795048629';XIMG.tornado.src='crawl_fx_tornado.png?v=1795048629';XIMG.vine.src='crawl_fx_vine.png?v=1795048629';XIMG.thorn.src='crawl_fx_thorn.png?v=1795048629';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795040382';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795040382';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795040382';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795040382';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795040382';XIMG.obst.src='crawl_obst.png?v=1795040382';XIMG.cityob.src='crawl_cityob.png?v=1795040382';XIMG.cars.src='crawl_cars.png?v=1795040382';XIMG.robot.src='crawl_robot.png?v=1795040382';XIMG.cultist.src='crawl_cultist.png?v=1795040382';XIMG.tentacle.src='crawl_tentacle.png?v=1795040382';XIMG.boom.src='crawl_boom.png?v=1795040382';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795048629';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795048629';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795048629';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795048629';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795048629';XIMG.obst.src='crawl_obst.png?v=1795048629';XIMG.cityob.src='crawl_cityob.png?v=1795048629';XIMG.cars.src='crawl_cars.png?v=1795048629';XIMG.robot.src='crawl_robot.png?v=1795048629';XIMG.cultist.src='crawl_cultist.png?v=1795048629';XIMG.tentacle.src='crawl_tentacle.png?v=1795048629';XIMG.boom.src='crawl_boom.png?v=1795048629';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -5219,7 +5158,7 @@ function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 /* 0.12.310 recorded clips (Tee_Grizzle): decoded once, played through the same AudioContext as the synth sounds */
 const SAMP={teeg1:{src:'crawl_teeg1',off:.34},teeg2:{src:'crawl_teeg2',off:0}};
 function sampLoad(k){const S=SAMP[k];if(!S||S.buf||S.loading||!AC)return;S.loading=1;const ext=(new Audio()).canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3';
-  fetch(S.src+ext+'?v=1795040382').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
+  fetch(S.src+ext+'?v=1795048629').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
 function sampPlay(k,off,vol,soft){const S=SAMP[k];if(!S)return;if(!S.buf){sampLoad(k);return;}const src=AC.createBufferSource(),g=AC.createGain();src.buffer=S.buf;g.gain.value=vol==null?.55:vol;
   if(soft){const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=soft;lp.Q.value=.5;src.playbackRate.value=.94+Math.random()*.1;src.connect(lp);lp.connect(g);}else src.connect(g);g.connect(AC.destination);src.start(0,off==null?S.off:off);}   /* 0.12.329 (Kyle: a bit less annoying): Tee's clips play softer, muffled (low-pass) and with a little pitch wobble */
 function sfx(k,o){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
@@ -6271,7 +6210,7 @@ const CAMP_SHOP=false;   /* 0.12.37 (Kyle): Merchant and Backpack hidden on the 
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.350</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.351</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -6556,7 +6495,7 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
 /* 0.12.338 (Kyle) GEAR screen: 3 slots per hero (Weapon / Armor / Trinket), a stash, free swaps. Tap anything to see it in full
    (no hover needed). Spare parts raise an item a quality tier (Rusted -> plain -> Fine -> Masterwork); scrapping gives parts back. */
 function gearIcon(it,sz){const D=gearDef(it);if(!D)return '';sz=sz||32;const k=sz/32;const R=GEAR_RAR[D.r];
-  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795040382) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
+  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795048629) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
 function showGear(k0){const s=SLOT();if(!s)return;const run=s.run;const team=(run&&run.team)||[k0];let k=k0;let sel=null,filt='all';gearSlot(s);
   let ov=document.getElementById('cc-gear');if(ov)ov.remove();ov=document.createElement('div');ov.id='cc-gear';
   ov.style.cssText='position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 20%,rgba(40,30,70,.6),rgba(4,2,8,.94));display:flex;align-items:center;justify-content:center;padding:8px';
@@ -6628,19 +6567,19 @@ function showEvent(){const s=SLOT(),run=s.run;const kind=run.eventPending;let E=
     run.eventLog=`${E.icon} <b>${esc(E.title)}</b>: ${esc(C.t)}${log?' → '+esc(log):''}`;run.lastEvent=E.id;delete run.eventPending;delete run.eventId;persist();showCamp();});}
 function showCamp(){
   {const s0=SLOT(),r0=s0&&s0.run;if(r0&&r0.eventPending)return showEvent();}   /* 0.12.325 an event comes first */
-  const s=SLOT();const run=s.run;migrate(s,CC.player);run.bag=run.bag||[];if(ABILITIES_OFF){run.pending=0;run.bag=run.bag.filter(e=>e.kind==='item');}const st=CFG.stage(run.stage,run.prestige);
+  const s=SLOT();const run=s.run;migrate(s,CC.player);run.bag=run.bag||[];{run.pending=0;run.bag=run.bag.filter(e=>e.kind==='item');}const st=CFG.stage(run.stage,run.prestige);
   setRunModes(run);{const lg=campArrive(s,run);if(lg.length)run.campLog=lg;else if(run.campAt!==run.stage)run.campLog=[];}const hungry=new Set(run.needFeed||[]);
   const btn=(attrs,label,title)=>`<button class="cc-mini" ${attrs} ${title?`title="${esc(title)}"`:''}>${label}</button>`;
   const P=showPanel(`<div class="cc-h">STAGE ${run.stage}${run.prestige?' · ★'+run.prestige:''}${run.hardcore?' <span style="color:#ff5a5a;font-size:12px">☠ HARDCORE</span>':''}${run.dnd?' <span style="color:#c8a0ff;font-size:12px">🎲 D&amp;D</span>':''}</div><div class="cc-h2">${esc(st.biome.name)}${st.boss?` — ${esc(CFG.bosses[st.boss].name)} awaits`:''}</div>
     <div class="cc-firehost"></div>
-    ${(()=>{try{if(localStorage.getItem('cc-camphelp')==='off')return '';}catch(e){}return `<div class="cc-help" data-camphelp>🏕️ <b>Camp tips</b> · Hover the pulsing <b>⛺ ⓘ</b> next to the title to see every camp upgrade, its tiers and prices. Hover ability and deck chips under 📜 <b>Skills</b> for details. Feed and water everyone before you leave, or they start the next stage weaker. Anything with a dotted underline or ⓘ has more info on hover.
+    ${(()=>{try{if(localStorage.getItem('cc-camphelp')==='off')return '';}catch(e){}return `<div class="cc-help" data-camphelp>🏕️ <b>Camp tips</b> · Tap the pulsing <b>⛺ ⓘ</b> next to the title to see every camp upgrade, its tiers and prices. Tap ability and deck chips under 📜 <b>Skills</b> for details. Feed and water everyone before you leave, or they start the next stage weaker. Anything with a dotted underline or ⓘ shows more info when you tap it.
       <div style="margin-top:6px;display:flex;gap:8px"><button class="cc-btn" data-helpx="once" style="padding:2px 10px">Got it</button><button class="cc-btn" data-helpx="off" style="padding:2px 10px;opacity:.75">Don't show again</button></div></div>`;})()}
     <p class="cc-sub">Score ${fmt(run.score)} · save point.${run.ff?` <b style="color:#7dff9a">🌱 Fall Forward ${run.ff}/3: +${Math.round(FF.xp[run.ff]*100)}% XP, +${Math.round(FF.gold[run.ff]*100)}% gold piles, −${Math.round(FF.keep[run.ff]*100)}% score lost on a fall.</b>`:''} ${run.pending?`<b style="color:#a6ff2e">⬆ ${run.pending} upgrade${run.pending>1?'s':''} waiting</b>`:'No upgrades waiting.'}</p>
     <div class="cc-load">${run.team.map(k=>{const d=heroDef(k),hv=run.heroes[k],L=s.heroes[k],cap=slotCaps(L.lvl);
       const act=hv.spells.map((e,i)=>[e,i]).filter(([e])=>!SPELL[e.arch].passive),pas=hv.spells.map((e,i)=>[e,i]).filter(([e])=>SPELL[e.arch].passive);
       const row=(lbl,list,n,c,slotName)=>`<div class="cc-slotrow"><span class="cc-sub" style="font-size:11px;margin:0">${lbl} ${n}/${c}</span><div class="cc-chips">${list.map(([e,i])=>`<span class="cc-chipw">${chipFor(e,slotName==='item',k)}${btn(`data-un="${k}|${slotName}|${i}"`,'↓','Move to backpack')}</span>`).join('')}</div></div>`;
-      return `<div class="cc-card cc-lh"><span data-por="${k}"></span><div style="flex:1;min-width:0"><b>${d.icon} ${esc(d.name)}</b> <span class="cc-sub" style="font-size:11px">LV ${L.lvl} · Gear ${heroGear(hv)} · ${hv.dead?'fallen (revives at 25%)':Math.round((hv.hpf==null?1:hv.hpf)*100)+'% HP'}</span>
-        ${ABILITIES_OFF?'':`<div class="cc-chips"><span class="cc-chip" title="${esc(SIG[k].txt)}" style="border-color:#ffd23f"><b>⚡ ${esc(SIG[k].name)}</b> · signature</span></div>`+row('Abilities',act,act.length,cap.active,'spell')+row('Passives',pas,pas.length,cap.passive,'spell')}
+      return `<div class="cc-card cc-lh"><span data-por="${k}"></span><div style="flex:1;min-width:0"><b>${d.icon} ${esc(d.name)}</b> <span class="cc-sub" style="font-size:11px">LV ${L.lvl} · Gear ${['W','A','T'].filter(x=>((s.gear&&s.gear.eq&&s.gear.eq[k])||{})[x]).length}/3 · ${hv.dead?'fallen (revives at 25%)':Math.round((hv.hpf==null?1:hv.hpf)*100)+'% HP'}</span>
+        ${''}
         ${(()=>{const C=CHAR[k]||{};const ab=abOrder(C.abilities).map(A=>[A.passive?'✦':'⚔',A.name||A.id,ABIL_DESC[A.id]||'']);const dk=L.insp?deckSkills(L.insp):[];   /* 0.12.56 (Kyle): Skills tab: his own abilities plus what his deck gives him; hover any for the details */
           const chip=([ic,n,d],col)=>`<span class="cc-chip" style="cursor:help;border-color:${col}" data-tiph="${esc('<div class="tt-h">'+esc(n.replace(/_/g,' '))+'</div>'+fmtAbil(d))}">${ic} ${esc(n.replace(/_/g,' '))}</span>`;
           return `<details class="cc-skills" style="margin-top:4px"><summary class="cc-sub" style="font-size:11px;margin:0;cursor:pointer">📜 Skills</summary><div class="cc-chips" style="margin-top:4px">${ab.map(x=>chip(x,'#7fd0ff')).join('')}${dk.map(x=>chip(x,'#c8a0ff')).join('')||(L.insp?'':'<span class="cc-sub" style="font-size:11px;margin:0">No deck inspiration</span>')}</div>${L.insp?`<div class="cc-sub" style="font-size:10px;margin:3px 0 0;opacity:.75">✨ ${esc(L.insp)}${inspText(L.insp)?': '+esc(inspText(L.insp)):''}</div>`:''}</details>`;})()}
@@ -6728,7 +6667,7 @@ const LUCKY_ICON='<span style="display:inline-block;filter:hue-rotate(95deg) sat
 function luckyStr(s){const n=s.lucky||0;return n?`${LUCKY_ICON.repeat(Math.min(n,5))} Lucky Di${n>1?'ce':'e'} (${n})`:'';}
 function diceStr(run){const r=run.rerolls||0,n=Math.floor(r),p=Math.round((r%1)*100);return `${n?'🎲'.repeat(n):'<span style="opacity:.45">🎲</span>'} (${n})${p?` <span style="opacity:.75">+${p}% charged</span>`:''}`;}
 function showPick(){
-  const s=SLOT(),run=s.run;if(ABILITIES_OFF)run.pending=0;if(!run.pending)return showCamp();
+  const s=SLOT(),run=s.run;run.pending=0;if(!run.pending)return showCamp();
   const luckN=run.heroes&&Object.values(run.heroes).some(h=>h.spells.some(x=>x.arch==='insight'&&(x.augs||[]).length))?4:3;
   const isB=(run.blessed||0)>0;const os=CC.offersCache||(CC.offersCache=offers(run,Math.random,luckN,isB?{luck:60,min:'U',blessed:1}:null));
   const P=showPanel(`<div class="cc-h">${isB?'⭐ BLESSED PICK':'LEVEL UP!'}</div><p class="cc-sub">${isB?'Every option is Uncommon or better, with a 40% shot at Rare each. ':''}${run.pending} pick${run.pending>1?'s':''} left. Tap one.</p>
@@ -6850,7 +6789,7 @@ function finishStage(g){
   if(g.over==='clear'){
     sfx('clear');
     for(const k of run.team){const h=run.heroes[k];if(h.dead){h.dead=false;h.hpf=.25;}else h.hpf=Math.min(1,(h.hpf||0)+.3);}
-    run.needFeed=run.team.filter(k=>k!=='robot');   /* 0.12.58: everyone needs food AND water at camp, except the Warhound */
+    run.needFeed=run.team.slice();   /* 0.12.58 everyone needs food AND water at camp; 0.12.351 the Warhound needs spare parts (handled in campArrive) */
     if(run.ff)run.campLog2=(run.campLog2?run.campLog2+' ':'')+'🌱 Fall Forward cleared: you got back up and beat it.';run.ff=0;   /* 0.12.237 a clear wipes the stacks */
     if(run.retryUsed){run.retryUsed=0;run.retries=1;run.campLog2='↻ Stage beaten on the retry: you get your retry back.';}   /* 0.12.73 */
     const cleared=run.stage;run.score+=Math.round(5*cleared*(1+run.prestige));   /* 0.12.94: clear bonus 5 x stage (was 250 x stage) */
@@ -6870,7 +6809,7 @@ function finishStage(g){
   if(true){sfx('die');
     for(const it of g.stageItems||[]){const where=giveItem(run,s,it);if(where)found.push(shortCard(it.card)+(where==='bag'?' (backpack)':''));else{const v=Math.round(itemPrice(it.rar,run.stage)/3);s.gold+=v;found.push(shortCard(it.card)+' (sold, no room: +'+v+'g)');}}
     for(const k of run.team){const h=run.heroes[k];if(h){h.dead=false;h.hpf=Math.max(.5,h.hpf||0);}}
-    run.needFeed=run.team.filter(k=>k!=='robot');run.snap=null;run.retries=1;run.retryUsed=0;run.falls=(run.falls||0)+1;
+    run.needFeed=run.team.slice();run.snap=null;run.retries=1;run.retryUsed=0;run.falls=(run.falls||0)+1;
     /* 0.12.237 (Kyle) Fall Forward: the fall costs 10% of your total score + 75% of what this attempt earned (already added in), less 10/20/30% for the stacks you carried in; then +1 stack (max 3) */
     const att=Math.round(g.stageScore||0),keep=FF.keep[Math.min(3,run.ff||0)],lost=Math.min(run.score,Math.round((.1*run.score+.75*att)*(1-keep)));   /* 0.12.330 (Kyle): 75% of this attempt (was 50%) */run.score-=lost;const ff0=run.ff||0;run.ff=Math.min(3,ff0+1);
     const ffLine=`<br><b style="color:#7dff9a">🌱 Fall Forward (Lessons Learned) ${'●'.repeat(run.ff)}${'○'.repeat(3-run.ff)}</b> (${run.ff}/3): until you clear a stage everyone gets <b>+${Math.round(FF.xp[run.ff]*100)}% XP</b>, <b>+${Math.round(FF.gold[run.ff]*100)}% gold piles</b>, and the next fall costs <b>${Math.round(FF.keep[run.ff]*100)}% less score</b>.<br>📉 Score lost: −${fmt(lost)} (10% of your total + half of this attempt's ${fmt(att)}${keep?`, cut ${Math.round(keep*100)}% by your stacks`:''}).`;
@@ -6908,7 +6847,7 @@ function showStranger(free){
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
   P.querySelector('[data-bless]').onclick=e=>{const b=e.currentTarget;if(b.dataset.bless==='forsake'&&!confirmInline(b,'2 heroes for good?'))return;bless(b.dataset.bless==='forsake');};
   P.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k,d=heroDef(k);s.strangerSaved=1;s.partySize=3;run.strangerJoined=1;run.team.push(k);
-    run.heroes[k]={hpf:1,dead:false,spells:ABILITIES_OFF?[]:[{card:d.spells[0].card,arch:d.spells[0].arch,r:Math.max(1,Math.min(4,run.stage-3)),augs:[]}],items:[]};if(!ABILITIES_OFF)run.pending=(run.pending||0)+2;sfx('level');persist();showCamp();});
+    run.heroes[k]={hpf:1,dead:false,spells:[],items:[]};sfx('level');persist();showCamp();});
 }
 function showVictory(lvls){
   const s=SLOT(),run=s.run;const np=run.prestige+1;
