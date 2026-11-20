@@ -916,7 +916,7 @@ CHAR.eng={name:'Engineer',role:'Wrench + Grenade_Launcher',combo:0,flatHp:0,stam
 // 0.12.21 Void_Cultist (Kyle): an original hooded cultist (crimson robe, navy hood, bone mask with one burning eye, curved ritual
 //   dagger). Void bolts at range, dagger up close. Abilities: a summoned tentacle that can't move but lashes far, a self-bleeding
 //   team buff, a curse that jumps on death, a fear chant, and a passive that feeds on nearby deaths.
-CHAR.cultist={name:'Void_Cultist',role:'Dagger + Void Bolts',combo:0,flatHp:0,stamina:8,hpPerStamina:5,armorPts:3,dodge:.06,kbRes:.15,
+CHAR.cultist={name:'Void_Cultist',role:'Dagger + Void Bolts · Support',combo:0,flatHp:0,stamina:8,hpPerStamina:5,armorPts:3,dodge:.06,kbRes:.15,
   melee:{dice:[1,6],every:1.4,reach:18,kb:8,hitAt:.2},
   ranged:{dice:[1,4],flat:0,every:.95,range:210,clip:0,reload:0,pellets:1,anim:.34,releaseAt:.18},   // 0.12.22 (Kyle): weak void bolts, fired about twice as fast as other ranged heroes
   acc:14,walkPenalty:8,crit:.1,critMul:1.8,luck:18,xp:0,run:1.8,turn:.22,enMax:100,enRegen:4.6,
@@ -950,9 +950,9 @@ const PAL_FRAC=1/3;
 const XP_MUL=.8/3;   /* 0.12.395 (Kyle): all XP gains cut to about a third */ //   /* 0.12.250 (Kyle): every way of earning XP (kills, support, Nemeses, Lessons Learned, run levels) is 20% lower */
 const FF={xp:[0,.1,.15,.2],gold:[0,.2,.3,.4],keep:[0,.1,.2,.3],dmg:[0,1,2,3]};   /* 0.12.394 (Kyle): + flat damage on every basic attack (melee and ranged) while carrying stacks: +1/+2/+3 (a % would be nothing on early 1d6 hits) */
 const ffT=(run,k)=>run&&run.ff?FF[k][Math.min(3,run.ff)]:0;
-const CD_KEY={directive:'pdT',undo:'unT',reboot:'rbT',trial:'frT',dad:'ddT',syphon:'syT',lethal:'leT',profane:'prT',cthulhu:'ctT',nano:'nbT',tentacle:'tnT',pact:'paT',hex:'hxT',dread:'drT',clone:'clT',pin:'piT',surge:'suT',gatling:'gaT',missiles:'msT',smoke:'smT',grit:'grT',poultice:'poT',aimed:'abT',trip:'tbT',pal:'palT',camp:'caT',dash:'daT',shout:'shT',rapid:'raT',blowgun:'bgT',rain:'arT',mend:'mdT',bloom:'blT',thorns:'thT',cyclone:'cyT',
+const CD_KEY={directive:'pdT',undo:'unT',reboot:'rbT',trial:'frT',dad:'ddT',syphon:'syT',profane:'prT',cthulhu:'ctT',nano:'nbT',tentacle:'tnT',pact:'paT',hex:'hxT',dread:'drT',clone:'clT',pin:'piT',surge:'suT',gatling:'gaT',missiles:'msT',smoke:'smT',grit:'grT',poultice:'poT',aimed:'abT',trip:'tbT',pal:'palT',camp:'caT',dash:'daT',shout:'shT',rapid:'raT',blowgun:'bgT',rain:'arT',mend:'mdT',bloom:'blT',thorns:'thT',cyclone:'cyT',
   whirl:'whT',chop:'cpT',leap:'lpT',rage:'rgT',roll:'rlT',brick:'brT',bottle:'boT'};
-const CLOSE_AB=new Set(['lethal','dread','clone','surge','grit','dash','whirl','chop','leap','rage','trip']),FAR_AB=new Set(['syphon','cthulhu','tentacle','hex','pin','gatling','missiles','smoke','aimed','rain','rapid','blowgun','thorns','cyclone','brick']);
+const CLOSE_AB=new Set(['dread','clone','surge','grit','dash','whirl','chop','leap','rage','trip']),FAR_AB=new Set(['syphon','cthulhu','tentacle','hex','pin','gatling','missiles','smoke','aimed','rain','rapid','blowgun','thorns','cyclone','brick']);
 function abilityPlan(h){const C=h.base&&h.base.char;if(!C||!C.abilities||!C.abilities.length)return {};let close=0,far=0,farRange=0,ready=0;
   for(const a of C.abilities){const k=CD_KEY[a.id];const up=!(h[k]>0)&&(h.en||0)>=a.en;if(!up)continue;ready++;
     if(CLOSE_AB.has(a.id))close++;if(FAR_AB.has(a.id)){far++;farRange=Math.max(farRange,a.range||a.dist||(C.ranged&&C.ranged.range)||150);}}
@@ -1414,12 +1414,54 @@ function callRelevance(type,o,ctx){const ag=trait(o,'aggr'),se=trait(o,'self'),a
     default:return 0;}}
 function isHealer(u){return ((CHAR[u.key]||{}).abilities||[]).some(a=>a.id==='mend'||a.id==='bloom');}
 function hasAbilities(u){return ((CHAR[u.key]||{}).abilities||[]).length>0;}
+/* 0.12.398 (Kyle): "Unfiltered" is a new-game checkbox, off by default. Off = no swearing anywhere: JP and the others get PG salt instead,
+   and anything that slips through is bleeped comic-book style (#@$%!). On = the old salty lines. Plus a big pile of PG disses for everyone. */
+const SWEAR=/\b(fuck\w*|f\*+k\w*|shit\w*|bullshit|bitch\w*|bastard\w*|goddamn\w*|god damn|motherf\w*|asshole\w*|dumbass|deadass|\w+-ass|ass|dick\w*|piss\w*|puss(y|ies)|damn|hell|christ)\b/gi;
+function uncut(g){return !!(g&&g.run&&g.run.uncensored);}
+function bleep(s){return s.replace(SWEAR,w=>'#@$%!&*'.slice(0,Math.max(3,Math.min(6,w.length))));}
+function pgSalt(s,rate){const r=Math.random();if(r>rate)return s;const P=['Dang, ','Heck, ','Ah, crud. ','Oh, come ON. ','Sheesh, ','Good grief, '],S=[' Dang it!',' Holy moly.',' Heck yeah!',' Yikes.',' Son of a gun.',' Rats!'];
+  if(r<rate/2)return P[Math.floor(Math.random()*P.length)]+s.charAt(0).toLowerCase()+s.slice(1);return s.replace(/[.!?]*$/,'')+'!'+S[Math.floor(Math.random()*S.length)];}
+function pgJp(s){const r=Math.random();if(r>.4)return s;
+  const P=['Oh, come on! ','Are you kidding me? ','Brother. ','Bro. ','Unreal. ','Classic. '];
+  const Z=[' Back in the dirt, crusty!',' Go home, you\'re decomposing!',' Imagine dying twice.',' You smell like a gas station bathroom!',' Sit DOWN, compost!',' Skill issue, zombie.',' Get wrecked, moldy!',' Uninstall, corpse.',' That\'s a wipe for you, bud.',' L + ratio + dead.'];
+  const A=[' Let\'s gooo!',' Huge.',' I got you.',' Love you guys.',' Clean.',' Easy money.'],J=[' Keep up, slowpoke.',' Try not to die, nerd.',' You owe me one.',' Pull the boss next time, scrub.'];
+  const ally=/\b(you|your|you're|guys|team|we|us|our|buddy|bro)\b/i.test(s)||Object.values(NICK).some(n=>s.includes(n));
+  if(r<.18)return P[Math.floor(Math.random()*P.length)]+s.charAt(0).toLowerCase()+s.slice(1);
+  const pool=ally?(Math.random()<.2?J:A):Z;return s.replace(/[.!?]*$/,'')+'!'+pool[Math.floor(Math.random()*pool.length)];}
+/* PG trash talk at the zombies, said on a kill now and then. Shared lines plus each hero's own voice. */
+const PG_DISS={_:['Walk it off. Oh wait, you can\'t.','Rest in pieces!','Your mom called. She wants her grave back.','That\'s what you get for skipping leg day.','Should\'ve stayed buried, champ.','Nice try, meat popsicle.',
+   'You\'re not scary, you\'re just sticky.','Bye, Felicia.','Smell you later. Literally.','Dead on arrival. Again.','Somebody bag that up.','You fight like a wet paper towel.','Zero stars. Would not get bitten again.',
+   'You call that a groan?','Go haunt someone else.','Nobody\'s coming to your funeral this time.','Back to the compost bin!','Did you even try?','That\'s a timeout, rotface.','You\'re the reason we can\'t have nice things.'],
+ seekyle:['Dad\'s home. You\'re grounded. Forever.','Order up! One extra-crispy zombie!','Behind! Hot pan! Dead guy!','That one\'s getting sent back to the kitchen.','86 that zombie.','Not in front of the boys!',
+   'I\'ve fought scarier dinner rushes.','You\'re cooked. Well done, actually.','Go to your room. And by room I mean the ground.','I didn\'t even need the werewolf for that one.'],
+ cheez:['Critical hit. Natural twenty, baby.','You just got patched.','Error 404: zombie not found.','House always wins.','Have you tried turning yourself off and on again? No? Good.','Roll for initiative. Oh, you lost.',
+   'That\'s a hard reset.','Ticket closed.','Cash out, loser.','My sword does the talking.'],
+ jp:['No scope, no problem.','Raid wipe for you, buddy.','Get carried, dead weight.','That\'s a guild kick.','Headshot. Next.','Imagine getting out-sniped by a guy this chill.','Pulled. Popped. Done.',
+   'Vibe check failed.','Respawn timer\'s a lot longer for you.','Stand in the fire, I dare you.'],
+ teeg:['Sit down, dead boy.','Too slow, dog!','Who\'s next? Line up!','Smell like a dumpster, homie.','Can\'t even run, huh?','Dead AND broke? Rough.','Stay down, crash dummy.','Bro got folded.',
+   'You ain\'t even on my level.','Should\'ve stayed home.'],
+ edward:['That\'s overtime for you.','Measure twice, smack once.','Clocked out. Permanently.','My friends are my power, and you got none.','Two jobs and I still had time for you.','Believe it!',
+   'Nailed it. Literally.','Shift\'s over, pal.'],
+ shoshi:['Have you tried not being a zombie?','Ctrl+Z won\'t save you.','Your support ticket has been closed.','Blue screen of death. Literally.','Uninstalling you now.','Dad mode: activated. You: deactivated.',
+   'Five nines uptime. Zero for you.','Rebooted into the ground.'],
+ knight:['Kneel.','For the realm!','My shield has met you before. It won.','Yield, wretch!','You are not worthy of my blade.','Honor demands I hit you again.'],
+ soldier:['Target down.','Scratch one, over.','Stay frosty, you\'re not.','That\'s a confirmed kill.','Hooah!','You\'re out of uniform, soldier. Out of life too.'],
+ lumberjack:['TIMBER!','Chopped and dropped.','You\'re kindling now.','I\'ve split tougher logs.','Splinters!','That\'s firewood season.'],
+ druid:['Return to the soil.','Nature always wins.','Fertilizer.','The trees thank you for your donation.','Photosynthesize THIS.','Back to the earth, friend.'],
+ robot:['TARGET NEUTRALIZED.','EXECUTING: YOU.','ERROR: ZOMBIE NOT FOUND.','BEEP. BOOP. BYE.','RECYCLING ORGANIC WASTE.','THREAT LEVEL: PATHETIC.'],
+ chibi:['Too slow!','Wave goodbye!','Hi-yah!','Ninja\'d!','You didn\'t even see me.','That was a warm-up.'],
+ archer:['Bullseye.','Pinned.','Quiet. Clean. Done.','My arrow found you first.','One less.','The wind told me where you\'d be.'],
+ carcher:['Gotcha!','Swish!','Right between the eyes!','Too easy!','Can\'t dodge what you can\'t see!','Arrow to the knee. And the face.'],
+ csorc:['Shocking, right?','You\'ve been grounded.','Zap!','Charged and discharged.','That\'s a lot of volts for a little guy.','Lightning never misses twice. It doesn\'t need to.'],
+ flannel:['Back in my day, zombies stayed down.','Get off my lawn.','Not on my watch, sonny.','I\'ve got socks older than you.','That\'s how we did it in \'79.','Kids these days.'],
+ eng:['Built different.','Engineered.','Torque that.','Structural failure: you.','Measured, cut, demolished.','I make towers. You make noise.'],
+ cultist:['The void sends its regards.','Your soul tastes like expired milk.','Embrace the dark.','The Old Ones are unimpressed.','Hush now.','Sleep, little corpse.']};
 const Comms={
   name(u){return NICK[u.key]||((CHAR[u.key]||{}).name)||u.key;},
   foe(e){if(!e)return 'that one';if(e.boss)return 'the boss';const L=FOE_NICK[e.type];return L?L[Math.floor(Math.random()*L.length)]:'that one';},
   fill(s,ctx){return s.replace('{foe}',this.foe(ctx.tgt)).replace('{ally}',ctx.ally?this.name(ctx.ally):'you').replace('{lane}',ctx.lane!=null?LANE_NAME[Math.min(4,ctx.lane)]||'that lane':'that lane');},
   pick(a){return a[Math.floor(Math.random()*a.length)];},
-  bubble(g,u,s,keep){if(!keep&&Math.random()<.22)return;if(u&&u.key&&Math.random()<.25)return;   /* 0.12.225 (Kyle): 25% less chatter overall */if(u&&u.key&&CHAR[u.key]&&Math.random()<.05+.35*trait(u,'talk'))return;   /* 0.12.201 (Kyle): Chatty 10 talks 40% less than before, scaling down to 5% less at 0 */if(u&&u.key==='dog')s=Comms.pick(['Woof!','Grrr!','Bark bark!','Arf!','*growls*','*snarls*']);   /* 0.12.38 (Kyle): about 22% less chatter on screen */if(u&&u.key==='robot')s=robotize(s);if(u&&u.key==='jp')s=jpify(s);else if(u&&u.key==='flannel_pal')s=saltify(s,.25);else if(u&&u.key&&u.key!=='robot'&&u.key!=='dog')s=saltify(s,.08);s=s.charAt(0).toUpperCase()+s.slice(1);(g.calls=g.calls||[]).push({u,s,c:CALL_COLOR[u.key]||'#e8e8e8',t:0,life:1.6+Math.min(1.4,s.length*.045)});
+  bubble(g,u,s,keep){if(!keep&&Math.random()<.22)return;if(u&&u.key&&Math.random()<.25)return;   /* 0.12.225 (Kyle): 25% less chatter overall */if(u&&u.key&&CHAR[u.key]&&Math.random()<.05+.35*trait(u,'talk'))return;   /* 0.12.201 (Kyle): Chatty 10 talks 40% less than before, scaling down to 5% less at 0 */if(u&&u.key==='dog')s=Comms.pick(['Woof!','Grrr!','Bark bark!','Arf!','*growls*','*snarls*']);   /* 0.12.38 (Kyle): about 22% less chatter on screen */if(u&&u.key==='robot')s=robotize(s);const U=uncut(g);if(u&&u.key==='jp')s=U?jpify(s):pgJp(s);else if(u&&u.key==='flannel_pal')s=U?saltify(s,.25):pgSalt(s,.25);else if(u&&u.key&&u.key!=='robot'&&u.key!=='dog')s=U?saltify(s,.08):pgSalt(s,.08);if(!U)s=bleep(s);s=s.charAt(0).toUpperCase()+s.slice(1);(g.calls=g.calls||[]).push({u,s,c:CALL_COLOR[u.key]||'#e8e8e8',t:0,life:1.6+Math.min(1.4,s.length*.045)});
     if(g.calls.length>8)g.calls.shift();},
   // IF a unit decides to speak (Quiet<->Chatty, a personal cooldown, and the team not having just said the same thing) THEN shout it
   say(g,u,type,ctx,force){if(!u||!u.alive||g.demo)return false;const C=CALLS[type];if(!C)return false;ctx=ctx||{};
@@ -1486,7 +1528,8 @@ const Comms={
   onReload(g,h){this.say(g,h,'reload',{ally:h,tgt:h.plan&&h.plan.tgt});},
   onCamp(g,h,x){this.say(g,h,'camp',{ally:h,x},true&&trait(h,'talk')>.1);},
   onTrap(g,h,x){this.say(g,h,'trap',{ally:h,x});},
-  onKill(g,h){if(h&&h.key==='teeg'&&Math.random()<.2){this.bubble(g,h,this.pick(['Y\'all zombies some pussies!','Sit down, dead boy.','Rotten-ass pussy!','Stay down, crash dummy.','Too slow, dog!','Who\'s next? Line up!','Smell like a dumpster, homie.','Can\'t even run, pussy!','Next!','Dead AND broke? Damn.']));return;}   /* 0.12.323 Tee trash-talks the zombies */
+  onKill(g,h){if(h&&h.key==='teeg'&&uncut(g)&&Math.random()<.2){this.bubble(g,h,this.pick(['Y\'all zombies some pussies!','Rotten-ass pussy!','Can\'t even run, pussy!','Dead AND broke? Damn.']));return;}
+    if(h&&h.key&&!g.demo&&Math.random()<.16){const L=(PG_DISS[h.key]||[]).concat(Math.random()<.5?PG_DISS._:[]);if(L.length){this.bubble(g,h,this.pick(L));return;}}   /* 0.12.398 PG disses */   /* 0.12.323 Tee trash-talks the zombies */
     if(h&&h.key==='cheez'&&Math.random()<.22){this.bubble(g,h,this.pick(['Punch nazis, slice zombies.','You\'re not invited to game night.','Critical hit! Roll for damage.','That machine\'s out of order.','Dice Boys never miss a session.','Get rekt, mouth-breather.','Cancel your sub, buddy.','That\'s a fatality.','Somebody tell the casino I\'m on break.','Rolled a nat 20 on that one.']));return;}if(h&&h.key)this.say(g,h,'kill',{});},   /* 0.12.235 Cheez quips */
   // IF an ally falls THEN someone shouts it; everyone who hears gets angrier (Vengeful) or more careful (Forgiving)
   onDown(g,h){const al=g.alive().filter(o=>o.key&&o!==h);if(!al.length)return;const sp=al.slice().sort((a,b)=>trait(b,'talk')-trait(a,'talk'))[0];
@@ -1843,7 +1886,7 @@ class Game{
   bleedStep(u,dt){if(!u.bleeds){if(u.bleedT>0&&u.bleedDps>0){u.bleeds={old:{T:u.bleedT,dps:u.bleedDps}};}else return 0;}let dps=0,T=0;
     for(const k in u.bleeds){const b=u.bleeds[k];b.T-=dt;if(b.T<=0){delete u.bleeds[k];continue;}dps+=b.dps;T=Math.max(T,b.T);}u.bleedT=T;u.bleedDps=dps;if(!T)u.bleeds=null;return dps;}
   /* 0.12.390 (Kyle): trait effects ride on EVERY hit a carrier lands (melee, leap, arrow, gut ball...), for Promoteds and Alphas alike */
-  hurtHero(h,amt,from){if(h.profT>0&&amt>0)amt*=1-.15;const took=this.hurtHero0(h,amt,from);if(took&&h.alive&&!this.demo){if(h.pCraze>0&&this.rng()<h.pCraze/100){this.healHero(h,h.max*.05,true);this.text(this.heroX(h),(h.gy||this.G)-58,'+','#7dff6a');}if(h.pReck>0&&!(h.reckT>0)&&this.rng()<h.pReck/100){h.reckT=2;tbuff(h,{sp:.4},2);this.text(this.heroX(h),(h.gy||this.G)-62,'RECKONING','#ffb347');}}if(took&&from&&from.nemHas&&!this._trait&&!from.dead){this._trait=1;try{this.traitOnHit(from,h,amt+(from.dmgFlat||0));}finally{this._trait=0;}}return took;}
+  hurtHero(h,amt,from){if(h.profT>0&&amt>0)amt*=1-Math.min(.6,h.profDr||.15);const took=this.hurtHero0(h,amt,from);if(took&&h.alive&&!this.demo){if(h.pCraze>0&&this.rng()<h.pCraze/100){this.healHero(h,h.max*.05,true);this.text(this.heroX(h),(h.gy||this.G)-58,'+','#7dff6a');}if(h.pReck>0&&!(h.reckT>0)&&this.rng()<h.pReck/100){h.reckT=2;tbuff(h,{sp:.4},2);this.text(this.heroX(h),(h.gy||this.G)-62,'RECKONING','#ffb347');}}if(took&&from&&from.nemHas&&!this._trait&&!from.dead){this._trait=1;try{this.traitOnHit(from,h,amt+(from.dmgFlat||0));}finally{this._trait=0;}}return took;}
   traitOnHit(e,V,d){if(e.nemHas('rav'))e.hp=Math.min(e.max,e.hp+d*.4);
     if(e.nemHas('blood')&&V.alive)this.bleed(V,20*(e.dmgMul||1),6);
     if(e.nemHas('cleave')){const o=this.alive().find(o=>o!==V&&!o.pet&&Math.abs(this.heroX(o)-this.heroX(V))<10&&Math.abs((o.gy||this.G)-(V.gy||this.G))<8);if(o)this.hurtHero(o,d*.5,e);}}
@@ -2620,7 +2663,7 @@ class Game{
     const spdB=(cry?1+cry.spd:1)*(h.rageT>0?1.2:1)*(1+(h.mom||0)*(h.momPer||0));h.cryDmg=(cry?1+cry.dmg:1)*(h.pactT>0?1+(h.pactDmg||.2):1);if(h.pactT>0)h.pactT-=dt;
     if(h.laughT>0)h.laughT-=dt;
     if(h.cozyT>0){h.cozyT-=dt;h._cozyAcc=(h._cozyAcc||0)+dt;while(h._cozyAcc>=.5){h._cozyAcc-=.5;this.healHero(h,.25,true,h);h.en=Math.min(h.enMax||100,(h.en||0)+.25);}}
-    h.mT=(h.mT||0)+dt*h.meleeSpd*spdB*(1+(h.zoneB||0)+(h.gHasteT>0?.25:0)+(h.vibeT>0?.25:0)+(h.hdT>0?.15:0))*(h.fdoT>0?1.3:1)*(h.cozyT>0?1+COZY.melee:1)*(h.key==='jp'?(h.highT>0?1.2:(h.soberT||0)>10?.9:1):1)*(h.lethalT>0?1.75:1)*(h.hunger>0?1-HUNGER.spd[h.hunger]:1);h.rT=(h.rT||0)+dt*h.rangedSpd*spdB*(h.hunger>0?1-HUNGER.spd[h.hunger]:1)*(h.ammoBuffT>0?1.15:1)*(h.fdoT>0?1.3:1)*(h.strapT>0?1+(h.strapSpd||.25):1)*(1+(h.zoneB||0)+(h.gHasteT>0?.25:0)+(h.vibeT>0?.25:0)+(h.hdT>0?.15:0));if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
+    h.mT=(h.mT||0)+dt*h.meleeSpd*spdB*(1+(h.zoneB||0)+(h.gHasteT>0?.25:0)+(h.vibeT>0?.25:0)+(h.hdT>0?.15:0))*(h.fdoT>0?1.3:1)*(h.cozyT>0?1+COZY.melee:1)*(h.key==='jp'?(h.highT>0?1.2:(h.soberT||0)>10?.9:1):1)*(h.hunger>0?1-HUNGER.spd[h.hunger]:1);h.rT=(h.rT||0)+dt*h.rangedSpd*spdB*(h.hunger>0?1-HUNGER.spd[h.hunger]:1)*(h.ammoBuffT>0?1.15:1)*(h.fdoT>0?1.3:1)*(h.strapT>0?1+(h.strapSpd||.25):1)*(1+(h.zoneB||0)+(h.gHasteT>0?.25:0)+(h.vibeT>0?.25:0)+(h.hdT>0?.15:0));if(h.animM>0)h.animM-=dt;if(h.animR>0)h.animR-=dt;
     if(h.ammo==null)h.ammo=C.ranged?(C.ranged.clip||Infinity):0;   // clip 0 = never reloads
     if(C.ranged&&h.ammo<=0&&C.ranged.clip>0){if(!h.reloadT&&C.ranged.reload>=1.5&&!C.ranged.quietReload)Comms.onReload(this,h);h.reloadT=(h.reloadT||0)+dt*h.rangedSpd*spdB*(h.key==='soldier'&&h.hp<h.max*.5?1.25:1)*(h.crateT>0?1.5:1)*(h.strapT>0?1+(h.strapRel||.3):1)*(1+(h.zoneB||0));   /* 0.12.200 Ammo_Drop: 50% faster reloads near the crate */if(h.reloadT>=(h.key==='soldier'&&h.clipStk>0?3.5:C.ranged.reload)){if(h.key==='soldier'&&h.clipStk>0){h.clipStk--;this.text(this.heroX(h),(h.gy||this.G)-40,'SPARE MAG','#ffd27a');}h.reloadT=0;h.ammo=C.ranged.clip;}}
     if(h.key==='soldier'){h.clipCT=(h.clipCT||0)+dt;if(h.clipCT>=15){h.clipCT=0;if((h.clipStk||0)<2)h.clipStk=(h.clipStk||0)+1;}}   /* 0.12.202 (Kyle) Battle_Hardened: a spare mag every 15s (max 2); a reload with one takes 3.5s instead of 7s */
@@ -3003,7 +3046,7 @@ class Game{
     // ---- 0.12.70 Void_Cultist (Kyle's rework): life costs, all IF/THEN on the field; runs before the attack so Lethal_Strikes works up close
     if(h.key==='cultist'){const CB=id=>(C.abilities||[]).find(a=>a.id===id);const SY=CB('syphon'),PR=CB('profane'),TN=CB('tentacle'),CT=CB('cthulhu');
       for(const [A,k] of [[SY,'syT'],[PR,'prT'],[TN,'tnT'],[CT,'ctT']])if(A){if(h[k]==null)h[k]=A.cd*.25;if(h[k]>0)h[k]-=dt*(k==='tnT'&&h.cthT>0?2:1);}
-      if(h.lethalT>0)h.lethalT-=dt;if(h.cthT>0)h.cthT-=dt;
+      if(h.cthT>0)h.cthT-=dt;
       if(h.summonT>0){h.summonT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);return;}
       const live=this.enemies.filter(e=>!e.dead&&e.x<this.W+4),hx=this.heroX(h),hp=h.hp/h.max,afford=A=>A&&hp-A.hpCost>=.35;
       // Syphon_Life in progress: stand and drain
@@ -3014,7 +3057,7 @@ class Game{
       if(h.prof){const S=h.prof,T=S.tg;S.t+=dt;S.acc+=dt;h.pauseT=Math.max(h.pauseT||0,.05);h.moving=false;if(T)h.face=this.heroX(T)>=hx?1:-1;
         const stop=!T||!T.alive||Math.abs(this.heroX(T)-hx)>PR.range*1.15||S.t>=PR.dur||h.hp/h.max-PR.drain<PR.stop;
         if(stop){if(T)T.profT=0;h.prof=null;}
-        else{T.profT=.6;while(S.acc>=PR.tick){S.acc-=PR.tick;const d=h.max*PR.drain;h.hp-=d;this.text(hx+4,(h.gy||this.G)-52,'-'+Math.round(d),'#c0102a');
+        else{T.profT=.6;T.profDr=PR.dr;while(S.acc>=PR.tick){S.acc-=PR.tick;const d=h.max*PR.drain;h.hp-=d;this.text(hx+4,(h.gy||this.G)-52,'-'+Math.round(d),'#c0102a');
           this.healHero(T,d*PR.heal,true,h);this.fx.push({k:'plus',x:this.heroX(T)+(this.rng()-.5)*6,y:(T.gy||this.G)-12,t:0,life:.9});
           if(!S.clean){S.clean=1;T.bleeds=null;T.bleedT=0;T.bleedDps=0;T.poison=0;T.poisonT=0;}}
           return;}}
@@ -3069,9 +3112,9 @@ class Game{
         if(C.melee.claw)this.fx.push({k:'claw',x:h.x+(mt.x>=h.x?6:-6),gy:h.gy||this.G,tx:mt.x,dir:mt.x>=h.x?1:-1,t:0,life:.42,raw:1});
         setTimeoutSafe(this,C.melee.hitAt||.15,()=>{if(!h.alive||mt.dead)return;   // the blow lands a moment into the swing (Kyle: very slight delay)
         const K=Math.min(100,C.melee.kb+(h.kbAdd||0));const RY=(C.abilities||[]).find(a=>a.id==='rhythm');let fell=0;if(RY){h.rhyN=(this.t-(h.rhyT==null?-99:h.rhyT)<=RY.window)?(h.rhyN||0)+1:1;h.rhyT=this.t;if(h.rhyN>=RY.n){h.rhyN=0;fell=1;}}   /* 0.12.69 Feller's_Rhythm */
-        const LT=h.lethalT>0?(C.abilities||[]).find(a=>a.id==='lethal'):null;const dealt=this.hitEnemy(mt,roll*(fell?1+RY.bonus:1)*(LT?1-LT.dmg:1),h,{});if(dealt&&!mt.dead&&!mt.boss&&C.melee.stunCh&&this.rng()<C.melee.stunCh){mt.stun=Math.max(mt.stun||0,C.melee.stun);this.text(mt.x,mt.y-30,'CLANG','#d8dce8');}
+        const dealt=this.hitEnemy(mt,roll*(fell?1+RY.bonus:1),h,{});if(dealt&&!mt.dead&&!mt.boss&&C.melee.stunCh&&this.rng()<C.melee.stunCh){mt.stun=Math.max(mt.stun||0,C.melee.stun);this.text(mt.x,mt.y-30,'CLANG','#d8dce8');}
         {const RH=(C.abilities||[]).find(a=>a.id==='blade'&&a.cut);if(RH&&dealt&&mt.dead&&h.tnT>0){h.tnT=Math.max(0,h.tnT-RH.cut);this.text(h.x,this.G-58,'-'+RH.cut+'s','#b070ff');}}   /* 0.12.97 Ritual_Harvest */
-        {const PBd=(C.abilities||[]).find(a=>a.id==='blade');if(PBd&&!mt.dead){if(mt.poison>0)mt.poisonT=POISON.dur;if(dealt&&this.rng()<PBd.ch*(LT?2:1))this.addPoison(mt,PBd.n*(LT?2:1));}}   /* 0.12.70 Poisoned_Blade */if(fell&&!mt.dead){if(!mt.boss)mt.stun=Math.max(mt.stun||0,RY.stun);this.text(mt.x,mt.y-34,'TIMBER!','#ffc860');this.shake=Math.max(this.shake||0,.12);}
+        {const PBd=(C.abilities||[]).find(a=>a.id==='blade');if(PBd&&!mt.dead){if(mt.poison>0)mt.poisonT=POISON.dur;if(dealt&&this.rng()<PBd.ch)this.addPoison(mt,PBd.n);}}   /* 0.12.70 Poisoned_Blade */if(fell&&!mt.dead){if(!mt.boss)mt.stun=Math.max(mt.stun||0,RY.stun);this.text(mt.x,mt.y-34,'TIMBER!','#ffc860');this.shake=Math.max(this.shake||0,.12);}
         {const MO=(C.abilities||[]).find(a=>a.id==='momentum');if(MO){h.mom=this.t-(h.momT||0)<=MO.window?Math.min(MO.max,(h.mom||0)+1):1;h.momT=this.t;h.momPer=MO.per;}}   // Momentum
         h._mt=mt;   /* 0.12.107: the Shadow_Clone no longer mirrors his hits from behind him; it peels off and swings on its own (stepClones) */   // knockback, Kyle's scale: 0-100, 100 = about a 40px shove
         if(dealt&&!mt.dead&&K>0){const res=mt.boss?.9:((mt.E&&mt.E.kbRes)||0);mt.kbv=Math.max(mt.kbv||0,K/100*40*8*(1-res));mt.kbDir=mt.x>=h.x?1:-1;}   
@@ -4797,8 +4840,8 @@ for(const [k,C] of Object.entries(CHAR)){const up=(a,did)=>{if(!a||a.passive||!(
    Every hero has 3 branches. 1 point per level (levels 2-20 = 19 points). Rows open at 0/3/6/9/12 points spent in that branch.
    Rows 1, 2 and 4: two talents each (3, 3 and 2 ranks) that push that hero's own abilities or gear. Row 3: one talent that changes how an
    ability works (the old skill mods). Row 5: the capstone (the old hero capstones). Resetting and moving points is free at camp. */
-const TREE_REQ=[0,3,6,9,12,15,18],TREE_RANKS=[3,3,1,2,2,1],TREE_MAXPTS=MAX_LVL-1;   /* 0.12.395: 7 tiers, 3 points a tier */
-const TF_LABEL={under:'trigger HP',ally:'ally bonus',field:'field time',push:'push',bld:'build repair',mech:'robot repair',towerHit:'turret hits',towerMax:'turret max HP',T:'time',lineN:'line hits',auraR:'aura radius',auraAcc:'aura accuracy',tagSlow:'tag slow',rx:'circle size',en2:'energy given',ship:'Ship_It boost',shipT:'Ship_It time',critDmg:'crit damage',hpCost:'HP cost',fuse:'fuse time',max:'throw range',accPen:'accuracy penalty',poisonCh:'poison chance',pullR:'pull radius',pull:'pull strength',arm:'armor',regen:'regen',icd:'cooldown',hic:'hiccups',hold:'hold time',dmgMul:'damage',halveCh:'cooldown-halving chance',cast:'cast time',spread:'spread',cd:'cooldown',en:'energy cost',dur:'duration',r:'radius',range:'range',dist:'distance',n:'count',heal:'healing',stun:'stun',every:'time between attacks',reload:'reload time',clip:'clip size',dmg:'bonus damage',shield:'shield',dr:'damage block',root:'root',count:'arrows',shots:'shots',hp:'HP',dps:'drain',pct:'heal per tick',per:'per tick',life:'lifetime',spd:'speed',slow:'slow',kb:'knockback',crit:'crit',amp:'damage taken',jump:'jump range',pierce:'pierce',shieldT:'shield time',heal2:'heal',window:'window',bonus:'bonus',mul:'multiplier',share:'share',ls:'lifesteal',ch:'chance',splash:'splash',reach:'reach',cut:'cooldown cut',energy:'energy',zap:'zap',high:'high time',mark:'mark time',fall:'fall time',miss:'miss chance',hit:'hit chance',burst:'burst',critAdd:'crit chance',critMul:'crit damage',move:'move',decay:'decay',steal:'steal',fear:'fear',size:'size',passes:'passes',flat:'flat damage',bleed:'bleed'};
+const TREE_REQ=[0,3,6,9,12,15,18],TREE_MAXPTS=MAX_LVL-1;   /* 0.12.395: 7 tiers, 3 points a tier */
+const TF_LABEL={fly:'flight time',critT:'crit time',charges:'charges',depth:'lane reach',win:'rewind window',regR:'aura radius',tick:'pulse time',burstGap:'burst gap',mv:'move speed',acc:'accuracy',bashStun:'bash stun',stop:'stop point',under:'trigger HP',ally:'ally bonus',field:'field time',push:'push',bld:'build repair',mech:'robot repair',towerHit:'turret hits',towerMax:'turret max HP',T:'time',lineN:'line hits',auraR:'aura radius',auraAcc:'aura accuracy',tagSlow:'tag slow',rx:'circle size',en2:'energy given',ship:'Ship_It boost',shipT:'Ship_It time',critDmg:'crit damage',hpCost:'HP cost',fuse:'fuse time',max:'throw range',accPen:'accuracy penalty',poisonCh:'poison chance',pullR:'pull radius',pull:'pull strength',arm:'armor',regen:'regen',icd:'cooldown',hic:'hiccups',hold:'hold time',dmgMul:'damage',halveCh:'cooldown-halving chance',cast:'cast time',spread:'spread',cd:'cooldown',en:'energy cost',dur:'duration',r:'radius',range:'range',dist:'distance',n:'count',heal:'healing',stun:'stun',every:'time between attacks',reload:'reload time',clip:'clip size',dmg:'bonus damage',shield:'shield',dr:'damage block',root:'root',count:'arrows',shots:'shots',hp:'HP',dps:'drain',pct:'heal per tick',per:'per tick',life:'lifetime',spd:'speed',slow:'slow',kb:'knockback',crit:'crit',amp:'damage taken',jump:'jump range',pierce:'pierce',shieldT:'shield time',heal2:'heal',window:'window',bonus:'bonus',mul:'multiplier',share:'share',ls:'lifesteal',ch:'chance',splash:'splash',reach:'reach',cut:'cooldown cut',energy:'energy',zap:'zap',high:'high time',mark:'mark time',fall:'fall time',miss:'miss chance',hit:'hit chance',burst:'burst',critAdd:'crit chance',critMul:'crit damage',move:'move',decay:'decay',steal:'steal',fear:'fear',size:'size',passes:'passes',flat:'flat damage',bleed:'bleed'};
 const TA=(ab,mul,path)=>({ab,mul,path}),TF=(ab,n,path)=>({ab,face:n,path}),TD=(ab,add,path)=>({ab,add,path}),TS=st=>({st});
 function treeSer(v,f,R){const m=(R&&R.k)||1;if(!R||!(R.max>1))return f(v*m);const o=[];for(let i=1;i<=R.max;i++){const s=f(v*m*i);o.push(i===R.cur?'⟦'+s+'⟧':s);}return o.join('/');}
 function treeDesc(k,e,R){const C=CHAR[k]||{};const nm=e.ab==='_melee'?'Melee hits':e.ab==='_ranged'?'Basic shots':((C.abilities||[]).find(a=>a.id===e.ab)||{}).name||e.ab;
@@ -4855,7 +4898,10 @@ const TREE_SPEC={
    TB('Boom','💣',[TN('Quick Trap','⚡',TA('trip',{cd:-.06})),TN('Steady Hands','🫴',TS({mod:{acc:1}}))],[TN('Better Fuse','⏱️',TS({mod:{rangedDmg:4}})),TN('Pack Mule','🎒',TS({mod:{enRegen:.3}}))],'mod:boom',[TN('Shrapnel','🔩',TS({mod:{crit:2}})),TN('Demo Pro','💥',TA('trip',{en:-.1}))],['cap:10:fl_demo'])],
  cultist:[TB('Tentacle','🐙',[TN('Grasping Dark','🐙',TD('tentacle',{hp:3})),TN('Quick Summon','⚡',TA('tentacle',{cd:-.05}))],[TN('Barbed Arms','🩸',TF('tentacle',1)),TN('Long Reach','📏',TA('tentacle',{reach:.1}))],'mod:arms',[TN('Hungry Dark','🦑',TD('tentacle',{steal:.05})),TN('Old Ones','👁️',TA('cthulhu',{cd:-.08}))],['cap:5:cu_arms','cap:10:cu_elder']),
    TB('Blood','🩸',[TN('Deep Syphon','🩸',TD('syphon',{dps:.5})),TN('Ritual Cut','🔪',TD('blade',{ch:.03}))],[TN('Blood Feast','🍷',TD('syphon',{heal:.1})),TN('Cheap Rites','💉',TA('profane',{drain:-.08}))],'mod:thirst',[TN('Long Drain','⏳',TA('syphon',{dur:.1})),TN('Vital Flow','❤️',TS({hpPct:4}))],['cap:5:cu_priest','cap:10:cu_leech']),
-   TB('Lethal','🗡️',[TN('Sharp Rites','🗡️',TS({mod:{meleeDmg:5}})),TN('Frenzy','⚡',TA('profane',{dur:.1}))],[TN('Killing Edge','✴️',TS({mod:{crit:2}})),TN('Dark Haste','💨',TA('profane',{cd:-.06}))],'mod:elder',[TN('Bloodletter','🩸',TD('profane',{heal:.1})),TN('Shadow Skin','🌑',TS({mod:{dodge:1.5}}))],[TN('Avatar_of_Night','🌑',{ab:'profane',mul:{cd:-.35,dur:.4},add:{heal:.5}},'CAPSTONE: Profane_Restoration lasts 40% longer, comes back 35% sooner and heals 2.5x what it drains')])],
+   TB('Profane','🕯️',[TN('Dark Communion','🕯️',TD('profane',{heal:.1}),'Profane_Restoration heals +0.1x more of what it drains per rank'),TN('Thin Blood','💉',TA('profane',{drain:-.05}))],[TN('Long Vigil','⏳',TA('profane',{dur:.1})),TN('Quick Rites','💨',TA('profane',{cd:-.06}))],
+     TN('Unholy Grace','✨',{ab:'profane',add:{heal:.5}},'Profane_Restoration heals 2.5x what he drains (was 2x)'),[TN('Black Ward','🛡️',TD('profane',{dr:.05}),'Allies in the beam take 5% less damage per rank'),TN('Fevered Hands','🔥',TD('profane',{spd:.05}),'Allies in the beam attack 5% faster per rank')],
+     [TN('Martyr','🩸',{ab:'profane',mul:{cd:-.35,dur:.4},add:{heal:.5,dr:.1}},'CAPSTONE: Profane_Restoration lasts 40% longer, comes back 35% sooner, heals 0.5x more and the ally takes another 10% less damage'),
+      TN('Blood_Bond','❤️',{ab:'profane',mul:{range:.3},add:{stop:-.1}},'Profane_Restoration reaches 30% farther and he keeps pouring down to 20% life (was 30%)')])],
  eng:[TB('Builder','🏗️',[TN('Quick Build','🔨',TS({mod:{cdr:3}})),TN('Tough Tower','🗼',TD('build',{hitAdd:1},'tower'),'The tower takes 1 more hit per rank')],[TN('Sharp Gunner','🎯',TD('build',{acc:2},'tower')),TN('Turret Ammo','🔫',TD('attach',{burst:1},'tow'),'Tower turrets fire 1 more round per burst')],'mod:cells',[TN('Fast Turrets','⚙️',TA('attach',{cd:-.08})),TN('High Ground','⛰️',TD('build',{dmgAdd:.03},'tower'),'Shooters on the tower deal 3% more damage per rank')],['cap:10:en_tesla','cap:10:en_siege']),
    TB('Demo','🧨',[TN('Bigger Charge','💥',TA('satchel',{r:.06})),TN('Short Fuse','⏱️',TA('satchel',{cd:-.05}))],[TN('Packed Charge','🧨',TF('satchel',1)),TN('Long Throw','🎯',TA('satchel',{max:.1}))],'mod:shaped',[TN('Blast Wave','🌊',TA('satchel',{kb:.1})),TN('Demolitionist','👷',TS({mod:{crit:2}}))],['cap:5:en_bomb']),
    TB('Plating','🛡️',[TN('Thick Plates','🛡️',TD('plating',{hits:1})),TN('Hard Hat','⛑️',TS({mod:{armor:1}}))],[TN('Quick Plating','⚡',TA('plating',{T:-.1})),TN('Sturdy','❤️',TS({hpPct:4}))],'mod:coil',[TN('Riveted','🔩',TD('plating',{armor:.05})),TN('Brace','🧱',TS({mod:{kbRes:8}}))],['cap:5:en_fort'])],
@@ -4890,9 +4936,6 @@ const TREE_FILL_NAMES={hp:['Iron Gut','Thick Blood','Hard to Kill','Tough as Nai
   enmax:['Big Lungs','Reserve Tank','Stamina','Deep Well','Fuel'],luck:['Lucky Charm','Rabbit Foot','Fortune','Horseshoe','Good Omen']};
 const TREE_FILL_ORDER=[['regen','crit','hp','move','acc'],['armor','dmg','kb','enmax','luck'],['hp','dmg','crit','armor','regen'],['move','luck','acc','enmax','kb']];
 function treeStatKeys(e){const o=[];if(e&&e.st){const S=e.st;if(S.hpPct)o.push('hp');if(S.dmgPct)o.push('dmg');for(const x of Object.keys(S.mod||{}))o.push({armor:'armor',crit:'crit',move:'move',enRegen:'regen',acc:'acc',kbRes:'kb',enMax:'enmax',luck:'luck'}[x]||x);}return o;}
-function treeMainAb(k,B){const C=CHAR[k]||{};const ids=new Set((C.abilities||[]).filter(a=>a.cd>0).map(a=>a.id));const cnt={};
-  for(const n of [...B.r1,...B.r2,B.r3,...B.r4,...(B.r5||[])]){if(!n||typeof n==='string'||!n.eff)continue;const a=n.eff.ab;if(a&&ids.has(a))cnt[a]=(cnt[a]||0)+1;}
-  const best=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];return best?best[0]:null;}
 function treeTalCard(k,tal){const [t,a,b]=tal.split(':');return t==='mod'?(TAL_MOD[k]||{})[a]:t==='cap'?((HCAP[k]&&HCAP[k][a]&&HCAP[k][a][b])||(TAL_CAP[a]&&TAL_CAP[a][b])):null;}
 /* 0.12.396 (Kyle): every generic filler talent swapped for one written for that hero and tree. Slot order per tree:
    [row1 5-rank, row2 3-rank, row3 3-rank, row4 2-rank, row5 2-rank, row6 2-rank, row6 2-rank, row5 major (only where the tree had no capstone of its own)] */
@@ -4961,6 +5004,10 @@ const TREE_X={
   [_X('Wool Socks','🧦',_S({hpPct:2})),_X('Pitch the Tent','⛺',_A('camp',{cast:-.12})),_X('Long Fire','🔥',_A('camp',{life:.15})),_X('Thick Flannel','🧥',_S({mod:{armor:1}})),_X('Hold the Line','🪵',_A('grit',{move:.2})),_X('Lookout','👀',_A('elite',{dodge:.25})),_X('Coffee Pot','☕',_S({mod:{enRegen:.2}}))],
   [_X('Steady Fingers','🤞',_S({mod:{luck:1}})),_X('Kicker','💥',_A('trip',{kb:.15})),_X('Long Fuse','🧨',_A('trip',{life:.15})),_X('Blast Shield','🛡️',_S({mod:{kbRes:12}})),_X('Pipe Bomb','🧪',_S({dmgPct:4})),_X('Fire in the Hole','🗯️',_S({mod:{dodge:3}})),_X('Powder Keg','🛢️',_S({hpPct:5})),
    _X('Minefield','💣',_A('trip',{cd:-.35,kb:.3}),_S({dmgPct:8}))]],
+ cultist:[
+  [_X('Whispers','🗣️',_S({mod:{enRegen:.1}})),_X('Slimy Grip','🦑',_A('tentacle',{kb:.15})),_X('Thrashing','🌊',_A('tentacle',{every:-.06})),_X('Abyssal Reach','📏',_A('tentacle',{range:.12})),_X('Hooked Suckers','🪝',_D('tentacle',{flat:1})),_X('Void Conduit','🌀',_A('profane',{range:.15,cd:-.06})),_X('Elder Fear','😱',_A('cthulhu',{fear:.2}))],
+  [_X('Bloodletting','🩸',_S({mod:{lifesteal:.5}})),_X('Crimson Range','📏',_A('syphon',{range:.08})),_X('Hemomancy','🔮',_S({heal:5})),_X('Pale Skin','🧛',_S({hpPct:5})),_X('Blood Tithe','🍷',_D('profane',{heal:.15})),_X('Night Feast','🌑',_A('syphon',{dur:.15})),_X('Crimson Veil','🦇',_S({mod:{dodge:3}}))],
+  [_X('Penitent','🙏',_S({heal:2})),_X('Deep Veins','🫀',_S({hpPct:4})),_X('Last Rites','⚰️',_S({rev:10})),_X('Shared Pain','🫂',_S({mod:{pCraze:8}})),_X('Hungering Return','🌀',_A('syphon',{cd:-.08})),_X('Hollow Hunger','🕳️',_S({mod:{enRegen:.3}})),_X('Dark Halo','⭕',_S({mod:{armor:1}}))]],
  eng:[
   [_X('Blueprints','📐',_S({mod:{cdr:1}})),_X('Spot Weld','🔥',_A('repair',{bld:.12})),_X('Overbuilt','🏗️',_A('repair',{towerMax:.1})),_X('Turret Link','🔗',_A('attach',{T:.15})),_X('Hammer Time','🔨',_A('repair',{towerHit:.15})),_X('Mechanic','🔧',_A('repair',{mech:.25})),_X('Work Boots','🥾',_S({mod:{armor:1}}))],
   [_X('Steady Hands','🤲',_S({mod:{acc:1}})),_X('Quick Reload','🔄',_A('_ranged',{reload:-.06})),_X('Hot Shells','🔥',_S({mod:{rangedDmg:3}})),_X('Shell Shock','😵',_S({mod:{critMul:10}})),_X('Overkill','💥',_S({dmgPct:4})),_X('Blast Goggles','🥽',_S({mod:{kbRes:12}})),_X('Bunker','🏚️',_S({hpPct:5})),
@@ -4997,7 +5044,7 @@ const TREE_X={
    _X('Zero Effort','💤',_A('noeffort',{cd:-.3,flat:1}),_S({mod:{crit:6}}))],
   [_X('Street Smarts','🧠',_S({mod:{luck:1}})),_X('Crew Love','🤝',_A('strapped',{r:.12})),_X('Strapped Up','🔫',_A('strapped',{dmg:.12})),_X('Pocket Change','💰',_A('firstday',{ch:.15})),_X('Fast Money','💸',_A('firstday',{spd:.15})),_X('Corner Store','🏪',_S({hpPct:5})),_X('Hood Pass','🛣️',_S({mod:{move:4}})),
    _X('Run the Block','👑',_A('strapped',{dur:.5,spd:.3,cd:-.2}),_A('firstday',{dur:.3}),_S({hpPct:8}))]]};
-const TREE_RENAME={csorc:{'Overflow':'Spillover'},shoshi:{'Dad Strength':'Dad Power'}};
+const TREE_RENAME={cultist:{'Many-Armed':'Thousand Arms'},csorc:{'Overflow':'Spillover'},shoshi:{'Dad Strength':'Dad Power'}};
 /* 0.12.396 (Kyle): proc talents lifted from the classic WoW trees (Deep Wounds, Flurry, Ruthlessness, Clearcasting / Omen of Clarity,
    Execute, Blood Craze, Reckoning), each renamed to fit the hero. [tree, slot, name, icon, per-rank mod] */
 const TREE_PROC={
@@ -5019,6 +5066,51 @@ const TREE_PROC={
  seekyle:[[0,6,'Papa Bear','🐻',{pReck:6}],[2,5,'In the Zone','🎧',{pFlurry:7}]],
  teeg:[[1,0,'Lazy Genius','😴',{pClear:1}],[2,5,'Get Back','🔙',{pReck:6}],[0,6,'Open Them Up','🩸',{pBleed:15}]]};
 for(const [k,L] of Object.entries(TREE_PROC))for(const [bi,sl,nm,ic,mod] of L)if(TREE_X[k]&&TREE_X[k][bi])TREE_X[k][bi][sl]=_X(nm,ic,_S({mod}));
+/* 0.12.398 (Kyle): trees aim for about 25% talents that help any build (stats, procs) and 75% flavor (the hero's own abilities).
+   These swap a tree's extra stat talents for ability ones, or add a stat pick to a tree that had almost none. id: [name, icon, per-rank effects] */
+const NODE_OVR={
+ soldier:{b0r3d:['Explosives Training','📚',_S({mod:{crit:2}})],b0r6a:['Flak Vest','🦺',_S({mod:{armor:1}})],b1r5c:['Tracer Rounds','✨',_A('suppress',{acc:.15})],b1r4a:['Center Mass','🎯',_F('suppress',1)],
+   b2r1a:['Thousand-Yard Stare','👁️',_A('hardened',{under:.03})],b2r4a:['Hot Brass','🔥',_A('ammodrop',{dmg:.15})],b2r6a:['Old Scars','🩹',_A('hardened',{dr:.08})],b2r6d:['Veteran Arm','💪',_A('frag',{cd:-.08})]},
+ lumberjack:{b1r1a:['Endless Spin','🌀',_A('whirl',{dur:.04})],b1r6a:['Deep Swing','🪓',_A('whirl',{depth:.2})]},
+ druid:{b0r4d:['First Aid Instinct','🩹',_A('mend',{under:.05})],b0r5c:['Long Bloom','🌸',_A('bloom',{dur:.12})],b0r6a:['Second Spring','🌱',_A('resurge',{dur:.25})],
+   b1r6a:['Feral Strength','🐻',_S({dmgPct:3})],
+   b2r2d:['Quick Growth','🌿',_A('bloom',{tick:-.08})],b2r3d:['Fern Poultice','🍃',_A('mend',{heal:.05})],b2r6d:['Old Growth','🌲',_A('bloom',{dur:.12})]},
+ cheez:{b1r6a:['Last Call','🔔',_S({mod:{cdr:3}})],b1r2d:['Iron Liver','🍶',_S({hpPct:4})],
+   b2r3d:['Clock In','⏰',_A('attend',{hold:.2})],b2r4d:['Comp Drinks','🍹',_A('host',{regen:.25})],b2r5c:['Hotfix','🩹',_A('errfix',{cd:-.08})],b2r6a:['Lockout','🔒',_A('errfix',{stun:.15})]},
+ edward:{b1r1a:['Bulk Nails','📦',_A('_ranged',{clip:.06})],b1r4d:['Mouthy','😤',_A('chutz',{dur:.15})],b1r5c:['Long Arm','💪',_A('toolbox',{max:.12})],b1r6a:['Sticky Nails','📌',_A('nails',{slow:.2})]},
+ knight:{b1r1a:['Crimson Vow','🩸',_A('oath',{dmg:.06})],b1r4d:['Blood Pact','📜',_A('oath',{under:.1})],b1r5c:['Transfusion','💉',_A('oath',{heal:.15})],b1r6d:['Crimson Aura','⭕',_A('oath',{regR:.2})],
+   b2r6a:['Cavalry','🐎',_S({mod:{move:4}})]},
+ robot:{b0r6a:['Hot Rails','🔥',_S({mod:{rangedDmg:5}})],b1r6a:['Ghost Mode','👻',_S({mod:{dodge:3}})],b1r5c:['Spare Parts','🔩',_S({hpPct:5})],
+   b2r1a:['Micro Welders','🔧',_A('nano',{per:.04})],b2r2a:['Gyros','🌀',_A('nano',{cd:-.05})],b2r2c:['Reactor Tap','⚡',_A('surge',{dur:.1})],b2r2d:['Hardpoints','🚀',_A('missiles',{n:.34})],
+   b2r3d:['Ablative Coat','🧱',_A('nano',{dr:.1})],b2r5c:['Vent Ports','🌫️',_A('smoke',{cd:-.08})],b2r6d:['Long Shift','🕐',_A('nano',{dur:.15})]},
+ jp:{b1r6a:['Tank Stance','🧍',_A('familia',{shieldT:.15})],b1r4d:['Guild Leader','🏰',_A('familia',{bashStun:.25})],b2r6d:['Slow Burn','🕯️',_S({mod:{enRegen:.2}})],b2r6a:['Snack Run','🍟',_S({hpPct:5})]},
+ archer:{b0r6a:['Swift Hands','🤲',_S({mod:{rangedSpd:5}})],b1r6a:['Bait','🍖',_A('pin',{mark:.2})],b1r4d:['Tracking','👣',_A('pin',{cd:-.08})],
+   b2r1a:['Soft Breath','🍃',_A('blowgun',{cd:-.03})],b2r4d:['Steady Wind','🌬️',_A('wind',{acc:.25})],b2r6a:['Long Wind','🎐',_A('wind',{critMul:.2})],b2r6d:['Quiet Kill','🔇',_F('blowgun',1)]},
+ flannel:{b2r1a:['Packed Powder','🧨',_A('trip',{kb:.06})],b2r4d:['Blast Shield','🛡️',_A('grit',{dr:.1})],b2r5c:['Pipe Bomb','🧪',_A('trip',{cd:-.08})],b2r6a:['Smoke Signal','💨',_A('camp',{radius:.12})],b2r6d:['Spare Fuse','⏲️',_A('aimed',{cd:-.08})]},
+ cultist:{b0r5c:['Thick Hide','🦑',_S({hpPct:5})],b0r4d:['Dark Patience','⏳',_S({mod:{cdr:3}})],b0r2d:['Eldritch Might','👁️',_S({dmgPct:3})],
+   b2r6a:['Hollow Hunger','🕳️',_A('profane',{tick:-.08})],b2r6d:['Dark Halo','⭕',_A('profane',{range:.1})]},
+ eng:{b0r6a:['Hard Hat Area','⛑️',_S({mod:{armor:1}})],b1r1a:['Big Bag','🎒',_A('satchel',{r:.04})],b1r5c:['Overkill','💥',_A('satchel',{kb:.15})],b1r6a:['Pitcher','⚾',_A('satchel',{max:.12})],
+   b2r1a:['Rivet Gun','🔩',_A('plating',{armor:.06})],b2r5c:['Grease Monkey','🛢️',_A('plating',{T:.15})],b2r6a:['Field Kit','🧰',_A('repair',{bld:.15})],b2r6d:['Plate Mail','🛡️',_A('plating',{hits:.15})]},
+ carcher:{b0r6d:['Quick Quiver','🏹',_A('pierce',{cd:-.08})],b0r4a:['Bleeding Shot','🩸',_A('pierce',{n:.2})],
+   b1r1a:['Cartwheel','🤸',_A('tumble',{dist:.05})],b1r3d:['Light as Air','🎈',_A('tumble',{cd:-.05})],b1r6a:['Roll and Snare','🕸️',_A('snare',{cd:-.08})],b1r6d:['Eagle Eye','🦅',_A('hmark',{dur:.15})]},
+ csorc:{b0r6a:['Storm Power','🌩️',_S({mod:{rangedDmg:5}})],b0r3d:['Charged Air','⚡',_S({mod:{enRegen:.3}})],
+   b2r1a:['Mana Tide','🌊',_A('overcharge',{mul:.03})],b2r1c:['Forked Flow','🔱',_A('chain',{n:.17})],b2r2a:['Focus','🧘',_A('static',{dur:.1})],b2r2c:['Quick Cast','⚡',_A('thunder',{cd:-.06})],
+   b2r2d:['Cantrip','📜',_A('chain',{cd:-.05})],b2r4a:['Arcane Echo','🔁',_A('overcharge',{n:.34})],b2r5c:['Mana Shield','🛡️',_A('static',{shield:.15})],b2r6a:['Paralyze','😵',_A('chain',{stun:.15})]},
+ shoshi:{b0r5c:['Firmware','📟',_S({mod:{cdr:3}})],b1r4c:['Lap Time','⏱️',_A('dad',{dur:.12})],b1r5c:['Minivan','🚐',_A('dad',{cd:-.08})],b1r6d:['Bedtime Story','📖',_A('dad',{shield:.15})],
+   b2r6a:['Hot Swap','🔁',_S({mod:{rangedSpd:5}})]},
+ seekyle:{b0r6a:['Car Seat Install','🚗',_A('heartdad',{r:.2})],b2r1c:['Self-Care','🧃',_A('vibecode',{heal:.15})]},
+ teeg:{b0r2d:['Stock Brace','🪵',_A('thechop',{acc:.15})],b0r2c:['Grip Tape','🩹',_A('_ranged',{burstGap:-.1})],
+   b2r1a:['Street Smarts','🧠',_A('firstday',{ch:.05})],b2r6d:['Call the Homies','📞',_A('strapped',{n:.5})],b2r4c:['Steady','🧍',_A('firstday',{mv:.15})]}};
+/* 0.12.398 (Kyle) row 6 finishers for the left-column sub path (row 2 -> row 4 -> row 6) */
+const SUB6={soldier:[['Quick Release','💣',_A('frag',{fly:-.15})]],lumberjack:[['Aftershock','〰️',_A('chop',{depth:.2})],,['Berserk Rhythm','😡',_A('rage',{under:.1})]],
+ druid:[['Living Bark','🌳',_S({heal:5,mod:{armor:1}})],['Bramble Rush','🌵',_A('thorns',{cd:-.08})]],cheez:[['Lightning Draw','⚡',_A('iai',{hold:-.2})],['Encore','🎉',_A('host',{dur:.12})],['Graveyard Shift','🌙',_S({hpPct:4,mod:{armor:1}})]],
+ edward:[,['Piece Rate','💵',_S({mod:{rangedSpd:4,rangedDmg:3}})],['Shield Bro','🛡️',_A('loyal',{share:.15})]],knight:[,,['Death From Above','🦅',_A('kleap',{max:.1})]],
+ robot:[['Static Discharge','⚡',_A('surge',{dur:.1})],['Self-Repair','🔧',_A('nano',{under:.08})]],jp:[['Collateral','🎯',_D('noscope',{pierce:1})],,['Roast Session','🔥',_A('trash',{critT:.2})]],
+ chibi:[['Shadow Army','👥',_A('clone',{dur:.12})],['Unbroken Flow','🌊',_A('momentum',{per:.15})],['War Drums','🥁',_A('shout',{dur:.12})]],archer:[['Monsoon','🌧️',_A('rain',{count:.15})]],
+ flannel:[['Dead Eye','👁️',_A('aimed',{critMul:.1})],['Stubborn Old Man','👴',_A('grit',{under:.1})],['Demo Expert','💥',_S({mod:{critMul:10}})]],cultist:[['Ancient Hunger','🦑',_A('tentacle',{steal:.15})]],
+ eng:[['Extra Turrets','🔫',_D('attach',{charges:1})]],carcher:[,['Untouchable Grace','🍃',_S({mod:{dodge:2,move:3}})],['Bear Trap','🪤',_A('snare',{root:.15})]],
+ csorc:[['Arc Flash','⚡',_A('chain',{fall:-.2})],['Big Clap','👏',_A('thunder',{r:.15})],['Overflowing Power','🌊',_A('overcharge',{jump:.15})]],shoshi:[['Autosave','💾',_A('undo',{cd:-.06})],,['Five Bars','📶',_A('online',{r:.15})]],
+ seekyle:[,['Family Recipe','📖',_A('orderup',{dur:.15})],['Clean Shots','🎯',_A('_ranged',{flat:.25})]],teeg:[,['Through and Through','🔫',_D('noeffort',{pierce:1})],['Hatchet Man','🪓',_S({mod:{meleeDmg:5,meleeSpd:3}})]]};
 const HERO_ORDER=Object.keys(TREE_SPEC);
 for(const [k,bs] of Object.entries(TREE_SPEC)){const hi=HERO_ORDER.indexOf(k);const own=HCAP[k]||{};
   const capUsed=new Set();for(const B of bs)for(const n of [B.r3,...(B.r5||[])])if(typeof n==='string'&&n.startsWith('cap:'))capUsed.add(n.split(':')[2]);
@@ -5030,34 +5122,46 @@ for(const [k,bs] of Object.entries(TREE_SPEC)){const hi=HERO_ORDER.indexOf(k);co
      one single-point major at the bottom (tier 7, arrow from tier 5). A tier opens after 3 points per tier in that tree above it.
      Ranks are rescaled so a maxed talent gives what the old talent gave. Arrows need the talent they come from maxed. */
   const HI=HERO_ORDER.indexOf(k);
-  TREES[k]=bs.map((B,bi)=>{const nodes=[];const used=new Set();const main=treeMainAb(k,B);const C=CHAR[k]||{};const MA=main&&(C.abilities||[]).find(a=>a.id===main);
+  TREES[k]=bs.map((B,bi)=>{const nodes=[];const used=new Set();
     for(const n of [...B.r1,...B.r2,...B.r4])if(n&&n.eff)treeStatKeys(n.eff).forEach(x=>used.add(x));
     let fo=0;const fill=()=>{const L=TREE_FILL_ORDER[(bi+fo++)%TREE_FILL_ORDER.length];for(const x of [...L,...Object.keys(TREE_FILL)])if(!used.has(x)){used.add(x);return x;}return 'hp';};
     const P=n=>typeof n==='string'?{tal:n}:{eff:n.eff,txt:n.txt};
     const push=(row,col,o,max,extra)=>{const id=`b${bi}r${row}${col}`;if(o.parts.some(p=>p.tal))max=1;nodes.push(Object.assign({id,row,col,max},o,extra||{}));return id;};
     const fromSpec=n=>{if(typeof n==='string'){const c=treeTalCard(k,n);return c?{name:c.name,icon:c.icon||'⭐',parts:[{tal:n}]}:null;}return {name:n.name,icon:n.icon,parts:[P(n)]};};
     const capOf=(L,id)=>{const c=treeTalCard(k,`cap:${L}:${id}`);return {name:c.name,icon:c.icon||'👑',parts:[{tal:`cap:${L}:${id}`}]};};
-    const FIVE={hp:['🫀',{st:{hpPct:2}}],armor:['🫀',{st:{hpPct:2}}],crit:['👁️',{st:{mod:{crit:1}}}],move:['🪶',{st:{mod:{move:2}}}],dmg:['🔥',{st:{dmgPct:1}}],
-      regen:['🫁',{st:{mod:{enRegen:.1}}}],acc:['🎯',{st:{mod:{acc:1}}}],kb:['🪨',{st:{mod:{kbRes:3}}}],enmax:['🔋',{st:{mod:{enMax:1}}}],luck:['🍀',{st:{mod:{luck:1}}}]};
     const names=new Set();const nm1=key=>{const L=TREE_FILL_NAMES[key]||[key];for(let i=0;i<L.length;i++){const n=L[(HI+bi+i)%L.length];if(!names.has(n)){names.add(n);return n;}}return L[0];};
     for(const n of [...B.r1,...B.r2,...B.r4,B.r3,...(B.r5||[])]){const c=typeof n==='string'?treeTalCard(k,n):n;if(c&&c.name)names.add(c.name);}
     const fillNode=()=>{const key=fill(),f=TREE_FILL[key];return {name:nm1(key),icon:f[1],parts:[{eff:f[2]}]};};
     const XS=(TREE_X[k]||[])[bi]||[];const xn=(i,fb)=>{const x=XS[i];return x?{name:x.name,icon:x.icon,parts:x.e.map(e=>({eff:e}))}:fb();};
-    const RN=TREE_RENAME[k]||{};const fromSpec0=fromSpec;
-    const im=(n,i)=>{const o=fromSpec(n);o.name=(i||'Improved')+' '+o.name;return o;};
-    /* tier 1: one 5-rank basic, two 3-rank starters */ push(1,'a',xn(0,()=>{const key=fill();return {name:nm1(key),icon:FIVE[key][0],parts:[{eff:FIVE[key][1]}]};}),5);
+    const RN=TREE_RENAME[k]||{};
+    /* tier 1: one 5-rank basic, two 3-rank starters */ push(1,'a',xn(0,fillNode),5);
       push(1,'b',fromSpec(B.r1[0]),3);push(1,'c',fromSpec(B.r1[1]),3);
     /* tier 2 */ const t2a=push(2,'a',fromSpec(B.r2[0]),3);push(2,'c',fromSpec(B.r2[1]),3);
-      push(2,'d',xn(1,()=>MA&&MA.en>0?{name:['Second Nature','Easy Does It','Save Your Breath'][bi%3],icon:'🌀',parts:[{eff:TA(main,{en:-.07})}]}:fillNode()),3);
+      push(2,'d',xn(1,fillNode),3);
     /* tier 3: the better-than-minor pick (2/6 of the way down) */ const t3=push(3,'b',(o=>{if(RN[o.name])o.name=RN[o.name];return o;})(fromSpec(B.r3)),1,{maj:1});push(3,'d',xn(2,fillNode),3);
     /* tier 4 */ push(4,'a',fromSpec(B.r4[0]),2,{req:t2a});push(4,'c',fromSpec(B.r4[1]),2);
-      push(4,'d',xn(3,()=>{const key=fill();return {name:['Battle-Tested','Hard Lessons','Old Habits'][bi%3],icon:'⚔️',parts:[...(main?[{eff:TA(main,{cd:-.06})}]:[]),{eff:TREE_FILL[key][2]}]};}),2);
-    /* tier 5: near-major (4/6 down), arrow from tier 3 */ const r5b=(B.r5||[])[1];const sig=MA?{name:`${MA.name.replace(/_/g,' ').replace(/!+$/,'')} Mastery`,icon:B.icon,parts:[{eff:TA(main,{cd:-.15})},...(MA.en>0?[{eff:TA(main,{en:-.15})}]:[]),{eff:bi===2?TS({hpPct:6}):TS({dmgPct:5})}]}:null;
-      const t5=push(5,'b',r5b?fromSpec(r5b):XS[7]?xn(7):sig||capOf(...pickCap(5,bi)),1,{maj:1,req:t3});
-      push(5,'c',xn(4,()=>im(B.r2[0])),2);
-    /* tier 6 */ push(6,'a',xn(5,()=>im(B.r1[0],'Expert')),2);push(6,'d',xn(6,()=>im(B.r2[1])),2);
+      push(4,'d',xn(3,fillNode),2);
+    /* tier 5: near-major (4/6 down), arrow from tier 3 */ const r5b=(B.r5||[])[1];
+      const t5=push(5,'b',r5b?fromSpec(r5b):XS[7]?xn(7):capOf(...pickCap(5,bi)),1,{maj:1,req:t3});
+      push(5,'c',xn(4,fillNode),2);
+    /* tier 6 */ push(6,'a',xn(5,fillNode),2);push(6,'d',xn(6,fillNode),2);
     /* tier 7: the major */ {const r5=(B.r5||[])[0];push(7,'b',r5?fromSpec(r5):capOf(...pickCap(10,bi)),1,{maj:2,req:t5,cap:1});}
     {const a=nodes.find(n=>n.row===5&&n.col==='b'),b=nodes.find(n=>n.row===7);if(a&&b&&a.name===b.name){a.name+=' I';b.name+=' II';}}
+    for(const n of nodes){const o=(NODE_OVR[k]||{})[n.id];if(o){n.name=o[0];n.icon=o[1];n.parts=o.slice(2).map(e=>({eff:e}));}}
+    /* 0.12.398 (Kyle) every tree has a clear main path down the middle (rows 3 -> 5 -> 7, gold arrows) and a sub path down the left
+       built on one of his other abilities (row 2 -> row 4, and on to row 6 when a row 6 talent boosts the same ability) */
+    {const g=id=>nodes.find(n=>n.id===`b${bi}r${id}`),abs=n=>new Set(n.parts.filter(p=>p.eff&&p.eff.ab).map(p=>p.eff.ab));
+      const base=new Set([...abs(g('2a')),...abs(g('4a'))]),hit=n=>[...abs(n)].some(x=>base.has(x));const a6=g('6a'),d6=g('6d');
+      if(!hit(a6)&&hit(d6))for(const f of ['name','icon','parts','max'])[a6[f],d6[f]]=[d6[f],a6[f]];
+      if(!hit(a6)){const o=(SUB6[k]||[])[bi];if(o){a6.name=o[0];a6.icon=o[1];a6.parts=o.slice(2).map(e=>({eff:e}));a6.max=2;a6.req=`b${bi}r4a`;}}
+      if(hit(a6))a6.req=`b${bi}r4a`;}
+    /* 0.12.398 (Kyle) most talents touch more than one thing: about two in three ability talents also carry a small piece of
+       the tree's signature stat (whatever stat that tree leans on most), so a skill pick also nudges the build. Some stay single. */
+    {const SEC={hpPct:2,crit:1,move:2,dmgPct:1,meleeDmg:2,rangedDmg:2,acc:1,dodge:1,kbRes:4,enRegen:.1,cdr:1,luck:1,lifesteal:.5,heal:2,critMul:4,meleeSpd:2,rangedSpd:2,enMax:3,armor:.5,rev:5};
+      const cnt={};for(const n of nodes)for(const p of n.parts)if(p.eff&&p.eff.st){const S=p.eff.st;for(const f of ['hpPct','dmgPct','heal','rev'])if(S[f])cnt[f]=(cnt[f]||0)+1;for(const f of Object.keys(S.mod||{}))cnt[f]=(cnt[f]||0)+1;}
+      const top=Object.entries(cnt).filter(([f])=>SEC[f]&&f!=='armor').sort((a,b)=>b[1]-a[1])[0];const key=top?top[0]:'hpPct';let i=0;
+      for(const n of nodes){if(n.maj||n.max<2||!n.parts.every(p=>p.eff&&p.eff.ab&&!p.eff.st))continue;if((i++ +bi+HI)%3===2)continue;
+        const v=SEC[key];n.parts=n.parts.concat([{eff:['hpPct','dmgPct','heal','rev'].includes(key)?TS({[key]:v}):TS({mod:{[key]:v}})}]);}}
     for(const n of nodes){const st={hpPct:0,dmgPct:0,heal:0,rev:0,mod:{}};let any=0;
       for(const p of n.parts)if(p.eff&&p.eff.st){any=1;const S=p.eff.st,m=p.k||1;for(const f of ['hpPct','dmgPct','heal','rev'])if(S[f])st[f]+=S[f]*m;for(const [x,v] of Object.entries(S.mod||{}))st.mod[x]=(st.mod[x]||0)+v*m;}
       n.st=any?st:null;n.txt=treeTxt(k,n,0);}
@@ -5252,12 +5356,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1795149102';const BGI=new Image();BGI.src='crawl_bg.png?v=1795149102';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795149102';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1795149680';const BGI=new Image();BGI.src='crawl_bg.png?v=1795149680';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795149680';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795149102';XIMG.wave.src='crawl_wave.png?v=1795149102';XIMG.chibi.src='crawl_chibi.png?v=1795149102';XIMG.flannel.src='crawl_flannel.png?v=1795149102';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795149102';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795149102';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795149102';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795149102';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795149102';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795149102';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795149102';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795149102';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795149102';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795149102';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795149102';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795149102';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795149102';XIMG.bghood=new Image();XIMG.bghood.src='crawl_bg_hood.png?v=1795149102';XIMG.bloater=new Image();XIMG.bloater.src='crawl_bloater.png?v=1795149102';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795149102';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795149102';XIMG.rain.src='crawl_rain.png?v=1795149102';XIMG.druid.src='crawl_druid.png?v=1795149102';XIMG.camp.src='crawl_campfire.png?v=1795149102';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795149102';XIMG.tornado.src='crawl_fx_tornado.png?v=1795149102';XIMG.vine.src='crawl_fx_vine.png?v=1795149102';XIMG.thorn.src='crawl_fx_thorn.png?v=1795149102';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795149680';XIMG.wave.src='crawl_wave.png?v=1795149680';XIMG.chibi.src='crawl_chibi.png?v=1795149680';XIMG.flannel.src='crawl_flannel.png?v=1795149680';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795149680';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795149680';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795149680';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795149680';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795149680';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795149680';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795149680';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795149680';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795149680';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795149680';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795149680';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795149680';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795149680';XIMG.bghood=new Image();XIMG.bghood.src='crawl_bg_hood.png?v=1795149680';XIMG.bloater=new Image();XIMG.bloater.src='crawl_bloater.png?v=1795149680';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795149680';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795149680';XIMG.rain.src='crawl_rain.png?v=1795149680';XIMG.druid.src='crawl_druid.png?v=1795149680';XIMG.camp.src='crawl_campfire.png?v=1795149680';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795149680';XIMG.tornado.src='crawl_fx_tornado.png?v=1795149680';XIMG.vine.src='crawl_fx_vine.png?v=1795149680';XIMG.thorn.src='crawl_fx_thorn.png?v=1795149680';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795149102';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795149102';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795149102';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795149102';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795149102';XIMG.obst.src='crawl_obst.png?v=1795149102';XIMG.cityob.src='crawl_cityob.png?v=1795149102';XIMG.cars.src='crawl_cars.png?v=1795149102';XIMG.robot.src='crawl_robot.png?v=1795149102';XIMG.cultist.src='crawl_cultist.png?v=1795149102';XIMG.tentacle.src='crawl_tentacle.png?v=1795149102';XIMG.boom.src='crawl_boom.png?v=1795149102';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795149680';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795149680';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795149680';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795149680';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795149680';XIMG.obst.src='crawl_obst.png?v=1795149680';XIMG.cityob.src='crawl_cityob.png?v=1795149680';XIMG.cars.src='crawl_cars.png?v=1795149680';XIMG.robot.src='crawl_robot.png?v=1795149680';XIMG.cultist.src='crawl_cultist.png?v=1795149680';XIMG.tentacle.src='crawl_tentacle.png?v=1795149680';XIMG.boom.src='crawl_boom.png?v=1795149680';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -5292,7 +5396,7 @@ function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 /* 0.12.310 recorded clips (Tee_Grizzle): decoded once, played through the same AudioContext as the synth sounds */
 const SAMP={teeg1:{src:'crawl_teeg1',off:.34},teeg2:{src:'crawl_teeg2',off:0},teeg3:{src:'crawl_teeg3',off:0},jp1:{src:'crawl_jp1',off:0},kidhowl:{src:'crawl_kidhowl',off:0},leiftag:{src:'crawl_leiftag',off:0}};   /* 0.12.394: the boys' howl, Leif's "tag!" */   /* 0.12.380: Tee's Pistol_Play line, JP's No_Scope line */
 function sampLoad(k){const S=SAMP[k];if(!S||S.buf||S.loading||!AC)return;S.loading=1;const ext=(new Audio()).canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3';
-  fetch(S.src+ext+'?v=1795149102').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
+  fetch(S.src+ext+'?v=1795149680').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
 function sampPlay(k,off,vol,soft){const S=SAMP[k];if(!S)return;if(!S.buf){sampLoad(k);return;}const src=AC.createBufferSource(),g=AC.createGain();src.buffer=S.buf;g.gain.value=vol==null?.55:vol;
   if(soft){const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=soft;lp.Q.value=.5;src.playbackRate.value=.94+Math.random()*.1;src.connect(lp);lp.connect(g);}else src.connect(g);g.connect(AC.destination);src.start(0,off==null?S.off:off);}   /* 0.12.329 (Kyle: a bit less annoying): Tee's clips play softer, muffled (low-pass) and with a little pitch wobble */
 function sfx(k,o){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
@@ -5575,7 +5679,7 @@ function drawGame(ctx,g,W,oy){
   // Arrow_Rain: arrows falling out of the sky, and the ones stuck in the ground
   /* 0.12.69 Hatchet_Leap landing: a cracked-earth decal that lingers, dust clouds rolling out, pebbles thrown up, a short burst of energy */
   /* 0.12.70 Syphon_Life: two twisting strands (black and violet) from his chest to the target's middle, motes of life drifting back into him;
-     a burrow puff where Call_of_Cthulhu pulls a tentacle under; a green glint on his dagger during Lethal_Strikes */
+     a burrow puff where Call_of_Cthulhu pulls a tentacle under */
   const voidFx=()=>{for(const h of g.alive()){if(h.key!=='cultist')continue;const hx=g.heroX(h),gy=h.gy||G;
       if(h.syph&&h.syph.tg&&!h.syph.tg.dead){const T=h.syph.tg,x0=hx+(h.face||1)*3,y0=gy-12,x1=T.x,y1=(T.gy!=null?T.gy:G)-(T.boss?30:12),L=Math.hypot(x1-x0,y1-y0)||1,nx=-(y1-y0)/L,ny=(x1-x0)/L;
         ctx.save();for(const [w,c,ph,amp] of [[3.2,'rgba(10,0,16,.75)',0,2.2],[1.6,'rgba(150,60,255,.85)',Math.PI,2],[.7,'rgba(230,200,255,.9)',Math.PI*.5,1.2]]){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();
@@ -5590,7 +5694,7 @@ function drawGame(ctx,g,W,oy){
           for(let i=0;i<=24;i++){const k=i/24,sw=Math.sin(k*10+g.t*12+ph)*amp*Math.sin(k*Math.PI),x=x0+(x1-x0)*k+nx*sw,y=y0+(y1-y0)*k+ny*sw;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();}
         ctx.globalCompositeOperation='lighter';for(let i=0;i<6;i++){const k=(g.t*1.4+i/6)%1;glow(ctx,x0+(x1-x0)*k,y0+(y1-y0)*k+Math.sin(g.t*8+i)*1.4,1.3,i%3===0?'#ff5a6a':i%2?'#ffe07a':'#9dff6a',.85);}
         glow(ctx,x1,y1,7*pulse,'#7dff5a',.35);glow(ctx,x1,y1-6,4,'#fff2b0',.3);glow(ctx,x0,y0,3,'#c0102a',.45);ctx.restore();}
-      if(h.lethalT>0){ctx.save();ctx.globalCompositeOperation='lighter';glow(ctx,hx+(h.face||1)*7,gy-10,2.2,'#6aff4a',.35+.25*Math.sin(g.t*14));ctx.restore();}}
+}
     for(const f of g.fx){if(f.k!=='burrow')continue;const k=f.t/f.life;for(let i=0;i<5;i++)puffAt(f.x+(i-2)*2.5,f.gy-1-k*5-(i%2),1.6+k*2,.6*(1-k),'#4a3a2c');}};
   const slamDraw=()=>{for(const f of g.fx){if(f.k!=='crack')continue;const k=f.t/f.life,a=k>.7?(1-k)/.3:1;let sd=Math.floor(f.x*13+f.gy*7);const R=()=>{sd=(sd*9301+49297)%233280;return sd/233280;};
       ctx.save();ctx.globalAlpha=a;ctx.fillStyle='rgba(20,12,8,.35)';ctx.beginPath();ctx.ellipse(f.x,f.gy,f.r*.55,f.r*.16,0,0,7);ctx.fill();
@@ -6407,7 +6511,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.397</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.398</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -6537,7 +6641,7 @@ function statBars(k,lvl){const R=heroRatings(k),b=heroBase(k,lvl,3),P=atkProfile
     <span title="Utility ${R.u}/10: what he does for the team: heals, shields, buffs, crowd control (stuns, roots, slows, fear), summons and builds.">✨ UTL</span>${pipBar(R.u,'#7dff5a')}<em>${R.u}</em></div>`;}
 const ROLE={melee:'Melee',ranged:'Ranged',caster:'Caster',duo:'Duo',gunner:'Rifle + Melee',blade:'Sword'};
 /* 0.12.170 (Kyle): a save keeps one team for good. The party is picked once, when the save is made; later runs restart with that same team. */
-function restartSameTeam(s,team){for(const k of team){const H=s.heroes[k];if(H){H.lvl=1;H.xp=0;H.pts={};H.tal=[];H.offer=null;H.tree={};H.treeV=2;H.tk=k;}}s.run=newRun(team,s);const M=s.lastModes||{};s.run.hardcore=!!M.hardcore;s.run.dnd=!!M.dnd;if(s.run.dnd)s.run.rolls=rollPersonas(team);s.runs++;persist();showCamp();}
+function restartSameTeam(s,team){for(const k of team){const H=s.heroes[k];if(H){H.lvl=1;H.xp=0;H.pts={};H.tal=[];H.offer=null;H.tree={};H.treeV=3;H.tk=k;}}const wasU=!!(s.run&&s.run.uncensored);s.run=newRun(team,s);const M=s.lastModes||{};s.run.hardcore=!!M.hardcore;s.run.dnd=!!M.dnd;s.run.uncensored=wasU;if(s.run.dnd)s.run.rolls=rollPersonas(team);s.runs++;persist();showCamp();}
 function showTeam(){
   setRunModes(null);  const s=SLOT();migrate(s,CC.player);s.partySize=3;const pick=[];   /* 0.12.33: back to a 3-hero party */
   const mine=DATA.heroes.slice();   /* 0.12.92: every player uses the shared roster */
@@ -6548,7 +6652,7 @@ function showTeam(){
       <div class="cc-insp" data-ik="${h.key}"><div class="cc-sub" style="margin:4px 0 2px;font-size:10px">✨ INSPIRATION DECK</div>
         <select data-ip><option value="">Pick a player…</option>${Object.keys(PLAYER_ICON).map(p=>`<option value="${p}"${H.insp&&INSP[H.insp]&&INSP[H.insp].o===p?' selected':''}>${PLAYER_ICON[p]} ${p}</option>`).join('')}</select>
         <select data-id ${H.insp?'':'disabled'}></select><div class="cc-ibx"></div></div></div>`;}).join('')}</div>
-    <div class="cc-row" style="margin-top:12px"><label class="cc-sub" style="margin:0 8px 0 0;font-size:12px;cursor:pointer" data-tipt="Friendly fire: your heroes' shots can hit allies in the way, and your own explosions (Trip Bomb, its shockwave, missiles, planted mines) hurt your units too."><input type="checkbox" data-hc ${s.lastModes&&s.lastModes.hardcore?'checked':''}> ☠ Hardcore</label><label class="cc-sub" style="margin:0 10px 0 0;font-size:12px;cursor:pointer" data-tipt="Every hero's 20 personality sliders are rolled (2d6-2 each) when the run starts instead of using their fixed values. Deck nudges still apply on top."><input type="checkbox" data-dnd ${s.lastModes&&s.lastModes.dnd?'checked':''}> 🎲 D&amp;D mode</label><button class="cc-btn go" data-go disabled>START RUN</button><button class="cc-btn" data-back>← Saves</button></div>`);
+    <div class="cc-row" style="margin-top:12px"><label class="cc-sub" style="margin:0 8px 0 0;font-size:12px;cursor:pointer" data-tipt="Friendly fire: your heroes' shots can hit allies in the way, and your own explosions (Trip Bomb, its shockwave, missiles, planted mines) hurt your units too."><input type="checkbox" data-hc ${s.lastModes&&s.lastModes.hardcore?'checked':''}> ☠ Hardcore</label><label class="cc-sub" style="margin:0 10px 0 0;font-size:12px;cursor:pointer" data-tipt="Every hero's 20 personality sliders are rolled (2d6-2 each) when the run starts instead of using their fixed values. Deck nudges still apply on top."><input type="checkbox" data-dnd ${s.lastModes&&s.lastModes.dnd?'checked':''}> 🎲 D&amp;D mode</label><label class="cc-sub" style="margin:0 10px 0 0;font-size:12px;cursor:pointer" data-tipt="Lets the crew swear: JP's full mouth, Tee's trash talk and the salty radio. Off by default; with it off every line stays PG and anything that slips through gets bleeped."><input type="checkbox" data-unf> 🤬 Unfiltered</label><button class="cc-btn go" data-go disabled>START RUN</button><button class="cc-btn" data-back>← Saves</button></div>`);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
   // Inspiration: player first, then that player's decks (each option shows its bonus). Saved per hero on this save slot.
   P.querySelectorAll('.cc-insp').forEach(box=>{const k=box.dataset.ik,H=s.heroes[k];const ip=box.querySelector('[data-ip]'),id=box.querySelector('[data-id]'),ib=box.querySelector('.cc-ibx');
@@ -6563,7 +6667,7 @@ function showTeam(){
   P.querySelector('[data-back]').onclick=showSlots;
   P.querySelector('[data-go]').onclick=()=>{const g0=P.querySelector('[data-go]');const noI=pick.filter(k=>!(s.heroes[k]&&s.heroes[k].insp&&INSP[s.heroes[k].insp]));   /* 0.12.342 (Kyle): are-you-sure if a hero has no Inspiration */
     if(noI.length&&!g0.dataset.sure){g0.dataset.sure=1;g0.textContent='No Inspiration for '+noI.map(k=>heroDef(k).name).join(', ')+'. Start anyway? ▶';return;}
-    s.team=pick.slice();s.run=newRun(pick,s);s.lastModes={hardcore:!!P.querySelector('[data-hc]').checked,dnd:!!P.querySelector('[data-dnd]').checked};s.run.hardcore=s.lastModes.hardcore;s.run.dnd=s.lastModes.dnd;if(s.run.dnd)s.run.rolls=rollPersonas(pick);s.runs++;persist();showCamp();};upd();P.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('.cc-insp'))upd();});
+    s.team=pick.slice();s.run=newRun(pick,s);s.lastModes={hardcore:!!P.querySelector('[data-hc]').checked,dnd:!!P.querySelector('[data-dnd]').checked};s.run.hardcore=s.lastModes.hardcore;s.run.dnd=s.lastModes.dnd;s.run.uncensored=!!P.querySelector('[data-unf]').checked;if(s.run.dnd)s.run.rolls=rollPersonas(pick);s.runs++;persist();showCamp();};upd();P.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('.cc-insp'))upd();});
 }
 /* camp panel: supplies, what the camp did on arrival, upgrades (pick 1 of the offers per camp), Triage builds */
 function campPanel(s,run,btn){const gold=s.gold||0,parts=s.parts||0;const food=run.food||0;run.haggle=haggleOf(s,run);run.resource=resourcefulOf(s,run);
@@ -6651,7 +6755,7 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
       return `<div class="${cls}" data-n="${n.id}" title="${esc(n.name)}" style="grid-row:${n.row};grid-column:${'abcd'.indexOf(n.col)+1}">${n.icon}<span class="trk">${rk}/${n.max}</span></div>`;};
     const col=(B,bi)=>{const bp=treeBranchPts(k,L,bi);const nxt=TREE_REQ.find(q=>q>bp);
       return `<div class="tbr" data-bi="${bi}" style="flex:1;min-width:236px;max-width:300px;position:relative;border:2px solid #3a2e4a;border-radius:12px;overflow:hidden;box-shadow:0 0 18px #000c;
-          background:linear-gradient(180deg,#0006,#000a 70%),url(crawl_talbg.png?v=1795149102) ${-(B.bg||0)*100}% 0/900% 100%;image-rendering:pixelated">
+          background:linear-gradient(180deg,#0006,#000a 70%),url(crawl_talbg.png?v=1795149680) ${-(B.bg||0)*100}% 0/900% 100%;image-rendering:pixelated">
         <svg class="tlines" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></svg>
         <div style="position:relative;z-index:1;text-align:center;font-weight:800;color:#ffe9a8;letter-spacing:.5px;padding-top:6px;text-shadow:0 1px 3px #000">${B.icon} ${esc(B.name)}</div>
         <div style="position:relative;z-index:1;font-size:9.5px;text-align:center;color:#c9b8e0;text-shadow:0 1px 2px #000">${bp} point${bp===1?'':'s'} · ${nxt!=null?`next tier at ${nxt}`:'every tier open'}</div>
@@ -6693,7 +6797,7 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
 /* 0.12.338 (Kyle) GEAR screen: 3 slots per hero (Weapon / Armor / Trinket), a stash, free swaps. Tap anything to see it in full
    (no hover needed). Spare parts raise an item a quality tier (Rusted -> plain -> Fine -> Masterwork); scrapping gives parts back. */
 function gearIcon(it,sz){const D=gearDef(it);if(!D)return '';sz=sz||32;const k=sz/32;const R=GEAR_RAR[D.r];
-  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795149102) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
+  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795149680) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
 function showGear(k0){const s=SLOT();if(!s)return;const run=s.run;const team=(run&&run.team)||[k0];let k=k0;let sel=null,filt='all';gearSlot(s);
   let ov=document.getElementById('cc-gear');if(ov)ov.remove();ov=document.createElement('div');ov.id='cc-gear';
   ov.style.cssText='position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 20%,rgba(40,30,70,.6),rgba(4,2,8,.94));display:flex;align-items:center;justify-content:center;padding:8px';
@@ -6768,7 +6872,7 @@ function showCamp(){
   const s=SLOT();const run=s.run;migrate(s,CC.player);run.pending=0;run.bag=[];   /* 0.12.354: the old deck-card skills/items/backpack system is gone */const st=CFG.stage(run.stage,run.prestige);
   setRunModes(run);{const lg=campArrive(s,run);if(lg.length)run.campLog=lg;else if(run.campAt!==run.stage)run.campLog=[];}const hungry=new Set(run.needFeed||[]);
   const btn=(attrs,label,title)=>`<button class="cc-mini" ${attrs} ${title?`title="${esc(title)}"`:''}>${label}</button>`;
-  const P=showPanel(`<div class="cc-h">STAGE ${run.stage}${run.prestige?' · ★'+run.prestige:''}${run.hardcore?' <span style="color:#ff5a5a;font-size:12px">☠ HARDCORE</span>':''}${run.dnd?' <span style="color:#c8a0ff;font-size:12px">🎲 D&amp;D</span>':''}</div><div class="cc-h2">${esc(st.biome.name)}${st.boss?` — ${esc(CFG.bosses[st.boss].name)} awaits`:''}</div>
+  const P=showPanel(`<div class="cc-h">STAGE ${run.stage}${run.prestige?' · ★'+run.prestige:''}${run.hardcore?' <span style="color:#ff5a5a;font-size:12px">☠ HARDCORE</span>':''}${run.dnd?' <span style="color:#c8a0ff;font-size:12px">🎲 D&amp;D</span>':''}${run.uncensored?' <span style="color:#ff8a5a;font-size:12px">🤬 UNFILTERED</span>':''}</div><div class="cc-h2">${esc(st.biome.name)}${st.boss?` — ${esc(CFG.bosses[st.boss].name)} awaits`:''}</div>
     <div class="cc-firehost"></div>
     ${(()=>{try{if(localStorage.getItem('cc-camphelp')==='off')return '';}catch(e){}return `<div class="cc-help" data-camphelp>🏕️ <b>Camp tips</b> · Tap the pulsing <b>⛺ ⓘ</b> next to the title to see every camp upgrade, its tiers and prices. Tap ability and deck chips under 📜 <b>Skills</b> for details. Feed and water everyone before you leave, or they start the next stage weaker. Anything with a dotted underline or ⓘ shows more info when you tap it.
       <div style="margin-top:6px;display:flex;gap:8px"><button class="cc-btn" data-helpx="once" style="padding:2px 10px">Got it</button><button class="cc-btn" data-helpx="off" style="padding:2px 10px;opacity:.75">Don't show again</button></div></div>`;})()}
@@ -6874,7 +6978,7 @@ function beginStage(){
 /* 0.12.217 the radio's messages: a roast of the crew or something fun. Each one plays once per browser before they repeat */
 const RADIO_LINES=["This is an emergency broadcast: Shane has left his house. Repeat: Shane has left his house. It is either work or cigarettes.", "Shane spotted riding his moped through a blizzard. Survivors report the moped is in better shape than Shane.", "Shane would like you to know Dexter is the greatest show ever made. Shane would also like you to know nothing about television.", "Breaking: Shane's lungs have filed for a restraining order against his cigarettes.", "Shane thinks he's the funniest man alive. The dead disagree. And they're the only audience he's got.", "Shane once told everyone he wished he got crippled so he could game forever. The zombies are happy to help.", "Reports confirm Shane has a new girlfriend from the same state as the last one. JP says the man has a type.", "Shane tried to whisper something nasty about a guy at the bar. The guy heard it. Shane learned a new kind of running.", "Tonight's weather: a thick brown cloud over Shane's house. Cause: unknown. Smell: known.", "Zombie experts confirm they will not eat Shane. Something about the secondhand smoke.", "Bartenders across the state have been advised: watch your drink if Shane walks in. Allegedly.", "Shane's moped has more horsepower than Shane, and it's never once been winded.", "Shane says he's out of shape on purpose. Strategic. Low profile. Hides from zombies by looking like a couch.", "If you see Shane out here, don't panic. He's slow, he wheezes, and he'll stop to smoke.", "Shane is a lot like Dexter: he thinks he's hiding something cool. He's hiding a carton of Marlboros.", "Shane Sucks. This has been a public service announcement.", "Shamp is building software that blocks cell phones in prisons. Somehow the zombies still got his number.", "Shamp says the apocalypse is fine actually, and the economy has never been better. JP has thrown his headset.", "JP and Shamp are arguing politics on Discord again. The zombies have muted the channel.", "Shamp's out here detecting contraband phones. Shamp, the call is coming from inside the raid.", "Shamp says he's only a jerk out of love. The love is very well hidden.", "Wolf is taking care of grandma. Grandma is the one with the shotgun.", "Wolf's seasonal job is back. Nobody knows what it is. Wolf doesn't either.", "Wolf, roasting your friends does not count as cardio. Neither does gaming. Keep doing both.", "Wolf says the zombies are ugly. Coming from Wolf, that's a compliment.", "Bryan has been promoted at his parents' restaurant. Day one of the co-owner dream. Day one of sweeping, too.", "Bryan has adopted Meo. Meo has adopted a tablet. Nobody has adopted a plan.", "Meo was told to hold the door. Meo is watching a video about doors.", "Meo's attention span has been located. It was last seen chasing a butterfly through wave three.", "Bryan's not lazy, he's conserving energy for when something interesting happens. Any day now.", "JP stole Kyle's best friend. Kyle would like Bryan back, with interest.", "Bryan and JP: best friends, raid buddies, and the two loudest people on Discord.", "This is an emergency broadcast. JP is high again. Repeat: JP is high again.", "Breaking news: local man JP smokes entire forest, calls it a break.", "JP, your Kar98 called. It wants a sober owner.", "Vibe Raiders, report for raid night. Bryan, please stop standing in the fire.", "Bryan's a bitch!", "Hear this if you're gay!", "Dice Boys rule!", "This frequency is sponsored by Dice Boys. Roll high, die hard.", "Eddie, you can stop targeting Kyle first now. He knows. He's always known.", "Eddie says it's not personal. Eddie attacks Kyle first every single game. It's personal.", "Kenzie is the only responsible adult left. Protect her at all costs.", "Todd has been shuffling since stage one. Somebody check on Todd.", "Todd brought a new deck to game night. It's the old deck with different sleeves.", "Cheez has never once read a card before playing it.", "Cheez is legally a snack, and that is all we will say.", "Kate's official ruling stands: Cheez is the group's token Asian. Cheez accepts, for tax reasons.", "Kate, welcome to game night. Rule one: Eddie attacks Kyle. Rule two: see rule one.", "Cheez's apartment is still standing. The fridge is still stocked. Coincidence? No.", "Good news, everybody: the zombies are slow. Bad news: so is Todd's shuffle.", "Kitchen crew check-in: Kyle's on the grill, David and Davey are on the line, JT is on dish. The zombies are on the menu.", "JT was supposed to make game night but he didn't feel well. The zombies understand. The zombies also don't feel well.", "Davey says it needs more salt. Davey always says it needs more salt.", "David, JP and Kyle agree the world's gone sideways. The zombies agree too, and they're not even a theory.", "Behind! Hot! Corner! Order up! Somebody tell JT the dish pit is a war zone now. It always was.", "Kyle built this whole game just to win one argument.", "Leon, if you're listening: you're the best one in the pod.", "Leif, if you're listening: you can't tag the radio. Stop tagging the radio.", "Shoshi, turn it off and on again. The apocalypse, I mean.", "Stay hydrated. Stay strapped. Dice Boys forever."];   /* 0.12.394 (Kyle): rebooted for both crews: the Discord/WoW guys (JP, Bryan, Meo, Wolf, Shamp, and Shane, who has it coming), the Dice Boys (Eddie, Kenzie, Todd, Cheez, new: Kate) and the kitchen (David, Davey, JT) */
 function playRadio(R){if(!R||R.state!=='idle')return;R.state='playing';const g=CC.game;
-  let seen=[];try{seen=JSON.parse(localStorage.getItem('podrundown-crawl-radio')||'[]');}catch(_){}let pool=RADIO_LINES.filter(l=>!seen.includes(l));if(!pool.length){seen=[];pool=RADIO_LINES.slice();}
+  let seen=[];try{seen=JSON.parse(localStorage.getItem('podrundown-crawl-radio')||'[]');}catch(_){}const SW1=new RegExp(SWEAR.source,'i'),un=!!(SLOT()&&SLOT().run&&SLOT().run.uncensored),ALL=RADIO_LINES.filter(l=>un||!SW1.test(l));let pool=ALL.filter(l=>!seen.includes(l));if(!pool.length){seen=[];pool=ALL.slice();}   /* 0.12.398 Unfiltered off: no salty radio */
   const line=pool[Math.floor(Math.random()*pool.length)];seen.push(line);try{localStorage.setItem('podrundown-crawl-radio',JSON.stringify(seen));}catch(_){}
   const sub=root.querySelector('.cc-radiosub')||(()=>{const d=document.createElement('div');d.className='cc-radiosub';root.querySelector('.cc-cvw').appendChild(d);return d;})();
   const v0=BGM?BGM.volume:0;const duck=to=>{if(!BGM)return;const from=BGM.volume,t0=performance.now();const st=()=>{const k=Math.min(1,(performance.now()-t0)/500);BGM.volume=from+(to-from)*k;if(k<1)requestAnimationFrame(st);};st();};
