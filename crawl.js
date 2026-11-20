@@ -248,7 +248,7 @@ function regenEnergy(u,dt){const M=ENERGY.max(u);if(u.en==null)u.en=M;u.enMax=M;
    Charges, leaps, dashes, melee and anything planted on the ground wait until they climb down. */
 const TOWER_OK=new Set(['together','orderup','vibecode','wolfout','strapped','thechop','undo','reboot','trial','dad','pierce','snare','hmark','chain','thunder','static','overcharge','toolbox','friend','frag','smokegren','suppress','toke','noscope','trash','aimed','grit','brick','bottle','rapid','rain','blowgun','pin','mend','bloom','thorns','resurge','cyclone','missiles','smoke','nano','directive','carpet','surge','satchel','syphon','tentacle','cthulhu']);
 function towerBlocks(u,A){return !!(A&&A.id&&u&&u.perch&&u.perch.k==='tower'&&u.perchSt&&!TOWER_OK.has(A.id));}
-function spendEnergy(u,c,A){if(towerBlocks(u,A))return false;c*=u.enCostM||1;if((u.en||0)<c)return false;u.en-=c;unstealth(u);if(u.capF&&u.capF.length&&CURG)capHook('cast',CURG,u,c);if(u.gp&&u.gp.length&&CURG)CURG.gearFire(u,'cast');return true;}
+function spendEnergy(u,c,A){if(towerBlocks(u,A))return false;c*=u.enCostM||1;if(u.clearOn&&c>0){u.clearOn=0;c=0;}if((u.en||0)<c)return false;u.en-=c;unstealth(u);if(u.capF&&u.capF.length&&CURG)capHook('cast',CURG,u,c);if(u.gp&&u.gp.length&&CURG)CURG.gearFire(u,'cast');return true;}
 let CURG=null;   /* 0.12.249 the game being stepped, for capstone cast hooks */   // 0.12.67: using an ability breaks stealth
 /* 0.12.67 Stealth (generic, for any future stealth source too): u.stealthT>0 = zombies can't pick you as a target and lose you if they had you.
    Attacking or using an ability breaks it (and a short lockout stops the same smoke cloud from re-hiding you instantly). */
@@ -1641,6 +1641,7 @@ class Game{
           {const LM=luckyStatMod(H);if(LM){hpP+=LM.hpPct;for(const [x,v] of Object.entries(LM.mod))m[x]=(m[x]||0)+v;}}   /* 0.12.286 Lucky Die stat rungs */
           {const GS=gearStat(this.slot,h.key);if(GS){hpP+=GS.hpPct||0;dmP+=GS.dmgPct||0;for(const x of ['acc','crit','dodge','armor','luck','kbRes','enRegen','move','xp','cdr'])if(GS[x])m[x]=(m[x]||0)+GS[x];}h.gp=gearProcs(this.slot,h.key);}   /* 0.12.338 gear */
           h.capF=Object.keys(h.cap).filter(x=>CAPFX[x]);
+          h.pBleed=m.pBleed||0;h.pFlurry=m.pFlurry||0;h.pCritEn=m.pCritEn||0;h.pClear=m.pClear||0;h.pExec=m.pExec||0;h.pCraze=m.pCraze||0;h.pReck=m.pReck||0;   /* 0.12.396 WoW-style proc talents */
           if(h.cap.glass){dmP+=15;hpP-=10;}if(h.cap.bulwark){hpP+=20;m.armor=(m.armor||0)+2;}if(h.cap.over)m.cdr=(m.cdr||0)+20;if(h.cap.jugg){m.armor=(m.armor||0)+3;m.kbRes=(m.kbRes||0)+40;}
           h.enCostM=h.cap.over?.8:1;h.talDR=h.cap.jugg?.1:0;h.adrOn=0;h.pingOn=0;h.olAcc=0;if(h.key==='shoshi')h.revBonus=(h.revBonus||0)+.3;
           if(hpP)h.max*=1+hpP/100;if(dmP)h.atk*=1+dmP/100;
@@ -1725,6 +1726,9 @@ class Game{
     if(!opt.sure&&e.E&&e.E.dodge&&this.rng()<e.E.dodge){this.text(e.x,e.y-30,'miss','#9aa');this.failAct(src);return 0;}
     let crit=false;if(src&&!opt.nocrit&&this.rng()<src.crit+(opt.critAdd||0)+.01*(src.inevN||0)+(src.laughT>0?.05:0)){amt*=(opt.critMul||src.critMul||1.75);crit=true;if(src.raT>0&&src.key==='archer')src.raT*=.5;   /* One Nocked passive: any crit halves its remaining cooldown */if(src.inevN){src.luck-=2*src.inevN*(hasPerk(src,'superlucky')?2:1);src.inevN=0;}
       const HR=!opt.fromTent&&src.base&&src.base.char&&(src.base.char.abilities||[]).find(a=>a.id==='herald');if(HR){src.critRegenT=HR.critT;for(const T of this.tentacles||[])T.heraldT=HR.critT;}}   // Herald: his crits (not his tentacles') feed him and every tentacle he has out   // Herald: crits feed energy
+    if(src&&src.base&&!this.demo){   /* 0.12.396 proc talents (Deep Wounds, Flurry, Ruthlessness, Clearcasting) */
+      if(crit){if(src.pBleed>0&&!opt.dw){e.dwD=(e.dwD||0)+amt*src.pBleed/100;e.dwT=3;e.dwSrc=src;}if(src.pFlurry>0&&!(src.flurT>0)){src.flurT=3;tbuff(src,{sp:src.pFlurry/100},3);}if(src.pCritEn>0)src.en=Math.min(src.enMax||100,(src.en||0)+src.pCritEn);}
+      if(src.pClear>0&&!src.clearOn&&this.rng()<src.pClear/100){src.clearOn=1;this.text(src.x,(src.gy||this.G)-62,'CLEARCAST','#7fe0ff');}}
     if(src&&src.capF&&src.capF.length)amt=capHook('hit',this,src,e,amt,crit,opt);   /* 0.12.249 capstones */
     if(opt.head){amt*=HEADSHOT.mul;this.text(e.x,e.y-(e.fly?24:54),'HEADSHOT!','#ff6040',false);   /* 0.12.36 (Kyle): half the old size */}
     {const ip=insP(src);   // inspiration passives that trigger on his hits
@@ -1736,6 +1740,7 @@ class Game{
      if(ip==='deathtouch'&&!e.boss&&!e.bossForm&&!e.nem&&this.rng()<.07){amt=Math.max(amt,e.hp*20);opt._dt=1;this.text(e.x,e.y-50,'DEATHTOUCH','#7dff6a');}}   /* 7% to kill any non-boss outright */
     if(opt.fire&&this.pools&&this.pools.length){for(const P of this.pools)if(!(P.fire>0)&&e.x>=P.x0&&e.x<=P.x1&&Math.abs((e.gy!=null?e.gy:this.G)-P.gy)<P.dz)this.lightPool(P);}
     amt=mitigate(e,amt,opt.type); if(e.shred>0)amt*=1.2;if(e.markT>0)amt*=1+(e.markAmp||.25);   // Pinning_Shot mark
+    if(src&&src.pExec&&e.hp<e.max*.3)amt*=1+src.pExec/100;   /* 0.12.396 Executioner-style talents */
     if(opt.execute&&e.hp<e.max*.3)amt*=2;if(src&&src.cap&&src.cap.exec&&e.hp<e.max*.25)amt*=1.6;   /* Executioner talent */
     amt=Math.max(1,amt);const hp0=Math.max(0,e.hp);e.hp-=amt;e.hitFlash=.12;this.lastHit=this.t;
     const dealt=opt._dt?0:Math.min(amt,hp0);   /* 0.12.334 (Kyle): damage stats only count HP actually taken off (no overkill), and a Deathtouch kill counts nothing */
@@ -1836,7 +1841,7 @@ class Game{
   bleedStep(u,dt){if(!u.bleeds){if(u.bleedT>0&&u.bleedDps>0){u.bleeds={old:{T:u.bleedT,dps:u.bleedDps}};}else return 0;}let dps=0,T=0;
     for(const k in u.bleeds){const b=u.bleeds[k];b.T-=dt;if(b.T<=0){delete u.bleeds[k];continue;}dps+=b.dps;T=Math.max(T,b.T);}u.bleedT=T;u.bleedDps=dps;if(!T)u.bleeds=null;return dps;}
   /* 0.12.390 (Kyle): trait effects ride on EVERY hit a carrier lands (melee, leap, arrow, gut ball...), for Promoteds and Alphas alike */
-  hurtHero(h,amt,from){const took=this.hurtHero0(h,amt,from);if(took&&from&&from.nemHas&&!this._trait&&!from.dead){this._trait=1;try{this.traitOnHit(from,h,amt+(from.dmgFlat||0));}finally{this._trait=0;}}return took;}
+  hurtHero(h,amt,from){const took=this.hurtHero0(h,amt,from);if(took&&h.alive&&!this.demo){if(h.pCraze>0&&this.rng()<h.pCraze/100){this.healHero(h,h.max*.05,true);this.text(this.heroX(h),(h.gy||this.G)-58,'+','#7dff6a');}if(h.pReck>0&&!(h.reckT>0)&&this.rng()<h.pReck/100){h.reckT=2;tbuff(h,{sp:.4},2);this.text(this.heroX(h),(h.gy||this.G)-62,'RECKONING','#ffb347');}}if(took&&from&&from.nemHas&&!this._trait&&!from.dead){this._trait=1;try{this.traitOnHit(from,h,amt+(from.dmgFlat||0));}finally{this._trait=0;}}return took;}
   traitOnHit(e,V,d){if(e.nemHas('rav'))e.hp=Math.min(e.max,e.hp+d*.4);
     if(e.nemHas('blood')&&V.alive)this.bleed(V,20*(e.dmgMul||1),6);
     if(e.nemHas('cleave')){const o=this.alive().find(o=>o!==V&&!o.pet&&Math.abs(this.heroX(o)-this.heroX(V))<10&&Math.abs((o.gy||this.G)-(V.gy||this.G))<8);if(o)this.hurtHero(o,d*.5,e);}}
@@ -2297,7 +2302,7 @@ class Game{
       regenEnergy(h,dt);if(h.critRegenT>0){h.critRegenT-=dt;h.en=Math.min(h.enMax||100,(h.en||0)+2*dt);h.hp=Math.min(h.max,h.hp+2*dt);}/* Herald: +1 energy and +1 HP every 0.5s */if(h.riseT>0){h.riseT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);}h.walkT+=dt*(scroll?(MOVE[h.key]||26)/26:0);if(h.animT>0)h.animT-=dt;if(h.hitFlash>0)h.hitFlash-=dt;if(h.buffT>0)h.buffT-=dt;
       if(h.shellT>0){h.shellT-=dt;h.pauseT=Math.max(h.pauseT||0,.05);}
       if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}if(h.staticT>0)h.staticT-=dt;
-      if(h.capF&&h.capF.length)capHook('tick',this,h,dt);tbuffStep(h,dt);if(h.gp)this.gearTick(h,dt);
+      if(h.capF&&h.capF.length)capHook('tick',this,h,dt);tbuffStep(h,dt);if(h.flurT>0)h.flurT-=dt;if(h.reckT>0)h.reckT-=dt;if(h.gp)this.gearTick(h,dt);
       if(h.invulnT>0)h.invulnT-=dt;if(h.upT>0){h.upT-=dt;if(h.upT<=0){h.upT=0;h.invulnT=0;h.thinkT=0;}}if(h.throwT>0){h.throwAge=(h.throwAge||0)+dt;if(h.throwAge>2.5){h.throwT=0;h.throwAge=0;}}else h.throwAge=0;   /* 0.12.224 safety net: no throw pose can ever stick */
       if(h.hotT>0){h.hotT-=dt;h.hotTick=(h.hotTick||0)+dt;if(h.hotTick>=h.hotEvery){h.hotTick-=h.hotEvery;this.healHero(h,h.hotAmt,false,h.hotSrc);}}   // Rejuvenating Bloom
       if(h.slowT>0){h.slowT-=dt;if(h.slowT<=0)h.slow=0;}if(h.bleedT>0||h.bleeds){const bd=this.bleedStep(h,dt);h.bleedAcc=(h.bleedAcc||0)+bd*dt;h.bleedTick=(h.bleedTick||0)+dt;if(h.bleedTick>=1||!(h.bleedT>0)){const d=h.bleedAcc;h.bleedAcc=0;h.bleedTick=0;h.hp-=d;this.text(h.x+6,this.G-58,Math.round(d),'#c0102a');if(h.hp<=0){this.heroDown(h);continue;}}}
@@ -2345,6 +2350,7 @@ class Game{
 
       if(e.fb){const F=e.fb;F.T-=dt;F.tick+=dt;while(F.tick>=.25&&!e.dead){F.tick-=.25;if(F.per!=null){F.acc=(F.acc||0)+F.per*F.mul;if(F.acc>=1){const d=Math.floor(F.acc);F.acc-=d;this.hitEnemy(e,d,F.src&&F.src.alive?F.src:null,{fire:1,quiet:1,sure:1});}}else this.hitEnemy(e,(this.rollDice([1,4])+(F.flat||0))*F.mul,F.src&&F.src.alive?F.src:null,{fire:1,quiet:1,sure:1});   /* 0.12.247: a spread-out burn piles up fractions so 2d4 really is 2d4 */}if(F.T<=0||e.dead)e.fb=null;}   /* 0.12.62 flamethrower burn: 1d4 every 0.25s for 2s */
       if(e.burnT>0){e.burnT-=dt;e.hp-=e.burn*dt*(e.E&&e.E.fireImmune?.25:1);   /* 0.12.236 Firemen take 25% from burns */if(e.hp<=0){this.kill(e,null);continue;}}
+      if(e.dwT>0){e.dwT-=dt;e.dwTick=(e.dwTick||0)+dt;if(e.dwTick>=1||e.dwT<=0){const share=e.dwT<=0?e.dwD:e.dwD/(Math.ceil(e.dwT)+1);e.dwTick=0;e.dwD-=share;if(share>=.5)this.hitEnemy(e,share,e.dwSrc,{nocrit:1,sure:1,raw:1,dw:1});if(e.dead)continue;}if(e.dwT<=0){e.dwD=0;e.dwSrc=null;}}   /* 0.12.396 Deep Wounds bleed */
       if(e.poisonT>0){e.poisonT-=dt;e.poisonTick=(e.poisonTick||0)+dt;
         if(e.poisonTick>=POISON.tick){e.poisonTick-=POISON.tick;const d=e.max*POISON.pct*e.poison;e.hp-=d;this.text(e.x+4,e.y-38,Math.round(d),'#7dff6a');if(e.hp<=0){this.kill(e,null);continue;}}
         if(e.poisonT<=0){e.poison=0;e.poisonTick=0;}}
@@ -4781,7 +4787,7 @@ for(const [k,C] of Object.entries(CHAR)){const up=(a,did)=>{if(!a||a.passive||!(
    Rows 1, 2 and 4: two talents each (3, 3 and 2 ranks) that push that hero's own abilities or gear. Row 3: one talent that changes how an
    ability works (the old skill mods). Row 5: the capstone (the old hero capstones). Resetting and moving points is free at camp. */
 const TREE_REQ=[0,3,6,9,12,15,18],TREE_RANKS=[3,3,1,2,2,1],TREE_MAXPTS=MAX_LVL-1;   /* 0.12.395: 7 tiers, 3 points a tier */
-const TF_LABEL={cd:'cooldown',en:'energy cost',dur:'duration',r:'radius',range:'range',dist:'distance',n:'count',heal:'healing',stun:'stun',every:'time between attacks',reload:'reload time',clip:'clip size',dmg:'bonus damage',shield:'shield',dr:'damage block',root:'root',count:'arrows',shots:'shots',hp:'HP',dps:'drain',pct:'heal per tick',per:'per tick',life:'lifetime',spd:'speed',slow:'slow',kb:'knockback',crit:'crit',amp:'damage taken',jump:'jump range',pierce:'pierce',shieldT:'shield time',heal2:'heal',window:'window',bonus:'bonus',mul:'multiplier',share:'share',ls:'lifesteal',ch:'chance',splash:'splash',reach:'reach',cut:'cooldown cut',energy:'energy',zap:'zap',high:'high time',mark:'mark time',fall:'fall time',miss:'miss chance',hit:'hit chance',burst:'burst',critAdd:'crit chance',critMul:'crit damage',move:'move',decay:'decay',steal:'steal',fear:'fear',size:'size',passes:'passes',flat:'flat damage',bleed:'bleed'};
+const TF_LABEL={under:'trigger HP',ally:'ally bonus',field:'field time',push:'push',bld:'build repair',mech:'robot repair',towerHit:'turret hits',towerMax:'turret max HP',T:'time',lineN:'line hits',auraR:'aura radius',auraAcc:'aura accuracy',tagSlow:'tag slow',rx:'circle size',en2:'energy given',ship:'Ship_It boost',shipT:'Ship_It time',critDmg:'crit damage',hpCost:'HP cost',fuse:'fuse time',max:'throw range',accPen:'accuracy penalty',poisonCh:'poison chance',pullR:'pull radius',pull:'pull strength',arm:'armor',regen:'regen',icd:'cooldown',hic:'hiccups',hold:'hold time',dmgMul:'damage',halveCh:'cooldown-halving chance',cast:'cast time',spread:'spread',cd:'cooldown',en:'energy cost',dur:'duration',r:'radius',range:'range',dist:'distance',n:'count',heal:'healing',stun:'stun',every:'time between attacks',reload:'reload time',clip:'clip size',dmg:'bonus damage',shield:'shield',dr:'damage block',root:'root',count:'arrows',shots:'shots',hp:'HP',dps:'drain',pct:'heal per tick',per:'per tick',life:'lifetime',spd:'speed',slow:'slow',kb:'knockback',crit:'crit',amp:'damage taken',jump:'jump range',pierce:'pierce',shieldT:'shield time',heal2:'heal',window:'window',bonus:'bonus',mul:'multiplier',share:'share',ls:'lifesteal',ch:'chance',splash:'splash',reach:'reach',cut:'cooldown cut',energy:'energy',zap:'zap',high:'high time',mark:'mark time',fall:'fall time',miss:'miss chance',hit:'hit chance',burst:'burst',critAdd:'crit chance',critMul:'crit damage',move:'move',decay:'decay',steal:'steal',fear:'fear',size:'size',passes:'passes',flat:'flat damage',bleed:'bleed'};
 const TA=(ab,mul,path)=>({ab,mul,path}),TF=(ab,n,path)=>({ab,face:n,path}),TD=(ab,add,path)=>({ab,add,path}),TS=st=>({st});
 function treeSer(v,f,R){const m=(R&&R.k)||1;if(!R||!(R.max>1))return f(v*m);const o=[];for(let i=1;i<=R.max;i++){const s=f(v*m*i);o.push(i===R.cur?'⟦'+s+'⟧':s);}return o.join('/');}
 function treeDesc(k,e,R){const C=CHAR[k]||{};const nm=e.ab==='_melee'?'Melee hits':e.ab==='_ranged'?'Basic shots':((C.abilities||[]).find(a=>a.id===e.ab)||{}).name||e.ab;
@@ -4794,7 +4800,10 @@ function treeDesc(k,e,R){const C=CHAR[k]||{};const nm=e.ab==='_melee'?'Melee hit
   if(e.face)out.push(`${nm}: dice +${S(e.face,N)} face`);
   if(e.st){const T=e.st;if(T.hpPct)out.push(`+${S(T.hpPct,N)}% max HP`);if(T.dmgPct)out.push(`+${S(T.dmgPct,N)}% damage`);if(T.heal)out.push(`+${S(T.heal,N)}% healing done`);if(T.rev)out.push(`revives ${S(T.rev,N)}% faster`);
     const ML={acc:'accuracy',crit:'% crit chance',dodge:'% dodge',armor:'armor',luck:'Luck',kbRes:'% knockback resistance',enMax:'max energy',enRegen:'energy per second',move:'% move speed',meleeSpd:'% melee speed',rangedSpd:'% shooting speed',rangedDmg:'% ranged damage',meleeDmg:'% melee damage',cdr:'% cooldowns',lifesteal:'% lifesteal',critMul:'% crit damage',xp:'% XP',kb:'knockback'};
-    for(const [x,v] of Object.entries(T.mod||{}))out.push(`${x==='cdr'?'−':'+'}${S(v,N)}${(ML[x]||x).startsWith('%')?'':' '}${ML[x]||x}`);}
+    const PT={pBleed:v=>`Crits make the zombie bleed for another ${S(v,N)}% of the hit over 3s`,pFlurry:v=>`After a crit, +${S(v,N)}% attack speed for 3s`,pCritEn:v=>`Crits give back ${S(v,N)} energy`,
+      pClear:v=>`${S(v,N)}% chance on a hit to make his next ability cost nothing`,pExec:v=>`+${S(v,N)}% damage to zombies under 30% life`,pCraze:v=>`${S(v,N)}% chance when he's hit to heal 5% max HP`,pReck:v=>`${S(v,N)}% chance when he's hit to swing 40% faster for 2s`};
+    for(const [x,v] of Object.entries(T.mod||{}))if(PT[x])out.push(PT[x](v));
+    for(const [x,v] of Object.entries(T.mod||{}).filter(([x])=>!PT[x]))out.push(`${x==='cdr'?'−':'+'}${S(v,N)}${(ML[x]||x).startsWith('%')?'':' '}${ML[x]||x}`);}
   return out.join(', ');}
 /* the trees: name, icon, then [rank-1 talents], [rank-2 talents], row 3, [row 4], [capstones] */
 const TB=(name,icon,r1,r2,r3,r4,r5)=>({name,icon,r1,r2,r3,r4,r5});
@@ -4874,6 +4883,131 @@ function treeMainAb(k,B){const C=CHAR[k]||{};const ids=new Set((C.abilities||[])
   for(const n of [...B.r1,...B.r2,B.r3,...B.r4,...(B.r5||[])]){if(!n||typeof n==='string'||!n.eff)continue;const a=n.eff.ab;if(a&&ids.has(a))cnt[a]=(cnt[a]||0)+1;}
   const best=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];return best?best[0]:null;}
 function treeTalCard(k,tal){const [t,a,b]=tal.split(':');return t==='mod'?(TAL_MOD[k]||{})[a]:t==='cap'?((HCAP[k]&&HCAP[k][a]&&HCAP[k][a][b])||(TAL_CAP[a]&&TAL_CAP[a][b])):null;}
+/* 0.12.396 (Kyle): every generic filler talent swapped for one written for that hero and tree. Slot order per tree:
+   [row1 5-rank, row2 3-rank, row3 3-rank, row4 2-rank, row5 2-rank, row6 2-rank, row6 2-rank, row5 major (only where the tree had no capstone of its own)] */
+const _X=(name,icon,...e)=>({name,icon,e}),_S=TS,_A=TA,_D=TD,_F=TF;
+const TREE_X={
+ soldier:[
+  [_X('Hazard Pay','🧨',_S({dmgPct:1})),_X('Long Toss','🏈',_A('frag',{max:.08})),_X('Smoke Discipline','🌫️',_A('smokegren',{cd:-.05})),_X('Concussion','💢',_A('smokegren',{slow:.15})),_X('Cook the Grenade','⏲️',_A('frag',{fuse:-.25})),_X('Danger Zone','☢️',_A('smokegren',{r:.12})),_X('Blast Suit','🦺',_S({hpPct:3,mod:{kbRes:8}}))],
+  [_X('Range Day','🎯',_S({mod:{rangedSpd:2}})),_X('Double Tap','✌️',_S({mod:{critMul:8}})),_X('Overwatch','🔭',_A('suppress',{range:.08})),_X('Walking Fire','🚶',_A('suppress',{cd:-.08})),_X('Tracer Rounds','✨',_S({mod:{acc:2,crit:1}})),_X('Muzzle Discipline','🔇',_A('_ranged',{every:-.05})),_X('Kill Zone','💀',_D('suppress',{flat:1})),
+   _X('Fire Superiority','🔥',_A('suppress',{n:.5,cd:-.2}),_S({mod:{rangedDmg:10}}))],
+  [_X('Thousand-Yard Stare','👁️',_S({mod:{kbRes:3}})),_X('Hit the Dirt','🫳',_S({mod:{dodge:2}})),_X('Resupply','📦',_A('ammodrop',{cd:-.06})),_X('Wide Drop','🪂',_A('ammodrop',{r:.15})),_X('Iron Discipline','🎖️',_S({mod:{armor:1,cdr:2}})),_X('Mess Hall','🍲',_S({hpPct:5})),_X('Battle Rhythm','🥁',_S({mod:{enRegen:.2}}))]],
+ lumberjack:[
+  [_X('Lumberjack Grip','✊',_S({mod:{meleeDmg:2}})),_X('Timber!','🌲',_D('chop',{stun:.2})),_X('Long Leap','🦘',_A('leap',{range:.08})),_X('Hard Landing','💥',_F('leap',1)),_X('Shockwave','〰️',_A('chop',{kb:.2})),_X('Axe Rhythm','🪓',_A('_melee',{every:-.05})),_X('Flannel Hide','🧥',_S({mod:{armor:1}}))],
+  [_X('Light on the Feet','🩰',_S({mod:{move:2}})),_X('Faster Spin','🌀',_A('whirl',{every:-.08})),_X('Sawdust Supper','🪵',_S({mod:{lifesteal:1}})),_X('Reaching Spin','↔️',_A('whirl',{range:.12})),_X('Blur','💨',_S({mod:{dodge:3}})),_X('Planted Boots','🥾',_S({mod:{kbRes:10}})),_X('Sweeping Blade','🧹',_S({mod:{meleeSpd:4}})),
+   _X('Tornado','🌪️',_A('whirl',{dur:.4,r:.2}),_S({mod:{meleeDmg:8}}))],
+  [_X('Short Fuse','😤',_S({mod:{crit:1}})),_X('Seeing Red','🔴',_A('rage',{dmg:.1})),_X('Thick Beard','🧔',_S({hpPct:4})),_X('Second Breakfast','🥓',_A('rage',{dr:.15})),_X('War Paint','🎨',_A('rage',{spd:.2})),_X('Steady Swings','🎵',_A('rhythm',{stun:.25})),_X('Grudge','💢',_S({mod:{critMul:10}})),
+   _X('Paul Bunyan','🪓',_A('rage',{dur:.5,dmg:.3}),_S({hpPct:8}))]],
+ druid:[
+  [_X('Gentle Hands','🤲',_S({heal:2})),_X('Sap Flow','🍯',_A('resurge',{heal:.1})),_X('Evergreen','🌲',_A('resurge',{icd:-.06})),_X('Morning Dew','💧',_S({mod:{enRegen:.2}})),_X('Rooted Calm','🪷',_S({hpPct:5})),_X('Moonwell','🌙',_S({mod:{enMax:6}})),_X('Healing Rain','🌧️',_A('bloom',{pct:.12})),
+   _X('Lifebinder','🌳',_A('mend',{heal:.4,cd:-.2}),_S({heal:10}))],
+  [_X('Wild Heart','🐾',_S({mod:{meleeSpd:2}})),_X('Thorny Hide','🌵',_S({mod:{armor:1}})),_X('Undertow','🌊',_A('cyclone',{pullR:.1})),_X('Lashing Wind','💨',_A('cyclone',{pull:.15})),_X('Swirling Leaves','🍂',_A('cyclone',{every:-.1})),_X('Feral Claws','🐻',_F('_melee',1)),_X('Gust Step','🌬️',_S({mod:{move:4}}))],
+  [_X('Deep Soil','🪴',_S({hpPct:2})),_X('Ironwood','🪵',_S({mod:{kbRes:8}})),_X('Fern Cover','🌿',_S({mod:{dodge:2}})),_X('Spring Rain','🌦️',_A('bloom',{cd:-.08})),_X('Perennial','🌼',_A('bloom',{under:.05})),_X('Mossy Bed','🛏️',_S({rev:15})),_X('Old Growth','🌲',_S({hpPct:3,mod:{armor:1}})),
+   _X('Heart of the Forest','🌳',_A('bloom',{pct:.5,dur:.3}),_S({hpPct:10,mod:{armor:2}}))]],
+ cheez:[
+  [_X('Breath of Steel','🫁',_S({mod:{crit:1}})),_X('Wind Cutter','🌬️',_A('iai',{spd:.1})),_X('Clean Cut','✂️',_S({mod:{critMul:8}})),_X('Zanshin','🧘',_S({mod:{dodge:3}})),_X('Beam Overclock','⚡',_D('_melee',{flat:1})),_X('Flurry','🌸',_S({mod:{meleeSpd:4}})),_X('Ronin Resolve','🎌',_A('attend',{hold:.25}))],
+  [_X('Good Vibes','😎',_S({mod:{luck:1}})),_X('Bottomless Cup','🍶',_A('sake',{share:.15})),_X('Liquid Courage','🥃',_A('sake',{dodge:.15})),_X('Hype Man','📣',_A('host',{crit:.25})),_X('Snack Table','🍕',_A('host',{regen:.3})),_X('Steady Pour','🫗',_A('sake',{hic:-.3})),_X('Regulars','🎲',_S({hpPct:5}))],
+  [_X('Night Shift','🌙',_S({mod:{enRegen:.1}})),_X('Surge Protector','🔌',_A('errfix',{arm:.15})),_X('Bedside Manner','🩹',_S({heal:5})),_X('Floor Manager','👔',_S({mod:{armor:1}})),_X('Stack Trace','🧾',_S({mod:{acc:3,crit:2}})),_X('Ticket Queue','🎟️',_S({mod:{cdr:3}})),_X('Uptime','⏱️',_S({hpPct:5})),
+   _X('System Restore','💾',_A('errfix',{heal:.4,r:.25,cd:-.15}),_S({heal:8}))]],
+ edward:[
+  [_X('Calloused Hands','✋',_S({mod:{meleeDmg:2}})),_X('Duct Tape','🩶',_S({hpPct:4})),_X('Level Head','📐',_S({mod:{acc:2}})),_X('Clamp Down','🗜️',_D('toolbox',{stun:.3})),_X('Sledge','🔨',_A('_melee',{kb:.2})),_X('Tape Measure','📏',_A('nails',{range:.12})),_X('Hard Hat','⛑️',_S({mod:{armor:1}})),
+   _X('Master Carpenter','🧰',_A('toolbox',{cd:-.25}),_F('toolbox',2),_A('nails',{field:.3}))],
+  [_X('Coffee','☕',_S({mod:{enRegen:.1}})),_X('Double Shift','🕐',_A('_ranged',{reload:-.06})),_X('Rolled Sleeves','💪',_A('_melee',{every:-.05})),_X('Overtime Grind','⚙️',_S({mod:{rangedSpd:5}})),_X('Paycheck','💵',_S({mod:{luck:2}})),_X('Night Bus','🚌',_S({mod:{move:4}})),_X('No Days Off','📅',_S({hpPct:5}))],
+  [_X('Good Listener','👂',_S({hpPct:2})),_X('Group Hug','🤗',_A('friend',{r:.12})),_X('Big Mouth','😤',_A('chutz',{per:.15})),_X('Pep Squad','📣',_A('friend',{ally:.25})),_X('Nerves of Steel','🧱',_A('chutz',{dr:.15})),_X('Bros Before Foes','✊',_S({mod:{kbRes:10}})),_X('Best Man','🎩',_S({mod:{armor:1,dodge:2}})),
+   _X('Believe in Me','✨',_A('friend',{dur:.4,dmg:.3,cd:-.15}),_S({hpPct:6}))]],
+ knight:[
+  [_X('Tower Shield','🛡️',_S({mod:{kbRes:3}})),_X('Shield Slam','🔰',_D('bash',{stun:.25})),_X('Wide Guard','↔️',_A('wall',{r:.12})),_X('Steel Wall','🧱',_A('wall',{dr:.08})),_X('Riposte','🤺',_S({mod:{meleeSpd:4}})),_X('Long Reach','📏',_A('bash',{reach:.2})),_X('Sentinel','🏰',_S({hpPct:2,mod:{armor:1}})),
+   _X('Unbreakable Wall','🏯',_A('wall',{dur:.5,cd:-.2}),_S({mod:{armor:3}}))],
+  [_X('Crimson Vow','🩸',_S({mod:{lifesteal:.5}})),_X('Hemorrhage','🔪',_S({mod:{critMul:8}})),_X('Red Tide','🌊',_A('oath',{regen:.15})),_X('Iron Blood','🫀',_S({hpPct:5})),_X('Blood Rage','😡',_S({mod:{meleeDmg:5}})),_X('Scarlet Stance','🧍',_S({mod:{kbRes:10}})),_X('Vampiric Edge','🦇',_S({mod:{lifesteal:1.5}}))],
+  [_X('Warhorse Heart','🐎',_S({mod:{move:2}})),_X('Spiked Pauldrons','📍',_A('charge',{kb:.12})),_X('Heavy Boots','🥾',_D('kleap',{stun:.2})),_X('Thunder Hooves','⚡',_A('charge',{spd:.15})),_X('Meteor Drop','☄️',_D('kleap',{flat:2})),_X('High Leap','🦘',_A('kleap',{max:.12})),_X('Rally Banner','🚩',_S({mod:{cdr:3}})),
+   _X('Crimson Comet','☄️',_A('charge',{cd:-.25,dist:.25}),_F('charge',2),_S({mod:{armor:2}}))]],
+ robot:[
+  [_X('Fire Control','🖥️',_S({mod:{rangedDmg:2}})),_X('Thermite','🔥',_A('surge',{burn:.15})),_X('Long Range Pods','📡',_A('missiles',{range:.08})),_X('Blast Radius','💥',_A('missiles',{r:.2})),_X('Tight Spread','🎯',_A('missiles',{spread:-.2})),_X('Laser Sight','🔴',_A('_ranged',{range:.1})),_X('Coolant Loop','❄️',_S({mod:{cdr:3}}))],
+  [_X('Micro Drones','🐝',_S({mod:{dodge:1}})),_X('Smoke Radius','🌫️',_A('smoke',{r:.1})),_X('Sticky Smoke','🕸️',_A('smoke',{slow:.15})),_X('Nano Shield','🛡️',_A('nano',{dr:.2})),_X('Field Repair','🔧',_A('nano',{under:.1})),_X('Ghost Mode','👻',_A('smoke',{dodge:.2})),_X('Hive Link','🔗',_S({mod:{enRegen:.2}})),
+   _X('Nanite Storm','🌪️',_A('nano',{per:.35,cd:-.2}),_A('smoke',{dur:.3}),_S({hpPct:6}))],
+  [_X('Reinforced Joints','🔩',_S({hpPct:2})),_X('Servo Boost','⚙️',_S({mod:{move:3}})),_X('Ablative Coat','🧱',_S({mod:{armor:1}})),_X('Shock Absorbers','🪨',_A('nano',{halveCh:.25})),_X('Backup Battery','🔋',_S({mod:{enMax:6}})),_X('Priority Queue','📶',_S({mod:{cdr:3}})),_X('Heavy Treads','🛞',_S({mod:{kbRes:12}})),
+   _X('Juggernaut Protocol','🤖',_S({hpPct:15,mod:{armor:2,kbRes:20}}),_A('directive',{cd:-.2}))]],
+ jp:[
+  [_X('Breathing Rhythm','🫁',_S({mod:{acc:1}})),_X('Match Grade','🏅',_S({mod:{critMul:8}})),_X('Cross-Map','🗺️',_A('noscope',{range:.1})),_X('Spotter','🔭',_A('_ranged',{range:.1})),_X('Flick Shot','⚡',_A('noscope',{cd:-.08})),_X('Ghillie Suit','🌿',_S({mod:{dodge:3}})),_X('One Tap','☝️',_S({mod:{crit:3}}))],
+  [_X('Family Dinner','🍝',_S({hpPct:2})),_X('Reach Out','🤝',_A('familia',{range:.1})),_X('Shoulder Check','🛡️',_A('familia',{push:.2})),_X('Guild Leader','🏰',_S({mod:{armor:1}})),_X('Always Watching','👀',_A('familia',{under:.1})),_X('Tank Stance','🧍',_S({mod:{kbRes:12}})),_X('Vibe Raiders','🎮',_S({mod:{cdr:3}}))],
+  [_X('Chill','😌',_S({mod:{enRegen:.1}})),_X('Smack Talk','🗯️',_A('trash',{r:.12})),_X('Couch Lock','🛋️',_A('baked',{dr:.15})),_X('Hazy','🌫️',_A('baked',{dodge:.2})),_X('Roasted','🔥',_A('trash',{crit:.3})),_X('Snack Run','🍟',_A('toke',{heal:.2})),_X('Slow Burn','🕯️',_A('toke',{cd:-.08})),
+   _X('Wake n Snipe','🌅',_A('toke',{high:.4,heal:.4}),_A('trash',{dur:.3}),_S({mod:{crit:5}}))]],
+ chibi:[
+  [_X('Silent Steps','🦶',_S({mod:{dodge:1}})),_X('Shade Cloak','🌑',_A('clone',{cd:-.05})),_X('Smoke Bomb','💨',_S({mod:{move:3}})),_X('Backstab','🔪',_S({mod:{critMul:10}})),_X('Ninja Vanish','🫥',_A('dash',{cd:-.08})),_X('Shadow Bind','⛓️',_A('dash',{kb:.2})),_X('Twilight','🌗',_S({mod:{lifesteal:1.5}}))],
+  [_X('Sharp Focus','🎯',_S({mod:{crit:1}})),_X('Riptide','🌊',_A('dash',{dmgMul:.1})),_X('Undertow','🌀',_A('momentum',{window:.15})),_X('Blade Dance','💃',_S({mod:{meleeSpd:4}})),_X('Spray','💦',_A('_melee',{reach:.12})),_X('Hidden Edge','🗡️',_F('_melee',1)),_X('Steel Nerves','🧊',_S({hpPct:5})),
+   _X('Rogue Wave','🌊',_A('dash',{cd:-.25,dmgMul:.4}),_A('momentum',{per:.3}),_S({mod:{crit:4}}))],
+  [_X('Inspiring','✨',_S({hpPct:2})),_X('Field Medic','⛑️',_A('poultice',{under:.1})),_X('Echo','📢',_A('shout',{range:.12})),_X('Morale','🎌',_A('shout',{spd:.2})),_X('Herb Pouch','🌿',_A('poultice',{dur:.2})),_X('Front Line','🛡️',_S({mod:{armor:1}})),_X('Battle Drum','🥁',_S({mod:{cdr:3}})),
+   _X('Banner of the Wave','🚩',_A('shout',{dmg:.4,dur:.3,cd:-.15}),_S({hpPct:8}))]],
+ archer:[
+  [_X("Archer's Rhythm",'🏹',_S({mod:{rangedSpd:2}})),_X('Wide Rain','☔',_A('rain',{spread:.1})),_X('Steady Volley','🎯',_A('rapid',{accPen:-.25})),_X('Downpour','🌧️',_A('rain',{cd:-.08})),_X('Heavy Arrows','🪨',_F('_ranged',1)),_X('Swift Fall','⬇️',_A('rain',{fall:-.15})),_X('Feathered','🪶',_S({mod:{move:4}}))],
+  [_X("Hunter's Patience",'⏳',_S({mod:{crit:1}})),_X('Long Shot','📏',_A('pin',{range:.08})),_X('Open Wound','🩸',_S({mod:{critMul:8}})),_X('Tracking','👣',_S({mod:{acc:3}})),_X('Snap Shot','⚡',_A('_ranged',{every:-.05})),_X('Bait','🍖',_S({mod:{dodge:3}})),_X('Leather Guard','🥋',_S({hpPct:5})),
+   _X('Apex Predator','🐺',_A('pin',{root:.4,amp:.4,cd:-.2}),_S({mod:{crit:4}}))],
+  [_X('Soft Breath','🍃',_S({mod:{dodge:1}})),_X('Long Pipe','🎋',_A('blowgun',{range:.1})),_X("Assassin's Mark",'🎯',_S({mod:{critMul:8}})),_X('Steady Wind','🌬️',_S({mod:{acc:3}})),_X('Light Bow','🎐',_S({mod:{rangedSpd:5}})),_X('Vanish','🫥',_S({mod:{move:4}})),_X('Quiet Kill','🔇',_S({mod:{rangedDmg:5}})),
+   _X('Silent Death','☠️',_A('blowgun',{cd:-.3}),_F('blowgun',2),_S({mod:{critMul:25}}))]],
+ flannel:[
+  [_X('Old Rifle','🔫',_S({mod:{acc:1}})),_X('Lever Action','🔧',_A('_ranged',{reload:-.05})),_X('Windage','🌬️',_A('_ranged',{range:.06})),_X('Breath Hold','🫁',_A('aimed',{cd:-.08})),_X('Trophy Hunter','🦌',_S({mod:{critMul:10}})),_X('Iron Sights','🎯',_S({mod:{crit:3}})),_X('Bird Dog','🐕',_S({mod:{move:4}})),
+   _X('One Shot One Kill','🎯',_A('aimed',{cast:-.4,cd:-.2}),_D('aimed',{pierce:1}),_S({mod:{rangedDmg:10}}))],
+  [_X('Wool Socks','🧦',_S({hpPct:2})),_X('Pitch the Tent','⛺',_A('camp',{cast:-.12})),_X('Long Fire','🔥',_A('camp',{life:.15})),_X('Thick Flannel','🧥',_S({mod:{armor:1}})),_X('Hold the Line','🪵',_A('grit',{move:.2})),_X('Lookout','👀',_A('elite',{dodge:.25})),_X('Coffee Pot','☕',_S({mod:{enRegen:.2}}))],
+  [_X('Steady Fingers','🤞',_S({mod:{luck:1}})),_X('Kicker','💥',_A('trip',{kb:.15})),_X('Long Fuse','🧨',_A('trip',{life:.15})),_X('Blast Shield','🛡️',_S({mod:{kbRes:12}})),_X('Pipe Bomb','🧪',_S({dmgPct:4})),_X('Fire in the Hole','🗯️',_S({mod:{dodge:3}})),_X('Powder Keg','🛢️',_S({hpPct:5})),
+   _X('Minefield','💣',_A('trip',{cd:-.35,kb:.3}),_S({dmgPct:8}))]],
+ eng:[
+  [_X('Blueprints','📐',_S({mod:{cdr:1}})),_X('Spot Weld','🔥',_A('repair',{bld:.12})),_X('Overbuilt','🏗️',_A('repair',{towerMax:.1})),_X('Turret Link','🔗',_A('attach',{T:.15})),_X('Hammer Time','🔨',_A('repair',{towerHit:.15})),_X('Mechanic','🔧',_A('repair',{mech:.25})),_X('Work Boots','🥾',_S({mod:{armor:1}}))],
+  [_X('Steady Hands','🤲',_S({mod:{acc:1}})),_X('Quick Reload','🔄',_A('_ranged',{reload:-.06})),_X('Hot Shells','🔥',_S({mod:{rangedDmg:3}})),_X('Shell Shock','😵',_S({mod:{critMul:10}})),_X('Overkill','💥',_S({dmgPct:4})),_X('Blast Goggles','🥽',_S({mod:{kbRes:12}})),_X('Bunker','🏚️',_S({hpPct:5})),
+   _X('Controlled Demolition','🧨',_A('satchel',{r:.3,cd:-.2}),_F('satchel',2),_S({mod:{rangedDmg:8}}))],
+  [_X('Rivet Gun','🔩',_S({hpPct:2})),_X('Recoil Plates','🪨',_A('plating',{kb:.2})),_X('Wide Plating','↔️',_A('plating',{r:.15})),_X('Shock Mount','🧱',_S({mod:{kbRes:12}})),_X('Grease Monkey','🛢️',_S({mod:{move:4}})),_X('Field Kit','🧰',_S({mod:{enRegen:.2}})),_X('Plate Mail','🛡️',_S({mod:{armor:1}})),
+   _X('Ironclad','🏭',_A('plating',{armor:.4,T:.3,hits:.3}),_S({hpPct:10,mod:{armor:2}}))]],
+ carcher:[
+  [_X('Fletcher','🪶',_S({mod:{rangedDmg:2}})),_X('Line Them Up','📏',_A('pierce',{lineN:.15})),_X('Sharp Eyes','👁️',_S({mod:{crit:2}})),_X('Deep Draw','🏹',_A('_ranged',{every:-.05})),_X('Wicked Barbs','🪝',_S({mod:{critMul:10}})),_X('Long Bow','📐',_A('_ranged',{range:.1})),_X("Hunter's Kit",'🎒',_S({hpPct:5}))],
+  [_X('Cartwheel','🤸',_S({mod:{move:2}})),_X('Quick Recovery','⚡',_A('tumble',{T:-.12})),_X('Light as Air','🎈',_S({mod:{dodge:2}})),_X('Roll Out','🔄',_A('tumble',{cd:-.08})),_X('Aerial Shot','🎯',_S({mod:{rangedSpd:5}})),_X('Balance','⚖️',_S({mod:{kbRes:12}})),_X('Bounce Back','🦘',_S({rev:15}))],
+  [_X('Trail Sense','🧭',_S({mod:{acc:1}})),_X('Strong Twine','🧶',_A('snare',{slowT:.15})),_X('Heavy Net','🕸️',_A('snare',{slow:.15})),_X('Mark Range','🎯',_A('hmark',{cd:-.08})),_X('Patient Prey','⏳',_A('hmark',{dur:.15})),_X('Camouflage','🌿',_S({mod:{dodge:3}})),_X('Wild Heart','🐺',_S({hpPct:5})),
+   _X('Master of the Hunt','🦅',_A('hmark',{amp:.4,dur:.3,cd:-.2}),_A('snare',{root:.3}))]],
+ csorc:[
+  [_X('Ozone','⚡',_S({mod:{crit:1}})),_X('Wide Arc','🌐',_A('chain',{r:.1})),_X('Far Thunder','📏',_A('thunder',{max:.1})),_X('Rolling Thunder','🥁',_A('thunder',{cd:-.08})),_X('Crackle','✨',_D('thunder',{stun:.25})),_X('Slow Falloff','📉',_A('chain',{fall:-.25})),_X('Storm Robes','🧥',_S({hpPct:5}))],
+  [_X('Static Hair','💇',_S({mod:{dodge:1}})),_X('Wide Field','↔️',_A('static',{r:.12})),_X('Grounding Rod','🪝',_S({mod:{kbRes:8}})),_X('Surge Jump','⚡',_A('overcharge',{jump:.15})),_X('Live Wire','🔌',_A('overcharge',{mul:.12})),_X('Sparks','🎇',_S({mod:{rangedSpd:5}})),_X('Insulated','🧤',_S({mod:{armor:1}})),
+   _X('Tesla Coil','🗼',_A('static',{shield:.5,dur:.3,cd:-.2}),_A('overcharge',{n:.34}))],
+  [_X('Mana Tide','🌊',_S({mod:{enRegen:.1}})),_X('Cantrip','📜',_S({mod:{cdr:2}})),_X('Sharp Mind','🧠',_S({mod:{critMul:8}})),_X('Spell Echo','🔁',_A('overcharge',{cd:-.08})),_X('Mana Shield','🛡️',_S({hpPct:5})),_X('Swift Casting','⚡',_S({mod:{rangedSpd:5}})),_X('Arcane Reserves','🔋',_S({mod:{enMax:6}})),
+   _X('Archmage','🧙',_S({dmgPct:10,mod:{cdr:8,enRegen:.5}}))]],
+ shoshi:[
+  [_X('Sudo','🔑',_S({mod:{cdr:1}})),_X('Wide Rollback','↔️',_A('undo',{r:.12})),_X('Safe Mode','🛟',_A('reboot',{under:.1})),_X('Restore Point','💾',_A('undo',{cd:-.08})),_X('Firmware','📟',_A('reboot',{cd:-.08})),_X('Firewall','🧱',_S({mod:{armor:1}})),_X('Two-Factor','🔐',_S({mod:{dodge:3}}))],
+  [_X('Dad Jokes','😄',_S({mod:{luck:1}})),_X('Lawn Mower','🚜',_A('dad',{kb:.15})),_X('Bear Hug','🤗',_A('dad',{r:.12})),_X('Grill Master','🍔',_S({heal:6})),_X('Minivan','🚐',_S({mod:{move:4}})),_X('Steady Paycheck','💼',_S({hpPct:5})),_X('Bedtime','🛏️',_S({mod:{enRegen:.2}}))],
+  [_X('Ping','📶',_S({mod:{rangedSpd:2}})),_X('Wide Coverage','📡',_A('online',{auraR:.12})),_X('Fast Lane','🛣️',_A('online',{move:.12})),_X('Load Balancer','⚖️',_A('trial',{r:.15})),_X('Cache','🗄️',_A('trial',{energy:.25})),_X('Hot Swap','🔁',_A('online',{rev:.2})),_X('Redundancy','🧩',_S({hpPct:5})),
+   _X('Zero Downtime','🟢',_A('trial',{cut:.4,cd:-.2}),_A('online',{auraAcc:.6}),_S({mod:{cdr:5}}))]],
+ seekyle:[
+  [_X('Dad Reflexes','⚡',_S({mod:{dodge:1}})),_X('Werewolf Blood','🐺',_A('wolfout',{heal:.15})),_X('Howl','🌕',_A('wolfout',{tagSlow:.12})),_X('Night Shift','🌙',_A('wolfout',{dur:.12})),_X('Lunch Packer','🥪',_A('heartdad',{armor:.25})),_X('Car Seat Install','🚗',_S({mod:{kbRes:12}})),_X('Line Cook Burns','🔥',_S({mod:{armor:1}})),
+   _X('Alpha Dad','🐺',_A('wolfout',{dur:.4,cd:-.2,heal:.4}),_S({mod:{meleeDmg:10}}))],
+  [_X('Dice Roller','🎲',_S({mod:{luck:1}})),_X('Commander Damage','⚔️',_A('together',{per:.1})),_X('Long Game','⏳',_A('together',{dur:.12})),_X('Bigger Kitchen','🍳',_A('orderup',{r:.15})),_X('Family Style','🍲',_A('orderup',{every:-.12})),_X('Pass the Plate','🍽️',_S({heal:6})),_X('Synthwave','🎹',_S({mod:{move:4}})),
+   _X('Dice Boys Assemble','🎲',_A('together',{per:.3,rx:.3,cd:-.2}),_A('orderup',{heal:.3}))],
+  [_X('Hotkeys','⌨️',_S({mod:{rangedSpd:2}})),_X('Long Sprint','🏃',_A('vibecode',{shipT:.12})),_X('Refactor Pro','♻️',_A('vibecode',{cdCut:.12})),_X('Overclocked','🖥️',_A('vibecode',{ship:.15})),_X('Copy Paste','📋',_A('_ranged',{reload:-.08})),_X('Stack Overflow','📚',_S({mod:{critMul:10}})),_X('Rubber Duck','🦆',_S({mod:{cdr:3}})),
+   _X('Push to Prod','🚀',_A('vibecode',{ship:.4,shipT:.4,cd:-.2}),_S({mod:{rangedDmg:10}}))]],
+ teeg:[
+  [_X('Trigger Finger','👉',_S({mod:{rangedSpd:2}})),_X('Stock Brace','🪵',_S({mod:{acc:2}})),_X('Long Barrel','📏',_A('thechop',{range:.08})),_X('Spray Pattern','💨',_A('thechop',{every:-.1})),_X('Mag Dump','🔥',_A('thechop',{dur:.15})),_X('Quick Swap','🔄',_A('_ranged',{reload:-.08})),_X('Steel Toe','🥾',_S({mod:{armor:1}})),
+   _X('Chopper City','🔫',_A('thechop',{dur:.4,every:-.2}),_D('thechop',{flat:1}),_S({mod:{rangedDmg:8}}))],
+  [_X('Lazy Aim','😴',_S({mod:{crit:1}})),_X('Hard Bounce','🎱',_A('noeffort',{critDmg:.15})),_X('Cold Blooded','🧊',_S({mod:{critMul:8}})),_X('Kickback','🛋️',_S({mod:{dodge:3}})),_X('Pocket Pistol','🔫',_A('pistolplay',{flat:.25})),_X('Two Hands','🙌',_A('pistolplay',{crit:.25})),_X('Calm','😌',_S({mod:{enRegen:.2}})),
+   _X('Zero Effort','💤',_A('noeffort',{cd:-.3,flat:1}),_S({mod:{crit:6}}))],
+  [_X('Street Smarts','🧠',_S({mod:{luck:1}})),_X('Crew Love','🤝',_A('strapped',{r:.12})),_X('Strapped Up','🔫',_A('strapped',{dmg:.12})),_X('Pocket Change','💰',_A('firstday',{ch:.15})),_X('Fast Money','💸',_A('firstday',{spd:.15})),_X('Corner Store','🏪',_S({hpPct:5})),_X('Hood Pass','🛣️',_S({mod:{move:4}})),
+   _X('Run the Block','👑',_A('strapped',{dur:.5,spd:.3,cd:-.2}),_A('firstday',{dur:.3}),_S({hpPct:8}))]]};
+const TREE_RENAME={csorc:{'Overflow':'Spillover'},shoshi:{'Dad Strength':'Dad Power'}};
+/* 0.12.396 (Kyle): proc talents lifted from the classic WoW trees (Deep Wounds, Flurry, Ruthlessness, Clearcasting / Omen of Clarity,
+   Execute, Blood Craze, Reckoning), each renamed to fit the hero. [tree, slot, name, icon, per-rank mod] */
+const TREE_PROC={
+ soldier:[[1,1,'Double Tap','✌️',{pFlurry:5}],[2,1,'Combat Reflexes','🫳',{pReck:4}]],
+ lumberjack:[[0,6,'Deep Cuts','🩸',{pBleed:15}],[2,2,'Blood Craze','🧔',{pCraze:5}],[2,6,'Last Log','🪓',{pExec:10}]],
+ druid:[[0,0,'Omen of Clarity','🍃',{pClear:1}],[1,1,'Furor','🐾',{pCritEn:2}]],
+ cheez:[[0,2,'Flurry of Steel','🌸',{pFlurry:5}],[0,3,'Final Cut','☯️',{pExec:10}],[2,0,'Lucky Break','🎰',{pClear:1}]],
+ edward:[[0,2,'Shake It Off','💪',{pCraze:5}],[2,5,'Payback','✊',{pReck:6}]],
+ knight:[[1,1,'Hemorrhage','🔪',{pBleed:10}],[0,4,'Riposte','🤺',{pReck:6}],[1,5,'Blood Craze','🩸',{pCraze:8}]],
+ robot:[[0,6,'Target Lock','🎯',{pExec:10}],[2,5,'Capacitor Bank','🔋',{pCritEn:3}]],
+ jp:[[0,6,'Mercy Shot','☝️',{pExec:10}],[2,0,'Clear Head','😌',{pClear:1}]],
+ chibi:[[1,0,'Flurry','🌀',{pFlurry:3}],[0,6,'Cut Throat','🗡️',{pBleed:15}]],
+ archer:[[1,2,'Open Wound','🩸',{pBleed:10}],[0,6,'Rapid Rhythm','🪶',{pFlurry:7}]],
+ flannel:[[0,6,'Mercy Shot','🦌',{pExec:10}],[1,0,'Tough Old Bird','🧦',{pCraze:2}]],
+ eng:[[0,0,'Efficiency','📐',{pClear:1}],[2,3,'Spiked Plates','🧱',{pReck:6}]],
+ carcher:[[0,4,'Wicked Barbs','🪝',{pBleed:15}],[1,4,'Momentum','🤸',{pFlurry:7}]],
+ csorc:[[0,0,'Elemental Focus','⚡',{pClear:1}],[2,2,'Static Mind','🧠',{pCritEn:2}]],
+ shoshi:[[2,0,'Burst Mode','📶',{pFlurry:3}],[0,0,'Sudo','🔑',{pClear:1}]],
+ seekyle:[[0,6,'Papa Bear','🐻',{pReck:6}],[2,5,'In the Zone','🎧',{pFlurry:7}]],
+ teeg:[[1,0,'Lazy Genius','😴',{pClear:1}],[2,5,'Get Back','🔙',{pReck:6}],[0,6,'Open Them Up','🩸',{pBleed:15}]]};
+for(const [k,L] of Object.entries(TREE_PROC))for(const [bi,sl,nm,ic,mod] of L)if(TREE_X[k]&&TREE_X[k][bi])TREE_X[k][bi][sl]=_X(nm,ic,_S({mod}));
 const HERO_ORDER=Object.keys(TREE_SPEC);
 for(const [k,bs] of Object.entries(TREE_SPEC)){const hi=HERO_ORDER.indexOf(k);const own=HCAP[k]||{};
   const capUsed=new Set();for(const B of bs)for(const n of [B.r3,...(B.r5||[])])if(typeof n==='string'&&n.startsWith('cap:'))capUsed.add(n.split(':')[2]);
@@ -4897,18 +5031,20 @@ for(const [k,bs] of Object.entries(TREE_SPEC)){const hi=HERO_ORDER.indexOf(k);co
     const names=new Set();const nm1=key=>{const L=TREE_FILL_NAMES[key]||[key];for(let i=0;i<L.length;i++){const n=L[(HI+bi+i)%L.length];if(!names.has(n)){names.add(n);return n;}}return L[0];};
     for(const n of [...B.r1,...B.r2,...B.r4,B.r3,...(B.r5||[])]){const c=typeof n==='string'?treeTalCard(k,n):n;if(c&&c.name)names.add(c.name);}
     const fillNode=()=>{const key=fill(),f=TREE_FILL[key];return {name:nm1(key),icon:f[1],parts:[{eff:f[2]}]};};
+    const XS=(TREE_X[k]||[])[bi]||[];const xn=(i,fb)=>{const x=XS[i];return x?{name:x.name,icon:x.icon,parts:x.e.map(e=>({eff:e}))}:fb();};
+    const RN=TREE_RENAME[k]||{};const fromSpec0=fromSpec;
     const im=(n,i)=>{const o=fromSpec(n);o.name=(i||'Improved')+' '+o.name;return o;};
-    /* tier 1: one 5-rank basic, two 3-rank starters */ {const key=fill();push(1,'a',{name:nm1(key),icon:FIVE[key][0],parts:[{eff:FIVE[key][1]}]},5);}
+    /* tier 1: one 5-rank basic, two 3-rank starters */ push(1,'a',xn(0,()=>{const key=fill();return {name:nm1(key),icon:FIVE[key][0],parts:[{eff:FIVE[key][1]}]};}),5);
       push(1,'b',fromSpec(B.r1[0]),3);push(1,'c',fromSpec(B.r1[1]),3);
     /* tier 2 */ const t2a=push(2,'a',fromSpec(B.r2[0]),3);push(2,'c',fromSpec(B.r2[1]),3);
-      push(2,'d',MA&&MA.en>0?{name:['Second Nature','Easy Does It','Save Your Breath'][bi%3],icon:'🌀',parts:[{eff:TA(main,{en:-.07})}]}:fillNode(),3);
-    /* tier 3: the better-than-minor pick (2/6 of the way down) */ const t3=push(3,'b',fromSpec(B.r3),1,{maj:1});push(3,'d',fillNode(),3);
+      push(2,'d',xn(1,()=>MA&&MA.en>0?{name:['Second Nature','Easy Does It','Save Your Breath'][bi%3],icon:'🌀',parts:[{eff:TA(main,{en:-.07})}]}:fillNode()),3);
+    /* tier 3: the better-than-minor pick (2/6 of the way down) */ const t3=push(3,'b',(o=>{if(RN[o.name])o.name=RN[o.name];return o;})(fromSpec(B.r3)),1,{maj:1});push(3,'d',xn(2,fillNode),3);
     /* tier 4 */ push(4,'a',fromSpec(B.r4[0]),2,{req:t2a});push(4,'c',fromSpec(B.r4[1]),2);
-      {const key=fill();push(4,'d',{name:['Battle-Tested','Hard Lessons','Old Habits'][bi%3],icon:'⚔️',parts:[...(main?[{eff:TA(main,{cd:-.06})}]:[]),{eff:TREE_FILL[key][2]}]},2);}
+      push(4,'d',xn(3,()=>{const key=fill();return {name:['Battle-Tested','Hard Lessons','Old Habits'][bi%3],icon:'⚔️',parts:[...(main?[{eff:TA(main,{cd:-.06})}]:[]),{eff:TREE_FILL[key][2]}]};}),2);
     /* tier 5: near-major (4/6 down), arrow from tier 3 */ const r5b=(B.r5||[])[1];const sig=MA?{name:`${MA.name.replace(/_/g,' ').replace(/!+$/,'')} Mastery`,icon:B.icon,parts:[{eff:TA(main,{cd:-.15})},...(MA.en>0?[{eff:TA(main,{en:-.15})}]:[]),{eff:bi===2?TS({hpPct:6}):TS({dmgPct:5})}]}:null;
-      const t5=push(5,'b',r5b?fromSpec(r5b):sig||capOf(...pickCap(5,bi)),1,{maj:1,req:t3});
-      push(5,'c',im(B.r2[0]),2);
-    /* tier 6 */ push(6,'a',im(B.r1[0],'Expert'),2);push(6,'d',im(B.r2[1]),2);
+      const t5=push(5,'b',r5b?fromSpec(r5b):XS[7]?xn(7):sig||capOf(...pickCap(5,bi)),1,{maj:1,req:t3});
+      push(5,'c',xn(4,()=>im(B.r2[0])),2);
+    /* tier 6 */ push(6,'a',xn(5,()=>im(B.r1[0],'Expert')),2);push(6,'d',xn(6,()=>im(B.r2[1])),2);
     /* tier 7: the major */ {const r5=(B.r5||[])[0];push(7,'b',r5?fromSpec(r5):capOf(...pickCap(10,bi)),1,{maj:2,req:t5,cap:1});}
     {const a=nodes.find(n=>n.row===5&&n.col==='b'),b=nodes.find(n=>n.row===7);if(a&&b&&a.name===b.name){a.name+=' I';b.name+=' II';}}
     for(const n of nodes){const st={hpPct:0,dmgPct:0,heal:0,rev:0,mod:{}};let any=0;
@@ -5105,12 +5241,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1795147521';const BGI=new Image();BGI.src='crawl_bg.png?v=1795147521';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795147521';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1795148969';const BGI=new Image();BGI.src='crawl_bg.png?v=1795148969';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795148969';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795147521';XIMG.wave.src='crawl_wave.png?v=1795147521';XIMG.chibi.src='crawl_chibi.png?v=1795147521';XIMG.flannel.src='crawl_flannel.png?v=1795147521';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795147521';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795147521';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795147521';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795147521';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795147521';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795147521';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795147521';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795147521';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795147521';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795147521';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795147521';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795147521';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795147521';XIMG.bghood=new Image();XIMG.bghood.src='crawl_bg_hood.png?v=1795147521';XIMG.bloater=new Image();XIMG.bloater.src='crawl_bloater.png?v=1795147521';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795147521';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795147521';XIMG.rain.src='crawl_rain.png?v=1795147521';XIMG.druid.src='crawl_druid.png?v=1795147521';XIMG.camp.src='crawl_campfire.png?v=1795147521';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795147521';XIMG.tornado.src='crawl_fx_tornado.png?v=1795147521';XIMG.vine.src='crawl_fx_vine.png?v=1795147521';XIMG.thorn.src='crawl_fx_thorn.png?v=1795147521';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795148969';XIMG.wave.src='crawl_wave.png?v=1795148969';XIMG.chibi.src='crawl_chibi.png?v=1795148969';XIMG.flannel.src='crawl_flannel.png?v=1795148969';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795148969';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795148969';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795148969';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795148969';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795148969';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795148969';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795148969';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795148969';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795148969';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795148969';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795148969';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795148969';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795148969';XIMG.bghood=new Image();XIMG.bghood.src='crawl_bg_hood.png?v=1795148969';XIMG.bloater=new Image();XIMG.bloater.src='crawl_bloater.png?v=1795148969';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795148969';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795148969';XIMG.rain.src='crawl_rain.png?v=1795148969';XIMG.druid.src='crawl_druid.png?v=1795148969';XIMG.camp.src='crawl_campfire.png?v=1795148969';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795148969';XIMG.tornado.src='crawl_fx_tornado.png?v=1795148969';XIMG.vine.src='crawl_fx_vine.png?v=1795148969';XIMG.thorn.src='crawl_fx_thorn.png?v=1795148969';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795147521';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795147521';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795147521';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795147521';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795147521';XIMG.obst.src='crawl_obst.png?v=1795147521';XIMG.cityob.src='crawl_cityob.png?v=1795147521';XIMG.cars.src='crawl_cars.png?v=1795147521';XIMG.robot.src='crawl_robot.png?v=1795147521';XIMG.cultist.src='crawl_cultist.png?v=1795147521';XIMG.tentacle.src='crawl_tentacle.png?v=1795147521';XIMG.boom.src='crawl_boom.png?v=1795147521';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795148969';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795148969';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795148969';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795148969';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795148969';XIMG.obst.src='crawl_obst.png?v=1795148969';XIMG.cityob.src='crawl_cityob.png?v=1795148969';XIMG.cars.src='crawl_cars.png?v=1795148969';XIMG.robot.src='crawl_robot.png?v=1795148969';XIMG.cultist.src='crawl_cultist.png?v=1795148969';XIMG.tentacle.src='crawl_tentacle.png?v=1795148969';XIMG.boom.src='crawl_boom.png?v=1795148969';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -5145,7 +5281,7 @@ function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 /* 0.12.310 recorded clips (Tee_Grizzle): decoded once, played through the same AudioContext as the synth sounds */
 const SAMP={teeg1:{src:'crawl_teeg1',off:.34},teeg2:{src:'crawl_teeg2',off:0},teeg3:{src:'crawl_teeg3',off:0},jp1:{src:'crawl_jp1',off:0},kidhowl:{src:'crawl_kidhowl',off:0},leiftag:{src:'crawl_leiftag',off:0}};   /* 0.12.394: the boys' howl, Leif's "tag!" */   /* 0.12.380: Tee's Pistol_Play line, JP's No_Scope line */
 function sampLoad(k){const S=SAMP[k];if(!S||S.buf||S.loading||!AC)return;S.loading=1;const ext=(new Audio()).canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3';
-  fetch(S.src+ext+'?v=1795147521').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
+  fetch(S.src+ext+'?v=1795148969').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
 function sampPlay(k,off,vol,soft){const S=SAMP[k];if(!S)return;if(!S.buf){sampLoad(k);return;}const src=AC.createBufferSource(),g=AC.createGain();src.buffer=S.buf;g.gain.value=vol==null?.55:vol;
   if(soft){const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=soft;lp.Q.value=.5;src.playbackRate.value=.94+Math.random()*.1;src.connect(lp);lp.connect(g);}else src.connect(g);g.connect(AC.destination);src.start(0,off==null?S.off:off);}   /* 0.12.329 (Kyle: a bit less annoying): Tee's clips play softer, muffled (low-pass) and with a little pitch wobble */
 function sfx(k,o){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
@@ -6251,7 +6387,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.395</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.396</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -6495,7 +6631,7 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
       return `<div class="${cls}" data-n="${n.id}" title="${esc(n.name)}" style="grid-row:${n.row};grid-column:${'abcd'.indexOf(n.col)+1}">${n.icon}<span class="trk">${rk}/${n.max}</span></div>`;};
     const col=(B,bi)=>{const bp=treeBranchPts(k,L,bi);const nxt=TREE_REQ.find(q=>q>bp);
       return `<div class="tbr" data-bi="${bi}" style="flex:1;min-width:236px;max-width:300px;position:relative;border:2px solid #3a2e4a;border-radius:12px;overflow:hidden;box-shadow:0 0 18px #000c;
-          background:linear-gradient(180deg,#0006,#000a 70%),url(crawl_talbg.png?v=1795147521) ${-(B.bg||0)*100}% 0/900% 100%;image-rendering:pixelated">
+          background:linear-gradient(180deg,#0006,#000a 70%),url(crawl_talbg.png?v=1795148969) ${-(B.bg||0)*100}% 0/900% 100%;image-rendering:pixelated">
         <svg class="tlines" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></svg>
         <div style="position:relative;z-index:1;text-align:center;font-weight:800;color:#ffe9a8;letter-spacing:.5px;padding-top:6px;text-shadow:0 1px 3px #000">${B.icon} ${esc(B.name)}</div>
         <div style="position:relative;z-index:1;font-size:9.5px;text-align:center;color:#c9b8e0;text-shadow:0 1px 2px #000">${bp} point${bp===1?'':'s'} · ${nxt!=null?`next tier at ${nxt}`:'every tier open'}</div>
@@ -6537,7 +6673,7 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
 /* 0.12.338 (Kyle) GEAR screen: 3 slots per hero (Weapon / Armor / Trinket), a stash, free swaps. Tap anything to see it in full
    (no hover needed). Spare parts raise an item a quality tier (Rusted -> plain -> Fine -> Masterwork); scrapping gives parts back. */
 function gearIcon(it,sz){const D=gearDef(it);if(!D)return '';sz=sz||32;const k=sz/32;const R=GEAR_RAR[D.r];
-  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795147521) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
+  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795148969) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
 function showGear(k0){const s=SLOT();if(!s)return;const run=s.run;const team=(run&&run.team)||[k0];let k=k0;let sel=null,filt='all';gearSlot(s);
   let ov=document.getElementById('cc-gear');if(ov)ov.remove();ov=document.createElement('div');ov.id='cc-gear';
   ov.style.cssText='position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 20%,rgba(40,30,70,.6),rgba(4,2,8,.94));display:flex;align-items:center;justify-content:center;padding:8px';
