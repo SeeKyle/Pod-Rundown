@@ -945,7 +945,7 @@ const PAL_FRAC=1/3;
    While you carry them, for every hero: 1/2/3 stacks = +10/15/20% XP, +20/30/40% gold pile sizes, and you lose 10/20/30% less score the next time you fall.
    Falling costs 10% of your total score plus another 50% of whatever that failed attempt earned. (Lessons Learned, the little XP bump a loss
    gives for how far you got, is part of it now.) */
-const XP_MUL=.8;   /* 0.12.250 (Kyle): every way of earning XP (kills, support, Nemeses, Lessons Learned, run levels) is 20% lower */
+const XP_MUL=.8/3;   /* 0.12.395 (Kyle): all XP gains cut to about a third */ //   /* 0.12.250 (Kyle): every way of earning XP (kills, support, Nemeses, Lessons Learned, run levels) is 20% lower */
 const FF={xp:[0,.1,.15,.2],gold:[0,.2,.3,.4],keep:[0,.1,.2,.3],dmg:[0,1,2,3]};   /* 0.12.394 (Kyle): + flat damage on every basic attack (melee and ranged) while carrying stacks: +1/+2/+3 (a % would be nothing on early 1d6 hits) */
 const ffT=(run,k)=>run&&run.ff?FF[k][Math.min(3,run.ff)]:0;
 const CD_KEY={directive:'pdT',undo:'unT',reboot:'rbT',trial:'frT',dad:'ddT',syphon:'syT',lethal:'leT',cthulhu:'ctT',nano:'nbT',tentacle:'tnT',pact:'paT',hex:'hxT',dread:'drT',clone:'clT',pin:'piT',surge:'suT',gatling:'gaT',missiles:'msT',smoke:'smT',grit:'grT',poultice:'poT',aimed:'abT',trip:'tbT',pal:'palT',camp:'caT',dash:'daT',shout:'shT',rapid:'raT',blowgun:'bgT',rain:'arT',mend:'mdT',bloom:'blT',thorns:'thT',cyclone:'cyT',
@@ -1585,7 +1585,7 @@ class Game{
   constructor(opt){
     this.W=opt.W||CFG.W;this.H=CFG.H;this.G=CFG.GROUND;
     this.rng=opt.rng||Math.random;this.demo=!!opt.demo;this.run=opt.run;this.slot=opt.slot;if(!this.demo)setRunModes(this.run);this.hardcore=!this.demo&&!!(this.run&&this.run.hardcore);
-    this.st=CFG.stage(this.run.stage,this.run.prestige);this.bgD=this.st.biome&&this.st.biome.id==='hood'?HOOD_START:0;   /* 0.12.387 */if(this.run&&(this.run.prestige||0)>0)prestigeUnlocks(this.run);   /* 0.12.387: ★ runs (old saves too) have every special zombie unlocked */
+    this.st=CFG.stage(this.run.stage,this.run.prestige);this.bgD=this.st.biome&&this.st.biome.id==='hood'?HOOD_START:0;   /* 0.12.387 */if(this.run&&(this.run.prestige||0)>0)prestigeUnlocks(this.run);if(this.run&&this.run.alphaKills==null)this.run.alphaKills=Object.keys(runUnlocks(this.run)).length;   /* 0.12.395: older runs count the Alphas they've unlocked */   /* 0.12.387: ★ runs (old saves too) have every special zombie unlocked */
     this.nemQ=[];   /* 0.12.238 (Kyle): promoted zombies never just show up; they only come from the promotion system (a zombie that downs a hero) */   /* 0.12.136: one returning Nemesis per stage, 40% of the way in */
     this.dist=0;this.t=0;this.events=[];this.enemies=[];this.proj=[];this.fx=[];this.texts=[];
     this.budget=2;this.bossSpawned=false;this.over=null;this.kills=0;this.shake=0;this.devourStacks=0;
@@ -1695,6 +1695,7 @@ class Game{
     const e={type,E,x:this.W+10+this.rng()*20,y:E.fly?this.G-100+this.rng()*30:this.G,hp,max:hp,dmg:(E.dmg||E.dmgDie/2+.5)*st.dmgMul*(elite?1.5:1),dmgMul:st.dmgMul*(elite?1.5:1),skin:E.skins?E.skins[Math.floor(this.rng()*E.skins.length)]:type,atkT:this.rng()*.5,
       walkT:this.rng(),anim:0,animT:0,slow:0,slowT:0,stun:0,burn:0,burnT:0,shred:0,elite,armorPts:Math.floor((E.armorPts||0)*Math.pow(ENEMY_GROWTH,(st.n||1)-1)),fly:!!E.fly,ranged:!!E.ranged,acc:E.acc||0,hitFlash:0,phase:this.rng()*6,target:null};
     if(opt)Object.assign(e,opt);e.elite=false;if(this.evm&&!this.demo){if(this.evm.zdmg!==1){e.dmg*=this.evm.zdmg;e.dmgMul*=this.evm.zdmg;}if(this.evm.zspd!==1){e.E=Object.create(e.E);e.E.spd*=this.evm.zspd;}}   /* 0.12.325 events */   /* 0.12.142 (Kyle): no elites at all (the leftover elite:'roll' made every wave zombie secretly elite); only promoted Nemeses are different */
+    {const ak=(this.run&&!this.demo&&this.run.alphaKills)||0;if(ak){const m=1+.01*ak;e.hp=e.max=Math.max(1,Math.round(e.max*m));e.dmg*=m;e.dmgMul*=m;e.armorPts=Math.floor(e.armorPts*m);}}   /* 0.12.395 (Kyle): +1% life, damage and armor per Alpha beaten this run */
     if(opt&&opt.stray)e.stray=1;this.enemies.push(e);return e;
   }
   spawnBoss(){
@@ -1761,7 +1762,7 @@ class Game{
     this.ev('boss',{name:'ALPHA '+e.bfName});this.shake=.4;this.text(this.W*.6,this.G-90,'⚠ ALPHA '+e.bfName+' ⚠','#ff6a3a');this.text(this.W*.6,this.G-80,TRAIT_NAME[e.alphaTr],'#ffb040');for(const h of this.alive())Brain.panic(this,h,'boss');return e;}
   kill(e,src){if(src&&src.key==='teeg'&&!this.demo){const RB=(src.base.char.abilities||[]).find(a=>a.id==='firstday');if(RB&&this.rng()<RB.ch){this.loot.push({kind:'gold',x:e.x,gy:e.gy!=null?e.gy:this.G,amt:2+Math.floor(this.rng()*3),t:0,big:false,lucky:false});src.en=Math.min(src.enMax||100,(src.en||0)+RB.en);this.text(e.x,(e.gy||this.G)-40,'ROBBED','#ffd27a');if(this.rng()<.3)Comms.bubble(this,src,Comms.pick(['Run your pockets!','Robbery!','That\'s mine now.','Tax!']),true);}}
     if(src&&src.key&&src.key!=='teeg'&&CHAR[src.key]&&!src.pet&&!this.demo)Comms.hype(this,src,e);
-    if(e.bossForm&&!this.demo&&this.run){const U=runUnlocks(this.run);if(U[e.type]==null){U[e.type]=this.st.n||1;this.text(e.x,(e.gy||this.G)-70,(e.bfName||e.type)+'S UNLOCKED','#ffd23f');this.ev('levelup',{});}}   /* 0.12.303 */
+    if(e.bossForm&&!this.demo&&this.run){this.run.alphaKills=(this.run.alphaKills||0)+1;const U=runUnlocks(this.run);if(U[e.type]==null){U[e.type]=this.st.n||1;this.text(e.x,(e.gy||this.G)-70,(e.bfName||e.type)+'S UNLOCKED','#ffd23f');this.ev('levelup',{});}}   /* 0.12.303 */
     if(src&&src.capF&&src.capF.length)capHook('kill',this,src,e);
     if(src&&src.gp)this.gearFire(src,'kill',e);if(!this.demo&&!e.pet){const al0=this.aliveHeroes();const lk=al0.length?al0.reduce((s2,o)=>s2+(o.luck||0),0)/al0.length:0;this.gearDrop('kill',e.x,e.gy!=null?e.gy:this.G,lk);}
     if(e.bounty&&!this.demo){this.stageGold+=10;this.text(e.x,e.y-40,'+10','#ffd23f');}
@@ -4266,7 +4267,8 @@ function newRun(team,slot){if(slot){slot.gold=0;slot.parts=0;slot._stash=null;fo
 // camp actions
 
 // ======================================================================= SAVES
-const SKEY='podrundown-crawl-v1';
+const SKEY='podrundown-crawl-v2';   /* 0.12.395 (Kyle): every save reset */
+try{if(typeof localStorage!=='undefined')localStorage.removeItem('podrundown-crawl-v1');}catch(e){}
 const Save={
   load(){try{return JSON.parse(localStorage.getItem(SKEY))||{v:1,players:{}};}catch(e){return {v:1,players:{}};}},
   write(d){try{localStorage.setItem(SKEY,JSON.stringify(d));}catch(e){}},
@@ -4299,7 +4301,7 @@ function newSlot(player){const heroes={};for(const h of DATA.heroes)heroes[h.key
 //   Triage crafting, and level-up stat points. Gold, spare parts, supplies and upgrades all belong to the run (gold and parts reset in newRun).
 // ======================================================================================================================
 /* 0.12.103 (Kyle: average hero damage in stage 1 about 300, healer and utility heroes lower). Scales ALL of a hero's damage: basic attacks, abilities and anything he summons or builds. */
-const ENEMY_GROWTH=1.02;   /* 0.12.393 (Kyle): enemies grow 2% a stage in life, damage and armor (was 3%) */
+const ENEMY_GROWTH=1.04;   /* 0.12.395 (Kyle): enemies grow 4% a stage in life, damage and armor (was 2%); and each Alpha the run has beaten adds another 1% on top (see spawnEnemy) */
 const ENEMY_HP=1;   /* 0.12.388 (Kyle): every enemy is 100% of its base life at stage 1 (was .54) */   /* 0.12.104: .63 -> .52 with the bigger waves, to hold ~300 */   /* every enemy's HP; heroes hit for about .76 of before on average, so time-to-kill stays about the same and the numbers land near 300 */
 const HERO_DMG={seekyle:.55,teeg:.62,cheez:.6,edward:.6,knight:.6,carcher:.6,csorc:.55,soldier:.62,shoshi:.95,jp:.48,chibi:.58,archer:.64,flannel:.72,druid:.50,eng:.37,lumberjack:.61,robot:.46,cultist:.36};
 const CAMP_UPG={
@@ -4778,7 +4780,7 @@ for(const [k,C] of Object.entries(CHAR)){const up=(a,did)=>{if(!a||a.passive||!(
    Every hero has 3 branches. 1 point per level (levels 2-20 = 19 points). Rows open at 0/3/6/9/12 points spent in that branch.
    Rows 1, 2 and 4: two talents each (3, 3 and 2 ranks) that push that hero's own abilities or gear. Row 3: one talent that changes how an
    ability works (the old skill mods). Row 5: the capstone (the old hero capstones). Resetting and moving points is free at camp. */
-const TREE_REQ=[0,3,6,7,10,13],TREE_RANKS=[3,3,1,2,2,1],TREE_MAXPTS=MAX_LVL-1;
+const TREE_REQ=[0,3,6,9,12,15,18],TREE_RANKS=[3,3,1,2,2,1],TREE_MAXPTS=MAX_LVL-1;   /* 0.12.395: 7 tiers, 3 points a tier */
 const TF_LABEL={cd:'cooldown',en:'energy cost',dur:'duration',r:'radius',range:'range',dist:'distance',n:'count',heal:'healing',stun:'stun',every:'time between attacks',reload:'reload time',clip:'clip size',dmg:'bonus damage',shield:'shield',dr:'damage block',root:'root',count:'arrows',shots:'shots',hp:'HP',dps:'drain',pct:'heal per tick',per:'per tick',life:'lifetime',spd:'speed',slow:'slow',kb:'knockback',crit:'crit',amp:'damage taken',jump:'jump range',pierce:'pierce',shieldT:'shield time',heal2:'heal',window:'window',bonus:'bonus',mul:'multiplier',share:'share',ls:'lifesteal',ch:'chance',splash:'splash',reach:'reach',cut:'cooldown cut',energy:'energy',zap:'zap',high:'high time',mark:'mark time',fall:'fall time',miss:'miss chance',hit:'hit chance',burst:'burst',critAdd:'crit chance',critMul:'crit damage',move:'move',decay:'decay',steal:'steal',fear:'fear',size:'size',passes:'passes',flat:'flat damage',bleed:'bleed'};
 const TA=(ab,mul,path)=>({ab,mul,path}),TF=(ab,n,path)=>({ab,face:n,path}),TD=(ab,add,path)=>({ab,add,path}),TS=st=>({st});
 function treeSer(v,f,R){const m=(R&&R.k)||1;if(!R||!(R.max>1))return f(v*m);const o=[];for(let i=1;i<=R.max;i++){const s=f(v*m*i);o.push(i===R.cur?'⟦'+s+'⟧':s);}return o.join('/');}
@@ -4862,6 +4864,10 @@ const TREES={};
 const TREE_FILL={hp:['Iron Gut','🫀',{st:{hpPct:4}}],armor:['Scar Tissue','🩹',{st:{mod:{armor:1}}}],crit:['Keen Eye','👁️',{st:{mod:{crit:2}}}],move:['Light Feet','🪶',{st:{mod:{move:3}}}],
   dmg:['Mean Streak','😤',{st:{dmgPct:3}}],regen:['Deep Breaths','🌬️',{st:{mod:{enRegen:.3}}}],acc:['Steady Hands','🎯',{st:{mod:{acc:2}}}],kb:['Planted','🧱',{st:{mod:{kbRes:8}}}],
   enmax:['Big Lungs','🎈',{st:{mod:{enMax:6}}}],luck:['Lucky Charm','🍀',{st:{mod:{luck:2}}}]};
+const TREE_FILL_NAMES={hp:['Iron Gut','Thick Blood','Hard to Kill','Tough as Nails','Stubborn'],armor:['Scar Tissue','Callused','Padded','Hide Like Leather','Battered'],
+  crit:['Keen Eye','Weak Spots','Cold Read','Sharp Sight','Precision'],move:['Light Feet','Quick Step','Fleet','Nimble','Spry'],dmg:['Mean Streak','Bad Attitude','Heavy Hands','Grit','Vicious'],
+  regen:['Deep Breaths','Steady Breathing','Pacing','Calm Mind','Rhythm'],acc:['Steady Hands','Dead Aim','Focus','Patience','Bead On It'],kb:['Planted','Rooted','Low Center','Anchor','Unmovable'],
+  enmax:['Big Lungs','Reserve Tank','Stamina','Deep Well','Fuel'],luck:['Lucky Charm','Rabbit Foot','Fortune','Horseshoe','Good Omen']};
 const TREE_FILL_ORDER=[['regen','crit','hp','move','acc'],['armor','dmg','kb','enmax','luck'],['hp','dmg','crit','armor','regen'],['move','luck','acc','enmax','kb']];
 function treeStatKeys(e){const o=[];if(e&&e.st){const S=e.st;if(S.hpPct)o.push('hp');if(S.dmgPct)o.push('dmg');for(const x of Object.keys(S.mod||{}))o.push({armor:'armor',crit:'crit',move:'move',enRegen:'regen',acc:'acc',kbRes:'kb',enMax:'enmax',luck:'luck'}[x]||x);}return o;}
 function treeMainAb(k,B){const C=CHAR[k]||{};const ids=new Set((C.abilities||[]).filter(a=>a.cd>0).map(a=>a.id));const cnt={};
@@ -4874,35 +4880,41 @@ for(const [k,bs] of Object.entries(TREE_SPEC)){const hi=HERO_ORDER.indexOf(k);co
   const pickCap=(L,bi)=>{for(const id of Object.keys(own[L]||{}))if(!capUsed.has(id)){capUsed.add(id);return [L,id];}const G=Object.keys(TAL_CAP[L]);
     const names=new Set();for(const B of bs)for(const n of [B.r3,...(B.r5||[])])if(n){const c=typeof n==='string'?treeTalCard(k,n):n;if(c)names.add(c.name);}
     for(let i=0;i<G.length;i++){const id=G[(hi+bi+i+(L===10?1:0))%G.length];if(!capUsed.has(id)&&!names.has(TAL_CAP[L][id].name)){capUsed.add(id);return [L,id];}}return [L,G[0]];};
+  /* 0.12.395 (Kyle) TALENT TREES v3, laid out like the old WoW trees: 3 trees a hero, 7 tiers x 4 columns. Mostly small multi-rank
+     upgrades (2-5 ranks), a better-than-minor pick about 2/6 down (tier 3), a near-major about 4/6 down (tier 5, arrow from tier 3) and
+     one single-point major at the bottom (tier 7, arrow from tier 5). A tier opens after 3 points per tier in that tree above it.
+     Ranks are rescaled so a maxed talent gives what the old talent gave. Arrows need the talent they come from maxed. */
+  const HI=HERO_ORDER.indexOf(k);
   TREES[k]=bs.map((B,bi)=>{const nodes=[];const used=new Set();const main=treeMainAb(k,B);const C=CHAR[k]||{};const MA=main&&(C.abilities||[]).find(a=>a.id===main);
     for(const n of [...B.r1,...B.r2,...B.r4])if(n&&n.eff)treeStatKeys(n.eff).forEach(x=>used.add(x));
     let fo=0;const fill=()=>{const L=TREE_FILL_ORDER[(bi+fo++)%TREE_FILL_ORDER.length];for(const x of [...L,...Object.keys(TREE_FILL)])if(!used.has(x)){used.add(x);return x;}return 'hp';};
     const P=n=>typeof n==='string'?{tal:n}:{eff:n.eff,txt:n.txt};
-    const fillNode=()=>{const f=TREE_FILL[fill()];return {name:f[0],icon:f[1],parts:[{eff:f[2]}]};};
-    const push=(row,col,o,extra)=>{const id=`b${bi}r${row}${col}`;const cap=row===3||row===6;nodes.push(Object.assign({id,row,col,max:TREE_RANKS[row-1],cap},o,extra||{}));};
+    const push=(row,col,o,max,extra)=>{const id=`b${bi}r${row}${col}`;if(o.parts.some(p=>p.tal))max=1;nodes.push(Object.assign({id,row,col,max},o,extra||{}));return id;};
     const fromSpec=n=>{if(typeof n==='string'){const c=treeTalCard(k,n);return c?{name:c.name,icon:c.icon||'⭐',parts:[{tal:n}]}:null;}return {name:n.name,icon:n.icon,parts:[P(n)]};};
     const capOf=(L,id)=>{const c=treeTalCard(k,`cap:${L}:${id}`);return {name:c.name,icon:c.icon||'👑',parts:[{tal:`cap:${L}:${id}`}]};};
-    /* T1 */ B.r1.forEach((n,j)=>push(1,'ab'[j],fromSpec(n)));
-      push(1,'c',MA&&MA.en>0?{name:['Second Nature','Easy Does It','Save Your Breath'][bi%3],icon:'🌀',parts:[{eff:TA(main,{en:-.07})}]}:fillNode());
-    /* T2 */ B.r2.forEach((n,j)=>push(2,'ab'[j],fromSpec(n)));
-      {const hasCd=[...B.r1,...B.r2].some(n=>n&&n.eff&&n.eff.ab===main&&n.eff.mul&&n.eff.mul.cd);push(2,'c',MA&&!hasCd?{name:['Muscle Memory','Rhythm','Routine'][bi%3],icon:'🔁',parts:[{eff:TA(main,{cd:-.05})}]}:fillNode());}
-    /* T3: the old purple row-3 talent grows into a full capstone (+8% damage, +8% max HP on top), the other is a hero capstone */
-    {const o=fromSpec(B.r3);o.parts.push({eff:TS({dmgPct:8,hpPct:8})});push(3,'a',o);
-      push(3,'b',capOf(...pickCap(5,bi)));}
-    /* T4: juicier — the old talent plus a stat rider; a third pick that speeds the branch's main ability */
-    B.r4.forEach((n,j)=>{const o=fromSpec(n);o.parts.push({eff:TREE_FILL[fill()][2]});push(4,'ab'[j],o);});
-    push(4,'c',{name:['Battle-Tested','Hard Lessons','Old Habits'][bi%3],icon:'⚔️',parts:[...(main?[{eff:TA(main,{cd:-.06})}]:[]),{eff:TREE_FILL[fill()][2]},{eff:TS({hpPct:3})}]});
-    /* T5: each one doubles down on its column (T1 + T2 talent again) plus a stat */
-    {const nm=[`${B.name} Mastery`,`${B.name} Instinct`,`${B.name} Legacy`],ic=['🌟','🧠','🏆'];
-      for(const [j,col] of ['a','b','c'].entries()){const r1=nodes.find(n=>n.id===`b${bi}r1${col}`),r2=nodes.find(n=>n.id===`b${bi}r2${col}`);
-        const parts=[...r1.parts,...r2.parts].filter(p=>!p.tal).map(p=>Object.assign({},p));parts.push({eff:TREE_FILL[fill()][2]});push(5,col,{name:nm[j],icon:ic[j],parts});}}
-    /* T6 */ {const r5=(B.r5||[])[0];push(6,'a',r5?fromSpec(r5):capOf(10,'last'));
-      push(6,'b',capOf(...pickCap(10,bi)));}
-    {const a=nodes.find(n=>n.row===3&&n.col==='a'),b=nodes.find(n=>n.row===6&&n.col==='a');if(a&&b&&a.name===b.name){a.name+=' I';b.name+=' II';}}
+    const FIVE={hp:['🫀',{st:{hpPct:2}}],armor:['🫀',{st:{hpPct:2}}],crit:['👁️',{st:{mod:{crit:1}}}],move:['🪶',{st:{mod:{move:2}}}],dmg:['🔥',{st:{dmgPct:1}}],
+      regen:['🫁',{st:{mod:{enRegen:.1}}}],acc:['🎯',{st:{mod:{acc:1}}}],kb:['🪨',{st:{mod:{kbRes:3}}}],enmax:['🔋',{st:{mod:{enMax:1}}}],luck:['🍀',{st:{mod:{luck:1}}}]};
+    const names=new Set();const nm1=key=>{const L=TREE_FILL_NAMES[key]||[key];for(let i=0;i<L.length;i++){const n=L[(HI+bi+i)%L.length];if(!names.has(n)){names.add(n);return n;}}return L[0];};
+    for(const n of [...B.r1,...B.r2,...B.r4,B.r3,...(B.r5||[])]){const c=typeof n==='string'?treeTalCard(k,n):n;if(c&&c.name)names.add(c.name);}
+    const fillNode=()=>{const key=fill(),f=TREE_FILL[key];return {name:nm1(key),icon:f[1],parts:[{eff:f[2]}]};};
+    const im=(n,i)=>{const o=fromSpec(n);o.name=(i||'Improved')+' '+o.name;return o;};
+    /* tier 1: one 5-rank basic, two 3-rank starters */ {const key=fill();push(1,'a',{name:nm1(key),icon:FIVE[key][0],parts:[{eff:FIVE[key][1]}]},5);}
+      push(1,'b',fromSpec(B.r1[0]),3);push(1,'c',fromSpec(B.r1[1]),3);
+    /* tier 2 */ const t2a=push(2,'a',fromSpec(B.r2[0]),3);push(2,'c',fromSpec(B.r2[1]),3);
+      push(2,'d',MA&&MA.en>0?{name:['Second Nature','Easy Does It','Save Your Breath'][bi%3],icon:'🌀',parts:[{eff:TA(main,{en:-.07})}]}:fillNode(),3);
+    /* tier 3: the better-than-minor pick (2/6 of the way down) */ const t3=push(3,'b',fromSpec(B.r3),1,{maj:1});push(3,'d',fillNode(),3);
+    /* tier 4 */ push(4,'a',fromSpec(B.r4[0]),2,{req:t2a});push(4,'c',fromSpec(B.r4[1]),2);
+      {const key=fill();push(4,'d',{name:['Battle-Tested','Hard Lessons','Old Habits'][bi%3],icon:'⚔️',parts:[...(main?[{eff:TA(main,{cd:-.06})}]:[]),{eff:TREE_FILL[key][2]}]},2);}
+    /* tier 5: near-major (4/6 down), arrow from tier 3 */ const r5b=(B.r5||[])[1];const sig=MA?{name:`${MA.name.replace(/_/g,' ').replace(/!+$/,'')} Mastery`,icon:B.icon,parts:[{eff:TA(main,{cd:-.15})},...(MA.en>0?[{eff:TA(main,{en:-.15})}]:[]),{eff:bi===2?TS({hpPct:6}):TS({dmgPct:5})}]}:null;
+      const t5=push(5,'b',r5b?fromSpec(r5b):sig||capOf(...pickCap(5,bi)),1,{maj:1,req:t3});
+      push(5,'c',im(B.r2[0]),2);
+    /* tier 6 */ push(6,'a',im(B.r1[0],'Expert'),2);push(6,'d',im(B.r2[1]),2);
+    /* tier 7: the major */ {const r5=(B.r5||[])[0];push(7,'b',r5?fromSpec(r5):capOf(...pickCap(10,bi)),1,{maj:2,req:t5,cap:1});}
+    {const a=nodes.find(n=>n.row===5&&n.col==='b'),b=nodes.find(n=>n.row===7);if(a&&b&&a.name===b.name){a.name+=' I';b.name+=' II';}}
     for(const n of nodes){const st={hpPct:0,dmgPct:0,heal:0,rev:0,mod:{}};let any=0;
       for(const p of n.parts)if(p.eff&&p.eff.st){any=1;const S=p.eff.st,m=p.k||1;for(const f of ['hpPct','dmgPct','heal','rev'])if(S[f])st[f]+=S[f]*m;for(const [x,v] of Object.entries(S.mod||{}))st.mod[x]=(st.mod[x]||0)+v*m;}
       n.st=any?st:null;n.txt=treeTxt(k,n,0);}
-    return {name:B.name,icon:B.icon,nodes};});}
+    return {name:B.name,icon:B.icon,nodes,bg:(HI*3+bi)%9};});}
 function treeScaleTxt(t,R){t=t.replace(/^CAPSTONE:\s*/,'');if(!R||(!(R.max>1)&&(R.k||1)===1))return t;let done=0;
   return t.replace(/(\d+(?:\.\d+)?)/,m=>{done=1;return treeSer(+m,x=>String(Math.round(x*100)/100),R);}).replace(/ per rank/,'');}
 function treePartTxt(k,p,R){if(p.tal){const c=treeTalCard(k,p.tal);return c?String(c.txt).replace(/^CAPSTONE:\s*/,''):'';}
@@ -4910,7 +4922,7 @@ function treePartTxt(k,p,R){if(p.tal){const c=treeTalCard(k,p.tal);return c?Stri
 function treeTxt(k,n,cur){return n.parts.map(p=>treePartTxt(k,p,{max:n.max,cur})).filter(Boolean).join(' · ');}
 function treeOf(k){return TREES[k]||null;}
 function treeNode(k,id){const T=TREES[k];if(!T)return null;for(const B of T)for(const n of B.nodes)if(n.id===id)return n;return null;}
-function treeInit(H){if(!H)return;if(H.treeV!==2){H.treeV=2;H.tree={};H.tal=[];H.offer=null;H.pts={};}}   // 0.12.335: trees v2, every point refunded
+function treeInit(H){if(!H)return;if(H.treeV!==3){H.treeV=3;H.tree={};H.tal=[];H.offer=null;H.pts={};}}   // 0.12.395: trees v3 (WoW-style), every point refunded
 function treeSpent(H){return Object.values(H.tree||{}).reduce((a,b)=>a+b,0);}
 function treeBranchPts(k,H,bi){const T=TREES[k];if(!T)return 0;return T[bi].nodes.reduce((a,n)=>a+((H.tree||{})[n.id]||0),0);}
 function treePts(H){return Math.min(TREE_MAXPTS,Math.max(0,(H.lvl||1)-1));}
@@ -4918,13 +4930,10 @@ function treePts(H){return Math.min(TREE_MAXPTS,Math.max(0,(H.lvl||1)-1));}
 function treeWhy(k,H,tr){const T=TREES[k];if(!T)return 'no tree';let sp=0;
   for(const [id,r] of Object.entries(tr)){const n=treeNode(k,id);if(!n||r<0)return 'unknown talent';if(r>n.max)return 'already maxed';sp+=r;}
   if(sp>treePts(H))return 'no free points (1 per level)';
-  for(let bi=0;bi<T.length;bi++){const N=T[bi].nodes;const R=id=>tr[id]||0;const nm=id=>(N.find(m=>m.id===id)||{}).name;
-    for(const n of N){if(!R(n.id))continue;const below=N.filter(m=>m.row<n.row).reduce((a,m)=>a+R(m.id),0);
-      if(below<TREE_REQ[n.row-1])return `needs ${TREE_REQ[n.row-1]} points in ${T[bi].name} below tier ${n.row}`;
-      if(n.cap){const up=n.col==='a'?['a','b']:['b','c'];if(!up.some(c=>R(`b${bi}r${n.row-1}${c}`)))return `needs a point in ${up.map(c=>nm(`b${bi}r${n.row-1}${c}`)).join(' or ')}`;
-        const other=`b${bi}r${n.row}${n.col==='a'?'b':'a'}`;if(R(other))return `only one capstone per tier (${nm(other)} is taken)`;
-        if(n.row===3){const lock=`b${bi}r4${n.col==='a'?'c':'a'}`;if(R(lock))return `${n.name} locks ${nm(lock)} — take those points out first`;}}
-      if(n.row===4){const capId=`b${bi}r3${n.col==='c'?'a':n.col==='a'?'b':'-'}`;if(R(capId))return `locked by the capstone ${nm(capId)}`;}}}
+  for(let bi=0;bi<T.length;bi++){const N=T[bi].nodes;const R=id=>tr[id]||0;
+    for(const n of N){if(!R(n.id))continue;const above=N.filter(m=>m.row<n.row).reduce((a,m)=>a+R(m.id),0);
+      if(above<TREE_REQ[n.row-1])return `needs ${TREE_REQ[n.row-1]} points in ${T[bi].name} above tier ${n.row}`;
+      if(n.req){const q=N.find(m=>m.id===n.req);if(q&&R(q.id)<q.max)return `needs ${q.max}/${q.max} in ${q.name}`;}}}
   return '';}
 function treeCanWhy(k,H,id){treeInit(H);const n=treeNode(k,id);if(!n)return 'unknown talent';const tr=Object.assign({},H.tree);tr[id]=(tr[id]||0)+1;return treeWhy(k,H,tr);}
 function treeCan(k,H,id){return !treeCanWhy(k,H,id);}
@@ -5091,17 +5100,17 @@ function pickEvent(s,run,kind){const c=evCtx(s,run);const pool=EVENTS.filter(E=>
 function evMods(run){const E=(run&&run.evNext)||{},P=(run&&run.evPerm)||{};const f=k=>(E[k]||1)*(P[k]||1);
   return {foes:f('foes'),gold:f('gold'),supply:f('supply'),parts:f('parts'),cars:f('cars'),grove:f('grove'),dmg:f('dmg'),taken:f('taken'),mv:f('mv'),zspd:f('zspd'),zdmg:f('zdmg'),xp:f('xp'),en:E.en||0,ambush:E.ambush||0};}
 
-const API={radioForecast,reticle,ABIL_DESC,HEADSHOT,isHead,inspHelp,PLAYER_ICON,BEHAVIOR,INSP,inspText,CHAR,AIM_BOXES,aimOdds,aimBoxesOf,hbOf,HERO_HITBOX,ENERGY,spendEnergy,faceToward,AIM_RANGE,accTighten,LANES,UNIT_SCALE,HITBOX,aimBands,airBands,rollAirAim,rollAimHeight,rollLaneOffset,armorReduction,HP_PER_STAMINA,migrateSlot,CFG,STYLE,Game,newRun,heroBase,heroDef,DATA,newSlot,needHeroXp};
+const API={TREES,treeNode,treeWhy,treeInit,radioForecast,reticle,ABIL_DESC,HEADSHOT,isHead,inspHelp,PLAYER_ICON,BEHAVIOR,INSP,inspText,CHAR,AIM_BOXES,aimOdds,aimBoxesOf,hbOf,HERO_HITBOX,ENERGY,spendEnergy,faceToward,AIM_RANGE,accTighten,LANES,UNIT_SCALE,HITBOX,aimBands,airBands,rollAirAim,rollAimHeight,rollLaneOffset,armorReduction,HP_PER_STAMINA,migrateSlot,CFG,STYLE,Game,newRun,heroBase,heroDef,DATA,newSlot,needHeroXp};
 if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1795121770';const BGI=new Image();BGI.src='crawl_bg.png?v=1795121770';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795121770';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1795147521';const BGI=new Image();BGI.src='crawl_bg.png?v=1795147521';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795147521';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795121770';XIMG.wave.src='crawl_wave.png?v=1795121770';XIMG.chibi.src='crawl_chibi.png?v=1795121770';XIMG.flannel.src='crawl_flannel.png?v=1795121770';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795121770';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795121770';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795121770';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795121770';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795121770';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795121770';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795121770';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795121770';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795121770';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795121770';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795121770';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795121770';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795121770';XIMG.bghood=new Image();XIMG.bghood.src='crawl_bg_hood.png?v=1795121770';XIMG.bloater=new Image();XIMG.bloater.src='crawl_bloater.png?v=1795121770';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795121770';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795121770';XIMG.rain.src='crawl_rain.png?v=1795121770';XIMG.druid.src='crawl_druid.png?v=1795121770';XIMG.camp.src='crawl_campfire.png?v=1795121770';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795121770';XIMG.tornado.src='crawl_fx_tornado.png?v=1795121770';XIMG.vine.src='crawl_fx_vine.png?v=1795121770';XIMG.thorn.src='crawl_fx_thorn.png?v=1795121770';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795147521';XIMG.wave.src='crawl_wave.png?v=1795147521';XIMG.chibi.src='crawl_chibi.png?v=1795147521';XIMG.flannel.src='crawl_flannel.png?v=1795147521';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795147521';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795147521';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795147521';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795147521';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795147521';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795147521';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795147521';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795147521';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795147521';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795147521';XIMG.carcher=new Image();XIMG.carcher.src='crawl_carcher.png?v=1795147521';XIMG.csorc=new Image();XIMG.csorc.src='crawl_csorc.png?v=1795147521';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795147521';XIMG.bghood=new Image();XIMG.bghood.src='crawl_bg_hood.png?v=1795147521';XIMG.bloater=new Image();XIMG.bloater.src='crawl_bloater.png?v=1795147521';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795147521';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795147521';XIMG.rain.src='crawl_rain.png?v=1795147521';XIMG.druid.src='crawl_druid.png?v=1795147521';XIMG.camp.src='crawl_campfire.png?v=1795147521';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795147521';XIMG.tornado.src='crawl_fx_tornado.png?v=1795147521';XIMG.vine.src='crawl_fx_vine.png?v=1795147521';XIMG.thorn.src='crawl_fx_thorn.png?v=1795147521';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795121770';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795121770';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795121770';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795121770';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795121770';XIMG.obst.src='crawl_obst.png?v=1795121770';XIMG.cityob.src='crawl_cityob.png?v=1795121770';XIMG.cars.src='crawl_cars.png?v=1795121770';XIMG.robot.src='crawl_robot.png?v=1795121770';XIMG.cultist.src='crawl_cultist.png?v=1795121770';XIMG.tentacle.src='crawl_tentacle.png?v=1795121770';XIMG.boom.src='crawl_boom.png?v=1795121770';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795147521';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795147521';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795147521';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795147521';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795147521';XIMG.obst.src='crawl_obst.png?v=1795147521';XIMG.cityob.src='crawl_cityob.png?v=1795147521';XIMG.cars.src='crawl_cars.png?v=1795147521';XIMG.robot.src='crawl_robot.png?v=1795147521';XIMG.cultist.src='crawl_cultist.png?v=1795147521';XIMG.tentacle.src='crawl_tentacle.png?v=1795147521';XIMG.boom.src='crawl_boom.png?v=1795147521';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -5136,7 +5145,7 @@ function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 /* 0.12.310 recorded clips (Tee_Grizzle): decoded once, played through the same AudioContext as the synth sounds */
 const SAMP={teeg1:{src:'crawl_teeg1',off:.34},teeg2:{src:'crawl_teeg2',off:0},teeg3:{src:'crawl_teeg3',off:0},jp1:{src:'crawl_jp1',off:0},kidhowl:{src:'crawl_kidhowl',off:0},leiftag:{src:'crawl_leiftag',off:0}};   /* 0.12.394: the boys' howl, Leif's "tag!" */   /* 0.12.380: Tee's Pistol_Play line, JP's No_Scope line */
 function sampLoad(k){const S=SAMP[k];if(!S||S.buf||S.loading||!AC)return;S.loading=1;const ext=(new Audio()).canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3';
-  fetch(S.src+ext+'?v=1795121770').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
+  fetch(S.src+ext+'?v=1795147521').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
 function sampPlay(k,off,vol,soft){const S=SAMP[k];if(!S)return;if(!S.buf){sampLoad(k);return;}const src=AC.createBufferSource(),g=AC.createGain();src.buffer=S.buf;g.gain.value=vol==null?.55:vol;
   if(soft){const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=soft;lp.Q.value=.5;src.playbackRate.value=.94+Math.random()*.1;src.connect(lp);lp.connect(g);}else src.connect(g);g.connect(AC.destination);src.start(0,off==null?S.off:off);}   /* 0.12.329 (Kyle: a bit less annoying): Tee's clips play softer, muffled (low-pass) and with a little pitch wobble */
 function sfx(k,o){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
@@ -6242,7 +6251,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.394</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.395</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -6455,60 +6464,59 @@ function campScene(host,run){const W=171,H=96;const c=document.createElement('ca
    tap it again or hit + to put a point in. Lines show how the tiers link: capstones pull from the two talents above them, and a red dashed line
    shows the far-side T4 talent a T3 capstone locks. On narrow screens the 3 branches become tabs. Spending, taking back and resetting is free. */
 function treeHL(t){return esc(t).replace(/⟦([^⟧]*)⟧/g,'<b class="tq-on">$1</b>');}
+/* 0.12.395 (Kyle) TALENTS v3: laid out like the old WoW talent calculator. Three trees side by side, each on its own painted backdrop,
+   7 tiers x 4 columns of square talent buttons with a rank badge (0/5). Gold arrows show which talent unlocks which. */
 function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeInit(L);const T=treeOf(k);if(!T)return;let ov=document.getElementById('cc-tree');if(ov)ov.remove();
-  ov=document.createElement('div');ov.id='cc-tree';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 20%,rgba(60,20,90,.55),rgba(4,2,8,.94));display:flex;align-items:center;justify-content:center;padding:8px';
-  if(!document.getElementById('cc-tree-css')){const st=document.createElement('style');st.id='cc-tree-css';st.textContent=`
+  ov=document.createElement('div');ov.id='cc-tree';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 20%,rgba(60,20,90,.55),rgba(4,2,8,.94));display:flex;align-items:center;justify-content:center;padding:6px';
+  if(!document.getElementById('cc-tree-css3')){const st=document.createElement('style');st.id='cc-tree-css3';st.textContent=`
     #cc-tree .tq-on{color:#fff;background:#a6ff2e33;border-radius:3px;padding:0 2px;text-shadow:0 0 6px #a6ff2e}
-    #cc-tree .tn{position:relative;border-radius:10px;padding:5px 6px 14px;min-height:62px;cursor:pointer;transition:transform .12s,box-shadow .2s;text-align:center;user-select:none;-webkit-tap-highlight-color:transparent}
-    #cc-tree .tn:active{transform:scale(.96)}
-    #cc-tree .tn.sel{outline:2px solid #fff;outline-offset:2px}
-    #cc-tree .tn.cap{border-radius:50% / 34%;min-height:74px;padding-top:9px}
-    #cc-tree .tn.cap.got{animation:tqCap 2.4s ease-in-out infinite}
-    #cc-tree .tn.can{animation:tqCan 1.8s ease-in-out infinite}
-    @keyframes tqCap{0%,100%{box-shadow:0 0 10px #ffd23f88,inset 0 0 12px #ffd23f44}50%{box-shadow:0 0 22px #ffd23fcc,inset 0 0 18px #ffd23f77}}
-    @keyframes tqCan{0%,100%{box-shadow:0 0 0 #a6ff2e00}50%{box-shadow:0 0 12px #a6ff2e99}}
-    #cc-tree .tpips{position:absolute;left:0;right:0;bottom:4px;display:flex;gap:3px;justify-content:center}
-    #cc-tree .tpips i{width:7px;height:7px;border-radius:50%;background:#2b2236;border:1px solid #574a66}
-    #cc-tree .tpips i.on{background:#a6ff2e;border-color:#d9ffa0;box-shadow:0 0 6px #a6ff2e}
-    #cc-tree .tn.cap .tpips i.on{background:#ffd23f;border-color:#fff2b0;box-shadow:0 0 6px #ffd23f}
+    #cc-tree .tg{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(7,auto);gap:12px 8px;position:relative;z-index:1;padding:6px 6px 4px}
+    #cc-tree .tt{position:relative;width:46px;height:46px;justify-self:center;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:23px;
+      background:linear-gradient(160deg,#2a2234,#0d0912);border:2px solid #4a3e58;box-shadow:inset 0 0 8px #000,0 2px 4px #000a;user-select:none;-webkit-tap-highlight-color:transparent;transition:transform .1s}
+    #cc-tree .tt:active{transform:scale(.93)}
+    #cc-tree .tt.off{filter:grayscale(1) brightness(.55)}
+    #cc-tree .tt.can{border-color:#a6ff2e;box-shadow:inset 0 0 8px #000,0 0 8px #a6ff2e88}
+    #cc-tree .tt.got{border-color:#ffd23f;background:linear-gradient(160deg,#4a3a12,#140e04)}
+    #cc-tree .tt.full{border-color:#ffd23f;box-shadow:inset 0 0 10px #ffd23f55,0 0 10px #ffd23f99}
+    #cc-tree .tt.maj{border-radius:50%}
+    #cc-tree .tt.maj2{width:52px;height:52px;border-radius:50%;font-size:27px}
+    #cc-tree .tt.maj2.full{animation:tqCap3 2.4s ease-in-out infinite}
+    #cc-tree .tt.sel{outline:2px solid #fff;outline-offset:2px}
+    @keyframes tqCap3{0%,100%{box-shadow:0 0 10px #ffd23f88}50%{box-shadow:0 0 24px #ffd23fdd}}
+    #cc-tree .trk{position:absolute;right:-7px;bottom:-7px;font:700 10px/1 monospace;padding:2px 3px;border-radius:4px;background:#0a070d;border:1px solid #4a3e58;color:#9d8fb0}
+    #cc-tree .tt.can .trk{color:#a6ff2e;border-color:#a6ff2e88}
+    #cc-tree .tt.got .trk{color:#ffd23f;border-color:#ffd23f88}
     #cc-tree .ttab{flex:1;padding:6px;border-radius:8px;border:1px solid #3a2e48;background:#120a18;color:#e8dff5;font-weight:700;cursor:pointer}
     #cc-tree .ttab.on{border-color:#a6ff2e;color:#a6ff2e;box-shadow:0 0 10px #a6ff2e55}`;document.head.appendChild(st);}
   let sel=null,tab=0;
-  const draw=()=>{const fr=talFree(L),tot=treePts(L);const nm=(CHAR[k]||{}).name||k;const narrow=window.innerWidth<760;const tr=L.tree||{};
-    const nodeHtml=n=>{const rk=tr[n.id]||0,can=treeCan(k,L,n.id);const why=rk>=n.max?'':treeCanWhy(k,L,n.id);const locked=!rk&&!can;
-      const c=n.cap?'#ffd23f':n.row>=4?'#5fd4ff':'#a6ff2e';
-      const bg=rk?(n.cap?'radial-gradient(circle at 50% 30%,#5a4210,#22180a)':`linear-gradient(160deg,${c}33,#140c1c)`):'linear-gradient(160deg,#1a1222,#0d0812)';
-      const bd=rk?c:can?c+'aa':'#30263c';
-      const col=n.cap?(n.col==='a'?'1 / 4':'4 / 7'):({a:'1 / 3',b:'3 / 5',c:'5 / 7'})[n.col];
-      return `<div class="tn${n.cap?' cap':''}${rk?' got':''}${can&&fr?' can':''}${sel===n.id?' sel':''}" data-n="${n.id}" style="grid-column:${col};${n.cap?'width:86%;justify-self:center;':''}background:${bg};border:2px solid ${bd};opacity:${locked&&!can?.5:1}">
-        <div style="font-size:${n.cap?22:19}px;line-height:1;filter:${locked?'grayscale(.8)':'none'}">${n.icon}</div>
-        <div style="font-size:10.5px;font-weight:700;line-height:1.15;margin-top:3px;color:${rk?c:'#e8dff5'}">${esc(n.name)}</div>
-        ${why&&!rk&&/locked|only one|locks/.test(why)?'<div style="position:absolute;top:3px;right:5px;font-size:11px">🔒</div>':''}
-        <div class="tpips">${Array.from({length:n.max},(_,i)=>`<i class="${i<rk?'on':''}"></i>`).join('')}</div></div>`;};
+  const draw=()=>{const fr=talFree(L),tot=treePts(L);const nm=(CHAR[k]||{}).name||k;const narrow=window.innerWidth<620;const tr=L.tree||{};
+    const tile=n=>{const rk=tr[n.id]||0,can=rk<n.max&&treeCan(k,L,n.id);const off=!rk&&!can;
+      const cls=['tt',n.maj===2?'maj2':n.maj?'maj':'',rk?'got':'',rk>=n.max?'full':'',can&&fr?'can':'',off?'off':'',sel===n.id?'sel':''].filter(Boolean).join(' ');
+      return `<div class="${cls}" data-n="${n.id}" title="${esc(n.name)}" style="grid-row:${n.row};grid-column:${'abcd'.indexOf(n.col)+1}">${n.icon}<span class="trk">${rk}/${n.max}</span></div>`;};
     const col=(B,bi)=>{const bp=treeBranchPts(k,L,bi);const nxt=TREE_REQ.find(q=>q>bp);
-      const rows=[1,2,3,4,5,6].map(r=>{const open=bp>=TREE_REQ[r-1];
-        return `<div style="display:flex;align-items:center;gap:4px;margin:7px 0"><div style="width:22px;flex:none;text-align:center;font:700 9px monospace;color:${open?(r===3||r===6?'#ffd23f':'#a6ff2e'):'#5a4e68'}">T${r}<br><span style="opacity:.7">${TREE_REQ[r-1]}</span></div>
-          <div style="flex:1;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;position:relative;z-index:1">${B.nodes.filter(n=>n.row===r).map(nodeHtml).join('')}</div></div>`;}).join('');
-      return `<div class="tbr" data-bi="${bi}" style="flex:1;min-width:0;position:relative;background:linear-gradient(180deg,#140b1d,#0a060f);border:1px solid #33264a;border-radius:14px;padding:8px 8px 10px;box-shadow:inset 0 0 30px #00000088">
+      return `<div class="tbr" data-bi="${bi}" style="flex:1;min-width:236px;max-width:300px;position:relative;border:2px solid #3a2e4a;border-radius:12px;overflow:hidden;box-shadow:0 0 18px #000c;
+          background:linear-gradient(180deg,#0006,#000a 70%),url(crawl_talbg.png?v=1795147521) ${-(B.bg||0)*100}% 0/900% 100%;image-rendering:pixelated">
         <svg class="tlines" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></svg>
-        <div style="position:relative;z-index:1;text-align:center;font-weight:800;color:#ffe9a8;letter-spacing:.5px">${B.icon} ${esc(B.name)} <span style="color:#a6ff2e">${bp}</span></div>
-        <div style="position:relative;z-index:1;height:5px;border-radius:3px;background:#251b30;margin:5px 4px 2px;overflow:hidden"><div style="height:100%;width:${Math.min(100,bp/14*100)}%;background:linear-gradient(90deg,#a6ff2e,#ffd23f);box-shadow:0 0 8px #a6ff2e"></div></div>
-        <div style="position:relative;z-index:1;font-size:9px;text-align:center;color:#7d6f90">${nxt!=null?`${nxt-bp} more to open the next tier`:'every tier open'}</div>${rows}</div>`;};
-    const N=sel&&treeNode(k,sel);let info='<div class="cc-sub" style="font-size:12px;text-align:center;padding:6px">Tap a talent to see what it does. Tap it again (or +) to put a point in.</div>';
-    if(N){const rk=tr[N.id]||0,why=rk>=N.max?'Maxed out.':treeCanWhy(k,L,N.id),cr=treeCanRemove(k,L,N.id);
-      const kind=N.cap?(N.row===3?'Tier 3 capstone — pick one of the two':'Tier 6 capstone — pick one of the two'):`Tier ${N.row} · ${N.max} rank${N.max>1?'s':''}`;
-      const link=N.cap?`<div style="font-size:11px;color:#c9b8e0;margin-top:3px">🔗 Needs a point in ${N.col==='a'?'the left or middle':'the middle or right'} talent above it.${N.row===3?` Locks the ${N.col==='a'?'right':'left'} Tier 4 talent.`:''}</div>`:'';
+        <div style="position:relative;z-index:1;text-align:center;font-weight:800;color:#ffe9a8;letter-spacing:.5px;padding-top:6px;text-shadow:0 1px 3px #000">${B.icon} ${esc(B.name)}</div>
+        <div style="position:relative;z-index:1;font-size:9.5px;text-align:center;color:#c9b8e0;text-shadow:0 1px 2px #000">${bp} point${bp===1?'':'s'} · ${nxt!=null?`next tier at ${nxt}`:'every tier open'}</div>
+        <div class="tg">${B.nodes.map(tile).join('')}</div></div>`;};
+    const N=sel&&treeNode(k,sel);let info='<div class="cc-sub" style="font-size:12px;text-align:center;padding:6px">Tap a talent to read it. Tap it again (or +) to put a point in. Every 3 points in a tree opens the next row.</div>';
+    if(N){const rk=tr[N.id]||0,why=rk>=N.max?'':treeCanWhy(k,L,N.id),cr=treeCanRemove(k,L,N.id);const q=N.req&&treeNode(k,N.req);
+      const kind=N.maj===2?'Ultimate talent':N.maj?'Major talent':'Talent';
+      const now=rk?`<div style="font-size:12px;line-height:1.4"><b style="color:#ffd23f">Now:</b> ${treeHL(treeTxt(k,N,rk))}</div>`:'';
+      const next=rk<N.max?`<div style="font-size:12px;line-height:1.4;margin-top:2px"><b style="color:#a6ff2e">${rk?'Next rank:':'Rank 1:'}</b> ${treeHL(treeTxt(k,N,rk+1))}</div>`:'';
       info=`<div style="display:flex;gap:10px;align-items:flex-start"><div style="font-size:30px;line-height:1">${N.icon}</div><div style="flex:1;min-width:0">
-        <div style="font-weight:800;color:${N.cap?'#ffd23f':'#a6ff2e'}">${esc(N.name)} <span style="font:700 11px monospace;color:#9d8fb0">${rk}/${N.max}</span> <span class="cc-sub" style="font-size:10.5px">${kind}</span></div>
-        <div style="font-size:12.5px;line-height:1.4;margin-top:2px">${treeHL(treeTxt(k,N,rk))}</div>${link}
-        ${why&&rk<N.max?`<div style="font-size:11px;color:#ff9ab8;margin-top:3px">⚠ ${esc(why)}</div>`:''}</div>
-        <div style="display:flex;flex-direction:column;gap:4px"><button class="cc-btn go" data-add ${!why?'':'disabled'} style="min-width:46px;font-size:16px">+</button><button class="cc-btn" data-rm ${cr?'':'disabled'} style="min-width:46px;font-size:16px">−</button></div></div>`;}
-    ov.innerHTML=`<div style="background:linear-gradient(180deg,#1a0f24,#0f0915);border:2px solid #a6ff2e44;border-radius:16px;max-width:1150px;width:100%;max-height:96vh;display:flex;flex-direction:column;color:#e8dff5;box-shadow:0 0 40px #6a2fa055">
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px 6px"><b style="font-size:17px;text-shadow:0 0 10px #a6ff2e66">🌳 ${esc(nm)} · Talents</b><span class="cc-sub">LV ${L.lvl||1} · <b style="color:#a6ff2e">${fr}</b> of ${tot} points free</span>
+        <div style="font-weight:800;color:${N.maj?'#ffd23f':'#e8dff5'}">${esc(N.name)} <span style="font:700 11px monospace;color:#9d8fb0">Rank ${rk}/${N.max}</span> <span class="cc-sub" style="font-size:10.5px">${kind} · Tier ${N.row}</span></div>
+        <div style="font-size:12.5px;line-height:1.4;margin-top:2px">${treeHL(treeTxt(k,N,rk))}</div>${N.max>1?`<div class="cc-sub" style="font-size:10.5px">Each rank adds the next number; your current rank is lit.</div>`:''}
+        ${q?`<div style="font-size:11px;color:#c9b8e0;margin-top:3px">➜ Needs ${q.max}/${q.max} in ${esc(q.name)}</div>`:''}
+        ${why?`<div style="font-size:11px;color:#ff9ab8;margin-top:3px">⚠ ${esc(why)}</div>`:''}</div>
+        <div style="display:flex;flex-direction:column;gap:4px"><button class="cc-btn go" data-add ${rk<N.max&&!why?'':'disabled'} style="min-width:46px;font-size:16px">+</button><button class="cc-btn" data-rm ${cr?'':'disabled'} style="min-width:46px;font-size:16px">−</button></div></div>`;}
+    ov.innerHTML=`<div style="background:linear-gradient(180deg,#1a0f24,#0f0915);border:2px solid #a6ff2e44;border-radius:16px;max-width:980px;width:100%;max-height:97vh;display:flex;flex-direction:column;color:#e8dff5;box-shadow:0 0 40px #6a2fa055">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px 6px"><b style="font-size:17px;text-shadow:0 0 10px #a6ff2e66">🌳 ${esc(nm)} · Talents</b><span class="cc-sub">LV ${L.lvl||1} · <b style="color:#a6ff2e">${fr}</b> of ${tot} points free · ${T.map((B,bi)=>treeBranchPts(k,L,bi)).join(' / ')}</span>
         <span style="flex:1"></span><button class="cc-btn" data-treset ${treeSpent(L)?'':'disabled'}>↺ Reset (free)</button><button class="cc-btn go" data-tclose>Done</button></div>
       ${narrow?`<div style="display:flex;gap:6px;padding:0 10px 6px">${T.map((B,bi)=>`<button class="ttab${bi===tab?' on':''}" data-tab="${bi}">${B.icon} ${esc(B.name)} ${treeBranchPts(k,L,bi)}</button>`).join('')}</div>`:''}
-      <div style="overflow:auto;padding:0 10px;flex:1"><div style="display:flex;gap:8px;align-items:stretch">${T.map((B,bi)=>!narrow||bi===tab?col(B,bi):'').join('')}</div></div>
-      <div style="border-top:1px solid #33264a;background:#0c0711;padding:8px 12px;border-radius:0 0 14px 14px;min-height:64px">${info}</div></div>`;
+      <div style="overflow:auto;padding:0 10px 8px;flex:1"><div style="display:flex;gap:8px;justify-content:center;align-items:stretch">${T.map((B,bi)=>!narrow||bi===tab?col(B,bi):'').join('')}</div></div>
+      <div style="border-top:1px solid #33264a;background:#0c0711;padding:8px 12px;border-radius:0 0 14px 14px;min-height:72px">${info}</div></div>`;
     ov.querySelectorAll('[data-n]').forEach(e=>{e.onclick=()=>{const id=e.dataset.n;if(sel===id){if(treeAdd(k,L,id)){sfx('level');persist();}}sel=id;draw();};e.oncontextmenu=ev=>{ev.preventDefault();sel=e.dataset.n;if(treeRemove(k,L,sel))persist();draw();};});
     ov.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=+b.dataset.tab;draw();});
     const ad=ov.querySelector('[data-add]');if(ad)ad.onclick=()=>{if(treeAdd(k,L,sel)){sfx('level');persist();}draw();};
@@ -6516,25 +6524,20 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
     ov.querySelector('[data-treset]').onclick=()=>{treeReset(L);persist();draw();};
     ov.querySelector('[data-tclose]').onclick=()=>{ov.remove();window.removeEventListener('resize',onRs);showCamp();};
     requestAnimationFrame(lines);};
-  /* link lines between tiers, measured off the laid-out cards */
+  /* prerequisite arrows, measured off the laid-out tiles */
   const lines=()=>{const tr=L.tree||{};ov.querySelectorAll('.tbr').forEach(br=>{const bi=+br.dataset.bi;const svg=br.querySelector('.tlines');const R0=br.getBoundingClientRect();
-    const P=id=>{const e=br.querySelector(`[data-n="${id}"]`);if(!e)return null;const r=e.getBoundingClientRect();return {x:r.left-R0.left+r.width/2,t:r.top-R0.top,b:r.bottom-R0.top};};
-    const id=(r,c)=>`b${bi}r${r}${c}`;const seg=[];
-    const link=(a,b,kind)=>{const p=P(a),q=P(b);if(!p||!q)return;const on=(tr[a]||0)&&(tr[b]||0);seg.push({p,q,on,kind});};
-    for(const c of 'abc'){link(id(1,c),id(2,c));link(id(4,c),id(5,c));}
-    for(const [cap,ups] of [['a','ab'],['b','bc']]){for(const u of ups){link(id(2,u),id(3,cap),'cap');link(id(5,u),id(6,cap),'cap');}}
-    for(const c of 'abc'){const capFor=c==='a'?['a','b']:c==='b'?['a','b']:['b'];for(const cp of capFor)link(id(3,cp),id(4,c));}
-    link(id(3,'a'),id(4,'c'),'lock');link(id(3,'b'),id(4,'a'),'lock');
-    svg.innerHTML=`<defs><filter id="tg${bi}"><feGaussianBlur stdDeviation="2.2"/></filter></defs>`+seg.map(({p,q,on,kind})=>{const y1=p.b-2,y2=q.t+2,my=(y1+y2)/2;const d=`M${p.x},${y1} C${p.x},${my} ${q.x},${my} ${q.x},${y2}`;
-      if(kind==='lock')return `<path d="${d}" stroke="#ff4d6d" stroke-opacity=".45" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/>`;
-      const c=kind==='cap'?'#ffd23f':'#a6ff2e';
-      return on?`<path d="${d}" stroke="${c}" stroke-width="5" fill="none" opacity=".5" filter="url(#tg${bi})"/><path d="${d}" stroke="${c}" stroke-width="2" fill="none"/>`:`<path d="${d}" stroke="${c}" stroke-opacity=".16" stroke-width="2" fill="none"/>`;}).join('');});};
+    const P=id=>{const e=br.querySelector(`[data-n="${id}"]`);if(!e)return null;const r=e.getBoundingClientRect();return {x:r.left-R0.left+r.width/2,y:r.top-R0.top+r.height/2,t:r.top-R0.top,b:r.bottom-R0.top,l:r.left-R0.left,r:r.right-R0.left};};
+    let h='';for(const n of T[bi].nodes){if(!n.req)continue;const a=P(n.req),b=P(n.id);if(!a||!b)continue;const q=treeNode(k,n.req);const on=(tr[n.req]||0)>=q.max;const c=on?'#ffd23f':'#8a7a9c';
+      let d;if(Math.abs(a.x-b.x)<4)d=`M${a.x},${a.b+2} L${b.x},${b.t-7}`;else d=`M${a.x},${a.b+2} L${a.x},${b.y} L${b.x>a.x?b.l-7:b.r+7},${b.y}`;
+      const tip=Math.abs(a.x-b.x)<4?`${b.x-5},${b.t-8} ${b.x+5},${b.t-8} ${b.x},${b.t-2}`:(b.x>a.x?`${b.l-8},${b.y-5} ${b.l-8},${b.y+5} ${b.l-2},${b.y}`:`${b.r+8},${b.y-5} ${b.r+8},${b.y+5} ${b.r+2},${b.y}`);
+      h+=`<path d="${d}" stroke="#000" stroke-width="6" fill="none" opacity=".6"/><path d="${d}" stroke="${c}" stroke-width="3" fill="none"/><polygon points="${tip}" fill="${c}"/>`;}
+    svg.innerHTML=h;});};
   const onRs=()=>draw();window.addEventListener('resize',onRs);
   ov.onclick=e=>{if(e.target===ov){ov.remove();window.removeEventListener('resize',onRs);showCamp();}};document.body.appendChild(ov);draw();}
 /* 0.12.338 (Kyle) GEAR screen: 3 slots per hero (Weapon / Armor / Trinket), a stash, free swaps. Tap anything to see it in full
    (no hover needed). Spare parts raise an item a quality tier (Rusted -> plain -> Fine -> Masterwork); scrapping gives parts back. */
 function gearIcon(it,sz){const D=gearDef(it);if(!D)return '';sz=sz||32;const k=sz/32;const R=GEAR_RAR[D.r];
-  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795121770) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
+  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795147521) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
 function showGear(k0){const s=SLOT();if(!s)return;const run=s.run;const team=(run&&run.team)||[k0];let k=k0;let sel=null,filt='all';gearSlot(s);
   let ov=document.getElementById('cc-gear');if(ov)ov.remove();ov=document.createElement('div');ov.id='cc-gear';
   ov.style.cssText='position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 20%,rgba(40,30,70,.6),rgba(4,2,8,.94));display:flex;align-items:center;justify-content:center;padding:8px';
