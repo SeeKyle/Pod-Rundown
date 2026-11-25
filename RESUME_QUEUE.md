@@ -17,3 +17,9 @@ gear system + tap-for-info (338), bats x3, Alphas 5x, JP sword 1d8+4, costly gea
 
 13. (DONE 0.12.351 + 0.12.354) Code cleanup incl. old backpack/merchant/level-up picks/spell+item system.
 Difficulty: zombie 20 HP, trickle flat 7s from first pan (0.12.356).
+
+## 2026-11-25 (live at 0.12.490)
+- The bundle now includes parts/events.js (build_crawl.py needs it).
+- build_site.py needs text modules (takeaways_text etc.) that are NOT in the bundle, so pub.sh fails at that step. Use art_src/pub2.sh instead: it builds crawl.js, copies crawl.js/notes.html/pngs and only bumps the crawl.js cache-bust in index.html.
+- Added heroes Bub (0.12.488, Undead tag) and Brood_Bot (0.12.489, spider-bots). Art scripts: art_src/bub/make_bub.py, art_src/broodbot/make_broodbot.py.
+- Stage-1 sim (wsim4, 36 games, 0.12.487 build): 13/36 wins, avg clear 357s. New heroes (24 games each): Bub 9/24, Brood_Bot 11/24.
