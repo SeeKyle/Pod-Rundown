@@ -305,7 +305,7 @@ const CHAR={
   /* 0.12.331 (Kyle) SeeKyle: Kyle himself. Gamer, line cook, dad of Leon and Leif, Magic player, vibe coder. A support/hybrid hero:
      a pistol and a hatchet, his boys on call (Wolf Out!!!), a meetup flare for the whole pod (Everyone, Come Together), a sizzling skillet
      from the line (Order_Up!), whatever Claude cooks up (Vibe_Coding), and the Heart_Warrior_Dad passive. */
-  seekyle:{name:'K-Swiss',role:'Pistol + Hatchet · Support',flatHp:0,stamina:9,hpPerStamina:5,armorPts:5,dodge:.04,kbRes:.35,
+  seekyle:{name:'K-Swiss',role:'Hatchet + Pistol',flatHp:0,stamina:9,hpPerStamina:5,armorPts:5,dodge:.04,kbRes:.35,
     melee:{dice:[1,8],every:1.35,reach:18,kb:18,hitAt:.3},
     ranged:{dice:[1,6],flat:1,every:.2,range:200,clip:7,reload:3,pellets:1,anim:.18}   /* 0.12.394 (Kyle): can fire every 0.2s, 7-round clip, 3s reload */,
     acc:15,walkPenalty:10,crit:.08,critMul:1.8,luck:16,xp:0,run:1.9,turn:.22,enMax:100,enRegen:4.8,
@@ -329,7 +329,7 @@ const CHAR={
       // Heart_Warrior_Dad (passive): when an ally near him (within 180px) drops under 35%, he goes full dad for 6s: +30% damage, +20% move speed,
       //   +15% attack speed, +4 armor, and that ally takes 25% less damage for 4s. 15s internal cooldown.
       {id:'heartdad',name:'Heart_Warrior_Dad',passive:1,cd:15,under:.35,r:60,dur:6,dmg:.3,mv:.2,spd:.15,armor:4,shield:.25,shieldT:4}]},
-  teeg:{name:'Tee_Grizzle',role:'Drako + Hatchet',flatHp:0,stamina:10,hpPerStamina:5,armorPts:6,dodge:.03,kbRes:.45,
+  teeg:{name:'Tee_Grizzle',role:'Hatchet + Drako',flatHp:0,stamina:10,hpPerStamina:5,armorPts:6,dodge:.03,kbRes:.45,
     melee:{dice:[1,8],every:1.3,reach:18,kb:20,hitAt:.3},
     ranged:{dice:[1,6],flat:1,every:2.65,range:230,clip:12,reload:7,pellets:1,burst:3,burstGap:.18,anim:.5,tapAcc:0,sprayAcc:-4},   // every trigger pull is a 3-round burst that lands on Shot_1's three bumps
     acc:14,walkPenalty:10,crit:.06,critMul:1.9,luck:12,xp:0,run:2,turn:.22,enMax:100,enRegen:4.2,
@@ -348,7 +348,7 @@ const CHAR={
       // First_Day_Out (passive, Robbery merged in): the first 10s of every stage he's +30% attack speed and +20% move speed,
       //   and 18% of his kills all stage long get robbed: an extra gold pile and 8 energy back.
       {id:'firstday',name:'First_Day_Out',passive:1,dur:10,spd:.3,mv:.2,ch:.18,en:8}]},
-  shoshi:{name:'Shoshi',role:'Automatic_Pistol + Tech Support',flatHp:0,stamina:9,hpPerStamina:5,armorPts:5,dodge:.07,kbRes:.25,
+  shoshi:{name:'Shoshi',role:'Pistol Whip + Automatic_Pistol',flatHp:0,stamina:9,hpPerStamina:5,armorPts:5,dodge:.07,kbRes:.25,
     melee:{dice:[1,1],every:99,reach:0,kb:0,hitAt:.1},   // 0.12.110 (Kyle): no melee at all; up close he just keeps shooting
     ranged:{dice:[1,4],flat:0,every:.08,range:230,clip:20,reload:3.25,pellets:1,anim:.12,burst:1,burstGap:.45,tapAcc:15,sprayAcc:-6},   /* 0.12.110 (Kyle): TAP = single aimed shots (+15 acc, ~2/s); UNLOAD = full auto (-6 acc) on a big target or one mauling a hurt ally */   // 0.12.110 (Kyle): auto-switch Glock, 20-round mag (0.12.111, was 33), ~12 rounds/s. Aimed taps normally; he UNLOADS on a big or dangerous target
     acc:16,walkPenalty:8,crit:.08,critMul:1.75,luck:18,xp:0,run:2,turn:.2,enMax:100,enRegen:4.6,
@@ -375,7 +375,7 @@ const CHAR={
   //   Crimson_Charge: IF 3+ zombies are lined up in one lane 25-90 ahead THEN he charges through the line (up to 95px): 2d6 to each and a big shove. 35 energy, 12s.
   //   Leap_Strike: IF a zombie is mauling an ally under 40% (or a Nemesis/boss is) 30-110 away THEN he leaps onto it: 3d6 and a 1s stun to it, 1d6 to anything beside it. 45 energy, 18s.
   //   Blood_Oath (passive): every kill heals him 3% of his max HP, and below half HP he hits 15% harder.
-  knight:{name:'Crimson_Knight',role:'Sword & Shield Tank',combo:1,flatHp:5,stamina:12,hpPerStamina:5,armorPts:9,   /* 0.12.413 (Kyle): +5 HP, +1 armor */   /* 0.12.245 (Kyle): base armor 8 */dodge:.03,kbRes:.6,
+  knight:{name:'Crimson_Knight',role:'Sword & Shield + Ranged N/A',combo:1,flatHp:5,stamina:12,hpPerStamina:5,armorPts:9,   /* 0.12.413 (Kyle): +5 HP, +1 armor */   /* 0.12.245 (Kyle): base armor 8 */dodge:.03,kbRes:.6,
     melee:{dice:[1,8],flat:1,every:1.15,reach:20,kb:20,hitAt:.2},
     acc:12,walkPenalty:4,crit:.08,critMul:1.75,luck:14,xp:0,run:2,turn:.2,enMax:100,enRegen:4.6,
     abilities:[
@@ -419,7 +419,7 @@ const CHAR={
   //   Dice-Boys_Banner: IF 2+ friends are within 300px of him and a fight is on (3+ zombies on screen) THEN he plants a waving neon DICE BOYS banner: for 8s friends within
   //     300px of it hit 10% harder and get +1 energy a second; if all three heroes are by it everyone shouts DICE BOYS! (+5% crit for the 8s). 40 energy, 25s.
   //   Perfect_Attendance (passive): never misses game night: once a stage, a hit that would drop him leaves him at 1 HP and untouchable for 2s.
-  cheez:{name:'Cheez',role:'Beam Katana + Sake',flatHp:0,stamina:10,hpPerStamina:5,armorPts:6,dodge:.07,kbRes:.3,
+  cheez:{name:'Cheez',role:'Beam Katana + Ranged N/A',flatHp:0,stamina:10,hpPerStamina:5,armorPts:6,dodge:.07,kbRes:.3,
     melee:{dice:[1,8],flat:1,every:.9,reach:21,kb:16,hitAt:.15},   /* 0.12.238 (Kyle): longer beam blade, reach 21 (was 18) */
     acc:14,walkPenalty:4,crit:.1,critMul:1.9,luck:15,xp:0,run:2,turn:.2,enMax:100,enRegen:5,
     abilities:[
@@ -428,7 +428,7 @@ const CHAR={
       {id:'sake',name:'Sake_Break',en:36,cd:10,dur:10,share:6,vul:.15,   /* 0.12.240 (Kyle): 10s on himself, 10s cd; a share lasts 6s (10s to a friend in the banner) */spd:.25,dodge:.15,acc:10,hic:.15},
       {id:'errfix',name:'Error_Code_Fix',en:32,cd:20,heal:.2,r:150,stun:2,arm:6},
       {id:'host',name:'Dice-Boys_Banner',en:36,cd:25,dur:8,r:100,dmg:.15,crit:.07,regen:.5}   /* 0.12.243 (Kyle): +15% dmg (was 10%), +0.5 energy/s (was 1), +7% crit (was 5%); all live while you stand in it */]},
-  edward:{name:'Edward',role:'Nail_Gun + Toolbox',flatHp:0,stamina:10,hpPerStamina:5,armorPts:7,dodge:.05,kbRes:.35,
+  edward:{name:'Edward',role:'Toolbox + Nail_Gun',flatHp:0,stamina:10,hpPerStamina:5,armorPts:7,dodge:.05,kbRes:.35,
     melee:{dice:[1,6],flat:1,every:2.1,reach:14,kb:55,hitAt:.3},   /* 0.12.214 (Kyle): the nailer butt-strike is slow but sends them flying */
     ranged:{dice:[1,4],flat:0,every:.3,range:147,clip:18,   /* 0.12.302 (Kyle): nail gun range -30% (was 210) */   /* 0.12.244 (Kyle): a nail every 0.30s */   /* 0.12.226 (Kyle): 1d4 a nail; 0.12.227: every 0.45s, 3s reload */reload:3,pellets:1,anim:.3},
     acc:16,walkPenalty:0,crit:.09,critMul:1.8,luck:16,xp:0,run:2,turn:.2,enMax:100,enRegen:5.5,   /* 0.12.221 (Kyle): no accuracy lost on the move with the nail gun */
@@ -438,7 +438,7 @@ const CHAR={
       {id:'nails',name:'Nail_Strip',en:32,cd:13,range:100,dice:[1,4],bleed:[6,3],T:.7,field:5,slow:.3},   /* 0.12.211 (Kyle) */
       {id:'chutz',name:'Chutzpah',en:31,cd:16,r:116.7,   /* 0.12.413 (Kyle): 350px reach (was 300) */dur:3,dr:.3,per:.1,max:5},   /* 0.12.220 (Kyle) */
       {id:'friend',name:'Power_of_Friendship',en:40,cd:22,dur:6,dmg:.3,spd:.3,ally:.1,r:100}]},
-  soldier:{name:'Soldier',role:'Machine_Gun + Frag_Grenade',flatHp:0,stamina:10,hpPerStamina:5,armorPts:8,dodge:.05,kbRes:.4,
+  soldier:{name:'Soldier',role:'Rifle Butt + Machine_Gun',flatHp:0,stamina:10,hpPerStamina:5,armorPts:8,dodge:.05,kbRes:.4,
     melee:{dice:[1,6],every:1.2,reach:15,kb:24,hitAt:.15},   // rifle-butt
     ranged:{dice:[1,2],flat:1,every:.15,range:240,clip:15,reload:7,pellets:1,anim:.15,burst:1,burstGap:.5,tapAcc:-3,sprayAcc:-15},   // 0.12.202 (Kyle) machine gun, hip-fired: 15-round mag, a round every 0.15s when he lets rip (big target or one on a hurt friend), otherwise slower taps; 1d2+1; 7s reload. Wild from the hip: much less accurate than Covering_Fire
     acc:17,walkPenalty:8,crit:.1,critMul:1.8,luck:16,xp:0,run:2,turn:.2,enMax:100,enRegen:4.6,
@@ -455,7 +455,7 @@ const CHAR={
       {id:'ammodrop',name:'Ammo_Drop',en:36,cd:20,dur:8,r:30,reload:.5,dmg:.15}]},
   // 0.12.66 (Kyle) JP: big orange hoodie, dark jeans, Kar98 + a real sword and a homemade wooden shield. A good guy who loves picking on people,
   //   games all day and smokes a lot of weed (not a drinker). Plays sword-fight with his kids. Mixes jokey and sensible.
-  jp:{name:'JP',role:'Kar98 + Sword & Board',flatHp:0,stamina:9,hpPerStamina:5,armorPts:7,dodge:.05,kbRes:.35,
+  jp:{name:'JP',role:'Sword & Board + Kar98',flatHp:0,stamina:9,hpPerStamina:5,armorPts:7,dodge:.05,kbRes:.35,
     melee:{dice:[3,3],every:1.1,reach:18,kb:18,hitAt:.15}   /* 0.12.341 (Kyle): sword 3d3 */,                    // sword: medium speed, low-medium damage
     ranged:{dice:[2,8],flat:0,every:3.25,range:290,   /* 0.12.460 (Kyle): 3.25s between shots */   /* 0.12.394 (Kyle): Kar98 2d8+1 (the +1 is the everyone-gets-it basic bonus), a shot every 1.25s (was 2.25s) */clip:1,reload:3.25,pellets:1,quietReload:1,aimT:.25},   // 0.12.163 (Kyle): Kar98 1d8+4 with a 0.25s aim wind-up before the shot (was 4d4-2, no wind-up); 2.25s; he doesn't call out reloads
     acc:20,walkPenalty:12,crit:.12,critMul:2,luck:18,xp:0,run:2,turn:.22,enMax:100,enRegen:4.6,
@@ -479,12 +479,12 @@ const CHAR={
       //   -6 accuracy, -10% move and attack speed, and he gets grumpy.
       {id:'baked',name:'Wake_n_Bake',passive:1,dodge:.2,dr:.2,en:1,   /* 0.12.151 (Kyle): +1 energy a second (was 2) */mspd:.2,slide:4,soberAfter:10,acc:-6,slow:.1}]},   // 0.12.79: high bonuses doubled + slides 4 toward slasher
   /* 0.12.437 (Kyle) the ALCHEMIST: one trinket and three potion slots. She lobs little flasks, brews bigger ones, and every potion she uses can set off her trinket's on-cast effects. */
-  alchemist:{name:'Alchemist',role:'Potion Thrower · Support',flatHp:0,stamina:7,hpPerStamina:5,armorPts:3,dodge:.06,kbRes:.25,
+  alchemist:{name:'Alchemist',role:'Flask Bonk + Poison Flask',flatHp:0,stamina:7,hpPerStamina:5,armorPts:3,dodge:.06,kbRes:.25,
     melee:{dice:[1,4],every:1.2,reach:16,kb:8,hitAt:.2},
     ranged:{dice:[1,6],flat:1,every:2.6,range:210,clip:1,reload:2.6,pellets:1},   /* 0.12.463 (Kyle): a lobbed poison flask every 2.6s */
     acc:16,walkPenalty:10,crit:.08,critMul:1.8,luck:24,xp:0,run:2,turn:.22,enMax:100,enRegen:5,
-    abilities:[{id:'flask',name:'Volatile_Flask',en:30,cd:9,pw:1.8,r:26},{id:'panacea',name:'Panacea_Mist',en:35,cd:16,heal:.12,r:60},{id:'brew',name:'Rapid_Brew',en:25,cd:24,boost:.3,dur:8},{id:'catalyst',name:'Catalyst',passive:true,pcd:.2}]},
-  flannel:{name:'Flannel_Man',role:'Rifle + Melee',flatHp:0,stamina:8,hpPerStamina:5,armorPts:5,dodge:.05,kbRes:.40,
+    abilities:[{id:'flask',name:'Volatile_Flask',en:30,cd:9,pw:1.8,r:26},{id:'panacea',name:'Panacea_Mist',en:35,cd:16,heal:.12,r:60},{id:'brew',name:'Rapid_Brew',en:25,cd:24,boost:.3,dur:8},{id:'transmute',name:'Transmute',en:30,cd:20,under:.35,range:180,gold:[3,6],r:40,stun:1},{id:'catalyst',name:'Catalyst',passive:true,pcd:.2}]},
+  flannel:{name:'Flannel_Man',role:'Crowbar + Rifle',flatHp:0,stamina:8,hpPerStamina:5,armorPts:5,dodge:.05,kbRes:.40,
     melee:{dice:[1,12],every:1.5,reach:20,kb:23,hitAt:.15},                 // crowbar: d12, swing every 1.5s, 20px reach, knockback 23/100
     ranged:{dice:[1,8],flat:0,every:1.75,range:250,clip:1,reload:1.75,pellets:1},   /* bolt-action rifle: d8, 1.75s between shots (0.12.38: -0.25s), reloads after every shot */
     acc:18,walkPenalty:12,crit:.12,critMul:2,luck:21,xp:0,run:2,turn:.22,enMax:100,enRegen:4.6,
@@ -757,7 +757,7 @@ function inspText(name){const I=INSP[name];if(!I)return '';const out=[];if(I.pas
 //   damage, accuracy, crit chance, knockback). Speed, timing, range and energy stay the same so she keeps up and can use her brick.
 // 0.12.6 Tide_Warrior: a quick, sturdy sword fighter (Claude's starting numbers until Kyle fills his sheet). He swings a
 //   2-hit combo (Attack 1, Attack 2) standing still and a running slash when he's on the move. No gun, no abilities yet.
-CHAR.chibi={name:'Tide_Warrior',role:'Sword',combo:1,flatHp:0,stamina:10,hpPerStamina:5,armorPts:8,dodge:.06,kbRes:.30,
+CHAR.chibi={name:'Tide_Warrior',role:'Sword + Ranged N/A',combo:1,flatHp:0,stamina:10,hpPerStamina:5,armorPts:8,dodge:.06,kbRes:.30,
   melee:{dice:[2,5],every:1.2,reach:28,kb:15,hitAt:.18},   /* 0.12.461 (Kyle): a bit more reach for the bigger sword */   /* 0.12.58 (Kyle): too strong: 2d6/1.1s -> 2d5/1.2s (about -20% damage) */
   // Kunai throw (built from his Attack 1 wind-up + Run+Attack throwing arm): a light 1d4 poke at range while he closes in
   ranged:null,   /* 0.12.457 (Kyle): the kunai toss is gone, he's melee only */
@@ -779,7 +779,7 @@ CHAR.chibi={name:'Tide_Warrior',role:'Sword',combo:1,flatHp:0,stamina:10,hpPerSt
     {id:'shout',name:'War Cry',en:26,cd:7,range:200,dur:7,dmg:.25,spd:.25}]};
 // 0.12.7 Yumi_Archer: a patient longbow marksman (Claude's starting numbers; no abilities yet). His arrow leaves from the
 //   arrow's tip in his draw pose, at the moment of release in his Ranged animation (0.55s into a 0.8s draw). No reloading.
-CHAR.archer={name:'Yumi_Archer',role:'Bow + Melee',flatHp:0,stamina:9,hpPerStamina:5,armorPts:6,dodge:.04,kbRes:.25,
+CHAR.archer={name:'Yumi_Archer',role:'Bow Strike + Longbow',flatHp:0,stamina:9,hpPerStamina:5,armorPts:6,dodge:.04,kbRes:.25,
   melee:{dice:[1,8],every:1.6,reach:22,kb:18,hitAt:.2},
   ranged:{dice:[1,10],flat:0,every:1.7,range:280,clip:0,reload:0,pellets:1,anim:.8,releaseAt:.55},
   acc:22,walkPenalty:15,crit:.12,critMul:2,luck:18,xp:0,run:2,turn:.25,enMax:100,enRegen:4.6,
@@ -844,7 +844,7 @@ CHAR.lumberjack={name:'Lumber_Jack',role:'Axe + Bow',combo:0,flatHp:5,   /* 0.12
 // 0.12.19: renamed Warhound with Kyle's pick of the new sprite (hunched olive war-walker, brass trim, elbowed blade arm).
 // 0.12.17 Moss_Mech (Kyle): an original moss-grown green war mech with a blue electric arc blade on its near arm and a gatling on
 //   the far arm, plus a missile pod on its back. Heavy and slow, lots of armor. Basic ranged: a short 3-round burst from the gatling.
-CHAR.robot={name:'Warhound',role:'Targeted Lazer + Flamethrower',combo:0,flatHp:0,stamina:12,hpPerStamina:5,armorPts:12,dodge:.02,kbRes:.6,
+CHAR.robot={name:'Warhound',role:'Flamethrower + Targeted Lazer',combo:0,flatHp:0,stamina:12,hpPerStamina:5,armorPts:12,dodge:.02,kbRes:.6,
   /* 0.12.67 (Kyle): the arc blade is gone: up close he hoses them with the flamethrower (his "melee"); a wide cone about 210 screen px long,
      everything it touches burns for 2s, 1d4 every 0.25s (numbers only on crits) */
   melee:{dice:[1,4],every:1.5,reach:46,kb:0,hitAt:0,flame:{len:56,w0:8,w1:19,burn:3,burnDice:[1,4],hit:2,tick:.35,dur:.75}},   // 0.12.93 (Kyle: way too much DPS): ticks .25->.35s, burn 2->1.5s, every 1.3->1.5s   // 0.12.77: Kyle's burst sprite; a bit shorter, much wider
@@ -919,7 +919,7 @@ CHAR.eng={name:'Engineer',role:'Wrench + Grenade_Launcher',combo:0,flatHp:0,stam
 // 0.12.21 Void_Cultist (Kyle): an original hooded cultist (crimson robe, navy hood, bone mask with one burning eye, curved ritual
 //   dagger). Void bolts at range, dagger up close. Abilities: a summoned tentacle that can't move but lashes far, a self-bleeding
 //   team buff, a curse that jumps on death, a fear chant, and a passive that feeds on nearby deaths.
-CHAR.cultist={name:'Void_Cultist',role:'Dagger + Void Bolts · Support',combo:0,flatHp:0,stamina:8,hpPerStamina:5,armorPts:3,dodge:.06,kbRes:.15,
+CHAR.cultist={name:'Void_Cultist',role:'Dagger + Void Bolts',combo:0,flatHp:0,stamina:8,hpPerStamina:5,armorPts:3,dodge:.06,kbRes:.15,
   melee:{dice:[1,6],every:1.4,reach:18,kb:8,hitAt:.2},
   ranged:{dice:[1,4],flat:0,every:.95,range:210,clip:0,reload:0,pellets:1,anim:.34,releaseAt:.18},   // 0.12.22 (Kyle): weak void bolts, fired about twice as fast as other ranged heroes
   acc:14,walkPenalty:8,crit:.1,critMul:1.8,luck:18,xp:0,run:1.8,turn:.22,enMax:100,enRegen:4.6,
@@ -2203,7 +2203,7 @@ class Game{
      every worker adds 7% a second plus the team's Builder bonus. Progress never goes down; workers step off when zombies get on them,
      they get badly hurt or a friend goes down, and come back later. Builders are far keener to help than everyone else. */
   /* 0.12.437 (Kyle) the Alchemist's kit */
-  alchStep(h,dt){const C=(h.base&&h.base.char)||CHAR.alchemist,A=id=>(C.abilities||[]).find(a=>a.id===id);const T=h.alT=h.alT||{flask:3,panacea:5,brew:8};for(const k in T)if(T[k]>0)T[k]-=dt;if(h.potBoostT>0)h.potBoostT-=dt;
+  alchStep(h,dt){const C=(h.base&&h.base.char)||CHAR.alchemist,A=id=>(C.abilities||[]).find(a=>a.id===id);const T=h.alT=h.alT||{flask:3,panacea:5,brew:8,transmute:6};for(const k in T)if(T[k]>0)T[k]-=dt;if(h.potBoostT>0)h.potBoostT-=dt;
     if(!h.alive||h.bwork||h.mgMan||this.demo)return;const hx=this.heroX(h),gy=h.gy||this.G,live=this.enemies.filter(e=>!e.dead&&e.x<this.W+4&&e.x>-4);const al=this.alive().filter(o=>!o.pet&&!o.dog);const en=h.en||0;const cd=(a)=>a.cd*(1-(h.cdr||0));
     const F=A('flask');if(F&&T.flask<=0&&en>=F.en){let best=null,bn=0;for(const e of live){if(e.fly||Math.abs(e.x-hx)>210)continue;const n=live.filter(o=>!o.fly&&Math.abs(o.x-e.x)<F.r&&Math.abs((o.gy||this.G)-(e.gy||this.G))<14).length+(e.bossForm||e.nem?2:0);if(n>bn){bn=n;best=e;}}
       if(best&&bn>=2){h.en-=F.en;T.flask=cd(F);this.abilXp(h,F);const el=['fire','acid','frost','stunf'][Math.floor(this.rng()*4)];h.face=best.x>hx?1:-1;h.animM=.5;h.throwPot=.45;
@@ -2211,6 +2211,10 @@ class Game{
     const P=A('panacea');if(P&&T.panacea<=0&&en>=P.en){const tm=al.filter(o=>Math.abs(this.heroX(o)-hx)<P.r&&fleshy(o));const hurt=tm.reduce((a,o)=>a+(1-o.hp/o.max),0)/Math.max(1,tm.length);
       if(tm.length&&(hurt>.2||tm.some(o=>o.hp<o.max*.45||o.bleedT>0||o.slowT>0))){h.en-=P.en;T.panacea=cd(P);this.abilXp(h,P);this.fx.push({k:'ring',x:hx,y:gy-8,r:P.r,t:0,c:'#9affb0'});
         for(const o of tm){this.healHero(o,o.max*P.heal,false,h);o.bleedT=0;o.bleeds=null;o.slowT=0;o.slow=0;o.poisonT=0;}this.gearFire(h,'cast');return;}}
+    const X=A('transmute');if(X&&T.transmute<=0&&en>=X.en){const tg=live.filter(e=>!e.fly&&!e.boss&&!e.bossForm&&!e.nem&&Math.abs(e.x-hx)<=X.range&&e.hp<=e.max*X.under).sort((a,b)=>b.max-a.max)[0];
+      if(tg){h.en-=X.en;T.transmute=cd(X);this.abilXp(h,X);h.face=tg.x>hx?1:-1;h.animM=.5;const gx=tg.x,gg=tg.gy!=null?tg.gy:this.G;tg.goldT=1;this.hitEnemy(tg,tg.hp+tg.max,h,{sure:1,raw:1,quiet:1});
+        this.loot.push({kind:'gold',x:gx,gy:gg,amt:X.gold[0]+Math.floor(this.rng()*(X.gold[1]-X.gold[0]+1)),t:0,big:true,lucky:false});this.fx.push({k:'ring',x:gx,y:gg-10,r:X.r,t:0,c:'#ffd23f'},{k:'goldflash',x:gx,gy:gg,t:0,life:.8});
+        for(const e of live)if(!e.dead&&e!==tg&&Math.abs(e.x-gx)<X.r)e.stun=Math.max(e.stun||0,e.bossForm?.3:X.stun);this.text(gx,gg-46,'TRANSMUTED!','#ffd23f');this.gearFire(h,'cast');if(this.rng()<.4)Comms.bubble(this,h,Comms.pick(['Lead into gold!','Hold still... shiny!','Alchemy, baby.']));return;}}
     const B=A('brew');if(B&&T.brew<=0&&en>=B.en&&h.pots&&h.pots.some(q=>q.cd>3)&&live.some(e=>Math.abs(e.x-hx)<160)){h.en-=B.en;T.brew=cd(B);this.abilXp(h,B);for(const q of h.pots)q.cd=0;h.potBoostT=B.dur;h.potBoost=B.boost;this.text(hx,gy-56,'RAPID BREW!','#9affb0');this.gearFire(h,'cast');}}
   potStep(dt,al){if(this.demo)return;for(const h of al)if(h.key==='alchemist')this.alchStep(h,dt);for(const h of al)if(h.mountOn)this.mountStep(h,dt);for(const h of al)if(h.trawl)this.trawlStep(h,dt);
     if(this.nestQ&&this.nestQ.length&&!this.exiting){this.nestQ=this.nestQ.filter(q=>{if(this.t<q.t)return true;const pool=this.alive().filter(o=>!o.pet&&!o.dog&&!o.sandbag);if(!pool.length)return true;const o=pool[Math.floor(this.rng()*pool.length)];o.sandbag=q.tier;
@@ -5321,7 +5325,7 @@ const TREE_X={
   [_X('Glass Blower','🫙',_A('flask',{r:.06})),_X('Lob Arc','🌈',_A('_ranged',{range:.06})),_X('Sulfur Stash','🔥',_S({dmgPct:3})),_X('Fizzing Cork','🍾',_A('flask',{cd:-.06})),_X('Shatter Point','🔨',_S({mod:{crit:3}})),_X('Measured Pour','⚖️',_S({mod:{acc:2}})),_X('Lab Goggles','🥽',_S({mod:{dodge:2}})),
    _X('Grand Experiment','🧨',_A('flask',{pw:.15,cd:-.15}),_D('flask',{r:4}),_S({dmgPct:6}))],
   [_X('Mortar and Pestle','🥣',_A('panacea',{heal:.05})),_X('Smelling Salts','👃',_A('panacea',{cd:-.06})),_X('Apron Pockets','🧥',_S({hpPct:3})),_X('Herb Garden','🌱',_S({mod:{enRegen:.2}})),_X('Bedside Manner','🛏️',_A('panacea',{r:.06})),_X('Thick Gloves','🧤',_S({mod:{armor:1}})),_X('Calm Voice','🗣️',_S({mod:{kbRes:8}}))],
-  [_X('Alembic','⚗️',_A('brew',{cd:-.06})),_X('Copper Still','🫖',_A('brew',{dur:.1})),_X('Rare Reagents','💠',_A('brew',{boost:.06})),_X('Sharp Mind','🧠',_S({mod:{cdr:2}})),_X('Gold Leaf','🪙',_S({mod:{luck:2}})),_X('Distillery','🏭',_A('catalyst',{pcd:.06})),_X('Notebook','📓',_S({mod:{xp:3}}))]],
+  [_X('Alembic','⚗️',_A('brew',{cd:-.06})),_X('Copper Still','🫖',_A('brew',{dur:.1})),_X('Rare Reagents','💠',_A('brew',{boost:.06})),_X('Sharp Mind','🧠',_S({mod:{cdr:2}})),_X('Gold Leaf','🪙',_A('transmute',{cd:-.06})),_X('Distillery','🏭',_A('catalyst',{pcd:.06})),_X('Notebook','📓',_S({mod:{xp:3}}))]],
  flannel:[
   [_X('Old Rifle','🔫',_S({mod:{acc:1}})),_X('Lever Action','🔧',_A('_ranged',{reload:-.05})),_X('Windage','🌬️',_A('_ranged',{range:.06})),_X('Breath Hold','🫁',_A('aimed',{cd:-.08})),_X('Trophy Hunter','🦌',_S({mod:{critMul:10}})),_X('Iron Sights','🎯',_S({mod:{crit:3}})),_X('Bird Dog','🐕',_S({mod:{move:4}})),
    _X('One Shot One Kill','🎯',_A('aimed',{cast:-.4,cd:-.2}),_D('aimed',{pierce:1}),_S({mod:{rangedDmg:10}}))],
@@ -5506,6 +5510,7 @@ const ULT7={edward:{0:['Brick_House','🧱','brickhouse'],2:['Back_On_Your_Feet'
 Object.assign(ABIL_DESC,{flask:'Volatile_Flask · 30 energy · 9s. She lobs a big unstable flask at the thickest pack: 1.8x her damage to everything in the splash, plus a random brew: fire (burns), acid (eats at them over 5s), frost (50% slower for 3s) or thunder (stunned 1s).',
   panacea:'Panacea_Mist · 35 energy · 16s. A cloud of healing mist: everyone within 180px of her heals 12% of their max HP and is cleared of bleeds, poison and slows. (Machines like the Warhound get nothing.)',
   brew:'Rapid_Brew · 25 energy · 24s. She brews on the run: every potion she has equipped is ready again at once, and for 8s her potions are 30% stronger.',
+  transmute:'Transmute · 30 energy · 20s. She turns a nearly dead zombie (under 35% life, not an Alpha, Promoted or boss) within 180px into solid gold: it\'s gone, it drops a big gold pile, and the flash stuns every zombie within 40px for 1s.',
   catalyst:'Catalyst (passive) · her potions come back 20% sooner, and every potion she uses (drunk, thrown or shared) can set off her trinket\'s on-cast effects.'});
 const CUST_TXT={chumbomb:'plants a bucket of chum (with a bomb under the fish) in front of the thickest crowd within 180. For 2.5s every zombie within 70 smells it and drifts toward the bucket, slowed; then it blows: 3d6 to everything within 45, knocked back, and fish gibs everywhere. He tosses it out past the middle of the field so the smell pulls them away from the team',trashtalk:'IF 2+ zombies are on an ally near him THEN he talks trash: every zombie within 70 comes for HIM for 4s while he hides behind his shield (30% less damage), and his friends laugh it off: +5% crit for 6s',mount:'Cheez rides into every stage on an armored neon warhorse. The horse takes the hits first (50 life, +3 a stage). While mounted: +30% move speed, +25% melee damage and 50% longer reach; his attack becomes a big overhead beam katana chop off the side of the horse that throws a small green wave through the zombies behind his target, and riding through zombies tramples them aside. If the horse runs out of life he\'s thrown off and it bolts; he whistles it back 30s later.',fema:'sets down a FEMA supply station foundation just behind the team. Once it\'s built it stands 30s (60 HP; zombies can wreck it): everyone within 180px heals 1% of max HP a second and gets +2 energy a second.',rapidcon:'instantly repairs every friendly building to full, finishes anything being built and gives towers 10s more',
  nailrain:'for 8s his nail gun fires 3-nail bursts that arc high and rain down, and he never runs dry (his clip is just as he left it afterward)',
@@ -5834,12 +5839,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1795630473';const BGI=new Image();BGI.src='crawl_bg.png?v=1795630473';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795630473';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1795630732';const BGI=new Image();BGI.src='crawl_bg.png?v=1795630732';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795630732';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),alchemist:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795630473';XIMG.wave.src='crawl_wave.png?v=1795630473';XIMG.chibi.src='crawl_chibi.png?v=1795630473';XIMG.flannel.src='crawl_flannel.png?v=1795630473';XIMG.alchemist.src='crawl_alch.png?v=1795630473';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795630473';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795630473';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795630473';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795630473';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795630473';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795630473';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795630473';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795630473';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795630473';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795630473';XIMG.strike=new Image();XIMG.strike.src='crawl_strike.png?v=1795630473';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795630473';XIMG.bghood=new Image();XIMG.bghood.src='crawl_bg_hood.png?v=1795630473';XIMG.bloater=new Image();XIMG.hazmat=new Image();XIMG.hazmat.src='crawl_hazmat.png?v=1795630473';XIMG.bloater.src='crawl_bloater.png?v=1795630473';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795630473';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795630473';XIMG.rain.src='crawl_rain.png?v=1795630473';XIMG.druid.src='crawl_druid.png?v=1795630473';XIMG.camp.src='crawl_campfire.png?v=1795630473';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795630473';XIMG.tornado.src='crawl_fx_tornado.png?v=1795630473';XIMG.vine.src='crawl_fx_vine.png?v=1795630473';XIMG.thorn.src='crawl_fx_thorn.png?v=1795630473';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),alchemist:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795630732';XIMG.wave.src='crawl_wave.png?v=1795630732';XIMG.chibi.src='crawl_chibi.png?v=1795630732';XIMG.flannel.src='crawl_flannel.png?v=1795630732';XIMG.alchemist.src='crawl_alch.png?v=1795630732';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795630732';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795630732';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795630732';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795630732';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795630732';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795630732';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795630732';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795630732';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795630732';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795630732';XIMG.strike=new Image();XIMG.strike.src='crawl_strike.png?v=1795630732';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795630732';XIMG.bghood=new Image();XIMG.bghood.src='crawl_bg_hood.png?v=1795630732';XIMG.bloater=new Image();XIMG.hazmat=new Image();XIMG.hazmat.src='crawl_hazmat.png?v=1795630732';XIMG.bloater.src='crawl_bloater.png?v=1795630732';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795630732';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795630732';XIMG.rain.src='crawl_rain.png?v=1795630732';XIMG.druid.src='crawl_druid.png?v=1795630732';XIMG.camp.src='crawl_campfire.png?v=1795630732';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795630732';XIMG.tornado.src='crawl_fx_tornado.png?v=1795630732';XIMG.vine.src='crawl_fx_vine.png?v=1795630732';XIMG.thorn.src='crawl_fx_thorn.png?v=1795630732';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795630473';XIMG.axe=new Image();XIMG.axe.src='crawl_axe.png?v=1795630473';XIMG.fxp=new Image();XIMG.fxp.src='crawl_fxpack.png?v=1795630473';XIMG.nest=new Image();XIMG.nest.src='crawl_mgnest.png?v=1795630473';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795630473';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795630473';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795630473';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795630473';XIMG.chumboom=new Image();XIMG.chumboom.src='crawl_chumboom.png?v=1795630473';XIMG.cheezhorse=new Image();XIMG.cheezhorse.src='crawl_cheezhorse.png?v=1795630473';XIMG.obst.src='crawl_obst.png?v=1795630473';XIMG.cityob.src='crawl_cityob.png?v=1795630473';XIMG.cars.src='crawl_cars.png?v=1795630473';XIMG.robot.src='crawl_robot.png?v=1795630473';XIMG.cultist.src='crawl_cultist.png?v=1795630473';XIMG.tentacle.src='crawl_tentacle.png?v=1795630473';XIMG.boom.src='crawl_boom.png?v=1795630473';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795630732';XIMG.axe=new Image();XIMG.axe.src='crawl_axe.png?v=1795630732';XIMG.fxp=new Image();XIMG.fxp.src='crawl_fxpack.png?v=1795630732';XIMG.nest=new Image();XIMG.nest.src='crawl_mgnest.png?v=1795630732';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795630732';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795630732';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795630732';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795630732';XIMG.chumboom=new Image();XIMG.chumboom.src='crawl_chumboom.png?v=1795630732';XIMG.cheezhorse=new Image();XIMG.cheezhorse.src='crawl_cheezhorse.png?v=1795630732';XIMG.obst.src='crawl_obst.png?v=1795630732';XIMG.cityob.src='crawl_cityob.png?v=1795630732';XIMG.cars.src='crawl_cars.png?v=1795630732';XIMG.robot.src='crawl_robot.png?v=1795630732';XIMG.cultist.src='crawl_cultist.png?v=1795630732';XIMG.tentacle.src='crawl_tentacle.png?v=1795630732';XIMG.boom.src='crawl_boom.png?v=1795630732';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -5874,7 +5879,7 @@ function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 /* 0.12.310 recorded clips (Tee_Grizzle): decoded once, played through the same AudioContext as the synth sounds */
 const SAMP={teeg1:{src:'crawl_teeg1',off:.34},teeg2:{src:'crawl_teeg2',off:0},teeg3:{src:'crawl_teeg3',off:0},jp1:{src:'crawl_jp1',off:0},kidhowl:{src:'crawl_kidhowl',off:0},leiftag:{src:'crawl_leiftag',off:0}};   /* 0.12.394: the boys' howl, Leif's "tag!" */   /* 0.12.380: Tee's Pistol_Play line, JP's No_Scope line */
 function sampLoad(k){const S=SAMP[k];if(!S||S.buf||S.loading||!AC)return;S.loading=1;const ext=(new Audio()).canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3';
-  fetch(S.src+ext+'?v=1795630473').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
+  fetch(S.src+ext+'?v=1795630732').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
 function sampPlay(k,off,vol,soft){const S=SAMP[k];if(!S)return;if(!S.buf){sampLoad(k);return;}const src=AC.createBufferSource(),g=AC.createGain();src.buffer=S.buf;g.gain.value=vol==null?.55:vol;
   if(soft){const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=soft;lp.Q.value=.5;src.playbackRate.value=.94+Math.random()*.1;src.connect(lp);lp.connect(g);}else src.connect(g);g.connect(AC.destination);src.start(0,off==null?S.off:off);}   /* 0.12.329 (Kyle: a bit less annoying): Tee's clips play softer, muffled (low-pass) and with a little pitch wobble */
 function sfx(k,o){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
@@ -6906,6 +6911,7 @@ function drawGame(ctx,g,W,oy){
         ctx.fillStyle='#d03030';ctx.beginPath();ctx.arc(mx,top,1.3,0,7);ctx.fill();ctx.fillStyle='#f0f0f0';ctx.fillRect(mx-1.3,top,2.6,.8);   // a float on top
         ctx.globalAlpha=.35;ctx.fillStyle='#b8a888';for(let i=0;i<4;i++)ctx.fillRect(mx-m*(2+i*3)+Math.sin(g.t*30+i)*1.5,bot-.5,1.2,.8);ctx.globalAlpha=1;}   // dirt kicked up
       ctx.restore();continue;}
+    if(f.k==='goldflash'){ctx.save();ctx.globalCompositeOperation='lighter';glow(ctx,f.x,f.gy-12,14*(1-k)+4,'#ffd23f',.8*(1-k));ctx.fillStyle='#fff6c0';for(let i=0;i<8;i++){const a=i*.785+g.t,r=6+k*16;ctx.fillRect(f.x+Math.cos(a)*r,f.gy-12+Math.sin(a)*r*.6,1,1);}ctx.restore();continue;}   /* 0.12.464 Transmute */
     if(f.k==='vapor'){const FX=XIMG.fxp;if(FX&&FX.complete&&FX.naturalWidth){const fr=Math.min(9,Math.floor(k*10)),w=f.r*2.6;ctx.save();ctx.globalAlpha=Math.min(1,(1-k)*2.5);ctx.imageSmoothingEnabled=true;ctx.drawImage(FX,fr*96,48,96,96,f.x-w/2,f.gy+3-w,w,w);ctx.restore();}continue;}   /* 0.12.463 the Alchemist's green vapor */
     if(f.k==='tideslash'){const h=f.src;if(!h||!h.alive)continue;const x=g.heroX(h),gy=h.gy||G,d=f.dir,cy=gy-10,R=19,kk=Math.min(1,f.t/.22),fade=f.t<.22?1:Math.max(0,1-(f.t-.22)/.2);   /* 0.12.457 Tide_Warrior's big slash: a crescent of water that sweeps from high behind his head down to the ground in front */
       const a0=f.alt?-2.3:-2.6,a1=f.alt?.9:1.15,aE=a0+(a1-a0)*kk;ctx.save();ctx.translate(x+d*3,cy);ctx.scale(d,1);
@@ -7120,7 +7126,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.463</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.464</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -7242,9 +7248,8 @@ function atkProfile(k){const C=CHAR[k]||{};let best={dps:0,rate:0};
    How they were worked out: OFFENSE comes from simulated stages (average damage dealt per second, 16 heroes, mixed teams, stages 3 and 6),
    nudged by kit; DEFENSE from HP, armor, damage reduction, shields, self-heals and escapes; UTILITY from what the hero does for the team
    (heals and shields measured in the same sims, plus buffs, crowd control, summons and builds). Re-run the sim and update this table after big rebalances. */
-const HERO_RATING={
-  cheez:[10,5,7],chibi:[9,6,6],jp:[8,5,7],edward:[7,6,7],soldier:[7,6,6],cultist:[7,6,5],archer:[7,3,4],
-  shoshi:[6,5,9],teeg:[8,6,5],seekyle:[5,6,10],flannel:[6,7,3],alchemist:[5,4,9],robot:[6,9,5],knight:[6,10,4],lumberjack:[6,8,3],eng:[5,5,9],druid:[4,4,10]};
+const HERO_RATING={   /* 0.12.464 (Kyle): re-rated after the kit changes: OFFENSE from fresh sims (damage a second, 5 mixed teams each, stages 3 and 6), DEFENSE 60% kit / 40% sim survival, UTILITY 75% kit / 25% sim healing */
+  cheez:[10,5,6],chibi:[8,6,5],jp:[8,5,6],edward:[5,8,6],soldier:[5,4,5],cultist:[7,6,5],archer:[4,3,3],shoshi:[5,5,8],teeg:[7,4,4],seekyle:[7,6,9],flannel:[4,6,3],alchemist:[10,6,8],robot:[7,8,5],knight:[6,7,4],lumberjack:[10,6,3],eng:[3,4,7],druid:[3,5,10]};
 function heroRatings(k){const r=HERO_RATING[k]||[5,5,5];return {o:r[0],d:r[1],u:r[2]};}
 function pipBar(n,col){let h='';for(let i=0;i<10;i++)h+=`<b style="${i<n?`background:${col};box-shadow:0 0 4px ${col}`:''}"></b>`;return `<i class="cc-pips">${h}</i>`;}
 function statBars(k,lvl){const R=heroRatings(k),b=heroBase(k,lvl,3),P=atkProfile(k);
@@ -7259,6 +7264,14 @@ function restartSameTeam(s,team){for(const k of team){const H=s.heroes[k];if(H){
 function roleChips(k,sm){return (ROLE_OF[k]||[]).map(r=>{const R=ROLES[r];return `<span class="cc-role" style="--rc:${R.c};${sm?'font-size:9px;padding:0 4px':''}" title="${esc(R.name)}: ${esc(R.tiers.map((t,i)=>(i+1)+': '+R.txt(t)).join(' · '))}">${R.icon} ${R.name}</span>`;}).join('');}
 function roleBar(keys,full){const T=teamRoles(keys);return `<div class="cc-rbar">${Object.keys(ROLES).filter(r=>full||T[r]).map(r=>{const R=ROLES[r],on=T[r],n=on?on.n:0;
   return `<div class="cc-rb${on?' on':''}" style="--rc:${R.c}" title="${esc(R.name)} (team bonus): ${esc(R.tiers.map((t,i)=>(i+1)+' hero'+(i?'es':'')+': '+R.txt(t)).join(' · '))}"><b>${R.icon} ${R.name}</b> <span class="pips">${[0,1,2].map(i=>`<i class="${i<n?'f':''}"></i>`).join('')}</span><span class="rt">${on?esc(R.txt(on.t)):'1 hero: '+esc(R.txt(R.tiers[0]))}</span></div>`;}).join('')||'<span class="cc-sub" style="font-size:11px">No team roles yet.</span>'}</div>`;}
+/* 0.12.464 (Kyle) role filter over a hero grid: All starts selected; pick one or more roles to show only heroes with any of them */
+function roleFilter(P){P.querySelectorAll('.cc-heroes').forEach(G=>{if(G.previousElementSibling&&G.previousElementSibling.classList.contains('cc-rfilt'))return;
+  const bar=document.createElement('div');bar.className='cc-rfilt';bar.innerHTML=`<button data-rf="all" class="on">All</button>`+Object.keys(ROLES).map(r=>`<button data-rf="${r}" style="--rc:${ROLES[r].c}">${ROLES[r].icon} ${ROLES[r].name}</button>`).join('');
+  G.parentNode.insertBefore(bar,G);const sel=new Set();
+  const apply=()=>{bar.querySelector('[data-rf=all]').classList.toggle('on',!sel.size);bar.querySelectorAll('[data-rf]:not([data-rf=all])').forEach(b=>b.classList.toggle('on',sel.has(b.dataset.rf)));
+    [...G.children].forEach(c=>{const b=c.matches('.cc-hero')?c:c.querySelector('.cc-hero');const k=b&&b.dataset.k;const show=!sel.size||(k&&(ROLE_OF[k]||[]).some(r=>sel.has(r)));c.style.display=show?'':'none';});};
+  bar.querySelectorAll('[data-rf]').forEach(b=>b.onclick=()=>{const r=b.dataset.rf;if(r==='all')sel.clear();else{sel.has(r)?sel.delete(r):sel.add(r);}apply();});apply();});
+  if(!document.getElementById('cc-rfilt-css')){const st=document.createElement('style');st.id='cc-rfilt-css';st.textContent=`.cc-rfilt{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}.cc-rfilt button{background:#1a1024;color:#cfc4dc;border:1px solid #3a2850;border-radius:14px;padding:4px 12px;font-size:12px;cursor:pointer}.cc-rfilt button.on{background:#2a1a38;color:#fff;border-color:var(--rc,#a6ff2e);box-shadow:0 0 6px var(--rc,#a6ff2e)}`;document.head.appendChild(st);}}
 function showTeam(){
   setRunModes(null);  const s=SLOT();migrate(s,CC.player);s.partySize=3;const pick=[];   /* 0.12.33: back to a 3-hero party */
   const mine=DATA.heroes.slice();   /* 0.12.92: every player uses the shared roster */
@@ -7270,6 +7283,7 @@ function showTeam(){
         <select data-ip><option value="">Pick a player…</option>${Object.keys(PLAYER_ICON).map(p=>`<option value="${p}"${H.insp&&INSP[H.insp]&&INSP[H.insp].o===p?' selected':''}>${PLAYER_ICON[p]} ${p}</option>`).join('')}</select>
         <select data-id ${H.insp?'':'disabled'}></select><div class="cc-ibx"></div></div></div>`;}).join('')}</div>
     <div class="cc-row" style="margin-top:12px"><label class="cc-sub" style="margin:0 8px 0 0;font-size:12px;cursor:pointer" data-tipt="Friendly fire: your heroes' shots can hit allies in the way, and your own explosions (Trip Bomb, its shockwave, missiles, planted mines) hurt your units too."><input type="checkbox" data-hc ${s.lastModes&&s.lastModes.hardcore?'checked':''}> ☠ Hardcore</label><label class="cc-sub" style="margin:0 10px 0 0;font-size:12px;cursor:pointer" data-tipt="Every hero's 20 personality sliders are rolled (2d6-2 each) when the run starts instead of using their fixed values. Deck nudges still apply on top."><input type="checkbox" data-dnd ${s.lastModes&&s.lastModes.dnd?'checked':''}> 🎲 D&amp;D mode</label><label class="cc-sub" style="margin:0 10px 0 0;font-size:12px;cursor:pointer" data-tipt="Lets the crew swear: JP's full mouth, Tee's trash talk and the salty radio. Off by default; with it off every line stays PG and anything that slips through gets bleeped."><input type="checkbox" data-unf> 🤬 Unfiltered</label><button class="cc-btn go" data-go disabled>START RUN</button><button class="cc-btn" data-back>← Saves</button></div>`);
+  roleFilter(P);   /* 0.12.464 */
   P.querySelectorAll('[data-por]').forEach(e=>{try{e.replaceWith(portrait(e.dataset.por));}catch(err){console.warn('portrait',e.dataset.por,err);}});   /* 0.12.428: one bad portrait can't break the pick screen */
   // Inspiration: player first, then that player's decks (each option shows its bonus). Saved per hero on this save slot.
   P.querySelectorAll('.cc-insp').forEach(box=>{try{const k=box.dataset.ik,H=s.heroes[k];const ip=box.querySelector('[data-ip]'),id=box.querySelector('[data-id]'),ib=box.querySelector('.cc-ibx');
@@ -7422,7 +7436,7 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
       return `<div class="${cls}" data-n="${n.id}" title="${esc(n.name)}" style="grid-row:${n.row};grid-column:${'abcd'.indexOf(n.col)+1}">${n.icon}<span class="trk">${rk}/${n.max}</span></div>`;};
     const col=(B,bi)=>{const bp=treeBranchPts(k,L,bi);const nxt=TREE_REQ.find(q=>q>bp);
       return `<div class="tbr" data-bi="${bi}" style="flex:1;min-width:236px;max-width:300px;position:relative;border:2px solid #3a2e4a;border-radius:12px;overflow:hidden;box-shadow:0 0 18px #000c;
-          background:linear-gradient(180deg,#0006,#000a 70%),url(crawl_talbg.png?v=1795630473) ${-(B.bg||0)*100}% 0/900% 100%;image-rendering:pixelated">
+          background:linear-gradient(180deg,#0006,#000a 70%),url(crawl_talbg.png?v=1795630732) ${-(B.bg||0)*100}% 0/900% 100%;image-rendering:pixelated">
         <svg class="tlines" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></svg>
         <div style="position:relative;z-index:1;text-align:center;font-weight:800;color:#ffe9a8;letter-spacing:.5px;padding-top:6px;text-shadow:0 1px 3px #000">${B.icon} ${esc(B.name)}</div>
         <div style="position:relative;z-index:1;font-size:9.5px;text-align:center;color:#c9b8e0;text-shadow:0 1px 2px #000">${bp} point${bp===1?'':'s'} · ${nxt!=null?`next tier at ${nxt}`:'every tier open'}</div>
@@ -7464,7 +7478,7 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
 /* 0.12.338 (Kyle) GEAR screen: 3 slots per hero (Weapon / Armor / Trinket), a stash, free swaps. Tap anything to see it in full
    (no hover needed). Spare parts raise an item a quality tier (Rusted -> plain -> Fine -> Masterwork); scrapping gives parts back. */
 function gearIcon(it,sz){const D=gearDef(it);if(!D)return '';sz=sz||32;const k=sz/32;const R=GEAR_RAR[D.r];
-  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795630473) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
+  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795630732) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
 function showGear(k0){const s=SLOT();if(!s)return;const run=s.run;const team=(run&&run.team)||[k0];let k=k0;let sel=null,filt='all';gearSlot(s);
   let ov=document.getElementById('cc-gear');if(ov)ov.remove();ov=document.createElement('div');ov.id='cc-gear';
   ov.style.cssText='position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 20%,rgba(40,30,70,.6),rgba(4,2,8,.94));display:flex;align-items:center;justify-content:center;padding:8px';
@@ -7765,6 +7779,7 @@ function showStranger(free){
     <div class="cc-row" style="margin-top:12px"><button class="cc-btn warn" data-bless="forsake">Leave them be: 🎲 2 Lucky Dice (2 heroes for good)</button></div>`
     :`<p class="cc-sub">${s.forsook?'You swore off the stranger in this save. The empty cell still holds a gift':'The cell holds only a lingering spirit, with no hero of yours to answer the call yet'}. It leaves you a gift instead: 🎲 2 Lucky Dice.</p>
     <div class="cc-row"><button class="cc-btn go" data-bless>🎲 TAKE THE LUCKY DICE</button></div>`}`);
+  roleFilter(P);
   P.querySelectorAll('[data-por]').forEach(e=>e.replaceWith(portrait(e.dataset.por)));
   P.querySelector('[data-bless]').onclick=e=>{const b=e.currentTarget;if(b.dataset.bless==='forsake'&&!confirmInline(b,'2 heroes for good?'))return;bless(b.dataset.bless==='forsake');};
   P.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k,d=heroDef(k);s.strangerSaved=1;s.partySize=3;run.strangerJoined=1;run.team.push(k);
