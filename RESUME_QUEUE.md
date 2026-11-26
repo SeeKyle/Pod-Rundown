@@ -29,3 +29,4 @@ Difficulty: zombie 20 HP, trickle flat 7s from first pan (0.12.356).
 - pub2.sh now pushes HEAD:main with push.negotiate.
 - 0.12.492: Bub rebuilt from art_src/bub/kyle_zombie_base_sheet.png (make_bub.py samples the 2.655x screenshot back to native px). New 'eat' anim row; MUZZLE bub [21,23].
 - Kyle's queue tonight: (2) Tee Pistol Play rework, (3) Robbery passive (temp armor steal, debuff+buff in one, gone when stacks expire), (4) balance pass: off+def+utl total >=18 -> ~-25% dmg, 11-14 -> ~+25%, <=10 -> ~+35%, then re-rate the card meters (crawl_ui.js line ~1434).
+- DONE tonight: 0.12.493 Pistol_Play slide-dash; 0.12.494 Robbery (h.robL / e.robN / e.robA, mitigate() pts2); 0.12.495 balance pass via HERO_DMG (crawl_src.js) + HERO_RATING offense (crawl_ui.js). Sim helpers used: /tmp/w/dps3.js (enemy HP x1000 so overkill doesn't hide damage changes), seeded Math.random.
