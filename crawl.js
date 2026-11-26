@@ -314,30 +314,30 @@ const CHAR={
   /* 0.12.331 (Kyle) SeeKyle: Kyle himself. Gamer, line cook, dad of Leon and Leif, Magic player, vibe coder. A support/hybrid hero:
      a pistol and a hatchet, his boys on call (Wolf Out!!!), a meetup flare for the whole pod (Everyone, Come Together), a sizzling skillet
      from the line (Order_Up!), whatever Claude cooks up (Vibe_Coding), and the Heart_Warrior_Dad passive. */
-  seekyle:{name:'K-Swiss',role:'Hatchet + Pistol',flatHp:0,stamina:7,hpPerStamina:5,armorPts:4,dodge:.04,kbRes:.35,
-    melee:{dice:[1,6],every:2.07,reach:18,kb:18,hitAt:.3},
-    ranged:{dice:[1,4],flat:1,every:.31,range:200,clip:7,reload:4.6,pellets:1,anim:.18}   /* 0.12.394 (Kyle): can fire every 0.2s, 7-round clip, 3s reload */,
+  seekyle:{name:'K-Swiss',role:'Hatchet + Pistol',flatHp:0,stamina:6,hpPerStamina:5,armorPts:3.5,dodge:.04,kbRes:.35,
+    melee:{dice:[1,7],every:2.13,reach:18,kb:18,hitAt:.3},
+    ranged:{dice:[1,5],flat:1,every:.32,range:200,clip:7,reload:4.75,pellets:1,anim:.18}   /* 0.12.394 (Kyle): can fire every 0.2s, 7-round clip, 3s reload */,
     acc:15,walkPenalty:10,crit:.08,critMul:1.8,luck:16,xp:0,run:1.9,turn:.22,enMax:100,enRegen:4.8,
     abilities:[
       // Wolf Out!!!: IF zombies are on screen (or an ally is hurt) THEN he calls his boys. Leif (4, red) and Leon (7, green) run in from the left
       //   yelling WOLF OUT!!! and howl. For 14s they can't be hurt or targeted. Leif tags zombies (35% slow for 3s, they take +15% damage for 4s);
       //   Leon, the heart warrior, sticks to whoever is hurt most and cheers: allies near him heal 2% a second. Then they run back off the left.
-      {id:'wolfout',name:'Wolf Out!!!',en:40,cd:60,dur:16,spd:60,tagSlow:.35,tagT:3,mark:.15,markT:4,heal:.02,r:30},
+      {id:'wolfout',name:'Wolf Out!!!',en:40,cd:68,dur:16,spd:60,tagSlow:.35,tagT:3,mark:.15,markT:4,heal:.02,r:30},
       // Everyone, Come Together: IF there's a fight THEN he fires a green flare that arcs onto a meetup spot 100-200 px from the left edge.
       //   A circle (about 300px across) holds for 7s (0.12.375; was 15s, then 9s) and pulls the team together. Every ally inside (max 3) gives everyone inside
       //   +15% cooldown speed, attack speed and reload speed: 15% / 30% / 45% (0.12.375, was 10/20/30). Cooldown 30s (was 32s).
-      {id:'together',name:'Everyone, Come Together',en:36,cd:40,dur:7,rx:50,per:.12,   /* 0.12.423 (Kyle): 12% a head at base so talents can lift it to 15% */max:3,pull:.85,mvOut:.5},   /* 0.12.377 (Kyle): +50% move speed outside the circle (was 25%) */
+      {id:'together',name:'Everyone, Come Together',en:36,cd:45.5,dur:7,rx:50,per:.12,   /* 0.12.423 (Kyle): 12% a head at base so talents can lift it to 15% */max:3,pull:.85,mvOut:.5},   /* 0.12.377 (Kyle): +50% move speed outside the circle (was 25%) */
       // Family_Meal (0.12.331, Kyle didn't want a thrown skillet next to Eddie's toolbox): IF 2+ allies are under 70% (or one under 45%) THEN he sets
       //   up a camp stove right where he stands (0.8s). For 10s it serves a hot plate every 1.5s to the most hurt ally within 180px: +5% max HP and
       //   +6 energy. Order up!
-      {id:'orderup',name:'Family_Meal',en:32,cd:32,cast:1.05,dur:10,every:1.5,heal:.05,en2:6,r:60},
+      {id:'orderup',name:'Family_Meal',en:32,cd:36,cast:1.2,dur:10,every:1.5,heal:.05,en2:6,r:60},
       // Vibe_Coding: IF it's not crazy around him (or the team is hurting) THEN he prompts Claude for 1.2s and ships whatever comes back:
       //   Ship_It (+25% attack speed 6s), Debug (team heal 10% and shake off slows/stuns), Refactor (team cooldowns -3s), Hotfix (knock zombies
       //   near him back, 1d6), Draw_Seven (team +20 energy). 10% of the time it "works on my machine": nothing happens.
-      {id:'vibecode',name:'Vibe_Coding',en:27,cd:26.5,cast:1.6,r:60,ship:.25,shipT:6,heal:.1,cdCut:3,kb:30,en2:20,bug:.1},
+      {id:'vibecode',name:'Vibe_Coding',en:27,cd:30,cast:1.8,r:60,ship:.25,shipT:6,heal:.1,cdCut:3,kb:30,en2:20,bug:.1},
       // Heart_Warrior_Dad (passive): when an ally near him (within 180px) drops under 35%, he goes full dad for 6s: +30% damage, +20% move speed,
       //   +15% attack speed, +4 armor, and that ally takes 25% less damage for 4s. 15s internal cooldown.
-      {id:'heartdad',name:'Heart_Warrior_Dad',passive:1,cd:20,under:.35,r:60,dur:6,dmg:.3,mv:.2,spd:.15,armor:4,shield:.25,shieldT:4}]},
+      {id:'heartdad',name:'Heart_Warrior_Dad',passive:1,cd:22.5,under:.35,r:60,dur:6,dmg:.3,mv:.2,spd:.15,armor:4,shield:.25,shieldT:4}]},
   teeg:{name:'Tee_Grizzle',role:'Hatchet + Drako',flatHp:0,stamina:10,hpPerStamina:5,armorPts:6,dodge:.03,kbRes:.45,
     melee:{dice:[1,8],every:1.3,reach:18,kb:20,hitAt:.3},
     ranged:{dice:[1,6],flat:1,every:2.65,range:230,clip:12,reload:7,pellets:1,burst:3,burstGap:.18,anim:.5,tapAcc:0,sprayAcc:-4},   // every trigger pull is a 3-round burst that lands on Shot_1's three bumps
@@ -360,9 +360,9 @@ const CHAR={
       //   Each stack takes 3% of the target's armor and gives that same armor to him; it's a debuff and a buff in one, so when the stacks run out
       //   (or the target dies) he loses it again. He can be robbing up to 3 targets at once (a 4th pushes out the one closest to running out).
       {id:'robbery',name:'Robbery',passive:1,steal:.03,max:5,dur:18,targets:3}]},
-  shoshi:{name:'Shoshi',role:'Pistol Whip + Automatic_Pistol',flatHp:0,stamina:7,hpPerStamina:5,armorPts:4,dodge:.07,kbRes:.25,
+  shoshi:{name:'Shoshi',role:'Pistol Whip + Automatic_Pistol',flatHp:0,stamina:8.5,hpPerStamina:5,armorPts:4.5,dodge:.07,kbRes:.25,
     melee:{dice:[1,1],every:99,reach:0,kb:0,hitAt:.1},   // 0.12.110 (Kyle): no melee at all; up close he just keeps shooting
-    ranged:{dice:[1,4],flat:0,every:.11,range:230,clip:20,reload:4.35,pellets:1,anim:.12,burst:1,burstGap:.45,tapAcc:15,sprayAcc:-6},   /* 0.12.110 (Kyle): TAP = single aimed shots (+15 acc, ~2/s); UNLOAD = full auto (-6 acc) on a big target or one mauling a hurt ally */   // 0.12.110 (Kyle): auto-switch Glock, 20-round mag (0.12.111, was 33), ~12 rounds/s. Aimed taps normally; he UNLOADS on a big or dangerous target
+    ranged:{dice:[1,4],flat:0,every:.1,range:230,clip:20,reload:4.15,pellets:1,anim:.12,burst:1,burstGap:.45,tapAcc:15,sprayAcc:-6},   /* 0.12.110 (Kyle): TAP = single aimed shots (+15 acc, ~2/s); UNLOAD = full auto (-6 acc) on a big target or one mauling a hurt ally */   // 0.12.110 (Kyle): auto-switch Glock, 20-round mag (0.12.111, was 33), ~12 rounds/s. Aimed taps normally; he UNLOADS on a big or dangerous target
     acc:16,walkPenalty:8,crit:.08,critMul:1.75,luck:18,xp:0,run:2,turn:.2,enMax:100,enRegen:4.6,
     abilities:[
       // Always_Online (passive, one big one: Life360 + his phone): he always knows where his people are and everything is connected.
@@ -371,16 +371,16 @@ const CHAR={
       //   - Allies within 100px of him get +5 accuracy (he's calling targets on the headset).
       {id:'online',name:'Always_Online',passive:1,move:.4,dur:4,rev:.3,r:150,T:1.5,auraR:100,auraAcc:5},
       // Ctrl_Z: UNDO. IF an ally within 90px lost 25%+ of their max HP in the last 3s THEN he undoes it: they get all of it back. 30 energy, 20s.
-      {id:'undo',name:'Ctrl_Z',en:31,cd:26.5,r:90,win:3,min:.25},
+      {id:'undo',name:'Ctrl_Z',en:31,cd:19.5,r:90,win:3,min:.25},
       // Turn_It_Off_And_On_Again: he "reboots" an ally within 70px: clears bleed, fear and slow, heals 8% and refreshes one of their cooldowns.
       //   IF an ally near me is bleeding/afraid/slowed, OR under 50% with an ability on cooldown THEN reboot them. 25 energy, 12s.
-      {id:'reboot',name:'Turn_It_Off_And_On_Again',en:26,cd:16,r:70,heal:.08,under:.5},
+      {id:'reboot',name:'Turn_It_Off_And_On_Again',en:26,cd:11.5,r:70,heal:.08,under:.5},
       // Tech_Support (was Free_Trial): an INSTANT, no buff. Every cast cuts the remaining cooldowns of every ally within 100px (not his own) by 15% and gives each +5 energy.
       //   IF an ally near me has a cooldown running AND there's a fight near us THEN do it. 15 energy, 7s (0.12.116: 15% cut + 5 energy each).
-      {id:'trial',name:'Tech_Support',en:15,cd:9.5,r:100,cut:.15,energy:5},   /* 0.12.116 (Kyle): 15% cut, 7s, 15 energy; little bonus: +5 energy to each ally (he pushed an update) */   /* 0.12.114 (Kyle): every cast cuts the remaining cooldowns of every ally near him (not his own) by 20%, plus 3s of +10% damage. 12 energy, 6s: he keeps it going */
+      {id:'trial',name:'Tech_Support',en:15,cd:7,r:100,cut:.15,energy:5},   /* 0.12.116 (Kyle): 15% cut, 7s, 15 energy; little bonus: +5 energy to each ally (he pushed an update) */   /* 0.12.114 (Kyle): every cast cuts the remaining cooldowns of every ally near him (not his own) by 20%, plus 3s of +10% damage. 12 energy, 6s: he keeps it going */
       // Dad_Mode: IF an ally within 90px is under 40% with 2+ zombies on them THEN he plants himself next to them: 40% less damage for 5s,
       //   the ally gets a shield worth 20% of their max HP, and zombies on them get shoved back. 30 energy, 18s.
-      {id:'dad',name:'Dad_Mode',en:31,cd:24,r:90,dur:5,dr:.4,shield:.2,under:.4,kb:30}]},
+      {id:'dad',name:'Dad_Mode',en:31,cd:17.5,r:90,dur:5,dr:.4,shield:.2,under:.4,kb:30}]},
   // 0.12.180 (Kyle; Claude picked the crimson knight) Crimson_Knight (CraftPix free knight pack, Knight_3): full crimson plate, sword and kite shield. The team's wall.
   //   Shield_Wall: IF 3+ zombies are on him, or 2+ are mauling an ally under 45% within 40 THEN he plants his shield for 4s: 60% less damage, no knockback,
   //     and every zombie within 50 is taunted onto him. 40 energy, 16s.
@@ -450,52 +450,52 @@ const CHAR={
       {id:'nails',name:'Nail_Strip',en:32,cd:17.5,range:100,dice:[1,4],bleed:[6,3],T:.7,field:5,slow:.3},   /* 0.12.211 (Kyle) */
       {id:'chutz',name:'Chutzpah',en:31,cd:21.5,r:116.7,   /* 0.12.413 (Kyle): 350px reach (was 300) */dur:3,dr:.3,per:.1,max:5},   /* 0.12.220 (Kyle) */
       {id:'friend',name:'Power_of_Friendship',en:40,cd:29.5,dur:6,dmg:.3,spd:.3,ally:.1,r:100}]},
-  soldier:{name:'Soldier',role:'Rifle Butt + Machine_Gun',flatHp:0,stamina:12.5,hpPerStamina:5,armorPts:10,dodge:.05,kbRes:.4,
-    melee:{dice:[1,6],every:.88,reach:15,kb:24,hitAt:.15},   // rifle-butt
-    ranged:{dice:[1,2],flat:1,every:.11,range:240,clip:15,reload:5.15,pellets:1,anim:.15,burst:1,burstGap:.5,tapAcc:-3,sprayAcc:-15},   // 0.12.202 (Kyle) machine gun, hip-fired: 15-round mag, a round every 0.15s when he lets rip (big target or one on a hurt friend), otherwise slower taps; 1d2+1; 7s reload. Wild from the hip: much less accurate than Covering_Fire
+  soldier:{name:'Soldier',role:'Rifle Butt + Machine_Gun',flatHp:0,stamina:11.5,hpPerStamina:5,armorPts:9.5,dodge:.05,kbRes:.4,
+    melee:{dice:[1,6],every:.95,reach:15,kb:24,hitAt:.15},   // rifle-butt
+    ranged:{dice:[1,2],flat:1,every:.12,range:240,clip:15,reload:5.55,pellets:1,anim:.15,burst:1,burstGap:.5,tapAcc:-3,sprayAcc:-15},   // 0.12.202 (Kyle) machine gun, hip-fired: 15-round mag, a round every 0.15s when he lets rip (big target or one on a hurt friend), otherwise slower taps; 1d2+1; 7s reload. Wild from the hip: much less accurate than Covering_Fire
     acc:17,walkPenalty:8,crit:.1,critMul:1.8,luck:16,xp:0,run:2,turn:.2,enMax:100,enRegen:4.6,
     abilities:[
       {id:'hardened',name:'Battle_Hardened',passive:1,under:.5,dr:.15,reload:.25},
-      {id:'frag',name:'Frag_Grenade',en:36,cd:11,min:40,max:130,r:30,dice:[4,6],stun:1.5,fuse:.5,fly:.6},
+      {id:'frag',name:'Frag_Grenade',en:36,cd:12,min:40,max:130,r:30,dice:[4,6],stun:1.5,fuse:.5,fly:.6},
       // 0.12.199 Smoke_Grenade: lobs a smoke canister (the pack's smoke cloud) 20-110 out: a 60-wide cloud for 6s. Zombies inside miss half their swings
       //   and move 25% slower; heroes inside are harder to hit. 40 energy, 16s.
-      {id:'smokegren',name:'Smoke_Grenade',en:36,cd:13,min:0,max:100,r:30,dur:6.75,   /* 0.12.201 (Kyle): +0.75s */miss:.5,slow:.25,throw:.65,sprite:1,stealth:.3,rev:.25},   /* 0.12.199 (Kyle): up to 300 screen px; allies inside are unseen and revive 25% faster */
+      {id:'smokegren',name:'Smoke_Grenade',en:36,cd:14,min:0,max:100,r:30,dur:6.75,   /* 0.12.201 (Kyle): +0.75s */miss:.5,slow:.25,throw:.65,sprite:1,stealth:.3,rev:.25},   /* 0.12.199 (Kyle): up to 300 screen px; allies inside are unseen and revive 25% faster */
       // 0.12.199 Suppressing_Fire: plants and hoses one lane with his rifle (the pack's Shot_2 stance) for 1.6s: 10 rounds of 1d4, every zombie hit slowed 40% for 2s. 35 energy, 12s.
-      {id:'suppress',name:'Covering_Fire',en:36,cd:9.5,T:1.8,n:9,dice:[1,4],flat:1,acc:18,slow:.4,slowT:2,range:220},   /* 0.12.202 (Kyle): now shouldered and aimed (+18 accuracy), 9 rounds of 1d4+1, and he picks off the zombies closest to his friends in that lane first */
+      {id:'suppress',name:'Covering_Fire',en:36,cd:10,T:1.8,n:9,dice:[1,4],flat:1,acc:18,slow:.4,slowT:2,range:220},   /* 0.12.202 (Kyle): now shouldered and aimed (+18 accuracy), 9 rounds of 1d4+1, and he picks off the zombies closest to his friends in that lane first */
       // 0.12.200 Ammo_Drop: drops an ammo crate (his Recharge animation) for 8s. Allies within 30 reload 50% faster and their shots hit 15% harder;
       //   each ally who steps right onto it gets one free full magazine, once per crate. 35 energy, 20s.
-      {id:'ammodrop',name:'Ammo_Drop',en:36,cd:16,dur:8,r:30,reload:.5,dmg:.15}]},
+      {id:'ammodrop',name:'Ammo_Drop',en:36,cd:17,dur:8,r:30,reload:.5,dmg:.15}]},
   // 0.12.66 (Kyle) JP: big orange hoodie, dark jeans, Kar98 + a real sword and a homemade wooden shield. A good guy who loves picking on people,
   //   games all day and smokes a lot of weed (not a drinker). Plays sword-fight with his kids. Mixes jokey and sensible.
-  jp:{name:'JP',role:'Sword & Board + Kar98',flatHp:0,stamina:7,hpPerStamina:5,armorPts:5,dodge:.05,kbRes:.35,
-    melee:{dice:[3,3],every:1.51,reach:18,kb:18,hitAt:.15}   /* 0.12.341 (Kyle): sword 3d3 */,                    // sword: medium speed, low-medium damage
-    ranged:{dice:[2,8],flat:0,every:4.44,range:290,   /* 0.12.460 (Kyle): 3.25s between shots */   /* 0.12.394 (Kyle): Kar98 2d8+1 (the +1 is the everyone-gets-it basic bonus), a shot every 1.25s (was 2.25s) */clip:1,reload:4.45,pellets:1,quietReload:1,aimT:.25},   // 0.12.163 (Kyle): Kar98 1d8+4 with a 0.25s aim wind-up before the shot (was 4d4-2, no wind-up); 2.25s; he doesn't call out reloads
+  jp:{name:'JP',role:'Sword & Board + Kar98',flatHp:0,stamina:8,hpPerStamina:5,armorPts:5.5,dodge:.05,kbRes:.35,
+    melee:{dice:[3,3],every:1.25,reach:18,kb:18,hitAt:.15}   /* 0.12.341 (Kyle): sword 3d3 */,                    // sword: medium speed, low-medium damage
+    ranged:{dice:[2,8],flat:0,every:3.67,range:290,   /* 0.12.460 (Kyle): 3.25s between shots */   /* 0.12.394 (Kyle): Kar98 2d8+1 (the +1 is the everyone-gets-it basic bonus), a shot every 1.25s (was 2.25s) */clip:1,reload:3.7,pellets:1,quietReload:1,aimT:.25},   // 0.12.163 (Kyle): Kar98 1d8+4 with a 0.25s aim wind-up before the shot (was 4d4-2, no wind-up); 2.25s; he doesn't call out reloads
     acc:20,walkPenalty:12,crit:.12,critMul:2,luck:18,xp:0,run:2,turn:.22,enMax:100,enRegen:4.6,
     blockCh:.2,   // 0.12.79 Sword & Board (built into his melee kit): 20% to BLOCK a hit outright with the homemade shield. Any unit with a shield gets blockCh.
     abilities:[
       // Toke_Break: 2s, he can keep walking but does nothing else, then he's HIGH for 30s and patched up 6%. No energy, 22s.
       //   IF I'm not high (or nearly down) AND nothing is within 45px THEN spark one up.
-      {id:'toke',name:'Toke_Break',en:0,cd:29.5,dur:2,high:30,heal:.06},
+      {id:'toke',name:'Toke_Break',en:0,cd:26.5,dur:2,high:30,heal:.06},
       // Protect_the_Familia: IF an ally is under 55% with a zombie on them (or under 35%) within ~660px THEN rush to them, immune while rushing;
       //   on arrival we both get a shield worth 50% of my max HP for 5s. 0.12.93 (Kyle): Shield_Bash is baked in: he shoves the ally 75px toward
       //   the friend furthest left AND bashes the closest zombie 75px the other way for 2d4 (1s stun). 50 energy, 20s.
-      {id:'familia',name:'Protect_the_Familia',en:51,cd:26.5,range:220,spd:120,shield:.5,shieldT:5,push:25,under:.55,bashDice:[2,4],bashPush:25,bashStun:1},
+      {id:'familia',name:'Protect_the_Familia',en:51,cd:24,range:220,spd:120,shield:.5,shieldT:5,push:25,under:.55,bashDice:[2,4],bashPush:25,bashStun:1},
       // 0.12.93 No_Scope (replaces Shield_Bash): the gamer in him. A hip-fired Kar98 flick that punches through up to 3 zombies in a line
       //   for 3d6 each (+15% crit). IF 2+ zombies are lined up in front of me within 290px (or a big one) THEN no-scope it. 35 energy, 15s.
-      {id:'noscope',name:'No_Scope',en:36,cd:20,dice:[3,6],pierce:3,range:290,crit:.15},   // 0.12.94: toned down (was 4d6, 30 energy, 10s)
+      {id:'noscope',name:'No_Scope',en:36,cd:16.5,dice:[3,6],pierce:3,range:290,crit:.15},   // 0.12.94: toned down (was 4d6, 30 energy, 10s)
       // 0.12.454 (Kyle) Trawl_Line (replaces Trash_Talk; the id stays 'trash'): he drags a weighted net line across the lane in front of him.
       //   Every zombie it catches (up to 6) within 150px ahead takes 2d4 and is dragged into a tight bunch on his lane ~40px in front of him,
       //   slowed 20% for 2s: lined up for a No_Scope. IF 3+ zombies are ahead within reach (or 2 spread out) THEN trawl. 30 energy, 12s.
-      {id:'trash',name:'Trawl_Line',en:30,cd:16,len:150,max:6,dice:[2,4],flat:0,dmgMul:1,drag:1,slow:.2,stun:0,bleed:0},
+      {id:'trash',name:'Trawl_Line',en:30,cd:13,len:150,max:6,dice:[2,4],flat:0,dmgMul:1,drag:1,slow:.2,stun:0,bleed:0},
       // Wake_n_Bake (passive): HIGH = Trawl_Line back 25% sooner (0.12.454), +10% dodge, 10% less damage taken, +1 energy/s, +10% sword speed. Sober (not high for 10s+) =
       //   -6 accuracy, -10% move and attack speed, and he gets grumpy.
       {id:'baked',name:'Wake_n_Bake',passive:1,dodge:.2,dr:.2,en:1,   /* 0.12.151 (Kyle): +1 energy a second (was 2) */mspd:.2,slide:4,soberAfter:10,acc:-6,slow:.1}]},   // 0.12.79: high bonuses doubled + slides 4 toward slasher
   /* 0.12.437 (Kyle) the ALCHEMIST: one trinket and three potion slots. She lobs little flasks, brews bigger ones, and every potion she uses can set off her trinket's on-cast effects. */
-  alchemist:{name:'Alchemist',role:'Flask Bonk + Poison Flask',flatHp:0,stamina:5,hpPerStamina:5,armorPts:2,dodge:.06,kbRes:.25,
-    melee:{dice:[1,4],every:1.6,reach:16,kb:8,hitAt:.2},
-    ranged:{dice:[1,4],flat:0,every:3.47,range:210,clip:1,reload:3.45,pellets:1},   /* 0.12.466 (Kyle): a touch less (1d6, was 1d6+1) */   /* 0.12.463 (Kyle): a lobbed poison flask every 2.6s */
+  alchemist:{name:'Alchemist',role:'Flask Bonk + Poison Flask',flatHp:0,stamina:4.5,hpPerStamina:5,armorPts:2,dodge:.06,kbRes:.25,
+    melee:{dice:[1,4],every:1.72,reach:16,kb:8,hitAt:.2},
+    ranged:{dice:[1,4],flat:0,every:3.73,range:210,clip:1,reload:3.7,pellets:1},   /* 0.12.466 (Kyle): a touch less (1d6, was 1d6+1) */   /* 0.12.463 (Kyle): a lobbed poison flask every 2.6s */
     acc:16,walkPenalty:10,crit:.08,critMul:1.8,luck:24,xp:0,run:2,turn:.22,enMax:100,enRegen:5,
-    abilities:[{id:'flask',name:'Volatile_Flask',en:30,cd:12,pw:1.4,r:26},{id:'panacea',name:'Panacea_Mist',en:35,cd:21.5,heal:.12,r:60},{id:'brew',name:'Rapid_Brew',en:25,cd:32,boost:.3,dur:8},{id:'transmute',name:'Transmute',en:30,cd:26.5,under:.35,range:180,gold:[3,6],r:40,stun:1},{id:'catalyst',name:'Catalyst',passive:true,pcd:.2}]},
+    abilities:[{id:'flask',name:'Volatile_Flask',en:30,cd:13,pw:1.4,r:26},{id:'panacea',name:'Panacea_Mist',en:35,cd:23,heal:.12,r:60},{id:'brew',name:'Rapid_Brew',en:25,cd:34.5,boost:.3,dur:8},{id:'transmute',name:'Transmute',en:30,cd:28.5,under:.35,range:180,gold:[3,6],r:40,stun:1},{id:'catalyst',name:'Catalyst',passive:true,pcd:.2}]},
   flannel:{name:'Flannel_Man',role:'Crowbar + Rifle',flatHp:0,stamina:10,hpPerStamina:5,armorPts:6,dodge:.05,kbRes:.40,
     melee:{dice:[1,12],every:1.13,reach:20,kb:23,hitAt:.15},                 // crowbar: d12, swing every 1.5s, 20px reach, knockback 23/100
     ranged:{dice:[1,8],flat:0,every:1.32,range:250,clip:1,reload:1.3,pellets:1},   /* bolt-action rifle: d8, 1.75s between shots (0.12.38: -0.25s), reloads after every shot */
@@ -593,10 +593,10 @@ const PLAYER_ICON={Kyle:'🎩',Cheez:'🧀',Leon:'🪼',Eddie:'♠',Kenzie:'🌿
 // what each character is like in a fight (shown when you hover them on the party screen)
 // one line per ability for the party-screen hover boxes
 const ABIL_DESC={
-  spiderbot:'Spider_Bot · 25 energy · 8s. Brood_Bot builds a spider-bot in its back bay and launches it. Spider-bots skitter at the nearest zombie and bite it for 1d4 every 0.9s. Each one has 14 HP and an 18s battery; when it\'s destroyed or runs flat it blows up for 1d6 on everything within 66px. Up to 3 at once. (Handler makes them hit harder and take less.)',
-  detonate:'Chain_Detonation · 30 energy · 18.5s. Every spider-bot lights up red, rushes the nearest zombie and blows up: 2d6 to everything within 84px and a 0.6s stun.',
-  botclock:'Overclock · 25 energy · 24s. Pushes the brood past the limits for 6s: spider-bots move and bite 50% faster and take 30% less damage, and Brood_Bot itself attacks 20% faster.',
-  wireweb:'Wire_Web · 20 energy · 16s. Fires a net of steel wire at the thickest crowd within 480px: every zombie within 90px of it is slowed 40% for 3s.',
+  spiderbot:'Spider_Bot · 25 energy · 6.5s. Brood_Bot builds a spider-bot in its back bay and launches it. Spider-bots skitter at the nearest zombie and bite it for 1d4 every 0.9s. Each one has 14 HP and an 18s battery; when it\'s destroyed or runs flat it blows up for 1d6 on everything within 66px. Up to 3 at once. (Handler makes them hit harder and take less.)',
+  detonate:'Chain_Detonation · 30 energy · 15s. Every spider-bot lights up red, rushes the nearest zombie and blows up: 2d6 to everything within 84px and a 0.6s stun.',
+  botclock:'Overclock · 25 energy · 21.5s. Pushes the brood past the limits for 6s: spider-bots move and bite 50% faster and take 30% less damage, and Brood_Bot itself attacks 20% faster.',
+  wireweb:'Wire_Web · 20 energy · 14.5s. Fires a net of steel wire at the thickest crowd within 480px: every zombie within 90px of it is slowed 40% for 3s.',
   scrapper:'Scrap_Recycler (passive) · whenever one of its spider-bots is destroyed or blows up, Brood_Bot salvages the scrap: it repairs 4% of its max HP and gets 6 energy. (Repairs work on machines; healing doesn\'t.)',
   fanhammer:'Fan_The_Hammer · 30 energy · 10s. Bub fans the hammer and empties his pistol: 6 shots in about a second at the nearest zombies within 540px, each 1d6+2.',
   gravebite:'Grave_Bite · 25 energy · 9s. Grabs the zombie in front of him and takes a bite out of it: 2d8, and he heals 40% of the damage (that\'s eating, not healing, so it works on the undead).',
@@ -605,11 +605,11 @@ const ABIL_DESC={
   graverise:'Back_From_The_Grave (passive) · once a stage, a hit that would put him down leaves him standing at 30% HP instead.',
   drako:'Drako (basic attack) · a 3-round burst every 1.9s, 1d6+1 a round · 10 bursts a mag · 2.6s reload. Up close he swings a hatchet (1d8).',
   noeffort:'No_Effort · 54 energy · 15s. When zombies fill 2+ lanes he blinks to the top lane and sweeps down, firing two real rounds down every lane, 0.05s apart (10 a pass; each is his basic-attack damage +1, +1% crit, +20% crit damage, -5 accuracy, pierces 1, and rolls its own hit). Only a crit sends him sweeping back for another pass (up to 5).',
-  wolfout:'Wolf Out!!! · 40 energy · 60s. His boys run in from the left yelling WOLF OUT!!! and howl. For 16s they can\'t be hurt or targeted: Leif (4, red) tags zombies (35% slow for 3s, +15% damage taken for 4s) and Leon (7, green, the heart warrior) sticks to whoever is hurt most, healing allies near him 2% a second. Then they run home.',
-  together:'Everyone, Come Together · 36 energy · 40s. He fires a green flare that arcs onto a meetup spot 500px from the left edge. For 7s the circle pulls the team together; every ally inside, him included (max 3), gives everyone inside +12% cooldown speed, attack speed and reload speed (12% / 24% / 36%). Anyone NOT in the circle moves 50% faster (to get there).',
-  orderup:'Family_Meal · 32 energy · 32s. When the team is hurting (2+ allies under 70% or one under 45%) he sets up a camp stove where he stands. For 10s it serves a hot plate every 1.5s to the most hurt ally within 180px: +5% max HP and +6 energy.',
-  vibecode:'Vibe_Coding · 27 energy · 26.5s. He prompts Claude for 1.6s. EVERY cast blasts the zombies within 60 of him (2d6 and a 40% slow for 2s), then ships one team boost: Ship_It (+25% attack speed 6s), Debug (team +10% HP, slows and stuns shaken off), Refactor (team cooldowns -3s), Hotfix (zombies near him knocked back, 1d6) or Draw_Seven (team +20 energy). 10% of the time the boost works on his machine only (the blast still goes off).',
-  heartdad:'Heart_Warrior_Dad (passive) · when an ally within 180px drops under 35%, he goes full dad for 6s: +30% damage, +20% move speed, +15% attack speed, +4 armor, and that ally takes 25% less damage for 4s. 20s internal cooldown.',
+  wolfout:'Wolf Out!!! · 40 energy · 68s. His boys run in from the left yelling WOLF OUT!!! and howl. For 16s they can\'t be hurt or targeted: Leif (4, red) tags zombies (35% slow for 3s, +15% damage taken for 4s) and Leon (7, green, the heart warrior) sticks to whoever is hurt most, healing allies near him 2% a second. Then they run home.',
+  together:'Everyone, Come Together · 36 energy · 45.5s. He fires a green flare that arcs onto a meetup spot 500px from the left edge. For 7s the circle pulls the team together; every ally inside, him included (max 3), gives everyone inside +12% cooldown speed, attack speed and reload speed (12% / 24% / 36%). Anyone NOT in the circle moves 50% faster (to get there).',
+  orderup:'Family_Meal · 32 energy · 36s. When the team is hurting (2+ allies under 70% or one under 45%) he sets up a camp stove where he stands. For 10s it serves a hot plate every 1.5s to the most hurt ally within 180px: +5% max HP and +6 energy.',
+  vibecode:'Vibe_Coding · 27 energy · 30s. He prompts Claude for 1.8s. EVERY cast blasts the zombies within 60 of him (2d6 and a 40% slow for 2s), then ships one team boost: Ship_It (+25% attack speed 6s), Debug (team +10% HP, slows and stuns shaken off), Refactor (team cooldowns -3s), Hotfix (zombies near him knocked back, 1d6) or Draw_Seven (team +20 energy). 10% of the time the boost works on his machine only (the blast still goes off).',
+  heartdad:'Heart_Warrior_Dad (passive) · when an ally within 180px drops under 35%, he goes full dad for 6s: +30% damage, +20% move speed, +15% attack speed, +4 armor, and that ally takes 25% less damage for 4s. 22.5s internal cooldown.',
   strapped:'Strapped · 32 energy · 20s. When ranged allies are near him and zombies are in range, he passes out extra iron: he and up to 2 nearby shooters get +20% ranged damage, +25% attack speed and 30% faster reloads for 8s.',
   thechop:'Hit_\'Em_With_The_Chop · 40 energy · 16s. When 3+ zombies are ahead or a big one shows up, he shoulders a heat-sensor AR: 2.5s of full auto (about 7 rounds a second, 1d6 each, +20 accuracy), every round locking onto whatever has the most HP left.',
   pistolplay:'Pistol_Play · 22 energy · 10s. When a zombie gets right on him, he quick-draws a pistol and slide-dashes 200px backwards from where he cast it, over 0.75s. During the slide he fires 7 pistol rounds (1d4+2, -10 accuracy, +10% crit).',
@@ -630,10 +630,10 @@ const ABIL_DESC={
   arcflow:'Arcane_Flow (passive) · +3 energy every time he kills something.',
   chain:'Chain_Lightning · 41 energy · 11s. When 2+ zombies are within 450px, a bolt hits the nearest and jumps to 3 more (each within 135px of the last): 2d6, 20% less each jump, and a 0.4s stun.',
   thunder:'Thunderclap · 47 energy · 16s. When 3+ zombies are bunched 90-480px out, he charges for 0.9s and calls lightning down on them: 3d6 in a 180px-wide blast and a 1s stun (bosses 0.4s).',
-  ammodrop:'Ammo_Drop · 36 energy · 16s. Drops an ammo crate for 8s: allies within 90px reload 50% faster and their shots hit 15% harder, and each ally who steps onto it gets one free full magazine (once per crate). Shooters nearby go grab it when they\'re low.',
-  smokegren:'Smoke_Grenade · 36 energy · 13s. Lobs smoke up to 300px out, first choice onto a downed ally: a 180px cloud for 6.75s. Allies inside are unseen and revive 25% faster, getting up with +15% HP. Zombies inside miss half their swings and move 25% slower.',
-  suppress:'Covering_Fire · 36 energy · 9.5s. Shoulders the gun and fires 9 aimed rounds (1d4+1, +18 accuracy) down one lane over 1.8s, picking off the zombies closest to his friends first. Every zombie hit is slowed 40% for 2s. Used when a lane fills up or something fast is coming.',
-  frag:'Frag_Grenade · 36 energy · 11s. Lobs it 120-390px onto 3+ bunched zombies (or 2 with a big one). After a 0.5s tick: 4d6 in a 90px blast (60% at the edge) and a 1.5s stun. Never where an ally would be caught.',
+  ammodrop:'Ammo_Drop · 36 energy · 17s. Drops an ammo crate for 8s: allies within 90px reload 50% faster and their shots hit 15% harder, and each ally who steps onto it gets one free full magazine (once per crate). Shooters nearby go grab it when they\'re low.',
+  smokegren:'Smoke_Grenade · 36 energy · 14s. Lobs smoke up to 300px out, first choice onto a downed ally: a 180px cloud for 6.75s. Allies inside are unseen and revive 25% faster, getting up with +15% HP. Zombies inside miss half their swings and move 25% slower.',
+  suppress:'Covering_Fire · 36 energy · 10s. Shoulders the gun and fires 9 aimed rounds (1d4+1, +18 accuracy) down one lane over 1.8s, picking off the zombies closest to his friends first. Every zombie hit is slowed 40% for 2s. Used when a lane fills up or something fast is coming.',
+  frag:'Frag_Grenade · 36 energy · 12s. Lobs it 120-390px onto 3+ bunched zombies (or 2 with a big one). After a 0.5s tick: 4d6 in a 90px blast (60% at the edge) and a 1.5s stun. Never where an ally would be caught.',
   attend:'Perfect_Attendance (passive) · never misses game night: once a stage, a hit that would drop him leaves him at 1 HP and untouchable for 2s. Each stage cleared with nobody going down: +2% team damage next stage (max +6%).',
   iai:'Iaijutsu · 27 energy · 12s. Half damage, half movement. A quick draw-slash throws a cyan wave down his lane (fast, about 420px): 2d8 to everything it passes, the first a guaranteed crit. While it\'s out he can reactivate ONCE to blink to wherever the wave is. Used on 2+ lined up or a Screamer, archer or Nemesis; when he\'s hurt and mobbed he throws it backward and rides it out. He blinks to finish a priority target, save a friend in trouble at the wave, escape a mob, or take free ground.',
   sake:'Sake_Break · 36 energy · 13.5s. A swig of neon sake: 10s of Drunken_Style: +25% attack speed and +15% dodge, but he takes 15% more damage (sloppy drunk guard) and hiccups now and then. Used with 3+ zombies close or a big one near. SHARE: once per swig he can pass the bottle to a friend within 150px: they get half the effect for 6s, and his remaining cooldown is halved and 20 energy comes back. Share with a friend standing in his Dice-Boys_Banner and it\'s even better: they get the FULL effect for the full 10s, and 75% of his remaining cooldown is wiped and 30 energy comes back.',
@@ -646,56 +646,56 @@ const ABIL_DESC={
   friend:'Power_of_Friendship · 40 energy · 29.5s. He powers up, anime style, when: 2+ friends are under 60%, one is under 35%, 4+ zombies are on the team, a friend is down, a boss or Nemesis is within 600px, he\'s under 40% with 2+ on him, Chutzpah is pulling 3+ onto him, all three Dice Boys are in the banner, or a friend was just helped up: 6s of +30% damage and attack speed, and friends within 300px hit 10% harder.',
   hardened:'Battle_Hardened (passive) · below half HP: 15% less damage taken, 25% faster reloads. Every 15s he stashes a spare mag (max 2); a reload with one takes 3.5s instead of 7s.',
   online:'Always_Online (passive) · when an ally goes down he gets a PING: +40% move speed for 4s and helps people up 30% faster. Car alarms within 450px are shut off from his phone in 1.5s. Allies within 300px get +5 accuracy from his headset calls.',
-  undo:'Ctrl_Z · 31 energy · 26.5s. When an ally within 270px (or he himself) has lost 25%+ of their max HP in the last 3s, he undoes it: they get all of it back.',
-  reboot:'Turn_It_Off_And_On_Again · 26 energy · 16s. Reboots an ally within 210px: clears bleed, fear and slow, heals 8% and refreshes one of their cooldowns. Used on anyone bleeding, scared or slowed, or under half health with an ability waiting.',
-  trial:'Tech_Support · 15 energy · 9.5s. An instant: every cast cuts the remaining cooldowns of every ally within 300px (not his own) by 15% and gives each of them +5 energy. Cheap and quick, so he keeps doing it all fight.',
-  dad:'Dad_Mode · 31 energy · 24s. When an ally within 270px is under 40% with 2+ zombies on them, he plants himself beside them: 40% less damage for 5s, a shield worth 20% of their max HP, and the zombies on them get shoved back.',
-  build:'Build · 26 energy · he sets down a FOUNDATION and anyone close can build it up (7% a second each, more with Builders on the team). WATCHTOWERS: single towers, up to 3 at once on one shared 8s cooldown. MEDICAL (allies near it heal 1% a second), AMMO (+15% ranged attack speed near it) or SPOTTER (+6 accuracy near it); whoever climbs up gets +25% range, and ground zombies can\'t reach them. A tower takes 4 zombie hits and stands 36s. HESCO cell: blocks its lane for zombies only (allies walk past) and stands 17s. A battery NOISE MAKER on top draws nearby zombies into its lane to chew on it.',
-  repair:'Overclock · 25 energy · 14.5s. He cranks everything he\'s built for 6s: his turrets and MG nests fire 50% faster, everyone standing near one of his buildings gets +25% attack speed, and the HESCO noise makers blare twice as far. (Fixing things is now every Builder\'s hidden TINKER: when it\'s quiet they patch up hurt buildings and the Warhound by hand.)',
-  attach:'Attach_Turret · 39 energy · 3 charges (one back every 9.5s). 2s to bolt a turret onto his tower (2 per floor, each only covers its own side, gets the floor\'s range bonus; 3 rounds of 1-3, 4s reload) or onto a wrecked car (5 rounds of 3-4 in a spray, 4s reload). All turret damage is his.',
-  satchel:'Satchel_Charge · 36 energy · 14.5s. Tosses a satchel of explosives that never goes off on its own; he sets it off when it\'s worth it. The biggest blast in the game: 6d4 at the centre, falling off outward, and a huge shove.',
+  undo:'Ctrl_Z · 31 energy · 19.5s. When an ally within 270px (or he himself) has lost 25%+ of their max HP in the last 3s, he undoes it: they get all of it back.',
+  reboot:'Turn_It_Off_And_On_Again · 26 energy · 11.5s. Reboots an ally within 210px: clears bleed, fear and slow, heals 8% and refreshes one of their cooldowns. Used on anyone bleeding, scared or slowed, or under half health with an ability waiting.',
+  trial:'Tech_Support · 15 energy · 7s. An instant: every cast cuts the remaining cooldowns of every ally within 300px (not his own) by 15% and gives each of them +5 energy. Cheap and quick, so he keeps doing it all fight.',
+  dad:'Dad_Mode · 31 energy · 17.5s. When an ally within 270px is under 40% with 2+ zombies on them, he plants himself beside them: 40% less damage for 5s, a shield worth 20% of their max HP, and the zombies on them get shoved back.',
+  build:'Build · 26 energy · he sets down a FOUNDATION and anyone close can build it up (7% a second each, more with Builders on the team). WATCHTOWERS: single towers, up to 3 at once on one shared 9s cooldown. MEDICAL (allies near it heal 1% a second), AMMO (+15% ranged attack speed near it) or SPOTTER (+6 accuracy near it); whoever climbs up gets +25% range, and ground zombies can\'t reach them. A tower takes 4 zombie hits and stands 36s. HESCO cell: blocks its lane for zombies only (allies walk past) and stands 17s. A battery NOISE MAKER on top draws nearby zombies into its lane to chew on it.',
+  repair:'Overclock · 25 energy · 16.5s. He cranks everything he\'s built for 6s: his turrets and MG nests fire 50% faster, everyone standing near one of his buildings gets +25% attack speed, and the HESCO noise makers blare twice as far. (Fixing things is now every Builder\'s hidden TINKER: when it\'s quiet they patch up hurt buildings and the Warhound by hand.)',
+  attach:'Attach_Turret · 39 energy · 3 charges (one back every 11s). 2s to bolt a turret onto his tower (2 per floor, each only covers its own side, gets the floor\'s range bonus; 3 rounds of 1-3, 4s reload) or onto a wrecked car (5 rounds of 3-4 in a spray, 4s reload). All turret damage is his.',
+  satchel:'Satchel_Charge · 36 energy · 16.5s. Tosses a satchel of explosives that never goes off on its own; he sets it off when it\'s worth it. The biggest blast in the game: 6d4 at the centre, falling off outward, and a huge shove.',
   plating:'Field_Plating (passive) · stay next to an ally for 3s and he straps a plate kit on them: +25% armor and +15% knockback resistance until they take 3 hits. When it\'s calm he walks over to allies who don\'t have one yet (he backs off if it gets hot).',
-  syphon:'Syphon_Life · 90 energy · 12s. A swirling black and purple beam from his chest into an enemy up to 330px away for 3s: it drains 3 life a second (more with damage buffs) and heals him for 1.25x what it drains. This is how he pays for everything else.',
-  profane:'Profane_Restoration · his own life · 21.5s · 4s. The opposite of Syphon_Life: a sickly green-and-gold beam from his chest into an ally up to 330px away. Every half second he bleeds 2.5% of his max life and the ally heals double that. While the beam holds they take 15% less damage and attack 20% faster, and the first pulse washes off bleed and poison. He stops at 30% life.',
-  tentacle:'Spawn_Tentacle · 8% of his life · 13.5s. Raises a tentacle anywhere within 400px, right in the middle of the biggest pack. It can\'t move, lashes 1d6+2 out to its reach, heals off what it hits, and withers 5% a second.',
-  cthulhu:'Call_of_Cthulhu · 15% of his life · 40s. His tentacles burst back up 200px in front of him and a wave of terror rolls out: 2s of fear and 25% slower. For 10s every tentacle is 25% bigger and lashes 25% faster, and Spawn_Tentacle comes back twice as fast.',
+  syphon:'Syphon_Life · 90 energy · 8.5s. A swirling black and purple beam from his chest into an enemy up to 330px away for 3s: it drains 3 life a second (more with damage buffs) and heals him for 1.25x what it drains. This is how he pays for everything else.',
+  profane:'Profane_Restoration · his own life · 18s · 4s. The opposite of Syphon_Life: a sickly green-and-gold beam from his chest into an ally up to 330px away. Every half second he bleeds 2.5% of his max life and the ally heals double that. While the beam holds they take 15% less damage and attack 20% faster, and the first pulse washes off bleed and poison. He stops at 30% life.',
+  tentacle:'Spawn_Tentacle · 8% of his life · 10s. Raises a tentacle anywhere within 400px, right in the middle of the biggest pack. It can\'t move, lashes 1d8+2 out to its reach, heals off what it hits, and withers 5% a second.',
+  cthulhu:'Call_of_Cthulhu · 15% of his life · 29s. His tentacles burst back up 200px in front of him and a wave of terror rolls out: 2s of fear and 25% slower. For 10s every tentacle is 25% bigger and lashes 25% faster, and Spawn_Tentacle comes back twice as fast.',
   harvest:'Ritual_Harvest (passive) · built into his dagger: every dagger kill takes 1.5s off Spawn_Tentacle\'s cooldown.',
   blade:'Ritual_Blade (passive) · his poisoned ritual dagger: a hit that lands has a 25% chance to add a poison stack, every dagger swing refreshes the poison already on the target, and every dagger kill takes 1.5s off Spawn_Tentacle\'s cooldown.',
-  clone:'Shadow_Clone · 36 energy · 24s. A see-through copy of him steps out for 5s and runs at a different zombie (one bothering an ally first). It swings for 40% damage and pulls the zombies it hits. While it\'s near him it soaks 35% of the blows aimed at him.',
+  clone:'Shadow_Clone · 36 energy · 22s. A see-through copy of him steps out for 5s and runs at a different zombie (one bothering an ally first). It swings for 40% damage and pulls the zombies it hits. While it\'s near him it soaks 35% of the blows aimed at him.',
   momentum:'Momentum · Passive. Every sword hit within 2s of the last one gives +6% attack speed, stacking up to +30%. Stop swinging for 2s and it resets.',
-  pin:'Pinning_Shot · 31 energy · 9s. An arrow that nails the biggest threat to the ground for 2.5s and marks it for 6s: marked enemies take 25% more damage from everyone.',
+  pin:'Pinning_Shot · 31 energy · 7.5s. An arrow that nails the biggest threat to the ground for 2.5s and marks it for 6s: marked enemies take 25% more damage from everyone.',
   wind:'Wind_Reading · Passive. He reads the wind: shots at anything more than about 450px away get +15 accuracy and +0.5x crit damage.',
-  resurge:'Verdant_Resurgence · Passive · 33.5s cooldown. When an ally would die, vines catch them: they stay up, can\'t be hurt for 2s and heal 30% of their max HP.',
+  resurge:'Verdant_Resurgence · Passive · 25s cooldown. When an ally would die, vines catch them: they stay up, can\'t be hurt for 2s and heal 30% of their max HP.',
   nano:'Nano-Tech_Repair_Bots (passive) · the moment he drops under 40%, a repair swarm deploys on its own: 6% of his max life back every second for 5s and 20% less damage taken, and he keeps moving and shooting the whole time. 33.5s internal cooldown; each hit he takes while it cools down has a 10% chance to halve what\'s left.',
   surge:'Arc_Surge · 40 energy · 26.5s · 15s. Overcharges the Targeted Lazer: 1d4+3 every 0.35s, a 25 px blast at the tip that sweeps 210 px instead of 150, and every lazer hit sets them on fire. He leans 3 toward Shooter while it lasts.',
   directive:'Primary_Directive · one skill, two choices, one shared cooldown. TACTICAL_RETREAT (free, 53.5s): when he drops under 30% he jetpacks in a big arc back to the rear; a blue shield caps every hit at 5 in the air and he fires about 3 missiles on the way. CARPET_BOMB (45 energy, 40s): jetpacks FORWARD 350 to 600px (never a short hop) over the horde and drops 9 missiles onto whatever is under him (same shield). Either one lands with a GROUND SMASH: 2d6 to everything within 135px, knocked hard away from him. Using either puts both on cooldown. He bombs on 4+ zombies (or a boss) ahead while over 45%, and saves it to bail out when he\'s low.',
   missiles:'Missile_Barrage · 50 energy · 20s. The pod on his back pops open and lobs 3 missiles high over the fight onto a group, spread wide; each one 2d4 in a small blast.',
   smoke:'Smoke_Screen · 36 energy · 21.5s. Lobs smoke between a hurt ally and the zombies on them: a 180px cloud for 6s. Zombies inside move 30% slower and miss half their attacks. Allies inside dodge 25% of hits and are STEALTHED (zombies lose track of them) until 5s after they step out or attack.',
-  toke:'Toke_Break · no energy · 29.5s · 2s. He sparks up a big one and keeps walking but does nothing else while he smokes; then he\'s HIGH for 30s (see Wake_n_Bake) and feels 6% better.',
-  familia:'Protect_the_Familia · 51 energy · 26.5s (starts after the dash). When a friend within 660px drops under 55% with a zombie near (or under 35%), he dashes in front of them, untouchable and setting off nothing. Both get a shield worth 50% of his max HP for 5s and the friend is shoved 75px back. A zombie right beside him is bashed: 2d4, a 1s stun, sent flying into its friends (1d4 each).',
-  noscope:'No_Scope · 36 energy · 20s. The gamer in him: a hip-fired Kar98 flick that punches through up to 3 zombies in a line for 3d6 each, with +15% crit. Used when 2+ zombies line up in front of him, on one big one, or right after a Kar98 shot to finish off a lone zombie it would likely kill.',
-  trash:'Trawl_Line · 30 energy · 16s. He drags a weighted net line across the lane in front of him: up to 6 zombies within 150px ahead take 2d4 and get dragged into a tight bunch on his lane about 40px in front of him, slowed 20% for 2s. All lined up for a No_Scope: it takes 3s off No_Scope\'s cooldown, and if that makes it ready he fires it right after. He uses it when 3+ zombies are ahead of him, or 2 that are spread out. While HIGH it comes back 25% sooner.',
+  toke:'Toke_Break · no energy · 26.5s · 2s. He sparks up a big one and keeps walking but does nothing else while he smokes; then he\'s HIGH for 30s (see Wake_n_Bake) and feels 6% better.',
+  familia:'Protect_the_Familia · 51 energy · 24s (starts after the dash). When a friend within 660px drops under 55% with a zombie near (or under 35%), he dashes in front of them, untouchable and setting off nothing. Both get a shield worth 50% of his max HP for 5s and the friend is shoved 75px back. A zombie right beside him is bashed: 2d4, a 1s stun, sent flying into its friends (1d4 each).',
+  noscope:'No_Scope · 36 energy · 16.5s. The gamer in him: a hip-fired Kar98 flick that punches through up to 3 zombies in a line for 3d6 each, with +15% crit. Used when 2+ zombies line up in front of him, on one big one, or right after a Kar98 shot to finish off a lone zombie it would likely kill.',
+  trash:'Trawl_Line · 30 energy · 13s. He drags a weighted net line across the lane in front of him: up to 6 zombies within 150px ahead take 2d4 and get dragged into a tight bunch on his lane about 40px in front of him, slowed 20% for 2s. All lined up for a No_Scope: it takes 3s off No_Scope\'s cooldown, and if that makes it ready he fires it right after. He uses it when 3+ zombies are ahead of him, or 2 that are spread out. While HIGH it comes back 25% sooner.',
   baked:'Wake_n_Bake · Passive. While HIGH: Trawl_Line comes back 25% sooner, +20% dodge, 20% less damage taken, +1 energy a second, +20% sword speed, and he leans 4 toward Slasher. Sober for 10s+: -6 accuracy and 10% slower moving and attacking. Sword & Board (built in): 20% to BLOCK a hit outright with the shield.',
   aimed:'Aimed Shot · 47 energy · 11s · 1.6s cast with a laser sight. Never misses the head box, +5% crit, 2.5x crit damage, pierces. If the shot kills, what\'s left of its cooldown is halved.',
   trip:'Proximity_Bomb · 41 energy · 8s. Goes off when a zombie comes within 40px in its lane (20px a lane up or down). OVERHAND: thrown 300-450px, blows on impact for 2d4+6. UNDERHAND: rolls 150px ahead and arms in 0.4s for 2d4+6 (2d4+2 if tripped early). PLACE: 2.4s kneeling, right in front, 6d4+2 and a wider blast. A bomb left behind off screen halves the rest of the cooldown.',
   grit:'True_Grit · 36 energy · 12s. For 8s he takes 50% less damage, moves 25% faster, and goes all in: his Calculated/Aggression and Shooter/Slasher sliders both jump to 10, so he wades in with the crowbar.',
   camp:'Set_Camp · 41 energy · 24s. Kneels for 1.45s and lights a fire in front of him. Allies within 400px get COZY while they stay close: +0.5 life and +0.5 energy a second, +10% melee attack speed and +10% move speed. The fire takes 5 hits on Flannel_Man or his companion before it goes out.',
   elite:'Elite_Survivors (passive) · his Traveling_Companion starts every stage beside him; while they\'re within 150px both get +10% dodge. He has Scavenger built in (searches wrecks for medkits, batteries and scrap). She throws bricks (never miss, 75% stun) and a Bottle_Distraction (34 energy, 16s): every zombie within 72px of where it lands walks to the noise for 1.8s (she aims it just behind the tightest knot of zombies).',
-  dash:'Wave Dash · 51 energy · 21.5s. Rides a blue energy wave about 300px forward; everything it passes through (about 1.5 lanes each way) takes a normal sword hit (2d5 base); War Cry, damage buffs and crits apply as usual.',
-  shout:'War Cry · 26 energy · 9.5s. Every ally within 600px gets +25% damage and attack speed for 7s.',
-  rain:'Arrow_Rain · 47 energy · 13.5s. 16 arrows rain down on the thickest group of enemies (1d6 each).',
-  rapid:'One Nocked, Two in Hand · 41 energy · 7.5s. She rapid-fires 3 arrows within 1 second, each at the same or a different target (-5 accuracy). These can\'t crit, but any crit she lands at any time halves what\'s left of this cooldown.',
-  blowgun:'Blow_Gun · 31 energy · 6.5s. A dart that hits for 1d4 on its own plus poison (1 stack guaranteed, 75% for a 2nd, 50% for a 3rd) on the living. Undead are immune to the poison, but hitting one halves what\'s left of the cooldown.',
-  poultice:'Poultice · 26 energy · 20s. When he\'s under 60% health he slaps a herbal poultice on: heals himself 4% of max HP every second for 6s.',
-  whirl:'Whirl_Wind · 47 energy · 18.5s. Spins with his axe for up to 5s at half speed, trailing a slashing wave: every second it hits everything within about 78px for 1d4 and makes it bleed (10 over 3s). He can break it off early to escape, but usually spins it out.',
-  chop:'Ground_Chop · 31 energy · 12s. A huge overhead chop into the ground: a shockwave 120px ahead for 2d6 that shoves and stuns for 0.8s.',
-  leap:'Hatchet_Leap · 41 energy · 21.5s. Leaps onto an enemy up to 180px away and slams down for 1d10 to everything around the landing, cracking the ground. Everything hit is stunned: 1.2s right under him, down to 0.4s at the edge.',
-  rage:'Timber_Rage · 36 energy · 26.5s. Under half health: +30% damage, +20% attack speed, 25% less damage taken and 5% lifesteal for 6s.',
+  dash:'Wave Dash · 51 energy · 18s. Rides a blue energy wave about 300px forward; everything it passes through (about 1.5 lanes each way) takes a normal sword hit (2d5 base); War Cry, damage buffs and crits apply as usual.',
+  shout:'War Cry · 26 energy · 8.5s. Every ally within 600px gets +25% damage and attack speed for 7s.',
+  rain:'Arrow_Rain · 47 energy · 10s. 16 arrows rain down on the thickest group of enemies (1d6 each).',
+  rapid:'One Nocked, Two in Hand · 41 energy · 5.5s. She rapid-fires 3 arrows within 1 second, each at the same or a different target (-5 accuracy). These can\'t crit, but any crit she lands at any time halves what\'s left of this cooldown.',
+  blowgun:'Blow_Gun · 31 energy · 4.5s. A dart that hits for 1d4 on its own plus poison (1 stack guaranteed, 75% for a 2nd, 50% for a 3rd) on the living. Undead are immune to the poison, but hitting one halves what\'s left of the cooldown.',
+  poultice:'Poultice · 26 energy · 18s. When he\'s under 60% health he slaps a herbal poultice on: heals himself 4% of max HP every second for 6s.',
+  whirl:'Whirl_Wind · 47 energy · 15.5s. Spins with his axe for up to 5.75s at half speed, trailing a wide slashing wave: every second it hits everything within about 89px for 1d4 and makes it bleed (10 over 3s). He can break it off early to escape, but usually spins it out.',
+  chop:'Ground_Chop · 31 energy · 10s. A huge overhead chop into the ground: a shockwave 120px ahead for 2d6 that shoves and stuns for 0.8s.',
+  leap:'Hatchet_Leap · 41 energy · 18s. Leaps onto an enemy up to 180px away and slams down for 1d10 to everything around the landing, cracking the ground. Everything hit is stunned: 1.2s right under him, down to 0.4s at the edge.',
+  rage:'Timber_Rage · 36 energy · 24s. Under half health: +30% damage, +20% attack speed, 25% less damage taken and 5% lifesteal for 6s.',
   rhythm:'Feller\'s_Rhythm (passive) · every 3rd axe hit in a row (each within 5s of the last) is a felling blow: +50% damage and a 0.4s stagger. TIMBER!',
-  mend:'Mend · 18 energy · 6.5s. Instantly heals the most-hurt ally for 10% of their max HP.',
-  bloom:'Rejuvenating Bloom · 36 energy · 18.5s. Wraps an ally in a healing vine heart: 4% of max HP every second for 8s.',
-  thorns:'Thorn Wave · 41 energy · 18.5s. A wave of earth thorns erupts along the ground 400px down her lane: 2d6 to everything it bursts under, plus bleed (12 over 4s) and a 50% chance of a poison stack (undead are immune).',
-  cyclone:'Cyclone · 47 energy · 24s. A slow tornado forms well ahead of her (about 450px out) and wanders there for 5s, slowly pulling nearby enemies toward it and dealing small steady damage (1d3 every 0.65s) to everything inside.'};
+  mend:'Mend · 18 energy · 5s. Instantly heals the most-hurt ally for 10% of their max HP.',
+  bloom:'Rejuvenating Bloom · 36 energy · 14s. Wraps an ally in a healing vine heart: 4% of max HP every second for 8s.',
+  thorns:'Thorn Wave · 41 energy · 16s. A wave of earth thorns erupts along the ground 400px down her lane: 2d6 to everything it bursts under, plus bleed (12 over 4s) and a 50% chance of a poison stack (undead are immune).',
+  cyclone:'Cyclone · 47 energy · 20.5s. A slow tornado forms well ahead of her (about 450px out) and wanders there for 5s, slowly pulling nearby enemies toward it and dealing small steady damage (1d3 every 0.55s) to everything inside.'};
 const BEHAVIOR={
   broodbot:'⚙ MACHINE: healing, potions and healing magic do nothing for it; it gets repaired instead (its own scrap, and the Builders\' Tinker). A cheerful yellow robot on tank treads with a bay full of spider-bots on its back. Rolls along behind the front line, builds spider-bots and sends them skittering into the zombies, snares crowds in wire and blows its whole brood up when the swarm gets thick.',
   bub:'💀 UNDEAD: potions, herbs and healing magic do nothing for him; he heals by eating. A Day of the Dead zombie in a torn blue shirt, face painted like a sugar skull, a marigold tucked behind his ear. Shambles into the front line swinging his rotten arms, plugs anything farther off with his pistol, bites chunks out of zombies and, when it goes quiet, kneels down to eat the ones he dropped.',
@@ -781,8 +781,8 @@ function inspText(name){const I=INSP[name];if(!I)return '';const out=[];if(I.pas
 //   damage, accuracy, crit chance, knockback). Speed, timing, range and energy stay the same so she keeps up and can use her brick.
 // 0.12.6 Tide_Warrior: a quick, sturdy sword fighter (Claude's starting numbers until Kyle fills his sheet). He swings a
 //   2-hit combo (Attack 1, Attack 2) standing still and a running slash when he's on the move. No gun, no abilities yet.
-CHAR.chibi={name:'Tide_Warrior',role:'Sword + Ranged N/A',combo:1,flatHp:0,stamina:7.5,hpPerStamina:5,armorPts:6,dodge:.06,kbRes:.30,
-  melee:{dice:[2,5],every:1.36,reach:28,kb:15,hitAt:.18},   /* 0.12.461 (Kyle): a bit more reach for the bigger sword */   /* 0.12.58 (Kyle): too strong: 2d6/1.1s -> 2d5/1.2s (about -20% damage) */
+CHAR.chibi={name:'Tide_Warrior',role:'Sword + Ranged N/A',combo:1,flatHp:0,stamina:8,hpPerStamina:5,armorPts:6.5,dodge:.06,kbRes:.30,
+  melee:{dice:[2,5],every:1.24,reach:28,kb:15,hitAt:.18},   /* 0.12.461 (Kyle): a bit more reach for the bigger sword */   /* 0.12.58 (Kyle): too strong: 2d6/1.1s -> 2d5/1.2s (about -20% damage) */
   // Kunai throw (built from his Attack 1 wind-up + Run+Attack throwing arm): a light 1d4 poke at range while he closes in
   ranged:null,   /* 0.12.457 (Kyle): the kunai toss is gone, he's melee only */
   acc:10,walkPenalty:4,crit:.10,critMul:1.75,luck:15,xp:0,run:2,turn:.18,enMax:100,enRegen:4.6,
@@ -791,74 +791,74 @@ CHAR.chibi={name:'Tide_Warrior',role:'Sword + Ranged N/A',combo:1,flatHp:0,stami
     //   (Kyle's distances are screen pixels: the normal 1152px-wide game shows 3 screen px per world px.)
     //   Everything the wave passes through (2 lanes up and down) takes 1.4x a sword roll (+flat bonuses) and a shove.
     //   Bigger reach and area, so it costs more: 45 energy, 16s cooldown.
-    {id:'dash',name:'Wave Dash',en:51,cd:21.5,dist:100,dur:.5,dmgMul:1,depth:12,kb:25,minHits:2},
+    {id:'dash',name:'Wave Dash',en:51,cd:18,dist:100,dur:.5,dmgMul:1,depth:12,kb:25,minHits:2},
     // War Cry: every ally within 600 screen px (200 world px) gets +25% damage and +25% attack speed for 7s. 20 energy, 7s cooldown (Kyle).
     // Poultice (Kyle): he slaps a herbal poultice on his wounds: heals himself 4% of max HP every second for 6s (24% total). 20 energy, 15s.
-    {id:'poultice',name:'Poultice',en:26,cd:20,pct:.04,tick:1,dur:6,under:.6},
+    {id:'poultice',name:'Poultice',en:26,cd:18,pct:.04,tick:1,dur:6,under:.6},
     // 0.12.20 Shadow_Clone (decoy, new): a see-through copy of him steps out for 5s. It mirrors every sword hit he lands (+40% on the
     //   same target), and 35% of the blows aimed at him hit the clone instead. IF 2+ enemies close OR hurt with something on him. 30 energy, 18s.
-    {id:'clone',name:'Shadow_Clone',en:36,cd:24,dur:5,mirror:.4,decoy:.35},
+    {id:'clone',name:'Shadow_Clone',en:36,cd:22,dur:5,mirror:.4,decoy:.35},
     // 0.12.20 Momentum (passive, new): each sword hit within 2s of the last stacks +6% attack speed, up to 5 stacks (+30%); a 2s gap drops it.
     {id:'momentum',name:'Momentum',passive:1,per:.06,max:5,window:2},
-    {id:'shout',name:'War Cry',en:26,cd:9.5,range:200,dur:7,dmg:.25,spd:.25}]};
+    {id:'shout',name:'War Cry',en:26,cd:8.5,range:200,dur:7,dmg:.25,spd:.25}]};
 // 0.12.7 Yumi_Archer: a patient longbow marksman (Claude's starting numbers; no abilities yet). His arrow leaves from the
 //   arrow's tip in his draw pose, at the moment of release in his Ranged animation (0.55s into a 0.8s draw). No reloading.
-CHAR.archer={name:'Yumi_Archer',role:'Bow Strike + Longbow',flatHp:0,stamina:12,hpPerStamina:5,armorPts:8,dodge:.04,kbRes:.25,
-  melee:{dice:[1,10],flat:1,every:1.19,reach:22,kb:18,hitAt:.2},   /* 0.12.495 (Kyle) balance: bow strike 1d10+1 (was 1d8) */
-  ranged:{dice:[1,12],flat:1,every:1.26,range:280,   /* 0.12.495 (Kyle) balance: longbow 1d12+1 (was 1d10) */clip:0,reload:0,pellets:1,anim:.8,releaseAt:.55},
+CHAR.archer={name:'Yumi_Archer',role:'Bow Strike + Longbow',flatHp:0,stamina:14.5,hpPerStamina:5,armorPts:9.5,dodge:.04,kbRes:.25,
+  melee:{dice:[1,10],flat:1,every:.86,reach:22,kb:18,hitAt:.2},   /* 0.12.495 (Kyle) balance: bow strike 1d10+1 (was 1d8) */
+  ranged:{dice:[2,6],flat:2,every:.91,range:280,   /* 0.12.499 (Kyle) balance: longbow 2d6+2 (0.12.496: 1d12+1, before that 1d10) */clip:0,reload:0,pellets:1,anim:.8,releaseAt:.55},
   acc:22,walkPenalty:15,crit:.12,critMul:2,luck:18,xp:0,run:2,turn:.25,enMax:100,enRegen:4.6,
   // One Nocked, Two in Hand (Kyle's name, with the archery spelling 'nocked'): his next 3 arrows come much faster (time between shots x0.3, quicker draw). 30 energy, 14s cooldown.
-  abilities:[{id:'rapid',name:'One Nocked, Two in Hand',en:41,cd:7.5,shots:3,accPen:5,over:1},   // 0.12.63 (Kyle): 3 shots in 1s, 40 energy, 10s, can't crit; any crit she lands halves its remaining cooldown   // 0.12.23: 3 basic shots in 1.5s
+  abilities:[{id:'rapid',name:'One Nocked, Two in Hand',en:41,cd:5.5,shots:3,accPen:5,over:1},   // 0.12.63 (Kyle): 3 shots in 1s, 40 energy, 10s, can't crit; any crit she lands halves its remaining cooldown   // 0.12.23: 3 basic shots in 1.5s
     // Blow_Gun: he puts a bamboo blowgun to his lips (0.7s) and puffs a poison dart (1d3). It always applies 1 poison stack to a
     //   non-undead target, with a 75% chance for a 2nd and a 50% chance for a 3rd. 25 energy, 9s cooldown. Picks living targets.
     // Arrow_Rain: 0.6s to loose a volley high into the air, then 16 arrows rain down over 1.4s on the thickest group of enemies in
     //   range (about 70px wide, 2 lanes up and down). Each arrow hits what it lands on for 1d6 (+flat) and sticks in the ground.
     //   40 energy, 18s cooldown.
-    {id:'rain',name:'Arrow_Rain',en:47,cd:13.5,cast:.45,count:16,over:1.4,fall:.35,spread:36,lanes:12,dice:[1,6],range:280,hitR:5},
-    {id:'blowgun',name:'Blow_Gun',en:31,cd:6.5,anim:.7,releaseAt:.42,dice:[1,3],extra:[.75,.5],range:220,base:[1,4]},   // 0.12.63 (Kyle): +1d4 hit damage on top of the poison; hitting a poison-immune target halves its remaining cooldown
+    {id:'rain',name:'Arrow_Rain',en:47,cd:10,cast:.35,count:16,over:1.4,fall:.35,spread:36,lanes:12,dice:[1,6],range:280,hitR:5},
+    {id:'blowgun',name:'Blow_Gun',en:31,cd:4.5,anim:.7,releaseAt:.42,dice:[1,3],extra:[.75,.5],range:220,base:[1,4]},   // 0.12.63 (Kyle): +1d4 hit damage on top of the poison; hitting a poison-immune target halves its remaining cooldown
     // 0.12.20 Pinning_Shot (root + mark, new): an arrow that nails the target to the ground for 2.5s and MARKS it for 6s: marked enemies
     //   take 25% more damage from everyone. IF the biggest (or fastest) enemy in range isn't marked yet. 25 energy, 12s.
-    {id:'pin',name:'Pinning_Shot',en:31,cd:9,root:2.5,mark:6,amp:.25,range:280,anim:.5,releaseAt:.3,dice:[1,8]},
+    {id:'pin',name:'Pinning_Shot',en:31,cd:7.5,root:2.5,mark:6,amp:.25,range:280,anim:.5,releaseAt:.3,dice:[1,8]},
     // 0.12.20 Wind_Reading (passive, new): shots at anything more than 150px (450 screen px) away get +15 accuracy and +0.5x crit damage.
     {id:'wind',name:'Wind_Reading',passive:1,far:150,acc:15,critMul:.5}]};
 // 0.12.9 Druid (Claude's starting numbers): a staff-wielding nature caster. Small nature bolts at range, a staff poke up close,
 //   and four abilities: two heals (one instant, one over time) and two nature attacks (thorns, a tornado).
-CHAR.druid={name:'Druid',role:'Staff + Nature Bolts',flatHp:0,stamina:5,hpPerStamina:5,armorPts:2,dodge:.05,kbRes:.2,
-  melee:{dice:[1,4],every:1.84,reach:26,kb:10,hitAt:.2,claw:1},   // 0.12.15 (Kyle): she swipes her hand and a glowing green spirit claw lunges off it into the target
-  ranged:{dice:[1,6],flat:0,every:2.21,range:220,clip:0,reload:0,pellets:1,anim:.5,releaseAt:.3},   /* 0.12.58: released as the staff swing reaches its full thrust (frame 3), from the staff head */
+CHAR.druid={name:'Druid',role:'Staff + Nature Bolts',flatHp:0,stamina:6,hpPerStamina:5,armorPts:2.5,dodge:.05,kbRes:.2,
+  melee:{dice:[1,4],every:1.81,reach:26,kb:10,hitAt:.2,claw:1},   // 0.12.15 (Kyle): she swipes her hand and a glowing green spirit claw lunges off it into the target
+  ranged:{dice:[1,6],flat:0,every:2.17,range:220,clip:0,reload:0,pellets:1,anim:.5,releaseAt:.3},   /* 0.12.58: released as the staff swing reaches its full thrust (frame 3), from the staff head */
   acc:16,walkPenalty:8,crit:.08,critMul:1.75,luck:20,xp:0,run:2,turn:.22,enMax:100,enRegen:4.6,
   abilities:[
     // Mend: small instant heal, low cooldown. 12% of the target's max HP on the most-hurt ally (under 85%). 12 energy, 4s cooldown.
-    {id:'mend',name:'Mend',en:18,cd:6.5,heal:.10,under:.85},   /* 0.12.38 (Kyle): 12% -> 10%, 4s -> 5s */
+    {id:'mend',name:'Mend',en:18,cd:5,heal:.10,under:.85},   /* 0.12.38 (Kyle): 12% -> 10%, 4s -> 5s */
     // Rejuvenating Bloom: heal over time on any ally (most hurt, under 90%, not already blooming): 5% of their max HP every 1s
     //   for 8s (40% total) inside a glowing vine heart. 30 energy, 12s cooldown.
-    {id:'bloom',name:'Rejuvenating Bloom',en:36,cd:18.5,pct:.04,tick:1,dur:8,under:.9},   /* 0.12.38 (Kyle): 5%/s -> 4%/s, 12s -> 14s */
+    {id:'bloom',name:'Rejuvenating Bloom',en:36,cd:14,pct:.04,tick:1,dur:8,under:.9},   /* 0.12.38 (Kyle): 5%/s -> 4%/s, 12s -> 14s */
     // Thorn Wave (Kyle): a wave of earth thorns erupts along the ground down her lane, one after another for 200px over 1.2s.
     //   Every enemy a thorn bursts under takes 2d6 (+flat) and bleeds (12 over 4s). 35 energy, 14s cooldown.
-    {id:'thorns',name:'Thorn Wave',en:41,cd:18.5,dice:[2,6],dist:133,dur:.8,poisonCh:.5,step:12,depth:6,bleed:{dmg:12,dur:4},cast:.65},
+    {id:'thorns',name:'Thorn Wave',en:41,cd:16,dice:[2,6],dist:133,dur:.8,poisonCh:.5,step:12,depth:6,bleed:{dmg:12,dur:4},cast:.55},
     // Cyclone (Kyle): a tornado that lasts 5s, wandering around sporadically in front of her. It slowly pulls nearby enemies
     //   (within 40px) toward it and deals small, steady damage to everything inside it (1d3 +flat every 0.5s). 40 energy, 18s cooldown.
     // 0.12.20 Verdant_Resurgence (passive, new): once per stage, when an ally would die, vines catch them instead: they stay up at 1 HP,
     //   can't be hurt for 2s and heal 30% of max HP over those 2s.
-    {id:'resurge',name:'Verdant_Resurgence',passive:1,heal:.3,dur:2,icd:33.5},   // 0.12.24 (Kyle): no longer once per stage, 25s internal cooldown
-    {id:'cyclone',name:'Cyclone',en:47,cd:24,ahead:150,near:100,dist:215,dur:5,dice:[1,3],every:.5,pullR:40,pull:16,inR:12,depth:6,spd:20,wander:28,cast:.65}]};
+    {id:'resurge',name:'Verdant_Resurgence',passive:1,heal:.3,dur:2,icd:25},   // 0.12.24 (Kyle): no longer once per stage, 25s internal cooldown
+    {id:'cyclone',name:'Cyclone',en:47,cd:20.5,ahead:150,near:100,dist:215,dur:5,dice:[1,3],every:.5,pullR:40,pull:16,inR:12,depth:6,spd:20,wander:28,cast:.55}]};
 // 0.12.11 Lumber_Jack (Claude's starting numbers): a burly axeman with a hunting bow. Sturdy, hits hard up close.
-CHAR.lumberjack={name:'Lumber_Jack',role:'Axe + Bow',combo:0,flatHp:4,   /* 0.12.413 (Kyle): +5 HP */stamina:8,hpPerStamina:5,armorPts:5,dodge:.03,kbRes:.45,
-  melee:{dice:[1,12],every:1.49,reach:26.4,kb:28,hitAt:.2},   /* 0.12.302 (Kyle): +20% reach */   /* 0.12.58 (Kyle): a little weak: 1d10/1.3s -> 1d12/1.2s (about +25%) */
-  ranged:{dice:[1,6],flat:0,every:2.72,range:200,clip:0,reload:0,pellets:1,anim:.7,releaseAt:.45},
+CHAR.lumberjack={name:'Lumber_Jack',role:'Axe + Bow',combo:0,flatHp:4,   /* 0.12.413 (Kyle): +5 HP */stamina:9,hpPerStamina:5,armorPts:5.5,dodge:.03,kbRes:.45,
+  melee:{dice:[1,12],every:1.2,reach:26.4,kb:28,hitAt:.2},   /* 0.12.302 (Kyle): +20% reach */   /* 0.12.58 (Kyle): a little weak: 1d10/1.3s -> 1d12/1.2s (about +25%) */
+  ranged:{dice:[1,6],flat:0,every:2.2,range:200,clip:0,reload:0,pellets:1,anim:.7,releaseAt:.45},
   acc:14,walkPenalty:10,crit:.10,critMul:1.9,luck:16,xp:0,run:2.5,turn:.25,enMax:100,enRegen:4.6,
   abilities:[
     // Whirl_Wind: spins with his axe for 2.4s, drifting forward; every 0.4s it hits everything around him (1d6 +flat, ~18px, 1 lane each way). 40 energy, 14s.
     // 0.12.26 (Kyle): up to 5s, 1d4 every second to everything in a wider 24px circle, each hit refreshes a bleed (6 over 3s), he moves at half speed while
     //   spinning, and he can break off early (IF he's badly hurt and wants out, OR nothing has been in reach for 1.5s) but usually spins it out.
-    {id:'whirl',name:'Whirl_Wind',en:47,cd:18.5,dur:5,every:1,r:26,depth:7,dice:[1,4],bleed:{dmg:10,dur:3},   /* 0.12.302 (Kyle): ~78 area (was ~72), bleed 10 over 3s */want:'close',range:30},
+    {id:'whirl',name:'Whirl_Wind',en:47,cd:15.5,dur:5.75,every:1,r:29.5,depth:8,   /* 0.12.499 (Kyle): spins a little longer (was 5s) over a little more ground (r 26, depth 7) */dice:[1,4],bleed:{dmg:10,dur:3},   /* 0.12.302 (Kyle): ~78 area (was ~72), bleed 10 over 3s */want:'close',range:30},
     // Ground_Chop: a huge overhead chop into the ground: a shockwave 40px ahead (2d6 +flat), shoves and stuns 0.8s. 25 energy, 9s.
-    {id:'chop',name:'Ground_Chop',en:31,cd:12,cast:.65,dist:40,depth:6,dice:[2,6],stun:.8,kb:35,want:'close',range:40},
+    {id:'chop',name:'Ground_Chop',en:31,cd:10,cast:.55,dist:40,depth:6,dice:[2,6],stun:.8,kb:35,want:'close',range:40},
     // Hatchet_Leap: leaps onto an enemy up to 60px away and slams down (1d10 +flat to everything within 16px). 35 energy, 16s.
     // 0.12.69 (Kyle): the slam stuns: 1.2s right under him, down to 0.4s at the edge of the blast; a much bigger landing (cracked earth, dust, pebbles, a burst).
-    {id:'leap',name:'Hatchet_Leap',en:41,cd:21.5,dur:.6,range:60,min:24,r:16,dice:[1,10],want:'close',stun0:1.2,stun1:.4},
+    {id:'leap',name:'Hatchet_Leap',en:41,cd:18,dur:.6,range:60,min:24,r:16,dice:[1,10],want:'close',stun0:1.2,stun1:.4},
     // Timber_Rage: when he's under half health he gets angry: +30% damage, +20% attack speed, 25% less damage taken for 6s. 30 energy, 20s.
-    {id:'rage',name:'Timber_Rage',en:36,cd:26.5,dur:8,grow:.25,reach:.2,slide:4,dmg:.3,spd:.2,dr:.25,under:.5,ls:.05,want:'close'},   /* 0.12.302: +5% lifesteal while raging */
+    {id:'rage',name:'Timber_Rage',en:36,cd:24,dur:8,grow:.25,reach:.2,slide:4,dmg:.3,spd:.2,dr:.25,under:.5,ls:.05,want:'close'},   /* 0.12.302: +5% lifesteal while raging */
     // 0.12.58 (Kyle: it never seemed to do anything) Log_Roll reworked: he kicks a log down his lane. It rolls 120px forward at 110px/s,
     //   hitting each zombie it passes once for 1d8 +flat, knocking them back and tripping them for 0.6s. 25 energy, 11s.
     //   IF 2+ enemies are in my lane ahead within 90px (or 1 big one) THEN roll it.
@@ -878,14 +878,14 @@ CHAR.bub={name:'Bub',role:'Arm Swing + Pistol',combo:0,flatHp:4,stamina:10,hpPer
     {id:'graverise',name:'Back_From_The_Grave',passive:true,hp:.3}]};
 /* 0.12.489 (Kyle) BROOD_BOT: a robot on tank treads that builds spider-bots. Machine + Handler. Melee: a claw arm; ranged: a rivet gun.
    Spider-bots skitter at the nearest zombie, bite it, and blow up when they're destroyed or their battery runs out. */
-CHAR.broodbot={name:'Brood_Bot',role:'Claw Arm + Rivet Gun',combo:0,flatHp:0,stamina:8,hpPerStamina:5,armorPts:5,dodge:.02,kbRes:.6,
-  melee:{dice:[1,8],every:1.63,reach:20,kb:20,hitAt:.25},
-  ranged:{dice:[1,4],flat:1,every:1.09,range:200,clip:8,reload:2.75,pellets:1},
+CHAR.broodbot={name:'Brood_Bot',role:'Claw Arm + Rivet Gun',combo:0,flatHp:0,stamina:9,hpPerStamina:5,armorPts:5.5,dodge:.02,kbRes:.6,
+  melee:{dice:[1,8],every:1.33,reach:20,kb:20,hitAt:.25},
+  ranged:{dice:[1,4],flat:1,every:.89,range:200,clip:8,reload:2.25,pellets:1},
   acc:12,walkPenalty:8,crit:.06,critMul:1.8,luck:10,xp:0,run:1,turn:.3,enMax:100,enRegen:4.6,
-  abilities:[{id:'spiderbot',name:'Spider_Bot',en:25,cd:8,cap:3,hp:14,dice:[1,4],every:.9,life:18,boom:[1,6],r:22},
-    {id:'detonate',name:'Chain_Detonation',en:30,cd:18.5,dice:[2,6],r:28,stun:.6},
-    {id:'botclock',name:'Overclock',en:25,cd:24,dur:6,spd:.5,dr:.3},
-    {id:'wireweb',name:'Wire_Web',en:20,cd:16,r:30,slow:.4,slowT:3,range:160},
+  abilities:[{id:'spiderbot',name:'Spider_Bot',en:25,cd:6.5,cap:3,hp:14,dice:[1,4],every:.9,life:18,boom:[1,6],r:22},
+    {id:'detonate',name:'Chain_Detonation',en:30,cd:15,dice:[2,6],r:28,stun:.6},
+    {id:'botclock',name:'Overclock',en:25,cd:21.5,dur:6,spd:.5,dr:.3},
+    {id:'wireweb',name:'Wire_Web',en:20,cd:14.5,r:30,slow:.4,slowT:3,range:160},
     {id:'scrapper',name:'Scrap_Recycler',passive:true,rep:.04,en2:6}]};
 // 0.12.19: renamed Warhound with Kyle's pick of the new sprite (hunched olive war-walker, brass trim, elbowed blade arm).
 // 0.12.17 Moss_Mech (Kyle): an original moss-grown green war mech with a blue electric arc blade on its near arm and a gatling on
@@ -927,9 +927,9 @@ CHAR.robot={name:'Warhound',role:'Flamethrower + Targeted Lazer',combo:0,flatHp:
     {id:'nano',name:'Nano-Tech_Repair_Bots',passive:1,en:0,cd:33.5,dur:5,per:.06,under:.4,dr:.2,halveCh:.1}]};   /* 0.12.302 (Kyle): flies at least 350 screen px (117) and at most 600 (200) */
 const JET_SMASH={r:45,dice:[2,6],kb:4};   /* 0.12.236 jetpack landing smash: 135 screen px, 2d6, major knockback */
 // 0.12.75 Engineer (Kyle): hard hat, red shirt + overalls, a heavy wrench and a sawn-off shotgun. Builds things.
-CHAR.eng={name:'Engineer',role:'Wrench + Grenade_Launcher',combo:0,flatHp:0,stamina:11,hpPerStamina:5,armorPts:9,dodge:.04,kbRes:.35,
-  melee:{dice:[2,8],every:1.45,reach:20,kb:34,hitAt:.3,stunCh:.25,stun:.8},   // heavy, slow wrench: hits hard, 25% to stun 0.8s
-  ranged:{dice:[3,6],flat:0,every:.88,range:165,clip:1,reload:3.1,pellets:1,anim:.35,gl:{r:25,splash:1,fuse:.45,maxT:3,kb:22}},   /* 0.12.161 (Kyle): one grenade, then a 4s reload. 3d4 to everything within a 75 screen px blast radius (25 world) */   /* 0.12.105 (Kyle) Grenade_Launcher (was a sawn-off): 3 grenades, ~1.15s apart, 4.5s reload. 2d6 to whatever it hits, 55% to everything within ~42 screen px. Misses land, roll and blow 0.45s after they stop */
+CHAR.eng={name:'Engineer',role:'Wrench + Grenade_Launcher',combo:0,flatHp:0,stamina:9.5,hpPerStamina:5,armorPts:8,dodge:.04,kbRes:.35,
+  melee:{dice:[2,8],every:1.41,reach:20,kb:34,hitAt:.3,stunCh:.25,stun:.8},   // heavy, slow wrench: hits hard, 25% to stun 0.8s
+  ranged:{dice:[3,6],flat:0,every:.86,range:165,clip:1,reload:3,pellets:1,anim:.35,gl:{r:25,splash:1,fuse:.45,maxT:3,kb:22}},   /* 0.12.161 (Kyle): one grenade, then a 4s reload. 3d4 to everything within a 75 screen px blast radius (25 world) */   /* 0.12.105 (Kyle) Grenade_Launcher (was a sawn-off): 3 grenades, ~1.15s apart, 4.5s reload. 2d6 to whatever it hits, 55% to everything within ~42 screen px. Misses land, roll and blow 0.45s after they stop */
   acc:14,walkPenalty:10,crit:.08,critMul:1.8,luck:14,xp:0,run:1.8,turn:.22,enMax:100,enRegen:4.6,
   abilities:[
     /* 0.12.326 (Kyle) Engineer rework.
@@ -948,43 +948,43 @@ CHAR.eng={name:'Engineer',role:'Wrench + Grenade_Launcher',combo:0,flatHp:0,stam
          On a WRECKED CAR roof: 5 rounds 0.15s apart, 3-4 damage each, -10 accuracy, 4s reload; a spray of small rounds like the nail gun.
          All turret damage counts as the Engineer's. The tesla coil is gone. */
     {id:'build',name:'Build',en:26,cd:1,book:1,
-      tower:{cd:8,T:[3,2.5,3.5],hits:[4,4,4],hitAdd:0,r:65,regen:.01,aspd:.15,acc:6,range:[.25,.25,.25],   /* 0.12.424 (Kyle): one tower, one height: 4 hits, +25% range up top, its aura reaches 30% further */
+      tower:{cd:9,T:[3,2.5,3.5],hits:[4,4,4],hitAdd:0,r:65,regen:.01,aspd:.15,acc:6,range:[.25,.25,.25],   /* 0.12.424 (Kyle): one tower, one height: 4 hits, +25% range up top, its aura reaches 30% further */
       fAcc:[4,8,12],fDmg:[0,.075,.15],dmgAdd:0,kinds:['med','ammo','spot']},
-      barrier:{cd:13,T:3,hp:80,depth:9,acc:8,behind:40}},
+      barrier:{cd:14.5,T:3,hp:80,depth:9,acc:8,behind:40}},
     // Repair: no cooldown, slow: fixes buildings (6 HP/s, or 1 tower hit every 1.5s, up to 2 per repair) and the Warhound (2% a second). Pauses his other cooldowns.
-    {id:'repair',name:'Overclock',en:25,cd:14.5,bld:.5,mech:1,towerHit:6,towerMax:.25},   /* 0.12.429 (Kyle): repairing moved to every Builder's hidden Tinker; this is Overclock now (bld = turret/nest fire rate, towerMax = allies' attack speed, towerHit = seconds, mech = noise-maker reach) */
-    {id:'attach',name:'Attach_Turret',en:39,cd:9.5,charges:3,T:2,
+    {id:'repair',name:'Overclock',en:25,cd:16.5,bld:.5,mech:1,towerHit:6,towerMax:.25},   /* 0.12.429 (Kyle): repairing moved to every Builder's hidden Tinker; this is Overclock now (bld = turret/nest fire rate, towerMax = allies' attack speed, towerHit = seconds, mech = noise-maker reach) */
+    {id:'attach',name:'Attach_Turret',en:39,cd:11,charges:3,T:2,
       car:{range:180,   /* 0.12.424 (Kyle): +25% */burst:5,gap:.15,reload:4,dmg:[3,4],hit:.42,acc:-10},
       tow:{range:165,burst:3,gap:.25,reload:4,dmg:[1,3],hit:.5}},
     // Satchel_Charge: tosses a satchel that never goes off by itself; he sets it off when it's worth it (3+ zombies on it, or something big).
     //   The biggest blast in the game: 6d4 at the centre, falling off to 30% at ~100 screen px, with a HEAVY shove.
-    {id:'satchel',name:'Satchel_Charge',en:36,cd:14.5,min:30,max:100,r:33,dice:[6,4],kb:95,fly:.8},
+    {id:'satchel',name:'Satchel_Charge',en:36,cd:16.5,min:30,max:100,r:33,dice:[6,4],kb:95,fly:.8},
     // Field_Plating (passive, the armor kit): staying within ~60 screen px of an ally for 3s straps a plate kit on them: +25% armor and
     //   +15% knockback resistance until they take 3 hits. One kit per ally at a time.
     {id:'plating',name:'Field_Plating',passive:1,r:20,T:3,armor:.25,kb:.15,hits:3}]};
 // 0.12.21 Void_Cultist (Kyle): an original hooded cultist (crimson robe, navy hood, bone mask with one burning eye, curved ritual
 //   dagger). Void bolts at range, dagger up close. Abilities: a summoned tentacle that can't move but lashes far, a self-bleeding
 //   team buff, a curse that jumps on death, a fear chant, and a passive that feeds on nearby deaths.
-CHAR.cultist={name:'Void_Cultist',role:'Dagger + Void Bolts',combo:0,flatHp:0,stamina:6,hpPerStamina:5,armorPts:2,dodge:.06,kbRes:.15,
-  melee:{dice:[1,6],every:2.24,reach:18,kb:8,hitAt:.2},
-  ranged:{dice:[1,4],flat:0,every:1.52,range:210,clip:0,reload:0,pellets:1,anim:.34,releaseAt:.18},   // 0.12.22 (Kyle): weak void bolts, fired about twice as fast as other ranged heroes
+CHAR.cultist={name:'Void_Cultist',role:'Dagger + Void Bolts',combo:0,flatHp:0,stamina:7,hpPerStamina:5,armorPts:2.5,dodge:.06,kbRes:.15,
+  melee:{dice:[1,6],every:1.49,reach:18,kb:8,hitAt:.2},
+  ranged:{dice:[1,4],flat:0,every:1.01,range:210,clip:0,reload:0,pellets:1,anim:.34,releaseAt:.18},   // 0.12.22 (Kyle): weak void bolts, fired about twice as fast as other ranged heroes
   acc:14,walkPenalty:8,crit:.1,critMul:1.8,luck:18,xp:0,run:1.8,turn:.22,enMax:100,enRegen:4.6,
   /* 0.12.70 (Kyle) Void_Cultist rework: no energy at all. His abilities cost LIFE (Syphon_Life is free and is how he gets it back). */
   abilities:[
     // Syphon_Life (free): IF an enemy is within ~330 screen px (110 world) AND (I'm hurt OR nothing is on me) THEN channel a swirling black-and-purple
     //   beam into it for 3s: 3 damage a second (scaled by his damage), and he heals for everything it drains. Breaks if it dies or gets away. 9s CD.
-    {id:'syphon',name:'Syphon_Life',en:90,cd:12,dur:3,range:110,dps:3,heal:1.25},   /* 0.12.154 (Kyle): 100 energy (his only energy skill), heals 1.25x what it drains */
+    {id:'syphon',name:'Syphon_Life',en:90,cd:8.5,dur:3,range:110,dps:3,heal:1.25},   /* 0.12.154 (Kyle): 100 energy (his only energy skill), heals 1.25x what it drains */
     // 0.12.397 (Kyle) Profane_Restoration replaces Lethal_Strikes. The opposite of Syphon_Life: a healing beam from his chest into an ALLY for 4s.
     //   Every 0.5s he bleeds 2.5% of his own max life and the ally heals double that. While the beam holds the ally takes 15% less damage and
     //   attacks 20% faster, and the first tick washes off bleed and poison. Breaks if the ally gets away or he drops to 30% life. 16s CD.
     //   IF an ally within 330px is under 60% life AND I'm over 50% THEN mend them.
-    {id:'profane',name:'Profane_Restoration',en:0,cd:21.5,dur:4,range:110,tick:.5,drain:.025,heal:2,dr:.15,spd:.2,stop:.3,want:'far'},
+    {id:'profane',name:'Profane_Restoration',en:0,cd:18,dur:4,range:110,tick:.5,drain:.025,heal:2,dr:.15,spd:.2,stop:.3,want:'far'},
     // Spawn_Tentacle (8% of max life, keeps the old tentacle): placed anywhere within 400 screen px (133 world), in the middle of the biggest pack.
-    {id:'tentacle',name:'Spawn_Tentacle',en:0,cap:3,hpCost:.08,cd:13.5,cast:1.05,life:999,decay:.05,hp:15,steal:.2,reach:35,depth:10,every:1.4,dice:[1,6],flat:2,kb:20,range:133},   // 0.12.101 (Kyle): 10s (0.12.96 was 9s), 1d6+2; wither unchanged
+    {id:'tentacle',name:'Spawn_Tentacle',en:0,cap:3,hpCost:.08,cd:10,cast:.75,life:999,decay:.05,hp:15,steal:.2,reach:35,depth:10,every:1.4,dice:[1,8],flat:2,kb:20,range:133},   // 0.12.101 (Kyle): 10s (0.12.96 was 9s), 1d6+2; wither unchanged
     // Call_of_Cthulhu (15% of max life): 10s: Spawn_Tentacle's CD runs twice as fast, every tentacle is 25% bigger (reach too) and attacks 25% faster.
     //   On cast his tentacles burrow and re-emerge 200 screen px (67 world) in front of him, and a fear pulse goes out from him and from every tentacle:
     //   2s of fear and -25% move speed. IF 2+ tentacles are up OR 4+ zombies are coming, AND I can afford it THEN call. 30s CD.
-    {id:'cthulhu',name:'Call_of_Cthulhu',en:0,hpCost:.15,cd:40,dur:10,size:.25,spd:.25,fear:2,slow:.25,r:45,move:67,cast:1.2},
+    {id:'cthulhu',name:'Call_of_Cthulhu',en:0,hpCost:.15,cd:29,dur:10,size:.25,spd:.25,fear:2,slow:.25,r:45,move:67,cast:.85},
     // 0.12.152 (Kyle) Ritual_Blade (passive): Poisoned_Blade and Ritual_Harvest in one. A dagger hit that lands has a 25% chance to add
     //   1 poison stack; EVERY dagger swing refreshes the poison on its target; a dagger hit that KILLS takes 1.5s off Spawn_Tentacle's cooldown.
     {id:'blade',name:'Ritual_Blade',passive:1,ch:.25,n:1,cut:1.5}]};
@@ -3759,7 +3759,7 @@ this.chumStep(dt);for(const R of this.horseFx||[])R.t+=dt;if(this.horseFx)this.h
       // IF under half health AND Timber_Rage is ready THEN get angry
       if(RG&&h.rgT<=0&&en>=RG.en&&this.enemies.some(e=>!e.dead&&Math.abs(e.x-h.x)<120)&&spendEnergy(h,RG.en,RG)){h.rgT=RG.cd*(1-(h.cdr||0));h.rageT=RG.dur;h.rage0=RG.dur;h.rageAnim=.7;addMood(h,{range:RG.slide||4},RG.dur,'rage');this.ev('shout',{});}
       // IF 2+ enemies are around me AND Whirl_Wind is ready THEN spin
-      if(WH&&h.whT<=0&&close.length>=2&&en>=WH.en&&spendEnergy(h,WH.en,WH)){h.whT=WH.cd*(1-(h.cdr||0));h.whirl={t:0,tick:WH.every*.7};this.ev('whoosh',{});return;}
+      if(WH&&h.whT<=0&&close.length>=2&&en>=WH.en&&spendEnergy(h,WH.en,WH)){h.whT=WH.cd*(1-(h.cdr||0));h.whirl={t:0,tick:WH.every*.7,r:WH.r,depth:WH.depth};this.ev('whoosh',{});return;}
       // IF an enemy is in my lane a little ahead (inside the shockwave) AND Ground_Chop is ready THEN chop
       const ahead=this.enemies.filter(e=>!e.dead&&!e.fly&&e.x-h.x>0&&e.x-h.x<=CP.dist&&Math.abs((e.gy!=null?e.gy:this.G)-h.gy)<=CP.depth);
       if(CP&&h.cpT<=0&&ahead.length&&en>=CP.en&&spendEnergy(h,CP.en,CP)){h.cpT=CP.cd*(1-(h.cdr||0));h.chopping=CP.cast;h.chopT0=CP.cast;h.face=1;return;}
@@ -4795,7 +4795,7 @@ function newSlot(player){const heroes={};for(const h of DATA.heroes)heroes[h.key
 /* 0.12.103 (Kyle: average hero damage in stage 1 about 300, healer and utility heroes lower). Scales ALL of a hero's damage: basic attacks, abilities and anything he summons or builds. */
 function stageHpM(n){n=n||1;return Math.pow(1.02,n-1)*Math.pow(1.02,Math.floor(n/5));}   /* 0.12.415 (Kyle) */
 const STAGE_FLAT=n=>Math.floor((n||1)/10);
-const TOWER_CD=8;   /* 0.12.496 (Kyle) balance: Engineer +25% (was 10s) */   /* 0.12.456 (Kyle): the Engineer builds towers far more often */   /* 0.12.424 (Kyle): shared between all three towers */
+const TOWER_CD=9;   /* 0.12.499 (Kyle) balance: Engineer top-2 nerf (0.12.496: 8s, before that 10s) */   /* 0.12.456 (Kyle): the Engineer builds towers far more often */   /* 0.12.424 (Kyle): shared between all three towers */
 const ENEMY_GROWTH=1.04;   /* 0.12.395 (Kyle): enemies grow 4% a stage in life, damage and armor (was 2%); and each Alpha the run has beaten adds another 1% on top (see spawnEnemy) */
 const ENEMY_HP=1;   /* 0.12.388 (Kyle): every enemy is 100% of its base life at stage 1 (was .54) */   /* 0.12.104: .63 -> .52 with the bigger waves, to hold ~300 */   /* every enemy's HP; heroes hit for about .76 of before on average, so time-to-kill stays about the same and the numbers land near 300 */
 const HERO_DMG={broodbot:.5,bub:.6,seekyle:.55,teeg:.62,cheez:.6,edward:.6,knight:.6,soldier:.62,shoshi:.95,jp:.48,chibi:.58,archer:.64,flannel:.72,alchemist:.5,druid:.50,eng:.37,lumberjack:.61,robot:.46,cultist:.36};
@@ -4927,7 +4927,7 @@ const TAL_PERSONA={
 const TAL_MOD={
   jp:{scope:{name:'Hollow Tip Scope',icon:'🎯',txt:'No_Scope pierces 5 zombies (was 3) and hits for 4d6 (was 3d6).',ab:'noscope',set:{pierce:5,dice:[4,6]}},
       trawl:{name:'Commercial Trawler',icon:'🚢',txt:'Trawl_Line catches 9 zombies (was 6), reaches 190px (was 150) and hits for 3d4 (was 2d4).',ab:'trash',set:{max:9,len:190,dice:[3,4]}},
-      familia:{name:'Familia Forever',icon:'🛡️',txt:'Protect_the_Familia shields for 75% (was 50%) and comes back in 20s (was 26.5s).',ab:'familia',set:{shield:.75,cd:20}},
+      familia:{name:'Familia Forever',icon:'🛡️',txt:'Protect_the_Familia shields for 75% (was 50%) and comes back in 18s (was 24s).',ab:'familia',set:{shield:.75,cd:18}},
       hotbox:{name:'Hotbox',icon:'🌿',txt:'Toke_Break lasts 3s (was 2s) and heals 10% (was 6%).',ab:'toke',set:{dur:3,heal:.1}}},
   chibi:{twin:{name:'Twin Shadows',icon:'👥',txt:'Shadow_Clone lasts 7s (was 5s) and its own sword hits land at 60% (was 40%).',ab:'clone',set:{dur:7,mirror:.6}},
       tsunami:{name:'Tsunami Dash',icon:'🌊',txt:'Wave Dash rides 140px (was 100) and hits 50% harder.',ab:'dash',set:{dist:140,dmgMul:1.5}},
@@ -4936,7 +4936,7 @@ const TAL_MOD={
       monsoon:{name:'Monsoon',icon:'🌧️',txt:'Arrow_Rain drops 26 arrows (was 16).',ab:'rain',set:{count:26}},
       deeppin:{name:'Deep Pin',icon:'📌',txt:'Pinning_Shot roots for 4s (was 2.5s) and its mark makes the target take 40% more (was 25%).',ab:'pin',set:{root:4,amp:.4}}},
   alchemist:{volatile:{name:'Volatile Compound',icon:'💥',txt:'Volatile_Flask hits 1.85x (was 1.4x) and splashes 30% wider.',ab:'flask',set:{pw:1.85,r:34}},
-      remedy:{name:'Cure-All',icon:'🌿',txt:'Panacea_Mist heals 16% (was 12%) and is back in 17.5s (was 21.5s).',ab:'panacea',set:{heal:.16,cd:17.5}},
+      remedy:{name:'Cure-All',icon:'🌿',txt:'Panacea_Mist heals 16% (was 12%) and is back in 18.5s (was 23s).',ab:'panacea',set:{heal:.16,cd:18.5}},
       transmute:{name:'Perfect Batch',icon:'✨',txt:'Rapid_Brew makes potions 45% stronger (was 30%) for 10s (was 8s).',ab:'brew',set:{boost:.45,dur:10}}},
   flannel:{hollow:{name:'Hollow Point',icon:'🔫',txt:'Aimed Shot pierces 3 zombies (was 1) and crits for 3x (was 2.5x).',ab:'aimed',set:{pierce:3,critMul:3}},
       loyal:{name:'Loyal Companion',icon:'🦮',txt:'If his Traveling_Companion goes down, she finds her way back to him 25s later.',ab:'elite',set:{back:25}},
@@ -4945,10 +4945,10 @@ const TAL_MOD={
   druid:{overgrow:{name:'Overgrowth',icon:'🌸',txt:'Rejuvenating Bloom lasts 12s (was 8s).',ab:'bloom',set:{dur:12}},
       bramble:{name:'Bramble Tide',icon:'🌵',txt:'Thorn Wave hits for 3d6 (was 2d6) and poisons 80% of the time (was 50%).',ab:'thorns',set:{dice:[3,6],poisonCh:.8}},
       eye:{name:'Eye of the Storm',icon:'🌪️',txt:'Cyclone lasts 8s (was 5s) and pulls much harder.',ab:'cyclone',set:{dur:8,pull:26}}},
-  lumberjack:{widow:{name:'Widowmaker Spin',icon:'🌀',txt:'Whirl_Wind spins for 7s (was 5s) with a wider reach.',ab:'whirl',set:{dur:7,r:32}},
+  lumberjack:{widow:{name:'Widowmaker Spin',icon:'🌀',txt:'Whirl_Wind spins for 7s (was 5.75s) with a wider reach.',ab:'whirl',set:{dur:7,r:32}},
       split:{name:'Earthsplitter',icon:'🪓',txt:'Ground_Chop splits the ground 60px out (was 40) and stuns for 1.4s (was 0.8s).',ab:'chop',set:{dist:60,stun:1.4}},
       unbridled:{name:'Unbridled',icon:'😤',txt:'Timber_Rage gives +45% damage (was 30%) for 9s (was 6s).',ab:'rage',set:{dmg:.45,dur:9}}},
-  cultist:{arms:{name:'Many-Armed',icon:'🐙',txt:'Tentacles have 25 HP (was 15) and hit for 2d6+2 (was 1d6+2).',ab:'tentacle',set:{hp:25,dice:[2,6]}},
+  cultist:{arms:{name:'Many-Armed',icon:'🐙',txt:'Tentacles have 25 HP (was 15) and hit for 2d6+2 (was 1d8+2).',ab:'tentacle',set:{hp:25,dice:[2,6]}},
       elder:{name:'Elder Sign',icon:'👁️',txt:'Call_of_Cthulhu lasts 14s (was 10s) and terrifies for 3s (was 2s).',ab:'cthulhu',set:{dur:14,fear:3}},
       thirst:{name:'Thirsting Shadows',icon:'🩸',txt:'Syphon_Life drains 5 a second (was 3).',ab:'syphon',set:{dps:5}}},
   eng:{cells:{name:'Reinforced Cells',icon:'🧱',txt:'His HESCO cell has 130 HP (was 80).',ab:'build',path:'barrier',set:{hp:130}},
@@ -5011,33 +5011,33 @@ const HCAP={
  /* 0.12.287 (Kyle): capstones for everyone. Each one is a whole new way to play the hero: several abilities pushed hard, big stats,
     a personality shift (so the slider AI actually plays the new style) and sometimes a once-a-stage trick. */
  jp:{5:{
-   jp_ghost:{name:'Ghost_Sniper',icon:'👻',txt:'Plays from the very back. No_Scope: 5d6, pierces 7, 12s cooldown, +25% crit on it. +10 accuracy, +10% crit. Anything under 25% HP takes +60% from him.',patch:[{ab:'noscope',set:{dice:[5,6],pierce:7,cd:12,crit:.4}}],stat:{mod:{acc:10,crit:10}},also:['exec'],shift:{range:-3,aggr:-2}},
-   jp_lure:{name:'Lucky_Lure',icon:'🍀',txt:'Trawl_Line is back in 9.5s, catches 8, and every zombie it drags bleeds 12 over 4s. +10 luck.',patch:[{ab:'trash',set:{cd:9.5,max:8,bleed:12}}],stat:{mod:{luck:10}}},
-   jp_fam:{name:'Familia_First',icon:'🛡️',txt:'Lives for the crew. Protect_the_Familia shields 90% on a 13.5s cooldown; Toke_Break lasts 4s and heals 15%; Trash_Talk lasts 7s. +20% max HP. Way more selfless.',patch:[{ab:'familia',set:{shield:.9,cd:13.5}},{ab:'toke',set:{dur:4,heal:.15}},{ab:'trash',set:{dur:7}}],stat:{hpPct:20},shift:{self:-4,pack:-2,courage:2}}},
+   jp_ghost:{name:'Ghost_Sniper',icon:'👻',txt:'Plays from the very back. No_Scope: 5d6, pierces 7, 10s cooldown, +25% crit on it. +10 accuracy, +10% crit. Anything under 25% HP takes +60% from him.',patch:[{ab:'noscope',set:{dice:[5,6],pierce:7,cd:10,crit:.4}}],stat:{mod:{acc:10,crit:10}},also:['exec'],shift:{range:-3,aggr:-2}},
+   jp_lure:{name:'Lucky_Lure',icon:'🍀',txt:'Trawl_Line is back in 7.5s, catches 8, and every zombie it drags bleeds 12 over 4s. +10 luck.',patch:[{ab:'trash',set:{cd:7.5,max:8,bleed:12}}],stat:{mod:{luck:10}}},
+   jp_fam:{name:'Familia_First',icon:'🛡️',txt:'Lives for the crew. Protect_the_Familia shields 90% on a 12s cooldown; Toke_Break lasts 4s and heals 15%; Trash_Talk lasts 7s. +20% max HP. Way more selfless.',patch:[{ab:'familia',set:{shield:.9,cd:12}},{ab:'toke',set:{dur:4,heal:.15}},{ab:'trash',set:{dur:7}}],stat:{hpPct:20},shift:{self:-4,pack:-2,courage:2}}},
   10:{
-   jp_oneshot:{name:'One_Shot_One_Kill',icon:'💀',txt:'No_Scope: 8d6, pierces 12, 9.5s cooldown. +25% damage and +20% crit, but -10% max HP.',patch:[{ab:'noscope',set:{dice:[8,6],pierce:12,cd:9.5}}],stat:{dmgPct:10,mod:{crit:20}},also:['glass']},
-   jp_trophy:{name:'Trophy_Catch',icon:'🏆',txt:'Trawl_Line sweeps 230px, catches up to 14, hits for 4d4, stuns everything it drags for 1s and is back in 10.5s. +15% damage.',patch:[{ab:'trash',set:{len:230,max:14,dice:[4,4],stun:1,cd:10.5}}],stat:{dmgPct:15}},
-   jp_don:{name:'Don_of_the_Block',icon:'👑',txt:'Protect_the_Familia shields 100% on an 10.5s cooldown and the bash stuns 2s. Once a stage a killing hit leaves him at 1 HP, untouchable 3s. +4 armor, braver.',patch:[{ab:'familia',set:{shield:1,cd:10.5,bashStun:2}}],stat:{mod:{armor:4}},also:['last'],shift:{courage:3,self:-2}}}},
+   jp_oneshot:{name:'One_Shot_One_Kill',icon:'💀',txt:'No_Scope: 8d6, pierces 12, 8s cooldown. +25% damage and +20% crit, but -10% max HP.',patch:[{ab:'noscope',set:{dice:[8,6],pierce:12,cd:8}}],stat:{dmgPct:10,mod:{crit:20}},also:['glass']},
+   jp_trophy:{name:'Trophy_Catch',icon:'🏆',txt:'Trawl_Line sweeps 230px, catches up to 14, hits for 4d4, stuns everything it drags for 1s and is back in 8.5s. +15% damage.',patch:[{ab:'trash',set:{len:230,max:14,dice:[4,4],stun:1,cd:8.5}}],stat:{dmgPct:15}},
+   jp_don:{name:'Don_of_the_Block',icon:'👑',txt:'Protect_the_Familia shields 100% on an 9.5s cooldown and the bash stuns 2s. Once a stage a killing hit leaves him at 1 HP, untouchable 3s. +4 armor, braver.',patch:[{ab:'familia',set:{shield:1,cd:9.5,bashStun:2}}],stat:{mod:{armor:4}},also:['last'],shift:{courage:3,self:-2}}}},
  chibi:{5:{
-   ch_legion:{name:'Shadow_Legion',icon:'👥',txt:'Shadow_Clone lasts 10s, hits at 80%, back in 16s. +15% attack speed. Fights far more aggressively.',patch:[{ab:'clone',set:{dur:10,mirror:.8,cd:16}}],stat:{mod:{meleeSpd:15}},shift:{aggr:3}},
-   ch_tide:{name:'Tidal_Blade',icon:'🌊',txt:'Wave Dash rides 180px, hits 2x as hard, 12s cooldown. +15% move speed. Under 40% HP: +25% attack speed and 15% faster.',patch:[{ab:'dash',set:{dist:180,dmgMul:2,cd:12}}],stat:{mod:{move:15}},also:['adren']}},
+   ch_legion:{name:'Shadow_Legion',icon:'👥',txt:'Shadow_Clone lasts 10s, hits at 80%, back in 14.5s. +15% attack speed. Fights far more aggressively.',patch:[{ab:'clone',set:{dur:10,mirror:.8,cd:14.5}}],stat:{mod:{meleeSpd:15}},shift:{aggr:3}},
+   ch_tide:{name:'Tidal_Blade',icon:'🌊',txt:'Wave Dash rides 180px, hits 2x as hard, 10s cooldown. +15% move speed. Under 40% HP: +25% attack speed and 15% faster.',patch:[{ab:'dash',set:{dist:180,dmgMul:2,cd:10}}],stat:{mod:{move:15}},also:['adren']}},
   10:{
    ch_warlord:{name:'Warlord',icon:'📯',txt:'War Cry: +50% damage and +35% speed for 12s. +25% max HP, +3 armor, can barely be knocked back and every hit lands 10% softer.',patch:[{ab:'shout',set:{dmg:.5,spd:.35,dur:12}}],stat:{hpPct:25,mod:{armor:3}},also:['jugg'],shift:{courage:3}},
    ch_cuts:{name:'Thousand_Cuts',icon:'⚔️',txt:'Shadow_Clone lasts 14s and hits at 100%. +30% attack speed, +10% crit, +15% damage but -10% max HP.',patch:[{ab:'clone',set:{dur:14,mirror:1}}],stat:{mod:{meleeSpd:30,crit:10}},also:['glass'],shift:{aggr:2}}}},
  archer:{5:{
    ar_storm:{name:'Storm_of_Arrows',icon:'🌧️',txt:'One Nocked fires 7 arrows; Arrow_Rain drops 30. +15% ranged attack speed.',patch:[{ab:'rapid',set:{shots:7}},{ab:'rain',set:{count:30}}],stat:{mod:{rangedSpd:15}}},
-   ar_hunt:{name:'Huntress',icon:'🏹',txt:'Pinning_Shot roots 5s and marks for +50%; Blow_Gun every 4.5s. +10% crit and her hits deal +60% to anything under 25% HP. Keeps her distance.',patch:[{ab:'pin',set:{root:5,amp:.5}},{ab:'blowgun',set:{cd:4.5}}],stat:{mod:{crit:10}},also:['exec'],shift:{range:-2}}},
+   ar_hunt:{name:'Huntress',icon:'🏹',txt:'Pinning_Shot roots 5s and marks for +50%; Blow_Gun every 3s. +10% crit and her hits deal +60% to anything under 25% HP. Keeps her distance.',patch:[{ab:'pin',set:{root:5,amp:.5}},{ab:'blowgun',set:{cd:3}}],stat:{mod:{crit:10}},also:['exec'],shift:{range:-2}}},
   10:{
-   ar_sky:{name:'Sky_Breaker',icon:'☄️',txt:'Arrow_Rain drops 50 arrows on a 9s cooldown; One Nocked fires 9. +15% damage, -10% max HP.',patch:[{ab:'rain',set:{count:50,cd:9}},{ab:'rapid',set:{shots:9}}],also:['glass']},
-   ar_whisper:{name:'Whisper_of_Death',icon:'🌙',txt:'Pinning_Shot roots 6s and marks for +75% on a 5s cooldown. +20% crit, +10 accuracy, +15% ranged damage.',patch:[{ab:'pin',set:{root:6,amp:.75,cd:5}}],stat:{mod:{crit:20,acc:10,rangedDmg:15}},shift:{aggr:-2}}}},
+   ar_sky:{name:'Sky_Breaker',icon:'☄️',txt:'Arrow_Rain drops 50 arrows on a 6.5s cooldown; One Nocked fires 9. +15% damage, -10% max HP.',patch:[{ab:'rain',set:{count:50,cd:6.5}},{ab:'rapid',set:{shots:9}}],also:['glass']},
+   ar_whisper:{name:'Whisper_of_Death',icon:'🌙',txt:'Pinning_Shot roots 6s and marks for +75% on a 4s cooldown. +20% crit, +10 accuracy, +15% ranged damage.',patch:[{ab:'pin',set:{root:6,amp:.75,cd:4}}],stat:{mod:{crit:20,acc:10,rangedDmg:15}},shift:{aggr:-2}}}},
  alchemist:{5:{
-   al_bomb:{name:'Alchemical_Bombardier',icon:'💣',txt:'Volatile_Flask hits 2.15x and comes back in 8s. +10% damage.',patch:[{ab:'flask',set:{pw:2.15,cd:8}}],stat:{dmgPct:10}},
+   al_bomb:{name:'Alchemical_Bombardier',icon:'💣',txt:'Volatile_Flask hits 2.15x and comes back in 8.5s. +10% damage.',patch:[{ab:'flask',set:{pw:2.15,cd:8.5}}],stat:{dmgPct:10}},
    al_saint:{name:'Plague_Doctor',icon:'🩺',txt:'Panacea_Mist heals 20% and reaches 70% farther. +15% max HP.',patch:[{ab:'panacea',set:{heal:.2,r:102}}],stat:{hpPct:15}},
-   al_stone:{name:'Philosophers_Stone',icon:'💎',txt:'Rapid_Brew is back in 21.5s and makes potions 50% stronger. +10 luck.',patch:[{ab:'brew',set:{cd:21.5,boost:.5}}],stat:{mod:{luck:10}}}},
+   al_stone:{name:'Philosophers_Stone',icon:'💎',txt:'Rapid_Brew is back in 23s and makes potions 50% stronger. +10 luck.',patch:[{ab:'brew',set:{cd:23,boost:.5}}],stat:{mod:{luck:10}}}},
   10:{
-   al_chain:{name:'Chain_Reaction',icon:'⛓️',txt:'Volatile_Flask hits 2.5x in a much wider splash and comes back in 6.5s. +60% damage to anything under 25% HP.',patch:[{ab:'flask',set:{pw:2.5,r:40,cd:6.5}}],also:['exec']},
-   al_elixir:{name:'Elixir_of_Life',icon:'🍷',txt:'Panacea_Mist heals 24% and is back in 13.5s. Once a stage a killing hit leaves her at 1 HP.',patch:[{ab:'panacea',set:{heal:.24,cd:13.5}}],also:['last']},
-   al_magnum:{name:'Magnum_Opus',icon:'📜',txt:'Rapid_Brew is back in 16s and makes potions 60% stronger for 12s. Her potions come back 35% sooner.',patch:[{ab:'brew',set:{cd:16,boost:.6,dur:12}},{ab:'catalyst',set:{pcd:.35}}]}}},
+   al_chain:{name:'Chain_Reaction',icon:'⛓️',txt:'Volatile_Flask hits 2.5x in a much wider splash and comes back in 7s. +60% damage to anything under 25% HP.',patch:[{ab:'flask',set:{pw:2.5,r:40,cd:7}}],also:['exec']},
+   al_elixir:{name:'Elixir_of_Life',icon:'🍷',txt:'Panacea_Mist heals 24% and is back in 14.5s. Once a stage a killing hit leaves her at 1 HP.',patch:[{ab:'panacea',set:{heal:.24,cd:14.5}}],also:['last']},
+   al_magnum:{name:'Magnum_Opus',icon:'📜',txt:'Rapid_Brew is back in 17s and makes potions 60% stronger for 12s. Her potions come back 35% sooner.',patch:[{ab:'brew',set:{cd:17,boost:.6,dur:12}},{ab:'catalyst',set:{pcd:.35}}]}}},
  flannel:{5:{
    fl_pack:{name:'Pack_Leader',icon:'🐺',txt:'His Traveling_Companion gets +50% max HP and +30% damage, and stays close enough to share his dodge from farther out.',patch:[{ab:'elite',set:{palHp:.5,palDmg:.3,r:70}}]},
    fl_hollow:{name:'Hollow_Point_Pro',icon:'🎯',txt:'Aimed Shot pierces 4, crits for 3.5x, 7s cooldown. +8% crit.',patch:[{ab:'aimed',set:{pierce:4,critMul:3.5,cd:7}}],stat:{mod:{crit:8}}},
@@ -5047,36 +5047,36 @@ const HCAP={
    fl_demo:{name:'Demolition_Man',icon:'💣',txt:'Proximity_Bomb throws zombies 90 and is back in 4s. +15% damage, and +60% to anything under 25% HP.',patch:[{ab:'trip',set:{kb:90,cd:4}}],stat:{dmgPct:15},also:['exec']},
    fl_last:{name:'Last_Man_Standing',icon:'🗿',txt:'True_Grit blocks 80% for 16s. Once a stage a killing hit leaves him at 1 HP, untouchable 3s; under 40% HP he fights 25% faster.',patch:[{ab:'grit',set:{dr:.8,dur:16}}],also:['last','adren'],shift:{courage:3}}}},
  druid:{5:{
-   dr_grove:{name:'Grove_Warden',icon:'🌳',txt:'Pure healer: Rejuvenating Bloom lasts 16s, Mend every 4s. +30% healing done. Stays with the team.',patch:[{ab:'bloom',set:{dur:16}},{ab:'mend',set:{cd:4}}],stat:{heal:30},shift:{self:-3,aggr:-2}},
+   dr_grove:{name:'Grove_Warden',icon:'🌳',txt:'Pure healer: Rejuvenating Bloom lasts 16s, Mend every 3s. +30% healing done. Stays with the team.',patch:[{ab:'bloom',set:{dur:16}},{ab:'mend',set:{cd:3}}],stat:{heal:30},shift:{self:-3,aggr:-2}},
    dr_wild:{name:'Wild_Druid',icon:'🐺',txt:'Battle druid: Thorn Wave 4d6 that always poisons, Cyclone 8s with a hard pull. +20% damage. Fights up front.',patch:[{ab:'thorns',set:{dice:[4,6],poisonCh:1}},{ab:'cyclone',set:{dur:8,pull:26}}],stat:{dmgPct:20},shift:{aggr:3,range:2}}},
   10:{
    dr_tree:{name:'World_Tree',icon:'🌲',txt:'Bloom lasts 20s, Mend heals 18%. +50% healing done. Once a stage when she goes down she gets back up by herself after 3s.',patch:[{ab:'bloom',set:{dur:20}},{ab:'mend',set:{heal:.18}}],stat:{heal:50},also:['wind']},
    dr_hurricane:{name:'Hurricane',icon:'🌪️',txt:'Cyclone lasts 12s and pulls hard; Thorn Wave 5d6. -20% cooldowns and abilities cost 20% less. +15% damage, -10% max HP.',patch:[{ab:'cyclone',set:{dur:12,pull:34}},{ab:'thorns',set:{dice:[5,6]}}],also:['over','glass']}}},
  lumberjack:{5:{
-   lj_widow:{name:'Widowmaker',icon:'🌀',txt:'Whirl_Wind spins 8s with a wide reach on a 12s cooldown. +10% attack speed.',patch:[{ab:'whirl',set:{dur:8,r:36,cd:12}}],stat:{mod:{meleeSpd:10}},shift:{aggr:2}},
-   lj_quake:{name:'Earthshaker',icon:'🪓',txt:'Ground_Chop splits 70px out and stuns 1.8s, every 6.5s. Can barely be knocked back, +3 armor, hits on him land 10% softer.',patch:[{ab:'chop',set:{dist:70,stun:1.8,cd:6.5}}],also:['jugg']}},
+   lj_widow:{name:'Widowmaker',icon:'🌀',txt:'Whirl_Wind spins 8s with a wide reach on a 10s cooldown. +10% attack speed.',patch:[{ab:'whirl',set:{dur:8,r:36,cd:10}}],stat:{mod:{meleeSpd:10}},shift:{aggr:2}},
+   lj_quake:{name:'Earthshaker',icon:'🪓',txt:'Ground_Chop splits 70px out and stuns 1.8s, every 5.5s. Can barely be knocked back, +3 armor, hits on him land 10% softer.',patch:[{ab:'chop',set:{dist:70,stun:1.8,cd:5.5}}],also:['jugg']}},
   10:{
    lj_bunyan:{name:'Paul_Bunyan',icon:'🌲',txt:'Timber_Rage: +60% damage for 12s and it kicks in anytime. +30% max HP, +3 armor.',patch:[{ab:'rage',set:{dmg:.6,dur:12,under:1}}],stat:{hpPct:30,mod:{armor:3}}},
    lj_berserk:{name:'Berserker',icon:'😡',txt:'+25% attack speed, +15% damage, -10% max HP; under 40% HP +25% more speed. Never backs off.',patch:[{ab:'rage',set:{dmg:.5}}],stat:{mod:{meleeSpd:25}},also:['glass','adren'],shift:{aggr:4,courage:4}}}},
  cultist:{5:{
-   cu_arms:{name:'Many-Armed',icon:'🐙',txt:'Tentacles have 35 HP and hit 3d6+2, back every 8s.',patch:[{ab:'tentacle',set:{hp:35,dice:[3,6],cd:8}}]},
+   cu_arms:{name:'Many-Armed',icon:'🐙',txt:'Tentacles have 35 HP and hit 3d6+2, back every 6s.',patch:[{ab:'tentacle',set:{hp:35,dice:[3,6],cd:6}}]},
    cu_priest:{name:'Blood_Priest',icon:'🩸',txt:'Syphon_Life drains 6 a second and heals 1.6x. Every hit he lands heals him 5%.',patch:[{ab:'syphon',set:{dps:6,heal:1.6}}],stat:{mod:{lifesteal:5}}}},
   10:{
-   cu_elder:{name:'Elder_God',icon:'🦑',txt:'Call_of_Cthulhu lasts 18s, terrifies 4s, back in 26.5s. +15% damage.',patch:[{ab:'cthulhu',set:{dur:18,fear:4,cd:26.5}}],stat:{dmgPct:15}},
+   cu_elder:{name:'Elder_God',icon:'🦑',txt:'Call_of_Cthulhu lasts 18s, terrifies 4s, back in 19s. +15% damage.',patch:[{ab:'cthulhu',set:{dur:18,fear:4,cd:19}}],stat:{dmgPct:15}},
    cu_leech:{name:'Leech_Lord',icon:'🧛',txt:'Syphon_Life drains 9 a second from 160px. 10% lifesteal. Once a stage a killing hit leaves him at 1 HP, untouchable 3s.',patch:[{ab:'syphon',set:{dps:9,range:160}}],stat:{mod:{lifesteal:10}},also:['last']}}},
  eng:{5:{
    en_fort:{name:'Fortress',icon:'🏰',txt:'Turtle builder: HESCO cell 180 HP, the watchtower takes 3 more hits. +3 armor. Stays behind his walls.',patch:[{ab:'build',path:'barrier',set:{hp:180}},{ab:'build',path:'tower',set:{hitAdd:3}}],stat:{mod:{armor:3}},shift:{aggr:-3}},
-   en_bomb:{name:'Mad_Bomber',icon:'🧨',txt:'Satchel_Charge 10d4 in a huge blast, 8s cooldown. +10% damage. Gets in closer to throw.',patch:[{ab:'satchel',set:{dice:[10,4],r:48,cd:8}}],stat:{dmgPct:10},shift:{aggr:2}}},
+   en_bomb:{name:'Mad_Bomber',icon:'🧨',txt:'Satchel_Charge 10d4 in a huge blast, 9s cooldown. +10% damage. Gets in closer to throw.',patch:[{ab:'satchel',set:{dice:[10,4],r:48,cd:9}}],stat:{dmgPct:10},shift:{aggr:2}}},
   10:{
-   en_tesla:{name:'Tower_Lord',icon:'🗼',txt:'Tower floors build 40% faster and come back in 5s; HESCO cell back in 8s. -20% cooldowns, abilities 20% cheaper.',patch:[{ab:'build',path:'tower',set:{cd:5,T:[1.8,1.5,2.1]}},{ab:'build',path:'barrier',set:{cd:8}}],also:['over']},
+   en_tesla:{name:'Tower_Lord',icon:'🗼',txt:'Tower floors build 40% faster and come back in 5.5s; HESCO cell back in 9s. -20% cooldowns, abilities 20% cheaper.',patch:[{ab:'build',path:'tower',set:{cd:5.5,T:[1.8,1.5,2.1]}},{ab:'build',path:'barrier',set:{cd:9}}],also:['over']},
    en_siege:{name:'Siege_Engineer',icon:'🏗️',txt:'Satchel_Charge 12d4 in a 55px blast. HESCO cell 150 HP. +15% damage, and +60% to anything under 25% HP.',patch:[{ab:'satchel',set:{dice:[12,4],r:55}},{ab:'build',path:'barrier',set:{hp:150}}],stat:{dmgPct:15},also:['exec']}}},
  
  
  soldier:{5:{
-   so_gren:{name:'Grenadier',icon:'💣',txt:'Frag_Grenade 6d6 in a big blast, blows on landing, stuns 2s, 7s cooldown.',patch:[{ab:'frag',set:{dice:[6,6],r:46,fuse:.05,stun:2,cd:7}}]},
+   so_gren:{name:'Grenadier',icon:'💣',txt:'Frag_Grenade 6d6 in a big blast, blows on landing, stuns 2s, 7.5s cooldown.',patch:[{ab:'frag',set:{dice:[6,6],r:46,fuse:.05,stun:2,cd:7.5}}]},
    so_vet:{name:'Iron_Veteran',icon:'🎖️',txt:'Battle_Hardened kicks in under 75% and blocks 35%. +3 armor, can barely be knocked back, hits land 10% softer.',patch:[{ab:'hardened',set:{under:.75,dr:.35}}],also:['jugg'],shift:{courage:3}}},
   10:{
-   so_danger:{name:'Danger_Close',icon:'☢️',txt:'Frag_Grenade 8d6 in a 55px blast, 5.5s cooldown. +60% damage to anything under 25% HP.',patch:[{ab:'frag',set:{dice:[8,6],r:55,cd:5.5}}],also:['exec']},
+   so_danger:{name:'Danger_Close',icon:'☢️',txt:'Frag_Grenade 8d6 in a 55px blast, 6s cooldown. +60% damage to anything under 25% HP.',patch:[{ab:'frag',set:{dice:[8,6],r:55,cd:6}}],also:['exec']},
    so_unkill:{name:'Unkillable',icon:'🪖',txt:'Battle_Hardened blocks 45%. +30% max HP. Once a stage a killing hit leaves him at 1 HP, untouchable 3s.',patch:[{ab:'hardened',set:{dr:.45}}],stat:{hpPct:30},also:['last']}}},
  shoshi:{5:{
    sh_vc:{name:'Version_Control',icon:'💾',txt:'Ctrl_Z reaches back 7s and triggers at 12% lost; Turn_It_Off_And_On_Again refreshes 3 cooldowns and heals 20%.',patch:[{ab:'undo',set:{win:7,min:.12}},{ab:'reboot',set:{n:3,heal:.2}}]},
@@ -5672,7 +5672,7 @@ function ultTxt(o){if(o.lethal)return 'pays 10% of his life for a 12s frenzy: +7
    is the old tier 7 capstone, and tier 7 is that tree's own ultimate. [name, icon, def]
    def: {o:effects} = an active (25s, 15 energy; the Void_Cultist pays nothing), {pas:stats} = a passive, {custom:'key'} = a hand-built one. */
 /* 0.12.496 (Kyle) balance tiers by card total (off+def+utl): 18+ = 0.75, 11-14 = 1.25, 10 or less = 1.35. Tier-5 talent actives' cooldowns follow it too. */
-const BAL_F={cheez:.75,chibi:.75,jp:.75,edward:.75,cultist:.75,shoshi:.75,seekyle:.75,alchemist:.75,robot:.75,lumberjack:.75,broodbot:.75,druid:.75,soldier:1.25,flannel:1.25,eng:1.25,archer:1.35};
+const BAL_F={cheez:.75,chibi:.863,jp:.863,edward:.75,cultist:.949,shoshi:.949,seekyle:.663,alchemist:.698,robot:.75,lumberjack:.863,broodbot:.863,druid:.949,soldier:1.163,flannel:1.25,eng:1.104,archer:1.708};   /* 0.12.499: x1.15 bottom 8 (x1.265 bottom 4), x0.93 top 4 (x0.8835 top 2) */
 const TIER5={
  broodbot:[['Hatchery','🥚',{pas:{mod:{cdr:6,luck:4}}}],['Shrapnel_Burst','🎆',{o:{aoe:[50,3,6],kb:10}}],['Tesla_Coil','⚡',{o:{aoe:[60,2,6],stun:1}}]],   /* 0.12.489 */
  bub:[['Six_Shooter_Salute','🎆',{o:{aoe:[45,3,6],kb:10}}],['Bone_Crunch','🦴',{pas:{mod:{lifesteal:5,meleeDmg:6}}}],['Calavera_Dance','💃',{o:{mvTeam:.25,spTeam:.15,dur:6}}]],   /* 0.12.488 */
@@ -5696,10 +5696,10 @@ const TIER5={
 /* hand-built tier 7 ultimates (the rest use ULTS) */
 const ULT7={edward:{0:['Brick_House','🧱','brickhouse'],2:['Back_On_Your_Feet','🙌','rez']},seekyle:{1:['Knife_Storm','🔪','knives']},knight:{0:['Aegis_Of_The_Crimson','🛡️','aegis'],1:['Crimson_Hound','🐺','hound']},
  teeg:{2:['Drive_By','🚗','driveby']},robot:{0:['Aerial_Assault','🛩️','aerial']},jp:{1:['The_Big_One','🐋','bigone']}};
-Object.assign(ABIL_DESC,{flask:'Volatile_Flask · 30 energy · 12s. She lobs a big unstable flask at the thickest pack: 1.4x her damage to everything in the splash, plus a random brew: fire (burns), acid (eats at them over 5s), frost (50% slower for 3s) or thunder (stunned 1s).',
-  panacea:'Panacea_Mist · 35 energy · 21.5s. A cloud of healing mist: everyone within 180px of her heals 12% of their max HP and is cleared of bleeds, poison and slows. (Machines like the Warhound get nothing.)',
-  brew:'Rapid_Brew · 20 energy · 32s. She brews on the run when 3+ zombies are close: her Volatile_Flask is ready again at once, she throws 25% faster for 8s, and every potion she has equipped is ready again and 30% stronger for 8s.',
-  transmute:'Transmute · 30 energy · 26.5s. She turns a nearly dead zombie (under 35% life, not an Alpha, Promoted or boss) within 180px into solid gold: it\'s gone, it drops a big gold pile, and the flash stuns every zombie within 40px for 1s.',
+Object.assign(ABIL_DESC,{flask:'Volatile_Flask · 30 energy · 13s. She lobs a big unstable flask at the thickest pack: 1.4x her damage to everything in the splash, plus a random brew: fire (burns), acid (eats at them over 5s), frost (50% slower for 3s) or thunder (stunned 1s).',
+  panacea:'Panacea_Mist · 35 energy · 23s. A cloud of healing mist: everyone within 180px of her heals 12% of their max HP and is cleared of bleeds, poison and slows. (Machines like the Warhound get nothing.)',
+  brew:'Rapid_Brew · 20 energy · 34.5s. She brews on the run when 3+ zombies are close: her Volatile_Flask is ready again at once, she throws 25% faster for 8s, and every potion she has equipped is ready again and 30% stronger for 8s.',
+  transmute:'Transmute · 30 energy · 28.5s. She turns a nearly dead zombie (under 35% life, not an Alpha, Promoted or boss) within 180px into solid gold: it\'s gone, it drops a big gold pile, and the flash stuns every zombie within 40px for 1s.',
   catalyst:'Catalyst (passive) · her potions come back 20% sooner, and every potion she uses (drunk, thrown or shared) can set off her trinket\'s on-cast effects.'});
 const CUST_TXT={chumbomb:'plants a bucket of chum (with a bomb under the fish) in front of the thickest crowd within 180. For 2.5s every zombie within 70 smells it and drifts toward the bucket, slowed; then it blows: 3d6 to everything within 45, knocked back, and fish gibs everywhere. He tosses it out past the middle of the field so the smell pulls them away from the team',trashtalk:'IF 2+ zombies are on an ally near him THEN he talks trash: every zombie within 70 comes for HIM for 4s while he hides behind his shield (30% less damage), and his friends laugh it off: +5% crit for 6s',mount:'Cheez rides into every stage on an armored neon warhorse. The horse takes the hits first (50 life, +3 a stage). While mounted: +30% move speed, +25% melee damage and 50% longer reach; his attack becomes a big overhead beam katana chop off the side of the horse that throws a small green wave through the zombies behind his target, and riding through zombies tramples them aside. If the horse runs out of life he\'s thrown off and it bolts; he whistles it back 30s later.',fema:'sets down a FEMA supply station foundation just behind the team. Once it\'s built it stands 30s (60 HP; zombies can wreck it): everyone within 180px heals 1% of max HP a second and gets +2 energy a second.',rapidcon:'instantly repairs every friendly building to full, finishes anything being built and gives towers 10s more',
  nailrain:'for 8s his nail gun fires 3-nail bursts that arc high and rain down, and he never runs dry (his clip is just as he left it afterward)',
@@ -6028,12 +6028,12 @@ if(typeof module!=='undefined'&&module.exports){module.exports=API;}
 if(typeof document==='undefined')return;
 
 // ======================================================================= UI (browser only)
-const IMG=new Image();IMG.src='crawl.png?v=1795672508';const BGI=new Image();BGI.src='crawl_bg.png?v=1795672508';
-const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795672508';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
+const IMG=new Image();IMG.src='crawl.png?v=1795672816';const BGI=new Image();BGI.src='crawl_bg.png?v=1795672816';
+const SP=ATLAS.sprites,BGA=ATLAS.bg,RES=ATLAS.res||1;const UNITS=ATLAS.units||{};const UIMG=new Image();UIMG.src='crawl_units.png?v=1795672816';const RAIN={f:{fw:5,fh:18,n:1,ax:2,ay:17,x:0,y:0,img:'rain'},s:{fw:5,fh:11,n:1,ax:2,ay:10,x:8,y:7,img:'rain'}};
 const CAMPF={fw:34,fh:40,ax:17,ay:37,y:0,img:'camp'};
-const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),alchemist:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795672508';XIMG.wave.src='crawl_wave.png?v=1795672508';XIMG.chibi.src='crawl_chibi.png?v=1795672508';XIMG.flannel.src='crawl_flannel.png?v=1795672508';XIMG.alchemist.src='crawl_alch.png?v=1795672508';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795672508';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795672508';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795672508';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795672508';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795672508';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795672508';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795672508';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795672508';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795672508';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795672508';XIMG.strike=new Image();XIMG.strike.src='crawl_strike.png?v=1795672508';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795672508';XIMG.bghood=new Image();XIMG.bghood.src='crawl_bg_hood.png?v=1795672508';XIMG.bloater=new Image();XIMG.hazmat=new Image();XIMG.hazmat.src='crawl_hazmat.png?v=1795672508';XIMG.bloater.src='crawl_bloater.png?v=1795672508';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795672508';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795672508';XIMG.rain.src='crawl_rain.png?v=1795672508';XIMG.druid.src='crawl_druid.png?v=1795672508';XIMG.camp.src='crawl_campfire.png?v=1795672508';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795672508';XIMG.tornado.src='crawl_fx_tornado.png?v=1795672508';XIMG.broodbot=new Image();XIMG.broodbot.src='crawl_broodbot.png?v=1795672508';XIMG.bub=new Image();XIMG.bub.src='crawl_bub.png?v=1795672508';XIMG.vine.src='crawl_fx_vine.png?v=1795672508';XIMG.thorn.src='crawl_fx_thorn.png?v=1795672508';
+const XIMG={cityob:new Image(),cars:new Image(),cultist:new Image(),tentacle:new Image(),robot:new Image(),obst:new Image(),lumberjack:new Image(),camp:new Image(),druid:new Image(),tornado:new Image(),vine:new Image(),thorn:new Image(),rain:new Image(),flannel:new Image(),alchemist:new Image(),boom:new Image(),pal:new Image(),chibi:new Image(),wave:new Image(),archer:new Image()};XIMG.archer.src='crawl_archer.png?v=1795672816';XIMG.wave.src='crawl_wave.png?v=1795672816';XIMG.chibi.src='crawl_chibi.png?v=1795672816';XIMG.flannel.src='crawl_flannel.png?v=1795672816';XIMG.alchemist.src='crawl_alch.png?v=1795672816';XIMG.jp=new Image();XIMG.jp.src='crawl_jp.png?v=1795672816';XIMG.eng=new Image();XIMG.eng.src='crawl_eng.png?v=1795672816';XIMG.shoshi=new Image();XIMG.shoshi.src='crawl_shoshi.png?v=1795672816';XIMG.teeg=new Image();XIMG.teeg.src='crawl_teeg.png?v=1795672816';XIMG.seekyle=new Image();XIMG.seekyle.src='crawl_seekyle.png?v=1795672816';XIMG.kids=new Image();XIMG.kids.src='crawl_kids.png?v=1795672816';XIMG.gear=new Image();XIMG.gear.src='crawl_gear.png?v=1795672816';XIMG.portals=new Image();XIMG.portals.src='crawl_portals.png?v=1795672816';XIMG.skel=new Image();XIMG.skel.src='crawl_skel.png?v=1795672816';XIMG.knight=new Image();XIMG.knight.src='crawl_knight.png?v=1795672816';XIMG.strike=new Image();XIMG.strike.src='crawl_strike.png?v=1795672816';XIMG.soldier=new Image();XIMG.soldier.src='crawl_soldier.png?v=1795672816';XIMG.bghood=new Image();XIMG.bghood.src='crawl_bg_hood.png?v=1795672816';XIMG.bloater=new Image();XIMG.hazmat=new Image();XIMG.hazmat.src='crawl_hazmat.png?v=1795672816';XIMG.bloater.src='crawl_bloater.png?v=1795672816';XIMG.screamer=new Image();XIMG.screamer.src='crawl_screamer.png?v=1795672816';XIMG.flame=new Image();XIMG.flame.src='crawl_flame.png?v=1795672816';XIMG.rain.src='crawl_rain.png?v=1795672816';XIMG.druid.src='crawl_druid.png?v=1795672816';XIMG.camp.src='crawl_campfire.png?v=1795672816';XIMG.lumberjack.src='crawl_lumberjack.png?v=1795672816';XIMG.tornado.src='crawl_fx_tornado.png?v=1795672816';XIMG.broodbot=new Image();XIMG.broodbot.src='crawl_broodbot.png?v=1795672816';XIMG.bub=new Image();XIMG.bub.src='crawl_bub.png?v=1795672816';XIMG.vine.src='crawl_fx_vine.png?v=1795672816';XIMG.thorn.src='crawl_fx_thorn.png?v=1795672816';
 const TORN={fw:96,fh:96,n:16,ax:48,ay:90,x:0,y:0,img:'tornado',art:1},VINE={fw:260,fh:116,n:7,ax:130,ay:110,x:0,y:0,img:'vine',art:1};
-const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795672508';XIMG.axe=new Image();XIMG.axe.src='crawl_axe.png?v=1795672508';XIMG.fxp=new Image();XIMG.fxp.src='crawl_fxpack.png?v=1795672508';XIMG.nest=new Image();XIMG.nest.src='crawl_mgnest.png?v=1795672508';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795672508';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795672508';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795672508';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795672508';XIMG.chumboom=new Image();XIMG.chumboom.src='crawl_chumboom.png?v=1795672508';XIMG.cheezhorse=new Image();XIMG.cheezhorse.src='crawl_cheezhorse.png?v=1795672508';XIMG.obst.src='crawl_obst.png?v=1795672508';XIMG.cityob.src='crawl_cityob.png?v=1795672508';XIMG.cars.src='crawl_cars.png?v=1795672508';XIMG.robot.src='crawl_robot.png?v=1795672508';XIMG.cultist.src='crawl_cultist.png?v=1795672508';XIMG.tentacle.src='crawl_tentacle.png?v=1795672508';XIMG.boom.src='crawl_boom.png?v=1795672508';
+const THORNS=[[0,35,53],[37,67,79],[106,36,82],[144,87,74]].map(([x,w,h])=>({fw:w,fh:h,n:1,ax:w/2,ay:81,x,y:82-h,img:'thorn',art:1}));XIMG.pal.src='crawl_pal.png?v=1795672816';XIMG.axe=new Image();XIMG.axe.src='crawl_axe.png?v=1795672816';XIMG.fxp=new Image();XIMG.fxp.src='crawl_fxpack.png?v=1795672816';XIMG.nest=new Image();XIMG.nest.src='crawl_mgnest.png?v=1795672816';XIMG.dog=new Image();XIMG.dog.src='crawl_dog.png?v=1795672816';XIMG.bat=new Image();XIMG.bat.src='crawl_bat.png?v=1795672816';XIMG.edward=new Image();XIMG.edward.src='crawl_edward.png?v=1795672816';XIMG.cheez=new Image();XIMG.cheez.src='crawl_cheez.png?v=1795672816';XIMG.chumboom=new Image();XIMG.chumboom.src='crawl_chumboom.png?v=1795672816';XIMG.cheezhorse=new Image();XIMG.cheezhorse.src='crawl_cheezhorse.png?v=1795672816';XIMG.obst.src='crawl_obst.png?v=1795672816';XIMG.cityob.src='crawl_cityob.png?v=1795672816';XIMG.cars.src='crawl_cars.png?v=1795672816';XIMG.robot.src='crawl_robot.png?v=1795672816';XIMG.cultist.src='crawl_cultist.png?v=1795672816';XIMG.tentacle.src='crawl_tentacle.png?v=1795672816';XIMG.boom.src='crawl_boom.png?v=1795672816';
 const WAVE={fw:110,fh:68,n:1,ax:48,ay:63,x:0,y:0,img:'wave'};   // Wave Dash energy wave (3 flickering frames)
 const BOOM={fw:128,fh:131,n:15,ax:64,ay:128,x:0,y:0,img:'boom',art:1};   // explosion frames from Kyle's sheet (15 frames, half size)
 const ART_SCALE=21/152;   // full-detail character art drawn at the in-game size Kyle liked (his 152px-tall art = 21 world px)
@@ -6068,7 +6068,7 @@ function musicStop(){try{if(BGM)BGM.pause();}catch(e){}}
 /* 0.12.310 recorded clips (Tee_Grizzle): decoded once, played through the same AudioContext as the synth sounds */
 const SAMP={teeg1:{src:'crawl_teeg1',off:.34},teeg2:{src:'crawl_teeg2',off:0},teeg3:{src:'crawl_teeg3',off:0},jp1:{src:'crawl_jp1',off:0},kidhowl:{src:'crawl_kidhowl',off:0},leiftag:{src:'crawl_leiftag',off:0}};   /* 0.12.394: the boys' howl, Leif's "tag!" */   /* 0.12.380: Tee's Pistol_Play line, JP's No_Scope line */
 function sampLoad(k){const S=SAMP[k];if(!S||S.buf||S.loading||!AC)return;S.loading=1;const ext=(new Audio()).canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3';
-  fetch(S.src+ext+'?v=1795672508').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
+  fetch(S.src+ext+'?v=1795672816').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b,d=>{S.buf=d;},()=>{})).catch(()=>{});}
 function sampPlay(k,off,vol,soft){const S=SAMP[k];if(!S)return;if(!S.buf){sampLoad(k);return;}const src=AC.createBufferSource(),g=AC.createGain();src.buffer=S.buf;g.gain.value=vol==null?.55:vol;
   if(soft){const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=soft;lp.Q.value=.5;src.playbackRate.value=.94+Math.random()*.1;src.connect(lp);lp.connect(g);}else src.connect(g);g.connect(AC.destination);src.start(0,off==null?S.off:off);}   /* 0.12.329 (Kyle: a bit less annoying): Tee's clips play softer, muffled (low-pass) and with a little pitch wobble */
 function sfx(k,o){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
@@ -6707,12 +6707,12 @@ function drawGame(ctx,g,W,oy){
       else if(mov){A=(h.running&&U.run)||U.walk;f=Math.floor(g.t*(h.running?12:h.key==='lumberjack'?9:8))%A.n;
         if(h.running&&!U.run&&A.n>1){f=Math.floor(g.t*15)%A.n;runLean=((h.face||1)>0?1:-1)*.06;runBob=-Math.abs(Math.sin(g.t*15*Math.PI*2/A.n))*.7;}}   /* 0.12.38: no run row (druid): her walk played fast, leaning into it with a bounce */
       const bob=(mov&&A.n===1?-Math.abs(Math.sin(g.t*11))*1.6:0)+runBob;if(runLean&&!riseRot)riseRot=runLean;   // one-frame walk (companion art has no walk row): a little hop
-      if(h.whirl){ctx.save();const sp=g.t*16;   // 0.12.26: a wider slashing wave whips round him while he spins, so the reach reads
+      if(h.whirl){ctx.save();const sp=g.t*16,WR=h.whirl.r||26,WD=(h.whirl.depth||7)/7;   /* 0.12.499: the wave is drawn at his real reach (talents included) and the arcs are longer */   // 0.12.26: a wider slashing wave whips round him while he spins, so the reach reads
         ctx.globalCompositeOperation='lighter';
         for(let i=0;i<3;i++){const a0=sp+i*2.09;ctx.lineCap='round';
-          ctx.strokeStyle='rgba(200,220,255,.30)';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(h.x+lx,G-11,26-i*2,7-i*.5,0,a0,a0+1.3);ctx.stroke();
-          ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(h.x+lx,G-11,27-i*2,7.5-i*.5,0,a0+.2,a0+1.15);ctx.stroke();}
-        ctx.strokeStyle='rgba(232,240,255,.45)';ctx.lineWidth=1.2;for(let i=0;i<2;i++){ctx.beginPath();ctx.ellipse(h.x+lx,G-10,16-i*3,5-i,0,sp*1.1+i*2,sp*1.1+i*2+2.2);ctx.stroke();}ctx.restore();}   // inner spin trail
+          ctx.strokeStyle='rgba(200,220,255,.30)';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(h.x+lx,G-11,WR-i*2,(7-i*.5)*WD,0,a0,a0+1.6);ctx.stroke();
+          ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(h.x+lx,G-11,WR+1-i*2,(7.5-i*.5)*WD,0,a0+.2,a0+1.45);ctx.stroke();}
+        ctx.strokeStyle='rgba(232,240,255,.45)';ctx.lineWidth=1.2;for(let i=0;i<2;i++){ctx.beginPath();ctx.ellipse(h.x+lx,G-10,WR*.62-i*3,(5-i)*WD,0,sp*1.1+i*2,sp*1.1+i*2+2.6);ctx.stroke();}ctx.restore();}   // inner spin trail
       /* 0.12.107: the Shadow_Clone is drawn on its own now (drawClone) */
       if(rum){   /* rummage: dips down and digs (squash + lean toward the wreck), pops up, repeats; bits fly out where he digs */
         const ox=rum.o?rum.o.x+((OBST[rum.o.k]||{}).w||0)*.0:h.x+10;const dir=(rum.o&&rum.o.x<h.x-2)?-1:1;const ph=(g.t*2.3+(h.key.length*.37))%1;
@@ -7342,7 +7342,7 @@ let root,cv,ctx,panel,hud,info,bossEl,banner;
 function build(){
   if(root)return;if(!document.getElementById('cc-style')){const st=document.createElement('style');st.id='cc-style';st.textContent=CSS;document.head.appendChild(st);}
   root=document.createElement('div');root.id='cc';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-label','Crypt Crawl');
-  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.498</span></span>
+  root.innerHTML=`<div class="cc-top"><span class="t">⚰️ CRYPT CRAWL <span style="color:#6a5a7a;font-size:8px">v0.12.499</span></span>
     <button class="cc-ib" data-a="restart" title="Restart this stage from its save point" hidden>↺</button><button class="cc-ib" data-a="pause" title="Pause">⏸</button><button class="cc-ib" data-a="speed" title="Game speed">1×</button>
     <button class="cc-ib" data-a="brain" title="Show what every unit is thinking">🧠</button><button class="cc-ib" data-a="mute" title="Sound effects">${muted?'🔇':'🔊'}</button><button class="cc-ib" data-a="music" title="Music on/off">${musicMuted?'🎵̸':'🎵'}</button><button class="cc-ib" data-a="track" title="Next track (now: ${TRACKS[trackI].name})">⏭</button><input class="cc-vol" data-vol type="range" min="0" max="100" value="${Math.round(musicVol*100)}" title="Music volume"><button class="cc-ib" data-a="zoom" title="Zoom (Auto: closer camera on phones)">🔍</button><button class="cc-ib" data-a="side" title="Turn sideways (phones held upright)">⟳</button><button class="cc-ib" data-a="fs" title="Full screen">⛶</button><button class="cc-ib" data-a="close" title="Close">✕</button></div>
     <div class="cc-main"><div class="cc-info"></div><div class="cc-cvw"><div class="cc-uf"></div><canvas id="cc-cv" width="${384*RES*GQ}" height="${216*RES*GQ}"></canvas></div><div class="cc-boss"></div><div class="cc-banner"></div><div class="cc-hud"></div><div class="cc-panel"></div></div>`;
@@ -7465,7 +7465,7 @@ function atkProfile(k){const C=CHAR[k]||{};let best={dps:0,rate:0};
    nudged by kit; DEFENSE from HP, armor, damage reduction, shields, self-heals and escapes; UTILITY from what the hero does for the team
    (heals and shields measured in the same sims, plus buffs, crowd control, summons and builds). Re-run the sim and update this table after big rebalances. */
 const HERO_RATING={   /* 0.12.464 (Kyle): re-rated after the kit changes: OFFENSE from fresh sims (damage a second, 5 mixed teams each, stages 3 and 6), DEFENSE 60% kit / 40% sim survival, UTILITY 75% kit / 25% sim healing */
-  cheez:[8,4,5],chibi:[6,5,4],jp:[6,4,5],edward:[4,6,5],soldier:[6,5,6],cultist:[5,5,4],archer:[6,4,4],shoshi:[4,4,6],teeg:[7,4,4],seekyle:[5,5,7],flannel:[5,8,4],alchemist:[7,5,6],robot:[5,6,4],knight:[6,7,4],lumberjack:[8,5,2],bub:[7,6,4],broodbot:[4,5,5],eng:[4,5,9],druid:[2,4,8]};   /* 0.12.496 (Kyle) balance pass on the heroes' own numbers: OFFENSE re-rated from solo sims, DEFENSE/UTILITY by the HP/armor and cooldown changes. Was: cheez:[10,5,6],chibi:[8,6,5],jp:[8,5,6],edward:[5,8,6],soldier:[5,4,5],cultist:[7,6,5],archer:[4,3,3],shoshi:[5,5,8],teeg:[7,4,4],seekyle:[7,7,9],flannel:[4,6,3],alchemist:[9,6,8],robot:[7,8,5],knight:[6,7,4],lumberjack:[10,6,3],bub:[7,6,4],broodbot:[6,7,6],eng:[3,4,7],druid:[3,5,10] */
+  cheez:[8,4,5],chibi:[7,5,4],jp:[7,4,5],edward:[4,6,5],soldier:[6,5,6],cultist:[7,5,4],archer:[8,5,5],shoshi:[4,4,8],teeg:[7,4,4],seekyle:[5,5,6],flannel:[5,8,4],alchemist:[6,4,6],robot:[5,6,4],knight:[6,7,4],lumberjack:[9,5,2],bub:[7,6,4],broodbot:[5,6,5],eng:[3,4,8],druid:[3,4,10]};   /* 0.12.499 (Kyle) re-rated after the bottom-8 buff / top-4 nerf: OFFENSE from solo sims, DEFENSE from HP and armor, UTILITY from cooldowns (0.12.496 numbers before that) */
 function heroRatings(k){const r=HERO_RATING[k]||[5,5,5];return {o:r[0],d:r[1],u:r[2]};}
 function pipBar(n,col){let h='';for(let i=0;i<10;i++)h+=`<b style="${i<n?`background:${col};box-shadow:0 0 4px ${col}`:''}"></b>`;return `<i class="cc-pips">${h}</i>`;}
 function statBars(k,lvl){const R=heroRatings(k),b=heroBase(k,lvl,3),P=atkProfile(k);
@@ -7655,7 +7655,7 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
       return `<div class="${cls}" data-n="${n.id}" title="${esc(n.name)}" style="grid-row:${n.row};grid-column:${'abcd'.indexOf(n.col)+1}">${n.icon}<span class="trk">${rk}/${n.max}</span></div>`;};
     const col=(B,bi)=>{const bp=treeBranchPts(k,L,bi);const nxt=TREE_REQ.find(q=>q>bp);
       return `<div class="tbr" data-bi="${bi}" style="flex:1;min-width:236px;max-width:300px;position:relative;border:2px solid #3a2e4a;border-radius:12px;overflow:hidden;box-shadow:0 0 18px #000c;
-          background:linear-gradient(180deg,#0006,#000a 70%),url(crawl_talbg.png?v=1795672508) ${-(B.bg||0)*100}% 0/900% 100%;image-rendering:pixelated">
+          background:linear-gradient(180deg,#0006,#000a 70%),url(crawl_talbg.png?v=1795672816) ${-(B.bg||0)*100}% 0/900% 100%;image-rendering:pixelated">
         <svg class="tlines" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></svg>
         <div style="position:relative;z-index:1;text-align:center;font-weight:800;color:#ffe9a8;letter-spacing:.5px;padding-top:6px;text-shadow:0 1px 3px #000">${B.icon} ${esc(B.name)}</div>
         <div style="position:relative;z-index:1;font-size:9.5px;text-align:center;color:#c9b8e0;text-shadow:0 1px 2px #000">${bp} point${bp===1?'':'s'} · ${nxt!=null?`next tier at ${nxt}`:'every tier open'}</div>
@@ -7697,7 +7697,7 @@ function showTree(k){const s=SLOT(),L=s&&s.heroes[k];if(!L)return;L.tk=k;treeIni
 /* 0.12.338 (Kyle) GEAR screen: 3 slots per hero (Weapon / Armor / Trinket), a stash, free swaps. Tap anything to see it in full
    (no hover needed). Spare parts raise an item a quality tier (Rusted -> plain -> Fine -> Masterwork); scrapping gives parts back. */
 function gearIcon(it,sz){const D=gearDef(it);if(!D)return '';sz=sz||32;const k=sz/32;const R=GEAR_RAR[D.r];
-  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795672508) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
+  return `<span style="display:inline-block;width:${sz}px;height:${sz}px;background:url(crawl_gear.png?v=1795672816) ${-(D.id%16)*sz}px ${-Math.floor(D.id/16)*sz}px/${512*k}px auto;image-rendering:pixelated;filter:drop-shadow(0 0 3px ${R.c}aa)${it.q===0?' sepia(.7) saturate(.6)':''}"></span>`;}
 function showGear(k0){const s=SLOT();if(!s)return;const run=s.run;const team=(run&&run.team)||[k0];let k=k0;let sel=null,filt='all';gearSlot(s);
   let ov=document.getElementById('cc-gear');if(ov)ov.remove();ov=document.createElement('div');ov.id='cc-gear';
   ov.style.cssText='position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 20%,rgba(40,30,70,.6),rgba(4,2,8,.94));display:flex;align-items:center;justify-content:center;padding:8px';
