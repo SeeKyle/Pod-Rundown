@@ -23,3 +23,9 @@ Difficulty: zombie 20 HP, trickle flat 7s from first pan (0.12.356).
 - build_site.py needs text modules (takeaways_text etc.) that are NOT in the bundle, so pub.sh fails at that step. Use art_src/pub2.sh instead: it builds crawl.js, copies crawl.js/notes.html/pngs and only bumps the crawl.js cache-bust in index.html.
 - Added heroes Bub (0.12.488, Undead tag) and Brood_Bot (0.12.489, spider-bots). Art scripts: art_src/bub/make_bub.py, art_src/broodbot/make_broodbot.py.
 - Stage-1 sim (wsim4, 36 games, 0.12.487 build): 13/36 wins, avg clear 357s. New heroes (24 games each): Bub 9/24, Brood_Bot 11/24.
+
+## 2026-11-25 night (live at 0.12.492)
+- Bundle FIX: the 0.12.491 bundle (and Kyle's re-pack) had lost parts/events.js; it's back. The tarball is FLAT (files at its root, no pod2/ prefix): untar into /home/claude/pod2 (`mkdir -p /home/claude/pod2 && tar xzf crawl_src_bundle.tgz -C /home/claude/pod2`).
+- pub2.sh now pushes HEAD:main with push.negotiate.
+- 0.12.492: Bub rebuilt from art_src/bub/kyle_zombie_base_sheet.png (make_bub.py samples the 2.655x screenshot back to native px). New 'eat' anim row; MUZZLE bub [21,23].
+- Kyle's queue tonight: (2) Tee Pistol Play rework, (3) Robbery passive (temp armor steal, debuff+buff in one, gone when stacks expire), (4) balance pass: off+def+utl total >=18 -> ~-25% dmg, 11-14 -> ~+25%, <=10 -> ~+35%, then re-rate the card meters (crawl_ui.js line ~1434).
