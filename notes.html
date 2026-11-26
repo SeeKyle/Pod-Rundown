@@ -1,4 +1,13 @@
       <h2>What's new</h2>
+      <h3>Crypt Crawl v0.12.549 — Cleanup &amp; smoother play</h3>
+      <ul>
+        <li><b>Smoother:</b> a helper on the website (the one that draws the 🪼/♠️ owner icons) was re-reading the whole page every time the game's HUD changed, many times a second. It now only checks what changed, and never inside the game. In testing that's about <b>28% more frames</b> during a busy stage, and the worst hitch dropped from 83 ms to 33 ms.</li>
+        <li><b>⛺ Camp tent:</b> tap the tent to open an upgrades drawer. It shows what you've built this run (with what each one does) and every camp upgrade with its tiers and prices. The row of upgrade chips is gone from the Camp header, so it's less crowded.</li>
+        <li>Beating a stage on a retry no longer wipes the other news on the Stage Clear screen (quest payouts, reserve level-ups).</li>
+        <li>The camp screen no longer breaks if an old save holds an upgrade that doesn't exist anymore.</li>
+        <li>Removed dead code: the old free reserve pick and a few leftover functions and settings nothing used.</li>
+        <li>Played every weather, both moons, bounty packs, Watchtower reports, quests and reserves through to camp with zero errors.</li>
+      </ul>
       <h3>Crypt Crawl v0.12.548 — Retire reserves</h3>
       <ul>
         <li>Each reserve at camp now has a <b>🚪 Retire</b> button. Retiring frees their slot so you can hire someone new from the Hideout. The hero goes back to hanging out there, keeps their level, and can be hired again later.</li>

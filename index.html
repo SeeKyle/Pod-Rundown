@@ -4514,7 +4514,10 @@ Zombies caught in any of it get hurt too.</li>
   function swap(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>RX.test(n.nodeValue)&&n.parentNode&&!/^(SCRIPT|STYLE|TEXTAREA|OPTION|TITLE)$/.test(n.parentNode.nodeName)?1:2});const L=[];while(w.nextNode())L.push(w.currentNode);
     for(const n of L){const parts=n.nodeValue.split(RX);const f=document.createDocumentFragment();for(const p of parts){if(!p)continue;const k=p.replace('\uFE0F','');if(IC[k]){const im=document.createElement('img');im.src=IC[k];im.alt=k;im.className='own-ic';f.appendChild(im);}else f.appendChild(document.createTextNode(p));}n.parentNode.replaceChild(f,n);}}
   const st=document.createElement('style');st.textContent='.own-ic{width:1.05em;height:1.05em;vertical-align:-.15em;display:inline-block}';document.head.appendChild(st);
-  let q=0;const run=()=>{q=0;swap(document.body);};swap(document.body);new MutationObserver(()=>{if(!q){q=1;requestAnimationFrame(run);}}).observe(document.body,{childList:true,subtree:true,characterData:true});})();</script>
+  /* 2026-11-26: only look at what actually changed, and never inside the Crypt Crawl game (its HUD changes many times a second and has no owner icons) */
+  const skip=n=>{for(let e=n.nodeType===1?n:n.parentNode;e;e=e.parentNode){if(e.id==='cc'||(e.id&&e.id.slice(0,3)==='cc-'))return true;}return false;};
+  let q=0,todo=new Set();const run=()=>{q=0;const L=[...todo];todo.clear();for(const n of L){if(!n.isConnected||skip(n))continue;if(n.nodeType===3){if(RX.test(n.nodeValue))swap(n.parentNode);}else if(n.nodeType===1)swap(n);}};
+  swap(document.body);new MutationObserver(R=>{for(const r of R){if(r.type==='characterData'){if(RX.test(r.target.nodeValue||''))todo.add(r.target);}else for(const a of r.addedNodes)todo.add(a);}if(todo.size&&!q){q=1;requestAnimationFrame(run);}}).observe(document.body,{childList:true,subtree:true,characterData:true});})();</script>
 <script>
 /* 0.12.288 (Kyle): site themes. Pick one from the banner dropdown; it's saved per browser. The Crypt Crawl game itself is untouched.
    0.12.292: themes go further: own spinner wheels, tab names, banner decorations, page backgrounds and side effects (snow piles, tumbling leaves...). */
