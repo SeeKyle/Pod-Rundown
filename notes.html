@@ -1,4 +1,8 @@
       <h2>What's new</h2>
+      <h3>0.12.498 — Fix: units going invisible</h3>
+<ul><li>Kyle saw every unit vanish mid-fight while you could still hear it. The game sorts every unit, building, tentacle, spider-bot and obstacle into one draw list each frame. If any single piece in that list had a problem, the whole list was thrown away and nothing got drawn, while the fight kept running underneath.</li>
+<li>Now each piece is built and drawn on its own. If one can't draw, only that one piece is skipped and everyone else stays on screen.</li>
+<li>If a piece ever fails to draw, a small red "⚠ draw error" line with the reason shows up next to the stage name. Screenshot it and send it over so the real cause can be fixed.</li></ul>
       <h3>0.12.497 — Tooltips and talent trees caught up with the rebalance</h3>
 <ul><li>Went through every tooltip for the 16 rebalanced heroes: ability tooltips, hero blurbs, evolutions and all talent tree text. Cooldowns, cast times and flask power now match the new numbers everywhere, and capstone talents that name a cooldown show the new one.</li>
 <li>Talent trees: the tier 5 NEW ACTIVE talents now follow each hero's tier. They're about 33% slower to come back on the nerfed heroes (25s → 33.5s; JP's Trash_Talk 14s → 18.5s; Cheez's Mount_Up 30s → 40s). They're faster on Soldier, Flannel_Man and Engineer (25s → 20s) and Yumi_Archer (25s → 18.5s). Ultimates stay 50s for everyone.</li>
